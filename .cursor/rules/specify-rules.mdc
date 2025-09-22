@@ -1,0 +1,24 @@
+# app Development Guidelines
+
+Auto-generated from all feature plans. Last updated: 2025-09-22
+
+## Active Technologies
+- Dart 3.0+ with Flutter 3.16+ + Flutter, dart_nostr, local_auth, shared_preferences (001-store-text-in-lockbox)
+
+## Project Structure
+```
+src/
+tests/
+```
+
+## Commands
+# Add commands for Dart 3.0+ with Flutter 3.16+
+
+## Code Style
+Dart 3.0+ with Flutter 3.16+: Follow standard conventions
+
+## Recent Changes
+- 001-store-text-in-lockbox: Added Dart 3.0+ with Flutter 3.16+ + Flutter, dart_nostr, local_auth, shared_preferences
+
+<!-- MANUAL ADDITIONS START -->
+<!-- MANUAL ADDITIONS END -->
