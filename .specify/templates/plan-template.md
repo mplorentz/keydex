@@ -47,7 +47,26 @@
 ## Constitution Check
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+### Security-First Development
+- [ ] All cryptographic operations use industry-standard libraries
+- [ ] Shamir's Secret Sharing implementation is mathematically verified
+- [ ] No sensitive data stored in plaintext
+- [ ] Security review planned for cryptographic code
+
+### Cross-Platform Consistency
+- [ ] Flutter app targets all 5 platforms (iOS, Android, macOS, Windows, Linux)
+- [ ] Platform-specific features justified if needed
+- [ ] UI follows platform conventions while maintaining core consistency
+
+### Nostr Protocol Integration
+- [ ] Data transmission uses Nostr protocol
+- [ ] NIP documentation planned for backup/restore processes
+- [ ] Relay selection and failover mechanisms designed
+
+### Non-Technical User Focus
+- [ ] UI designed for non-technical users
+- [ ] Complex concepts abstracted behind simple language
+- [ ] Error messages written in plain English
 
 ## Project Structure
 

@@ -49,10 +49,10 @@
 
 ## Phase 3.2: Tests First (TDD) ⚠️ MUST COMPLETE BEFORE 3.3
 **CRITICAL: These tests MUST be written and MUST FAIL before ANY implementation**
-- [ ] T004 [P] Contract test POST /api/users in tests/contract/test_users_post.py
-- [ ] T005 [P] Contract test GET /api/users/{id} in tests/contract/test_users_get.py
-- [ ] T006 [P] Integration test user registration in tests/integration/test_registration.py
-- [ ] T007 [P] Integration test auth flow in tests/integration/test_auth.py
+- [ ] T004 [P] Security test Shamir's Secret Sharing in tests/security/test_shamir.py
+- [ ] T005 [P] Contract test Nostr backup events in tests/contract/test_nostr_backup.py
+- [ ] T006 [P] Integration test cross-platform UI in tests/integration/test_cross_platform.dart
+- [ ] T007 [P] Screenshot test backup flow in tests/screenshot/test_backup_flow.dart
 
 ## Phase 3.3: Core Implementation (ONLY after tests are failing)
 - [ ] T008 [P] User model in src/models/user.py

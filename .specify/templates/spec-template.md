@@ -100,6 +100,13 @@ When creating this spec from a user prompt:
 - [ ] Scope is clearly bounded
 - [ ] Dependencies and assumptions identified
 
+### Keydex-Specific Requirements
+- [ ] Security requirements clearly defined for sensitive data handling
+- [ ] Cross-platform functionality specified for all 5 platforms
+- [ ] Nostr protocol integration requirements documented
+- [ ] User experience designed for non-technical users
+- [ ] Shamir's Secret Sharing workflow clearly described
+
 ---
 
 ## Execution Status
