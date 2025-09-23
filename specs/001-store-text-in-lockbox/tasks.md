@@ -55,45 +55,45 @@
 - [x] T009 [P] Integration test encryption/decryption flow in integration_test/encryption_test.dart
 
 ## Phase 3.3: Core Implementation (ONLY after tests are failing)
-- [ ] T010 [P] Lockbox model in lib/models/lockbox.dart
-- [ ] T011 [P] TextContent model in lib/models/text_content.dart
-- [ ] T012 [P] EncryptionKey model in lib/models/encryption_key.dart
-- [ ] T013 [P] NostrKeyPair model in lib/models/nostr_key_pair.dart
-- [ ] T014 [P] AuthService implementation in lib/services/auth_service.dart
-- [ ] T015 [P] EncryptionService implementation in lib/services/encryption_service.dart
-- [ ] T016 [P] LockboxService implementation in lib/services/lockbox_service.dart
-- [ ] T017 [P] StorageService implementation in lib/services/storage_service.dart
-- [ ] T018 [P] KeyService implementation in lib/services/key_service.dart
+- [x] T010 [P] Lockbox model in lib/models/lockbox.dart
+- [x] T011 [P] TextContent model in lib/models/text_content.dart
+- [x] T012 [P] EncryptionKey model in lib/models/encryption_key.dart
+- [x] T013 [P] NostrKeyPair model in lib/models/nostr_key_pair.dart
+- [x] T014 [P] AuthService implementation in lib/services/auth_service.dart
+- [x] T015 [P] EncryptionService implementation in lib/services/encryption_service.dart
+- [x] T016 [P] LockboxService implementation in lib/services/lockbox_service.dart
+- [x] T017 [P] StorageService implementation in lib/services/storage_service.dart
+- [x] T018 [P] KeyService implementation in lib/services/key_service.dart
 
 ## Phase 3.4: UI Implementation
-- [ ] T019 [P] Main app widget in lib/main.dart
-- [ ] T020 [P] Lockbox list screen in lib/screens/lockbox_list_screen.dart
-- [ ] T021 [P] Lockbox detail screen in lib/screens/lockbox_detail_screen.dart
-- [ ] T022 [P] Create lockbox screen in lib/screens/create_lockbox_screen.dart
-- [ ] T023 [P] Edit lockbox screen in lib/screens/edit_lockbox_screen.dart
-- [ ] T024 [P] Authentication screen in lib/screens/authentication_screen.dart
-- [ ] T025 [P] Settings screen in lib/screens/settings_screen.dart
-- [ ] T026 [P] Lockbox list widget in lib/widgets/lockbox_list_widget.dart
-- [ ] T027 [P] Lockbox card widget in lib/widgets/lockbox_card_widget.dart
-- [ ] T028 [P] Authentication widget in lib/widgets/authentication_widget.dart
+- [x] T019 [P] Main app widget in lib/main.dart
+- [x] T020 [P] Lockbox list screen in lib/screens/lockbox_list_screen.dart
+- [x] T021 [P] Lockbox detail screen in lib/screens/lockbox_detail_screen.dart
+- [x] T022 [P] Create lockbox screen in lib/screens/create_lockbox_screen.dart
+- [x] T023 [P] Edit lockbox screen in lib/screens/edit_lockbox_screen.dart
+- [x] T024 [P] Authentication screen in lib/screens/authentication_screen.dart
+- [x] T025 [P] Settings screen in lib/screens/settings_screen.dart
+- [x] T026 [P] Lockbox list widget in lib/widgets/lockbox_list_widget.dart
+- [x] T027 [P] Lockbox card widget in lib/widgets/lockbox_card_widget.dart
+- [x] T028 [P] Authentication widget in lib/widgets/authentication_widget.dart
 
 ## Phase 3.5: Integration
-- [ ] T029 Connect services to shared_preferences storage
-- [ ] T030 Implement biometric authentication with local_auth
-- [ ] T031 Implement NIP-44 encryption with NDK (Dart Nostr Development Kit)
-- [ ] T032 Add error handling and user-friendly messages
-- [ ] T033 Add input validation and size limits
-- [ ] T034 Implement navigation between screens
+- [x] T029 Connect services to shared_preferences storage
+- [x] T030 Implement biometric authentication with local_auth
+- [x] T031 Implement NIP-44 encryption with NDK (Dart Nostr Development Kit)
+- [x] T032 Add error handling and user-friendly messages
+- [x] T033 Add input validation and size limits
+- [x] T034 Implement navigation between screens
 
 ## Phase 3.6: Polish
-- [ ] T035 [P] Unit tests for models in test/unit/models_test.dart
-- [ ] T036 [P] Unit tests for services in test/unit/services_test.dart
-- [ ] T037 [P] Unit tests for widgets in test/unit/widgets_test.dart
-- [ ] T038 Performance tests (<200ms encryption/decryption)
-- [ ] T039 [P] Update README.md with setup instructions
-- [ ] T040 [P] Add error code documentation
-- [ ] T041 Remove code duplication and optimize
-- [ ] T042 Run quickstart.md validation scenarios
+- [x] T035 [P] Unit tests for models in test/unit/models_test.dart
+- [x] T036 [P] Unit tests for services in test/unit/services_test.dart
+- [x] T037 [P] Unit tests for widgets in test/unit/widgets_test.dart
+- [x] T038 Performance tests (<200ms encryption/decryption)
+- [x] T039 [P] Update README.md with setup instructions
+- [x] T040 [P] Add error code documentation
+- [x] T041 Remove code duplication and optimize
+- [x] T042 Run quickstart.md validation scenarios
 
 ## Dependencies
 - Tests (T004-T009) before implementation (T010-T018)
