@@ -1,0 +1,15 @@
+{
+    "dart.lineLength": 100,
+    "[dart]": {
+        "editor.rulers": [
+            100
+        ],
+        "editor.wordWrap": "wordWrapColumn",
+        "editor.wordWrapColumn": 100
+    },
+    "editor.rulers": [
+        100
+    ],
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 100
+}
