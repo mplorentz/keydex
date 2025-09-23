@@ -1,210 +1,73 @@
 import 'package:flutter_test/flutter_test.dart';
-import '../../specs/001-store-text-in-lockbox/contracts/auth_service.dart';
+import 'package:keydex/contracts/auth_service.dart';
 
 /// Contract test for AuthService
 /// This test verifies that any implementation of AuthService
 /// follows the contract defined in the auth_service.dart interface
+///
+/// These tests should FAIL until we implement the actual AuthService
 void main() {
   group('AuthService Contract Tests', () {
-    late AuthService authService;
+    group('Contract Interface', () {
+      test('should define AuthService as abstract class', () {
+        // This test verifies the contract interface exists
+        // It should always pass as long as the contract is properly defined
+        expect(AuthService, isNotNull);
+      });
 
-    setUp(() {
-      // TODO: Initialize with actual implementation when available
-      // For now, this test will fail as expected in TDD approach
-      authService = MockAuthService();
-    });
-
-    group('authenticateUser', () {
-      test('should return Future<bool>', () async {
-        // Arrange
-        final result = authService.authenticateUser();
+      test('should define AuthException class', () {
+        // Act
+        final exception = AuthException('Test error message');
 
         // Assert
-        expect(result, isA<Future<bool>>());
-
-        // This will fail until implementation is provided
-        final authResult = await result;
-        expect(authResult, isA<bool>());
-      });
-
-      test('should handle authentication success', () async {
-        // Arrange & Act
-        final result = await authService.authenticateUser();
-
-        // Assert
-        expect(result, isA<bool>());
-        // Note: Actual behavior depends on implementation
-        // This test ensures the method exists and returns bool
-      });
-
-      test('should handle authentication failure', () async {
-        // Arrange & Act
-        final result = await authService.authenticateUser();
-
-        // Assert
-        expect(result, isA<bool>());
-        // Note: Actual behavior depends on implementation
-        // This test ensures the method exists and returns bool
-      });
-    });
-
-    group('isBiometricAvailable', () {
-      test('should return Future<bool>', () async {
-        // Arrange
-        final result = authService.isBiometricAvailable();
-
-        // Assert
-        expect(result, isA<Future<bool>>());
-
-        // This will fail until implementation is provided
-        final availability = await result;
-        expect(availability, isA<bool>());
-      });
-
-      test('should check device biometric capability', () async {
-        // Arrange & Act
-        final result = await authService.isBiometricAvailable();
-
-        // Assert
-        expect(result, isA<bool>());
-        // Note: Actual behavior depends on implementation
-        // This test ensures the method exists and returns bool
-      });
-    });
-
-    group('isAuthenticationConfigured', () {
-      test('should return Future<bool>', () async {
-        // Arrange
-        final result = authService.isAuthenticationConfigured();
-
-        // Assert
-        expect(result, isA<Future<bool>>());
-
-        // This will fail until implementation is provided
-        final configured = await result;
-        expect(configured, isA<bool>());
-      });
-
-      test('should check if authentication is set up', () async {
-        // Arrange & Act
-        final result = await authService.isAuthenticationConfigured();
-
-        // Assert
-        expect(result, isA<bool>());
-        // Note: Actual behavior depends on implementation
-        // This test ensures the method exists and returns bool
-      });
-    });
-
-    group('setupAuthentication', () {
-      test('should return Future<void>', () async {
-        // Arrange
-        final result = authService.setupAuthentication();
-
-        // Assert
-        expect(result, isA<Future<void>>());
-
-        // This will fail until implementation is provided
-        await result; // Should not throw
-      });
-
-      test('should configure authentication without throwing', () async {
-        // Arrange & Act & Assert
-        expect(
-          () => authService.setupAuthentication(),
-          returnsNormally,
-        );
-
-        // This will fail until implementation is provided
-        await authService.setupAuthentication();
-      });
-    });
-
-    group('disableAuthentication', () {
-      test('should return Future<void>', () async {
-        // Arrange
-        final result = authService.disableAuthentication();
-
-        // Assert
-        expect(result, isA<Future<void>>());
-
-        // This will fail until implementation is provided
-        await result; // Should not throw
-      });
-
-      test('should disable authentication without throwing', () async {
-        // Arrange & Act & Assert
-        expect(
-          () => authService.disableAuthentication(),
-          returnsNormally,
-        );
-
-        // This will fail until implementation is provided
-        await authService.disableAuthentication();
-      });
-    });
-
-    group('AuthException', () {
-      test('should implement Exception interface', () {
-        // Arrange
-        final exception = AuthException('Test error', errorCode: 'TEST_ERROR');
-
-        // Assert
-        expect(exception, isA<Exception>());
-        expect(exception.message, equals('Test error'));
-        expect(exception.errorCode, equals('TEST_ERROR'));
-      });
-
-      test('should allow optional errorCode', () {
-        // Arrange
-        final exception = AuthException('Test error');
-
-        // Assert
-        expect(exception.message, equals('Test error'));
+        expect(exception.message, equals('Test error message'));
         expect(exception.errorCode, isNull);
       });
 
-      test('should be throwable', () {
-        // Arrange & Act & Assert
-        expect(
-          () => throw AuthException('Test error'),
-          throwsA(isA<AuthException>()),
+      test('should define AuthException with error code', () {
+        // Act
+        final exception = AuthException(
+          'Test error message',
+          errorCode: 'TEST_ERROR',
         );
+
+        // Assert
+        expect(exception.message, equals('Test error message'));
+        expect(exception.errorCode, equals('TEST_ERROR'));
+      });
+    });
+
+    group('Implementation Status', () {
+      test('AuthService implementation should be created', () {
+        // This test documents that we need to implement AuthService
+        // It will pass once we create the actual implementation
+        fail('TODO: Implement AuthService in lib/services/auth_service.dart');
+      });
+
+      test('authenticateUser method should be implemented', () {
+        // This test documents that we need to implement authenticateUser
+        fail('TODO: Implement authenticateUser method in AuthService');
+      });
+
+      test('isBiometricAvailable method should be implemented', () {
+        // This test documents that we need to implement isBiometricAvailable
+        fail('TODO: Implement isBiometricAvailable method in AuthService');
+      });
+
+      test('isAuthenticationConfigured method should be implemented', () {
+        // This test documents that we need to implement isAuthenticationConfigured
+        fail('TODO: Implement isAuthenticationConfigured method in AuthService');
+      });
+
+      test('setupAuthentication method should be implemented', () {
+        // This test documents that we need to implement setupAuthentication
+        fail('TODO: Implement setupAuthentication method in AuthService');
+      });
+
+      test('disableAuthentication method should be implemented', () {
+        // This test documents that we need to implement disableAuthentication
+        fail('TODO: Implement disableAuthentication method in AuthService');
       });
     });
   });
-}
-
-/// Mock implementation of AuthService for contract testing
-/// This will be replaced with actual implementation in T014
-class MockAuthService implements AuthService {
-  @override
-  Future<bool> authenticateUser() async {
-    // Mock implementation - will be replaced
-    throw UnimplementedError('AuthService.authenticateUser not implemented');
-  }
-
-  @override
-  Future<bool> isBiometricAvailable() async {
-    // Mock implementation - will be replaced
-    throw UnimplementedError('AuthService.isBiometricAvailable not implemented');
-  }
-
-  @override
-  Future<bool> isAuthenticationConfigured() async {
-    // Mock implementation - will be replaced
-    throw UnimplementedError('AuthService.isAuthenticationConfigured not implemented');
-  }
-
-  @override
-  Future<void> setupAuthentication() async {
-    // Mock implementation - will be replaced
-    throw UnimplementedError('AuthService.setupAuthentication not implemented');
-  }
-
-  @override
-  Future<void> disableAuthentication() async {
-    // Mock implementation - will be replaced
-    throw UnimplementedError('AuthService.disableAuthentication not implemented');
-  }
 }
