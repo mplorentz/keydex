@@ -1,0 +1,25 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Flutter Tests",
+            "type": "dart",
+            "request": "launch",
+            "program": "test/",
+            "args": [
+                "--reporter",
+                "expanded"
+            ]
+        },
+        {
+            "name": "AuthService Contract Tests",
+            "type": "dart",
+            "request": "launch",
+            "program": "test/contract/test_auth_service.dart",
+            "args": [
+                "--reporter",
+                "expanded"
+            ]
+        }
+    ]
+}

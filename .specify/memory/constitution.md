@@ -109,6 +109,7 @@ The app uses the Nostr protocol for all data transmission, ensuring decentralize
 
 ### Code Quality
 - All code follows established Flutter/Dart conventions
+- Test files MUST use the `*_test.dart` naming convention for IDE compatibility
 - Code reviews are required for all changes
 - Documentation is updated with every feature
 - Performance is measured and optimized

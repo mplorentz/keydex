@@ -43,16 +43,16 @@
 ## Phase 3.1: Setup
 - [x] T001 Create Flutter project structure with lib/, test/, integration_test/ directories
 - [x] T002 Initialize Flutter project with dependencies: ndk (Dart Nostr Development Kit), local_auth, shared_preferences
-- [ ] T003 [P] Configure linting and formatting tools (analysis_options.yaml, dart format)
+- [x] T003 [P] Configure linting and formatting tools (analysis_options.yaml, dart format)
 
 ## Phase 3.2: Tests First (TDD) ⚠️ MUST COMPLETE BEFORE 3.3
 **CRITICAL: These tests MUST be written and MUST FAIL before ANY implementation**
-- [ ] T004 [P] Contract test AuthService in test/contract/test_auth_service.dart
-- [ ] T005 [P] Contract test EncryptionService in test/contract/test_encryption_service.dart
-- [ ] T006 [P] Contract test LockboxService in test/contract/test_lockbox_service.dart
-- [ ] T007 [P] Integration test lockbox creation flow in integration_test/test_lockbox_creation.dart
-- [ ] T008 [P] Integration test authentication flow in integration_test/test_authentication.dart
-- [ ] T009 [P] Integration test encryption/decryption flow in integration_test/test_encryption.dart
+- [x] T004 [P] Contract test AuthService in test/contract/auth_service_test.dart
+- [ ] T005 [P] Contract test EncryptionService in test/contract/encryption_service_test.dart
+- [ ] T006 [P] Contract test LockboxService in test/contract/lockbox_service_test.dart
+- [ ] T007 [P] Integration test lockbox creation flow in integration_test/lockbox_creation_test.dart
+- [ ] T008 [P] Integration test authentication flow in integration_test/authentication_test.dart
+- [ ] T009 [P] Integration test encryption/decryption flow in integration_test/encryption_test.dart
 
 ## Phase 3.3: Core Implementation (ONLY after tests are failing)
 - [ ] T010 [P] Lockbox model in lib/models/lockbox.dart
@@ -86,9 +86,9 @@
 - [ ] T034 Implement navigation between screens
 
 ## Phase 3.6: Polish
-- [ ] T035 [P] Unit tests for models in test/unit/test_models.dart
-- [ ] T036 [P] Unit tests for services in test/unit/test_services.dart
-- [ ] T037 [P] Unit tests for widgets in test/unit/test_widgets.dart
+- [ ] T035 [P] Unit tests for models in test/unit/models_test.dart
+- [ ] T036 [P] Unit tests for services in test/unit/services_test.dart
+- [ ] T037 [P] Unit tests for widgets in test/unit/widgets_test.dart
 - [ ] T038 Performance tests (<200ms encryption/decryption)
 - [ ] T039 [P] Update README.md with setup instructions
 - [ ] T040 [P] Add error code documentation

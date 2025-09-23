@@ -49,10 +49,10 @@
 
 ## Phase 3.2: Tests First (TDD) ⚠️ MUST COMPLETE BEFORE 3.3
 **CRITICAL: These tests MUST be written and MUST FAIL before ANY implementation**
-- [ ] T004 [P] Security test Shamir's Secret Sharing in tests/security/test_shamir.py
-- [ ] T005 [P] Contract test Nostr backup events in tests/contract/test_nostr_backup.py
-- [ ] T006 [P] Integration test cross-platform UI in tests/integration/test_cross_platform.dart
-- [ ] T007 [P] Screenshot test backup flow in tests/screenshot/test_backup_flow.dart
+- [ ] T004 [P] Security test Shamir's Secret Sharing in tests/security/shamir_test.py
+- [ ] T005 [P] Contract test Nostr backup events in tests/contract/nostr_backup_test.py
+- [ ] T006 [P] Integration test cross-platform UI in tests/integration/cross_platform_test.dart
+- [ ] T007 [P] Screenshot test backup flow in tests/screenshot/backup_flow_test.dart
 
 ## Phase 3.3: Core Implementation (ONLY after tests are failing)
 - [ ] T008 [P] User model in src/models/user.py
