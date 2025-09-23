@@ -47,15 +47,20 @@
 
 ## Nostr Key Management
 
-**Decision**: Use dart_nostr package for key generation and management  
+**Decision**: Use NDK (Dart Nostr Development Kit) for key generation and management  
 **Rationale**:
-- Official Nostr implementation for Dart/Flutter
-- Handles key generation, signing, and encryption
-- Compatible with NIP-44 encryption standard
-- Well-tested and maintained
-- Integrates with Nostr ecosystem
+- Most comprehensive and actively maintained Nostr implementation for Dart/Flutter
+- Mobile-optimized with automatic relay discovery and intelligent caching
+- Handles key generation, signing, and encryption with extensive NIP support
+- Compatible with NIP-44 encryption standard and many other NIPs
+- Plugin architecture for custom databases, event verifiers, and signers
+- Well-tested, maintained, and production-ready
+- Integrates seamlessly with Nostr ecosystem
 
 **Alternatives considered**:
+- dart_nostr: Good but less advanced features and mobile optimization
+- nostr_dart: Basic functionality, limited NIP support
+- nostr (anasfik): Good scalability but lacks advanced features
 - Custom key management: Security risk, reinventing the wheel
 - External key storage: Complexity, security concerns
 - Hardcoded keys: Security vulnerability

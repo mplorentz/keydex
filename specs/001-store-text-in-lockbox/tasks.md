@@ -41,8 +41,8 @@
 - Paths shown below assume Flutter mobile app structure
 
 ## Phase 3.1: Setup
-- [ ] T001 Create Flutter project structure with lib/, test/, integration_test/ directories
-- [ ] T002 Initialize Flutter project with dependencies: dart_nostr, local_auth, shared_preferences
+- [x] T001 Create Flutter project structure with lib/, test/, integration_test/ directories
+- [ ] T002 Initialize Flutter project with dependencies: ndk (Dart Nostr Development Kit), local_auth, shared_preferences
 - [ ] T003 [P] Configure linting and formatting tools (analysis_options.yaml, dart format)
 
 ## Phase 3.2: Tests First (TDD) ⚠️ MUST COMPLETE BEFORE 3.3
@@ -80,7 +80,7 @@
 ## Phase 3.5: Integration
 - [ ] T029 Connect services to shared_preferences storage
 - [ ] T030 Implement biometric authentication with local_auth
-- [ ] T031 Implement NIP-44 encryption with dart_nostr
+- [ ] T031 Implement NIP-44 encryption with NDK (Dart Nostr Development Kit)
 - [ ] T032 Add error handling and user-friendly messages
 - [ ] T033 Add input validation and size limits
 - [ ] T034 Implement navigation between screens

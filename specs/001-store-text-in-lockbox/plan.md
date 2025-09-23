@@ -35,7 +35,7 @@ Users need to securely store sensitive text information in encrypted lockboxes u
 
 ## Technical Context
 **Language/Version**: Dart 3.0+ with Flutter 3.16+  
-**Primary Dependencies**: Flutter, dart_nostr, local_auth, shared_preferences  
+**Primary Dependencies**: Flutter, ndk (Dart Nostr Development Kit), local_auth, shared_preferences  
 **Storage**: Local device storage (shared_preferences) with encrypted data  
 **Testing**: Flutter test framework with integration_test  
 **Target Platform**: Cross-platform (iOS, Android, macOS, Windows, Linux)  
