@@ -66,16 +66,16 @@
 - [ ] T018 [P] KeyService implementation in lib/services/key_service.dart
 
 ## Phase 3.4: UI Implementation
-- [ ] T019 [P] Main app widget in lib/main.dart
-- [ ] T020 [P] Lockbox list screen in lib/screens/lockbox_list_screen.dart
-- [ ] T021 [P] Lockbox detail screen in lib/screens/lockbox_detail_screen.dart
-- [ ] T022 [P] Create lockbox screen in lib/screens/create_lockbox_screen.dart
-- [ ] T023 [P] Edit lockbox screen in lib/screens/edit_lockbox_screen.dart
-- [ ] T024 [P] Authentication screen in lib/screens/authentication_screen.dart
-- [ ] T025 [P] Settings screen in lib/screens/settings_screen.dart
-- [ ] T026 [P] Lockbox list widget in lib/widgets/lockbox_list_widget.dart
-- [ ] T027 [P] Lockbox card widget in lib/widgets/lockbox_card_widget.dart
-- [ ] T028 [P] Authentication widget in lib/widgets/authentication_widget.dart
+- [x] T019 [P] Main app widget in lib/main.dart
+- [x] T020 [P] Lockbox list screen in lib/screens/lockbox_list_screen.dart
+- [x] T021 [P] Lockbox detail screen in lib/screens/lockbox_detail_screen.dart
+- [x] T022 [P] Create lockbox screen in lib/screens/create_lockbox_screen.dart
+- [x] T023 [P] Edit lockbox screen in lib/screens/edit_lockbox_screen.dart
+- [x] T024 [P] Authentication screen in lib/screens/authentication_screen.dart
+- [x] T025 [P] Settings screen in lib/screens/settings_screen.dart
+- [x] T026 [P] Lockbox list widget in lib/widgets/lockbox_list_widget.dart
+- [x] T027 [P] Lockbox card widget in lib/widgets/lockbox_card_widget.dart
+- [x] T028 [P] Authentication widget in lib/widgets/authentication_widget.dart
 
 ## Phase 3.5: Integration
 - [ ] T029 Connect services to shared_preferences storage
