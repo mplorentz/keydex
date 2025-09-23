@@ -3,18 +3,40 @@ import 'package:flutter/material.dart';
 import 'src/app.dart';
 import 'src/settings/settings_controller.dart';
 import 'src/settings/settings_service.dart';
+import 'services/auth_service.dart';
+import 'services/encryption_service.dart';
+import 'services/lockbox_service.dart';
+import 'services/storage_service.dart';
+import 'services/key_service.dart';
 
 void main() async {
-  // Set up the SettingsController, which will glue user settings to multiple
-  // Flutter Widgets.
+  // Ensure Flutter widgets are initialized
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Set up service dependencies
+  final storageService = StorageService();
+  final encryptionService = EncryptionServiceImpl();
+  final authService = AuthServiceImpl();
+  final keyService = KeyService(encryptionService);
+  final lockboxService = LockboxServiceImpl(
+    storageService,
+    encryptionService,
+    authService,
+  );
+
+  // Set up the SettingsController
   final settingsController = SettingsController(SettingsService());
 
   // Load the user's preferred theme while the splash screen is displayed.
-  // This prevents a sudden theme change when the app is first displayed.
   await settingsController.loadSettings();
 
-  // Run the app and pass in the SettingsController. The app listens to the
-  // SettingsController for changes, then passes it further down to the
-  // SettingsView.
-  runApp(MyApp(settingsController: settingsController));
+  // Run the app and pass in the SettingsController and services
+  runApp(KeydexApp(
+    settingsController: settingsController,
+    lockboxService: lockboxService,
+    authService: authService,
+    encryptionService: encryptionService,
+    keyService: keyService,
+    storageService: storageService,
+  ));
 }
