@@ -104,7 +104,7 @@ void main() {
       // This test verifies handling of large content
 
       // Arrange
-      const largeContent = 'A' * 100000; // 100KB of content
+      final largeContent = 'A' * 100000; // 100KB of content
       const lockboxName = 'Large Content Lockbox';
 
       // Act & Assert

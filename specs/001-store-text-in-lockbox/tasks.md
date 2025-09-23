@@ -48,11 +48,11 @@
 ## Phase 3.2: Tests First (TDD) ⚠️ MUST COMPLETE BEFORE 3.3
 **CRITICAL: These tests MUST be written and MUST FAIL before ANY implementation**
 - [x] T004 [P] Contract test AuthService in test/contract/auth_service_test.dart
-- [ ] T005 [P] Contract test EncryptionService in test/contract/encryption_service_test.dart
-- [ ] T006 [P] Contract test LockboxService in test/contract/lockbox_service_test.dart
-- [ ] T007 [P] Integration test lockbox creation flow in integration_test/lockbox_creation_test.dart
-- [ ] T008 [P] Integration test authentication flow in integration_test/authentication_test.dart
-- [ ] T009 [P] Integration test encryption/decryption flow in integration_test/encryption_test.dart
+- [x] T005 [P] Contract test EncryptionService in test/contract/encryption_service_test.dart
+- [x] T006 [P] Contract test LockboxService in test/contract/lockbox_service_test.dart
+- [x] T007 [P] Integration test lockbox creation flow in integration_test/lockbox_creation_test.dart
+- [x] T008 [P] Integration test authentication flow in integration_test/authentication_test.dart
+- [x] T009 [P] Integration test encryption/decryption flow in integration_test/encryption_test.dart
 
 ## Phase 3.3: Core Implementation (ONLY after tests are failing)
 - [ ] T010 [P] Lockbox model in lib/models/lockbox.dart
