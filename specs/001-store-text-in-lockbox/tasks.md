@@ -42,7 +42,7 @@
 
 ## Phase 3.1: Setup
 - [x] T001 Create Flutter project structure with lib/, test/, integration_test/ directories
-- [ ] T002 Initialize Flutter project with dependencies: ndk (Dart Nostr Development Kit), local_auth, shared_preferences
+- [x] T002 Initialize Flutter project with dependencies: ndk (Dart Nostr Development Kit), local_auth, shared_preferences
 - [ ] T003 [P] Configure linting and formatting tools (analysis_options.yaml, dart format)
 
 ## Phase 3.2: Tests First (TDD) ⚠️ MUST COMPLETE BEFORE 3.3
