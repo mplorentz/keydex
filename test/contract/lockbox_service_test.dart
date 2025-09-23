@@ -21,7 +21,6 @@ void main() {
           id: 'test-id',
           name: 'Test Lockbox',
           createdAt: DateTime(2024, 1, 1),
-          updatedAt: DateTime(2024, 1, 2),
           size: 1024,
         );
 
@@ -29,7 +28,6 @@ void main() {
         expect(metadata.id, equals('test-id'));
         expect(metadata.name, equals('Test Lockbox'));
         expect(metadata.createdAt, equals(DateTime(2024, 1, 1)));
-        expect(metadata.updatedAt, equals(DateTime(2024, 1, 2)));
         expect(metadata.size, equals(1024));
       });
 
@@ -40,7 +38,6 @@ void main() {
           name: 'Test Lockbox',
           content: 'Test content',
           createdAt: DateTime(2024, 1, 1),
-          updatedAt: DateTime(2024, 1, 2),
         );
 
         // Assert
@@ -48,7 +45,6 @@ void main() {
         expect(content.name, equals('Test Lockbox'));
         expect(content.content, equals('Test content'));
         expect(content.createdAt, equals(DateTime(2024, 1, 1)));
-        expect(content.updatedAt, equals(DateTime(2024, 1, 2)));
       });
 
       test('should define LockboxException class', () {
@@ -123,14 +119,12 @@ void main() {
           id: 'same-id',
           name: 'Same Name',
           createdAt: DateTime(2024, 1, 1),
-          updatedAt: DateTime(2024, 1, 2),
           size: 1024,
         );
         final metadata2 = (
           id: 'same-id',
           name: 'Same Name',
           createdAt: DateTime(2024, 1, 1),
-          updatedAt: DateTime(2024, 1, 2),
           size: 1024,
         );
 
@@ -145,14 +139,12 @@ void main() {
           name: 'Same Name',
           content: 'Same Content',
           createdAt: DateTime(2024, 1, 1),
-          updatedAt: DateTime(2024, 1, 2),
         );
         final content2 = (
           id: 'same-id',
           name: 'Same Name',
           content: 'Same Content',
           createdAt: DateTime(2024, 1, 1),
-          updatedAt: DateTime(2024, 1, 2),
         );
 
         // Assert

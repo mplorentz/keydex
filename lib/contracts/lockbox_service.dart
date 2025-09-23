@@ -42,7 +42,6 @@ typedef LockboxMetadata = ({
   String id,
   String name,
   DateTime createdAt,
-  DateTime updatedAt,
   int size,
 });
 
@@ -52,7 +51,6 @@ typedef LockboxContent = ({
   String name,
   String content,
   DateTime createdAt,
-  DateTime updatedAt,
 });
 
 class LockboxException implements Exception {

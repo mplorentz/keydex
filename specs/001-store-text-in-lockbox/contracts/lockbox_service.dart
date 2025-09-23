@@ -37,37 +37,21 @@ abstract class LockboxService {
   Future<bool> authenticateUser();
 }
 
-class LockboxMetadata {
-  final String id;
-  final String name;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-  final int size;
+/// Lockbox metadata record - immutable data container
+typedef LockboxMetadata = ({
+  String id,
+  String name,
+  DateTime createdAt,
+  int size,
+});
 
-  LockboxMetadata({
-    required this.id,
-    required this.name,
-    required this.createdAt,
-    required this.updatedAt,
-    required this.size,
-  });
-}
-
-class LockboxContent {
-  final String id;
-  final String name;
-  final String content;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-
-  LockboxContent({
-    required this.id,
-    required this.name,
-    required this.content,
-    required this.createdAt,
-    required this.updatedAt,
-  });
-}
+/// Lockbox content record - immutable data container
+typedef LockboxContent = ({
+  String id,
+  String name,
+  String content,
+  DateTime createdAt,
+});
 
 class LockboxException implements Exception {
   final String message;

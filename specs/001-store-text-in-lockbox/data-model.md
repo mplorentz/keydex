@@ -2,22 +2,31 @@
 
 ## Entities
 
-### Lockbox
-**Purpose**: Represents an encrypted container for storing sensitive text content
+### LockboxMetadata
+**Purpose**: Represents metadata for an encrypted container (immutable record)
 
 **Fields**:
 - `id`: String (UUID) - Unique identifier for the lockbox
 - `name`: String - User-provided name for identification (max 100 chars)
-- `encryptedContent`: String - Base64-encoded encrypted text content
 - `createdAt`: DateTime - When the lockbox was created
-- `updatedAt`: DateTime - When the lockbox was last modified
 - `size`: int - Character count of original text (for validation)
 
 **Validation Rules**:
 - `name`: Required, non-empty, max 100 characters
-- `encryptedContent`: Required, valid base64 string
 - `size`: Must be <= 4000 characters
-- `createdAt`: Must be <= `updatedAt`
+
+### LockboxContent
+**Purpose**: Represents the decrypted content of a lockbox (immutable record)
+
+**Fields**:
+- `id`: String (UUID) - Unique identifier for the lockbox
+- `name`: String - User-provided name for identification (max 100 chars)
+- `content`: String - The decrypted text content (max 4000 chars)
+- `createdAt`: DateTime - When the lockbox was created
+
+**Validation Rules**:
+- `content`: Max 4000 characters
+- `name`: Required, non-empty, max 100 characters
 
 **State Transitions**:
 - Created → Active (when first saved)
@@ -35,30 +44,33 @@
 - `content`: Max 4000 characters
 - `lockboxId`: Must reference existing lockbox
 
-### EncryptionKey
-**Purpose**: Represents the Nostr key used for encryption/decryption
+### EncryptionKey (NDK KeyPair)
+**Purpose**: Represents the Nostr key used for encryption/decryption using NDK's KeyPair
 
-**Fields**:
-- `privateKey`: String - Nostr private key (hex format)
-- `publicKey`: String - Nostr public key (hex format)
-- `createdAt`: DateTime - When key was generated
+**Fields** (from NDK KeyPair):
+- `privateKey`: String? - Nostr private key (32-bytes hex-encoded string)
+- `publicKey`: String - Nostr public key (32-bytes hex-encoded string)
+- `privateKeyBech32`: String? - Human readable private key (nsec format)
+- `publicKeyBech32`: String? - Human readable public key (npub format)
 
 **Validation Rules**:
-- `privateKey`: Valid hex string, 64 characters
+- `privateKey`: Valid hex string, 64 characters (when present)
 - `publicKey`: Valid hex string, 64 characters
 - Keys must be cryptographically valid pair
+- NDK KeyPair handles equality comparison by publicKey only
 
 ## Relationships
 
-- **Lockbox** 1:1 **TextContent** (encrypted version of content)
-- **Lockbox** 1:1 **EncryptionKey** (uses key for encryption/decryption)
-- **User** 1:N **Lockbox** (user can have multiple lockboxes)
+- **LockboxMetadata** 1:1 **LockboxContent** (metadata and content are separate records)
+- **LockboxMetadata** 1:1 **EncryptionKey** (uses NDK KeyPair for encryption/decryption)
+- **User** 1:N **LockboxMetadata** (user can have multiple lockboxes)
 
 ## Storage Strategy
 
 **Local Storage** (shared_preferences):
-- `lockboxes`: JSON array of Lockbox objects
-- `encryption_key`: Single EncryptionKey object
+- `lockboxes`: JSON array of LockboxMetadata objects
+- `lockbox_contents`: JSON object mapping lockbox IDs to encrypted content strings
+- `encryption_key`: Single NDK KeyPair object
 - `user_preferences`: App settings and preferences
 
 **Encryption Flow**:
