@@ -55,15 +55,15 @@
 - [x] T009 [P] Integration test encryption/decryption flow in integration_test/encryption_test.dart
 
 ## Phase 3.3: Core Implementation (ONLY after tests are failing)
-- [ ] T010 [P] Lockbox model in lib/models/lockbox.dart
-- [ ] T011 [P] TextContent model in lib/models/text_content.dart
-- [ ] T012 [P] EncryptionKey model in lib/models/encryption_key.dart
-- [ ] T013 [P] NostrKeyPair model in lib/models/nostr_key_pair.dart
-- [ ] T014 [P] AuthService implementation in lib/services/auth_service.dart
-- [ ] T015 [P] EncryptionService implementation in lib/services/encryption_service.dart
-- [ ] T016 [P] LockboxService implementation in lib/services/lockbox_service.dart
-- [ ] T017 [P] StorageService implementation in lib/services/storage_service.dart
-- [ ] T018 [P] KeyService implementation in lib/services/key_service.dart
+- [x] T010 [P] Lockbox model in lib/models/lockbox.dart
+- [x] T011 [P] TextContent model in lib/models/text_content.dart
+- [x] T012 [P] EncryptionKey model in lib/models/encryption_key.dart
+- [x] T013 [P] NostrKeyPair model in lib/models/nostr_key_pair.dart
+- [x] T014 [P] AuthService implementation in lib/services/auth_service.dart
+- [x] T015 [P] EncryptionService implementation in lib/services/encryption_service.dart
+- [x] T016 [P] LockboxService implementation in lib/services/lockbox_service.dart
+- [x] T017 [P] StorageService implementation in lib/services/storage_service.dart
+- [x] T018 [P] KeyService implementation in lib/services/key_service.dart
 
 ## Phase 3.4: UI Implementation
 - [ ] T019 [P] Main app widget in lib/main.dart
