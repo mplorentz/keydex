@@ -2,33 +2,28 @@
 // Handles user authentication using biometric or password authentication
 
 import 'package:local_auth/local_auth.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../contracts/auth_service.dart';
+import 'storage_service.dart';
 
-/// Implementation of AuthService using local_auth and shared_preferences
+/// Implementation of AuthService using local_auth and StorageService
 class AuthServiceImpl implements AuthService {
-  AuthServiceImpl({LocalAuthentication? localAuth, SharedPreferences? prefs})
-      : _localAuth = localAuth ?? LocalAuthentication(),
-        _prefs = prefs;
+  AuthServiceImpl({
+    LocalAuthentication? localAuth,
+    required StorageService storageService,
+  })  : _localAuth = localAuth ?? LocalAuthentication(),
+        _storageService = storageService;
 
   final LocalAuthentication _localAuth;
-  SharedPreferences? _prefs;
+  final StorageService _storageService;
 
   static const String _authConfiguredKey = 'auth_configured';
   static const String _authDisabledKey = 'auth_disabled';
 
-  /// Gets shared preferences instance
-  Future<SharedPreferences> get _preferences async {
-    return _prefs ??= await SharedPreferences.getInstance();
-  }
-
   @override
   Future<bool> authenticateUser() async {
     try {
-      final prefs = await _preferences;
-      
       // Check if authentication is disabled
-      final isDisabled = prefs.getBool(_authDisabledKey) ?? false;
+      final isDisabled = await _storageService.getBool(_authDisabledKey) ?? false;
       if (isDisabled) {
         return true; // Skip authentication if disabled
       }
@@ -92,8 +87,7 @@ class AuthServiceImpl implements AuthService {
   @override
   Future<bool> isAuthenticationConfigured() async {
     try {
-      final prefs = await _preferences;
-      return prefs.getBool(_authConfiguredKey) ?? false;
+      return await _storageService.getBool(_authConfiguredKey) ?? false;
     } catch (e) {
       return false;
     }
@@ -128,9 +122,8 @@ class AuthServiceImpl implements AuthService {
       }
 
       // Mark authentication as configured
-      final prefs = await _preferences;
-      await prefs.setBool(_authConfiguredKey, true);
-      await prefs.setBool(_authDisabledKey, false);
+      await _storageService.setBool(_authConfiguredKey, true);
+      await _storageService.setBool(_authDisabledKey, false);
     } catch (e) {
       if (e is AuthException) rethrow;
       throw AuthException(
@@ -143,8 +136,7 @@ class AuthServiceImpl implements AuthService {
   @override
   Future<void> disableAuthentication() async {
     try {
-      final prefs = await _preferences;
-      await prefs.setBool(_authDisabledKey, true);
+      await _storageService.setBool(_authDisabledKey, true);
     } catch (e) {
       throw AuthException(
         'Failed to disable authentication: ${e.toString()}',
@@ -156,8 +148,7 @@ class AuthServiceImpl implements AuthService {
   /// Enables authentication (removes disabled flag)
   Future<void> enableAuthentication() async {
     try {
-      final prefs = await _preferences;
-      await prefs.setBool(_authDisabledKey, false);
+      await _storageService.setBool(_authDisabledKey, false);
     } catch (e) {
       throw AuthException(
         'Failed to enable authentication: ${e.toString()}',
@@ -169,9 +160,8 @@ class AuthServiceImpl implements AuthService {
   /// Resets all authentication settings
   Future<void> resetAuthentication() async {
     try {
-      final prefs = await _preferences;
-      await prefs.remove(_authConfiguredKey);
-      await prefs.remove(_authDisabledKey);
+      await _storageService.remove(_authConfiguredKey);
+      await _storageService.remove(_authDisabledKey);
     } catch (e) {
       throw AuthException(
         'Failed to reset authentication: ${e.toString()}',

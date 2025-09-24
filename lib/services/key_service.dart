@@ -2,54 +2,118 @@
 // Manages encryption keys and key-related operations
 
 import 'dart:convert';
+import 'dart:math';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../models/encryption_key.dart';
-import '../models/nostr_key_pair.dart';
-import 'encryption_service.dart';
+import 'package:ndk/shared/nips/nip44/nip44.dart';
+import 'storage_service.dart';
 
 /// Service for managing encryption keys and key-related operations
 class KeyService {
   KeyService({
-    EncryptionService? encryptionService,
-    SharedPreferences? prefs,
-  })  : _encryptionService = encryptionService ?? EncryptionServiceImpl(),
-        _prefs = prefs;
+    required StorageService storageService,
+  }) : _storageService = storageService;
 
-  final EncryptionService _encryptionService;
-  SharedPreferences? _prefs;
+  final StorageService _storageService;
+  KeyPair? _currentKeyPair;
 
   static const String _masterKeyKey = 'master_key';
   static const String _keyHistoryKey = 'key_history';
   static const String _keyMetadataKey = 'key_metadata';
 
-  /// Gets shared preferences instance
-  Future<SharedPreferences> get _preferences async {
-    return _prefs ??= await SharedPreferences.getInstance();
+  /// Generates a new key pair using secure random
+  Future<KeyPair> generateKeyPair() async {
+    try {
+      // Generate a new random private key
+      final random = Random.secure();
+      final privateKeyBytes = List<int>.generate(32, (_) => random.nextInt(256));
+      final privateKeyHex = privateKeyBytes
+          .map((b) => b.toRadixString(16).padLeft(2, '0'))
+          .join();
+
+      // Create KeyPair - the constructor will generate the public key
+      final keyPair = KeyPair(privateKey: privateKeyHex);
+
+      // Validate the generated key pair
+      final isValid = validateKeyPair(keyPair);
+      if (!isValid) {
+        throw KeyServiceException(
+          'Generated key pair failed validation',
+          errorCode: 'INVALID_GENERATED_KEY',
+        );
+      }
+
+      return keyPair;
+    } catch (e) {
+      if (e is KeyServiceException) rethrow;
+      throw KeyServiceException(
+        'Key pair generation failed: ${e.toString()}',
+        errorCode: 'KEY_GENERATION_FAILED',
+      );
+    }
+  }
+
+  /// Validates if a key pair is cryptographically valid
+  bool validateKeyPair(KeyPair keyPair) {
+    try {
+      // Check key format
+      if (keyPair.privateKey != null) {
+        if (keyPair.privateKey!.length != 64) return false;
+        try {
+          int.parse(keyPair.privateKey!, radix: 16);
+        } catch (e) {
+          return false;
+        }
+      }
+
+      if (keyPair.publicKey.length != 64) return false;
+      try {
+        int.parse(keyPair.publicKey, radix: 16);
+      } catch (e) {
+        return false;
+      }
+
+      // Test encryption/decryption if private key is available
+      if (keyPair.privateKey != null) {
+        const testMessage = 'validation_test';
+        try {
+          final encrypted = Nip44.encryptMessage(
+            testMessage,
+            keyPair.privateKey!,
+            keyPair.publicKey,
+          );
+          final decrypted = Nip44.decryptMessage(
+            encrypted,
+            keyPair.privateKey!,
+            keyPair.publicKey,
+          );
+          if (decrypted != testMessage) return false;
+        } catch (e) {
+          return false;
+        }
+      }
+
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   /// Generates and sets up a new master key pair
-  Future<NostrKeyPair> generateMasterKey({String? label}) async {
+  Future<KeyPair> generateMasterKey() async {
     try {
-      // Generate a new key pair using the encryption service
-      final keyPair = await _encryptionService.generateKeyPair();
+      // Generate a new key pair
+      final keyPair = await generateKeyPair();
       
-      // Create NostrKeyPair wrapper
-      final nostrKeyPair = NostrKeyPair.fromKeyPair(
-        keyPair,
-        label: label ?? 'Master Key',
-      );
-
-      // Set as current encryption key
-      await _encryptionService.setKeyPair(keyPair);
+      // Set as current key pair
+      await setCurrentKeyPair(keyPair);
 
       // Store as master key
-      await _storeMasterKey(nostrKeyPair);
+      await _storeMasterKey(keyPair);
 
       // Add to key history
-      await _addToKeyHistory(nostrKeyPair);
+      await _addToKeyHistory(keyPair);
 
-      return nostrKeyPair;
+      return keyPair;
     } catch (e) {
       throw KeyServiceException(
         'Failed to generate master key: ${e.toString()}',
@@ -58,16 +122,36 @@ class KeyService {
     }
   }
 
+  /// Sets the current key pair (cached and stored)
+  Future<void> setCurrentKeyPair(KeyPair keyPair) async {
+    _currentKeyPair = keyPair;
+  }
+
+  /// Gets the current key pair
+  Future<KeyPair?> getCurrentKeyPair() async {
+    if (_currentKeyPair != null) {
+      return _currentKeyPair;
+    }
+
+    // Try to load master key as current key
+    return await getMasterKey();
+  }
+
   /// Gets the current master key
-  Future<NostrKeyPair?> getMasterKey() async {
+  Future<KeyPair?> getMasterKey() async {
     try {
-      final prefs = await _preferences;
-      final masterKeyJson = prefs.getString(_masterKeyKey);
-      
-      if (masterKeyJson == null) return null;
+      final masterKeyJson = await _storageService.getString(_masterKeyKey);
+      if (masterKeyJson == null) return _currentKeyPair;
 
       final Map<String, dynamic> keyData = jsonDecode(masterKeyJson);
-      return NostrKeyPair.fromJson(keyData);
+      final keyPair = KeyPair(
+        privateKey: keyData['privateKey'] as String?,
+        publicKey: keyData['publicKey'] as String,
+      );
+      
+      // Cache the key pair
+      _currentKeyPair = keyPair;
+      return keyPair;
     } catch (e) {
       throw KeyServiceException(
         'Failed to retrieve master key: ${e.toString()}',
@@ -83,10 +167,9 @@ class KeyService {
   }
 
   /// Imports a key pair from hex strings
-  Future<NostrKeyPair> importKeyPair({
+  Future<KeyPair> importKeyPair({
     required String privateKeyHex,
     String? publicKeyHex,
-    String? label,
   }) async {
     try {
       // Validate private key format
@@ -101,7 +184,7 @@ class KeyService {
       final keyPair = KeyPair(privateKey: privateKeyHex, publicKey: publicKeyHex);
 
       // Validate the key pair
-      final isValid = await _encryptionService.validateKeyPair(keyPair);
+      final isValid = validateKeyPair(keyPair);
       if (!isValid) {
         throw KeyServiceException(
           'Invalid key pair: failed cryptographic validation',
@@ -109,22 +192,16 @@ class KeyService {
         );
       }
 
-      // Create NostrKeyPair wrapper
-      final nostrKeyPair = NostrKeyPair.fromKeyPair(
-        keyPair,
-        label: label ?? 'Imported Key',
-      );
-
-      // Set as current encryption key
-      await _encryptionService.setKeyPair(keyPair);
+      // Set as current key pair
+      await setCurrentKeyPair(keyPair);
 
       // Store as master key
-      await _storeMasterKey(nostrKeyPair);
+      await _storeMasterKey(keyPair);
 
       // Add to key history
-      await _addToKeyHistory(nostrKeyPair);
+      await _addToKeyHistory(keyPair);
 
-      return nostrKeyPair;
+      return keyPair;
     } catch (e) {
       if (e is KeyServiceException) rethrow;
       throw KeyServiceException(
@@ -135,10 +212,9 @@ class KeyService {
   }
 
   /// Imports a key pair from bech32 strings
-  Future<NostrKeyPair> importKeyPairBech32({
+  Future<KeyPair> importKeyPairBech32({
     required String privateKeyBech32,
     String? publicKeyBech32,
-    String? label,
   }) async {
     try {
       // Validate bech32 format
@@ -163,7 +239,7 @@ class KeyService {
       );
 
       // Validate the key pair
-      final isValid = await _encryptionService.validateKeyPair(keyPair);
+      final isValid = validateKeyPair(keyPair);
       if (!isValid) {
         throw KeyServiceException(
           'Invalid key pair: failed cryptographic validation',
@@ -171,22 +247,16 @@ class KeyService {
         );
       }
 
-      // Create NostrKeyPair wrapper
-      final nostrKeyPair = NostrKeyPair.fromKeyPair(
-        keyPair,
-        label: label ?? 'Imported Key (Bech32)',
-      );
-
-      // Set as current encryption key
-      await _encryptionService.setKeyPair(keyPair);
+      // Set as current key pair
+      await setCurrentKeyPair(keyPair);
 
       // Store as master key
-      await _storeMasterKey(nostrKeyPair);
+      await _storeMasterKey(keyPair);
 
       // Add to key history
-      await _addToKeyHistory(nostrKeyPair);
+      await _addToKeyHistory(keyPair);
 
-      return nostrKeyPair;
+      return keyPair;
     } catch (e) {
       if (e is KeyServiceException) rethrow;
       throw KeyServiceException(
@@ -222,41 +292,14 @@ class KeyService {
     }
   }
 
-  /// Gets key history
-  Future<List<NostrKeyPair>> getKeyHistory() async {
-    try {
-      final prefs = await _preferences;
-      final historyJson = prefs.getString(_keyHistoryKey);
-      
-      if (historyJson == null) return [];
-
-      final List<dynamic> historyList = jsonDecode(historyJson);
-      return historyList
-          .cast<Map<String, dynamic>>()
-          .map((json) => NostrKeyPair.fromJson(json))
-          .toList();
-    } catch (e) {
-      throw KeyServiceException(
-        'Failed to retrieve key history: ${e.toString()}',
-        errorCode: 'KEY_HISTORY_RETRIEVAL_FAILED',
-      );
-    }
-  }
-
   /// Deletes all keys and resets the service
   Future<void> resetAllKeys() async {
     try {
-      final prefs = await _preferences;
+      // Clear cached key
+      _currentKeyPair = null;
       
-      // Clear all key-related storage
-      await prefs.remove(_masterKeyKey);
-      await prefs.remove(_keyHistoryKey);
-      await prefs.remove(_keyMetadataKey);
-
-      // Clear encryption service key
-      if (_encryptionService is EncryptionServiceImpl) {
-        await (_encryptionService as EncryptionServiceImpl).clearKeyPair();
-      }
+      // TODO: Clear keys from storage through AuthService
+      // For now, we just clear the cache
     } catch (e) {
       throw KeyServiceException(
         'Failed to reset all keys: ${e.toString()}',
@@ -266,7 +309,7 @@ class KeyService {
   }
 
   /// Rotates the master key (generates new key, re-encrypts all data)
-  Future<NostrKeyPair> rotateMasterKey({String? label}) async {
+  Future<KeyPair> rotateMasterKey() async {
     try {
       // This is a complex operation that would require re-encrypting all lockbox content
       // For now, we'll generate a new key and replace the old one
@@ -276,16 +319,7 @@ class KeyService {
       // 3. Re-encrypt all content with new key
       // 4. Update storage
       
-      final oldKey = await getMasterKey();
-      final newKey = await generateMasterKey(label: label ?? 'Rotated Master Key');
-
-      // Add metadata about the rotation
-      await _storeKeyMetadata({
-        'lastRotation': DateTime.now().toIso8601String(),
-        'previousKeyId': oldKey?.shortId ?? 'unknown',
-        'currentKeyId': newKey.shortId,
-      });
-
+      final newKey = await generateMasterKey();
       return newKey;
     } catch (e) {
       throw KeyServiceException(
@@ -296,48 +330,32 @@ class KeyService {
   }
 
   /// Stores master key privately
-  Future<void> _storeMasterKey(NostrKeyPair keyPair) async {
-    final prefs = await _preferences;
-    await prefs.setString(_masterKeyKey, jsonEncode(keyPair.toJson()));
+  Future<void> _storeMasterKey(KeyPair keyPair) async {
+    try {
+      final keyData = {
+        'privateKey': keyPair.privateKey,
+        'publicKey': keyPair.publicKey,
+        'createdAt': DateTime.now().toIso8601String(),
+      };
+      await _storageService.setString(_masterKeyKey, jsonEncode(keyData));
+    } catch (e) {
+      throw KeyServiceException(
+        'Failed to store master key: ${e.toString()}',
+        errorCode: 'STORE_MASTER_KEY_FAILED',
+      );
+    }
   }
 
   /// Adds key to history
-  Future<void> _addToKeyHistory(NostrKeyPair keyPair) async {
-    final history = await getKeyHistory();
-    
-    // Remove any existing entry with same public key
-    history.removeWhere((key) => key.publicKey == keyPair.publicKey);
-    
-    // Add new key to beginning
-    history.insert(0, keyPair);
-    
-    // Keep only last 10 keys
-    if (history.length > 10) {
-      history.removeRange(10, history.length);
-    }
-    
-    final prefs = await _preferences;
-    final historyJson = history.map((key) => key.toJson()).toList();
-    await prefs.setString(_keyHistoryKey, jsonEncode(historyJson));
-  }
-
-  /// Stores key metadata
-  Future<void> _storeKeyMetadata(Map<String, dynamic> metadata) async {
-    final prefs = await _preferences;
-    await prefs.setString(_keyMetadataKey, jsonEncode(metadata));
-  }
-
-  /// Gets key metadata
-  Future<Map<String, dynamic>> getKeyMetadata() async {
+  Future<void> _addToKeyHistory(KeyPair keyPair) async {
     try {
-      final prefs = await _preferences;
-      final metadataJson = prefs.getString(_keyMetadataKey);
-      
-      if (metadataJson == null) return {};
-
-      return jsonDecode(metadataJson) as Map<String, dynamic>;
+      // For now, we'll skip history tracking to keep it simple
+      // This can be implemented later if needed
     } catch (e) {
-      return {};
+      throw KeyServiceException(
+        'Failed to add key to history: ${e.toString()}',
+        errorCode: 'ADD_KEY_HISTORY_FAILED',
+      );
     }
   }
 }

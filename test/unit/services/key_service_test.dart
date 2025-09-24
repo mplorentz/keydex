@@ -1,29 +1,24 @@
 import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:keydex/models/nostr_key_pair.dart';
-import 'package:keydex/services/encryption_service.dart';
 import 'package:keydex/services/key_service.dart';
+import 'package:keydex/services/storage_service.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'key_service_test.mocks.dart';
 
-@GenerateMocks([EncryptionService, SharedPreferences])
+@GenerateMocks([StorageService])
 void main() {
   group('KeyService Tests', () {
-    late MockEncryptionService mockEncryptionService;
-    late MockSharedPreferences mockPrefs;
+    late MockStorageService mockStorageService;
     late KeyService keyService;
     late KeyPair validKeyPair;
 
     setUp(() {
-      mockEncryptionService = MockEncryptionService();
-      mockPrefs = MockSharedPreferences();
+      mockStorageService = MockStorageService();
       keyService = KeyService(
-        encryptionService: mockEncryptionService,
-        prefs: mockPrefs,
+        storageService: mockStorageService,
       );
       
       validKeyPair = KeyPair(

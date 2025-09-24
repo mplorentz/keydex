@@ -1,5 +1,5 @@
 // StorageService Implementation
-// Handles local storage operations using shared_preferences
+// Central storage service - only this service should talk to SharedPreferences
 
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -237,6 +237,73 @@ class StorageService {
       throw StorageException(
         'Failed to get storage statistics: ${e.toString()}',
         errorCode: 'GET_STATS_FAILED',
+      );
+    }
+  }
+
+  // Generic storage methods for other services to use
+
+  /// Generic method to store a string value
+  Future<void> setString(String key, String value) async {
+    try {
+      final prefs = await _preferences;
+      await prefs.setString(key, value);
+    } catch (e) {
+      throw StorageException(
+        'Failed to store string for key $key: ${e.toString()}',
+        errorCode: 'SET_STRING_FAILED',
+      );
+    }
+  }
+
+  /// Generic method to retrieve a string value
+  Future<String?> getString(String key) async {
+    try {
+      final prefs = await _preferences;
+      return prefs.getString(key);
+    } catch (e) {
+      throw StorageException(
+        'Failed to retrieve string for key $key: ${e.toString()}',
+        errorCode: 'GET_STRING_FAILED',
+      );
+    }
+  }
+
+  /// Generic method to store a boolean value
+  Future<void> setBool(String key, bool value) async {
+    try {
+      final prefs = await _preferences;
+      await prefs.setBool(key, value);
+    } catch (e) {
+      throw StorageException(
+        'Failed to store bool for key $key: ${e.toString()}',
+        errorCode: 'SET_BOOL_FAILED',
+      );
+    }
+  }
+
+  /// Generic method to retrieve a boolean value
+  Future<bool?> getBool(String key) async {
+    try {
+      final prefs = await _preferences;
+      return prefs.getBool(key);
+    } catch (e) {
+      throw StorageException(
+        'Failed to retrieve bool for key $key: ${e.toString()}',
+        errorCode: 'GET_BOOL_FAILED',
+      );
+    }
+  }
+
+  /// Generic method to remove a key
+  Future<void> remove(String key) async {
+    try {
+      final prefs = await _preferences;
+      await prefs.remove(key);
+    } catch (e) {
+      throw StorageException(
+        'Failed to remove key $key: ${e.toString()}',
+        errorCode: 'REMOVE_KEY_FAILED',
       );
     }
   }
