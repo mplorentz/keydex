@@ -1,11 +1,48 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'services/key_service.dart';
 
 void main() {
   runApp(const LockboxApp());
 }
 
-class LockboxApp extends StatelessWidget {
+class LockboxApp extends StatefulWidget {
   const LockboxApp({super.key});
+
+  @override
+  State<LockboxApp> createState() => _LockboxAppState();
+}
+
+class _LockboxAppState extends State<LockboxApp> {
+  bool _isInitializing = true;
+  String? _initError;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeApp();
+  }
+
+  Future<void> _initializeApp() async {
+    try {
+      // Initialize the Nostr key on app launch
+      await KeyService.initializeKey();
+
+      if (mounted) {
+        setState(() {
+          _isInitializing = false;
+        });
+      }
+    } catch (e) {
+      print('Error initializing app: $e');
+      if (mounted) {
+        setState(() {
+          _isInitializing = false;
+          _initError = 'Failed to initialize secure storage: ${e.toString()}';
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +52,101 @@ class LockboxApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: const LockboxListScreen(),
+      home: _isInitializing
+          ? const _InitializingScreen()
+          : _initError != null
+              ? _ErrorScreen(error: _initError!)
+              : const LockboxListScreen(),
+    );
+  }
+}
+
+// Loading screen shown during app initialization
+class _InitializingScreen extends StatelessWidget {
+  const _InitializingScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(
+              color: Colors.blue[700],
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Initializing Keydex...',
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Setting up secure storage',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[500],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Error screen shown if initialization fails
+class _ErrorScreen extends StatelessWidget {
+  final String error;
+
+  const _ErrorScreen({required this.error});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.error_outline,
+                size: 64,
+                color: Colors.red[400],
+              ),
+              const SizedBox(height: 24),
+              const Text(
+                'Initialization Failed',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                error,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[600],
+                ),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () {
+                  // Restart the app
+                  exit(0);
+                },
+                child: const Text('Restart App'),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -100,6 +231,23 @@ class LockboxListScreen extends StatefulWidget {
 }
 
 class _LockboxListScreenState extends State<LockboxListScreen> {
+  String? _currentPublicKey;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCurrentPublicKey();
+  }
+
+  Future<void> _loadCurrentPublicKey() async {
+    final publicKey = await KeyService.getCurrentPublicKey();
+    if (mounted) {
+      setState(() {
+        _currentPublicKey = publicKey;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -108,73 +256,118 @@ class _LockboxListScreenState extends State<LockboxListScreen> {
         backgroundColor: Colors.blue[700],
         foregroundColor: Colors.white,
       ),
-      body: LockboxData.lockboxes.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.lock_outline, size: 64, color: Colors.grey),
-                  const SizedBox(height: 16),
-                  Text(
-                    'No lockboxes yet',
-                    style: TextStyle(fontSize: 18, color: Colors.grey[600]),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Tap + to create your first secure lockbox',
-                    style: TextStyle(color: Colors.grey[500]),
-                  ),
-                ],
-              ),
-            )
-          : ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: LockboxData.lockboxes.length,
-              itemBuilder: (context, index) {
-                final lockbox = LockboxData.lockboxes[index];
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: Colors.blue[100],
-                      child: Icon(Icons.lock, color: Colors.blue[700]),
-                    ),
-                    title: Text(
-                      lockbox.name,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+      body: Column(
+        children: [
+          Expanded(
+            child: LockboxData.lockboxes.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        const Icon(Icons.lock_outline, size: 64, color: Colors.grey),
+                        const SizedBox(height: 16),
                         Text(
-                          lockbox.content.length > 50
-                              ? '${lockbox.content.substring(0, 50)}...'
-                              : lockbox.content,
-                          style: TextStyle(color: Colors.grey[600]),
+                          'No lockboxes yet',
+                          style: TextStyle(fontSize: 18, color: Colors.grey[600]),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 8),
                         Text(
-                          'Created ${_formatDate(lockbox.createdAt)}',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[500],
-                          ),
+                          'Tap + to create your first secure lockbox',
+                          style: TextStyle(color: Colors.grey[500]),
                         ),
                       ],
                     ),
-                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => LockboxDetailScreen(lockboxId: lockbox.id),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: LockboxData.lockboxes.length,
+                    itemBuilder: (context, index) {
+                      final lockbox = LockboxData.lockboxes[index];
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: Colors.blue[100],
+                            child: Icon(Icons.lock, color: Colors.blue[700]),
+                          ),
+                          title: Text(
+                            lockbox.name,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                lockbox.content.length > 50
+                                    ? '${lockbox.content.substring(0, 50)}...'
+                                    : lockbox.content,
+                                style: TextStyle(color: Colors.grey[600]),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Created ${_formatDate(lockbox.createdAt)}',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[500],
+                                ),
+                              ),
+                            ],
+                          ),
+                          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => LockboxDetailScreen(lockboxId: lockbox.id),
+                              ),
+                            ).then((_) => setState(() {})); // Refresh when returning
+                          },
                         ),
-                      ).then((_) => setState(() {})); // Refresh when returning
+                      );
                     },
                   ),
-                );
-              },
+          ),
+          // Debug section showing current user's public key
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.grey[100],
+              border: Border(
+                top: BorderSide(color: Colors.grey[300]!),
+              ),
             ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.bug_report, size: 16, color: Colors.grey[600]),
+                    const SizedBox(width: 6),
+                    Text(
+                      'DEBUG INFO',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Public Key: ${_currentPublicKey ?? 'Loading...'}',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontFamily: 'monospace',
+                    color: Colors.grey[700],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
