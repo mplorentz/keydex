@@ -1,30 +1,22 @@
 <!--
 Sync Impact Report:
-Version change: 0.0.0 → 1.0.0
-Modified principles: N/A (initial creation)
-Added sections: Security-First Development, Cross-Platform UX, Open Source Principles, Interoperability & Standards
+Version change: 1.0.0 → 1.1.0
+Modified principles: Behavior-Driven Development → Outside-In Development
+Added sections: N/A
 Removed sections: N/A
 Templates requiring updates:
   ✅ .specify/templates/plan-template.md (constitution check alignment)
-    - Added keydex-specific constitution check gates
-    - Security-First Development validation
-    - Cross-Platform Consistency checks
-    - Nostr Protocol Integration requirements
-    - Non-Technical User Focus validation
+    - Added Outside-In Development checklist section
+    - Updated constitution version reference to v1.1.0
   ✅ .specify/templates/spec-template.md (constitution compliance)
-    - Added Keydex-Specific Requirements section
-    - Security requirements for sensitive data handling
-    - Cross-platform functionality specification
-    - Nostr protocol integration requirements
-    - Shamir's Secret Sharing workflow documentation
-  ✅ .specify/templates/tasks-template.md (TDD enforcement)
-    - Updated test examples for keydex context
-    - Security tests for Shamir's Secret Sharing
-    - Contract tests for Nostr backup events
-    - Cross-platform UI integration tests
-    - Screenshot tests for backup flow
-  ✅ .cursor/commands/constitution.md (self-reference)
-Follow-up TODOs: None
+    - No changes needed - already focuses on user scenarios
+  ✅ .specify/templates/tasks-template.md (testing approach)
+    - Updated Phase 3.2 from "Tests First (TDD)" to "UI Stubs & Manual Verification"
+    - Reorganized phases: Setup → UI Stubs → Implementation → Refactoring Pass 1 → Edge Cases → Refactoring Pass 2 → Unit Tests → Integration Tests
+    - Added two refactoring phases: after implementation and after edge cases
+    - Updated dependencies, parallel examples, and task numbering
+    - Updated validation checklist and task generation rules
+Follow-up TODOs: None - all templates updated
 -->
 
 # Keydex Constitution
@@ -34,8 +26,8 @@ Follow-up TODOs: None
 ### I. Security-First Development (NON-NEGOTIABLE)
 Security is the primary concern for all design and implementation decisions. All cryptographic operations MUST use industry-standard libraries and algorithms. Shamir's Secret Sharing implementation must be mathematically correct and thoroughly tested. No security shortcuts or "good enough" solutions are permitted. Security reviews are mandatory for all cryptographic code.
 
-### II. Behavior-Driven Development
-All features MUST be defined through user stories and acceptance criteria before implementation begins. Tests are written in plain language that are easy to understand. The Red-Green-Refactor cycle is enforced, with tests written first and failing before implementation. Integration tests validate complete user workflows across all platforms. Screenshot tests should be used for validation of UI changes.
+### II. Outside-In Development
+All features MUST start from the user's perspective and work inward to implementation details. Development begins with user scenarios and acceptance criteria that define the complete user experience. Implementation proceeds by stubbing out UI components first for manual verification, then implementing functionality behind those components to achieve working behavior. Edge cases are handled after core functionality works. Unit tests are added after implementation of isolated classes to verify their behavior. Integration tests are written last to validate complete workflows. This approach ensures rapid feedback and working functionality before comprehensive test coverage.
 
 ### III. Cross-Platform Consistency
 The Flutter app MUST provide identical functionality across iOS, Android, macOS, Windows, and Linux. Platform-specific features are only added when absolutely necessary. UI/UX follows platform conventions while maintaining consistency in core functionality. All platforms receive updates simultaneously.
@@ -85,12 +77,13 @@ The app uses the Nostr protocol for all data transmission, ensuring decentralize
 - Performance is optimized for each platform's capabilities
 
 ### Testing Strategy
-- Unit tests cover all business logic and cryptographic functions
-- Widget tests validate UI behavior across platforms
-- Integration tests verify complete user workflows
-- Platform-specific tests ensure native functionality
-- Security tests validate cryptographic operations
+- Manual verification of stubbed UI components comes first for rapid feedback
+- Unit tests are added after implementation of isolated classes to verify behavior
+- Widget tests validate UI behavior and user interactions
+- Security tests validate cryptographic operations and sensitive data handling
 - Nostr protocol tests ensure proper event handling and relay communication
+- Platform-specific tests ensure native functionality
+- Integration tests are written last to validate complete user workflows
 - Screenshot tests validate UI changes across all platforms
 
 ## Quality Gates
@@ -120,4 +113,4 @@ The app uses the Nostr protocol for all data transmission, ensuring decentralize
 
 This constitution supersedes all other development practices and guidelines. Amendments require documentation of rationale, security review if security-related, and approval through the /constitution command. All PRs and reviews must verify compliance with constitutional principles. Security-related changes require additional review by cryptography experts. The project maintains its open-source nature and community-driven development approach.
 
-**Version**: 1.0.0 | **Ratified**: 2025-01-27 | **Last Amended**: 2025-01-27
+**Version**: 1.1.0 | **Ratified**: 2025-01-27 | **Last Amended**: 2025-09-24

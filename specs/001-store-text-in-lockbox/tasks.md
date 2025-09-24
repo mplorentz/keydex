@@ -20,7 +20,7 @@
   - No encryption, no auth, no persistence yet
   - Focus: Get the UI flow working end-to-end
 
-- [ ] T002 Test the prototype manually
+- [x] T002 Test the prototype manually
   - Run `flutter run` and verify all screens work
   - Can navigate between screens
   - Can create/edit/delete lockboxes (in memory only)
@@ -29,9 +29,11 @@
 ## Phase 2: Add Real Data 💾
 **Goal**: Make data persist and add basic functionality
 
-- [ ] T003 Add SharedPreferences for persistence in `lib/lockbox_app.dart`
+- [ ] T003.1 Generate a Nostr key for the user on app launch and store it in the keychain.
+
+- [ ] T003.2 Add SharedPreferences for persistence in `lib/lockbox_app.dart`
   - Replace hard-coded data with SharedPreferences
-  - Simple JSON serialization for lockbox data
+  - Encrypt lockbox data with nostr key before storing it in user preferences
   - Data survives app restarts
 
 - [ ] T004 Add input validation and limits

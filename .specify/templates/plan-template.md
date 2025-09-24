@@ -47,6 +47,13 @@
 ## Constitution Check
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
+### Outside-In Development
+- [ ] Feature starts from user scenarios and acceptance criteria
+- [ ] UI components stubbed out first for manual verification
+- [ ] Implementation proceeds from UI toward internal components
+- [ ] Unit tests planned after implementation of isolated classes
+- [ ] Integration tests planned last to validate complete workflows
+
 ### Security-First Development
 - [ ] All cryptographic operations use industry-standard libraries
 - [ ] Shamir's Secret Sharing implementation is mathematically verified
@@ -228,4 +235,4 @@ ios/ or android/
 - [ ] Complexity deviations documented
 
 ---
-*Based on Constitution v2.1.1 - See `/memory/constitution.md`*
+*Based on Constitution v1.1.0 - See `/memory/constitution.md`*
