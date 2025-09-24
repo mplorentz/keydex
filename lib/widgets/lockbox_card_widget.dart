@@ -1,7 +1,8 @@
 // Lockbox Card Widget - Individual card component for displaying lockbox metadata
 
 import 'package:flutter/material.dart';
-import '../contracts/lockbox_service.dart';
+import '../contracts/lockbox_service.dart' as contracts;
+import '../models/lockbox.dart';
 
 class LockboxCardWidget extends StatelessWidget {
   const LockboxCardWidget({

@@ -1,7 +1,7 @@
 // NostrKeyPair Model - Extended wrapper for NDK KeyPair with Nostr-specific functionality
 // Based on data-model.md specifications using NDK KeyPair
 
-import 'package:ndk/shared/nips/nip01/key_pair.dart';
+import 'simple_key_pair.dart';
 import 'encryption_key.dart';
 
 class NostrKeyPair {
@@ -27,19 +27,19 @@ class NostrKeyPair {
 
   // Factory constructor from private key hex
   factory NostrKeyPair.fromPrivateKeyHex(String privateKeyHex) {
-    final keyPair = KeyPair.fromPrivateKeyHex(privateKeyHex);
+    final keyPair = KeyPair.fromPrivateKey(privateKeyHex);
     return NostrKeyPair._(keyPair);
   }
 
   // Factory constructor from private key bech32 (nsec)
   factory NostrKeyPair.fromPrivateKeyBech32(String privateKeyBech32) {
-    final keyPair = KeyPair.fromPrivateKeyBech32(privateKeyBech32);
+    final keyPair = KeyPair.fromPrivateKey(privateKeyBech32);
     return NostrKeyPair._(keyPair);
   }
 
   // Factory constructor from public key only
   factory NostrKeyPair.fromPublicKeyHex(String publicKeyHex) {
-    final keyPair = KeyPair.justPublicKey(publicKeyHex);
+    final keyPair = KeyPair.fromPublicKey(publicKeyHex);
     return NostrKeyPair._(keyPair);
   }
 
@@ -118,7 +118,7 @@ class NostrKeyPair {
 
   // Create a public-only version of this key pair
   NostrKeyPair toPublicOnly() {
-    final publicOnlyKeyPair = KeyPair.justPublicKey(publicKey);
+    final publicOnlyKeyPair = KeyPair.fromPublicKey(publicKey);
     return NostrKeyPair._(publicOnlyKeyPair);
   }
 

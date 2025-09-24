@@ -323,6 +323,11 @@ class KeyService {
       // Non-critical error, log but don't throw
     }
   }
+
+  // Clear all keys
+  Future<void> clearKeys() async {
+    await _encryptionService.clearKeyPair();
+  }
 }
 
 // Exception for key service related errors

@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import '../contracts/auth_service.dart' as auth_contract;
 
 class AuthenticationWidget extends StatefulWidget {
   const AuthenticationWidget({
@@ -14,7 +15,7 @@ class AuthenticationWidget extends StatefulWidget {
     required this.onError,
   });
 
-  final AuthService authService;
+  final AuthServiceImpl authService;
   final bool needsSetup;
   final bool hasEncryptionKey;
   final VoidCallback onAuthenticated;

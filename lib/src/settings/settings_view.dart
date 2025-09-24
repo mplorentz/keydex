@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
 import '../../services/key_service.dart';
 import '../../services/storage_service.dart';
+import '../../contracts/auth_service.dart' as auth_contract;
 import '../../screens/authentication_screen.dart';
 import 'settings_controller.dart';
 
@@ -20,7 +21,7 @@ class SettingsView extends StatefulWidget {
   static const routeName = '/settings';
 
   final SettingsController controller;
-  final AuthService authService;
+  final AuthServiceImpl authService;
   final KeyService keyService;
   final StorageService storageService;
 
@@ -212,7 +213,7 @@ class _SettingsViewState extends State<SettingsView> {
         });
 
         await widget.storageService.clearAllData();
-        await (widget.keyService as KeyService).clearKeyPair();
+        await widget.keyService.clearKeys();
 
         if (mounted) {
           Navigator.of(context).pushNamedAndRemoveUntil(

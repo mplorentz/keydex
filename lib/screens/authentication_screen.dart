@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../services/key_service.dart';
+import '../contracts/auth_service.dart' as auth_contract;
 import '../widgets/authentication_widget.dart';
 import 'lockbox_list_screen.dart';
 
@@ -15,7 +16,7 @@ class AuthenticationScreen extends StatefulWidget {
     required this.keyService,
   });
 
-  final AuthService authService;
+  final AuthServiceImpl authService;
   final KeyService keyService;
 
   @override

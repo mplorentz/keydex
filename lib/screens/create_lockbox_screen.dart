@@ -1,7 +1,8 @@
 // Create Lockbox Screen - Form for creating new encrypted lockboxes
 
 import 'package:flutter/material.dart';
-import '../contracts/lockbox_service.dart';
+import '../contracts/lockbox_service.dart' as contracts;
+import '../services/lockbox_service.dart';
 
 class CreateLockboxScreen extends StatefulWidget {
   static const String routeName = '/create-lockbox';
@@ -11,7 +12,7 @@ class CreateLockboxScreen extends StatefulWidget {
     required this.lockboxService,
   });
 
-  final LockboxService lockboxService;
+  final LockboxServiceImpl lockboxService;
 
   @override
   State<CreateLockboxScreen> createState() => _CreateLockboxScreenState();

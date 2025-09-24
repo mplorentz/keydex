@@ -12,6 +12,9 @@ import '../services/encryption_service.dart';
 import '../services/lockbox_service.dart';
 import '../services/storage_service.dart';
 import '../services/key_service.dart';
+import '../contracts/auth_service.dart' as auth_contract;
+import '../contracts/encryption_service.dart' as encryption_contract;
+import '../contracts/lockbox_service.dart' as lockbox_contract;
 import 'settings/settings_controller.dart';
 import 'settings/settings_view.dart';
 
@@ -28,9 +31,9 @@ class KeydexApp extends StatelessWidget {
   });
 
   final SettingsController settingsController;
-  final LockboxService lockboxService;
-  final AuthService authService;
-  final EncryptionService encryptionService;
+  final LockboxServiceImpl lockboxService;
+  final AuthServiceImpl authService;
+  final EncryptionServiceImpl encryptionService;
   final KeyService keyService;
   final StorageService storageService;
 

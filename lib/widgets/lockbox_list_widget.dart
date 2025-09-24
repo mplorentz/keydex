@@ -1,7 +1,8 @@
 // Lockbox List Widget - Displays a list of lockboxes with pull-to-refresh
 
 import 'package:flutter/material.dart';
-import '../contracts/lockbox_service.dart';
+import '../contracts/lockbox_service.dart' as contracts;
+import '../models/lockbox.dart';
 import 'lockbox_card_widget.dart';
 
 class LockboxListWidget extends StatelessWidget {

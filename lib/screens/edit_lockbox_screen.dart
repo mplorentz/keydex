@@ -1,7 +1,8 @@
 // Edit Lockbox Screen - Form for editing existing lockboxes
 
 import 'package:flutter/material.dart';
-import '../contracts/lockbox_service.dart';
+import '../contracts/lockbox_service.dart' as contracts;
+import '../services/lockbox_service.dart';
 
 class EditLockboxScreen extends StatefulWidget {
   static const String routeName = '/edit-lockbox';
@@ -17,7 +18,7 @@ class EditLockboxScreen extends StatefulWidget {
   final String lockboxId;
   final String currentName;
   final String currentContent;
-  final LockboxService lockboxService;
+  final LockboxServiceImpl lockboxService;
 
   @override
   State<EditLockboxScreen> createState() => _EditLockboxScreenState();

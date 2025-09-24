@@ -1,7 +1,7 @@
 // EncryptionKey Model - Wrapper for NDK KeyPair with additional validation
 // Based on data-model.md specifications using NDK KeyPair
 
-import 'package:ndk/shared/nips/nip01/key_pair.dart';
+import 'simple_key_pair.dart';
 
 class EncryptionKey {
   final KeyPair _keyPair;
@@ -21,13 +21,13 @@ class EncryptionKey {
 
   // Factory constructor from private key
   factory EncryptionKey.fromPrivateKey(String privateKey) {
-    final keyPair = KeyPair.fromPrivateKeyHex(privateKey);
+    final keyPair = KeyPair.fromPrivateKey(privateKey);
     return EncryptionKey._(keyPair);
   }
 
   // Factory constructor from JSON
   factory EncryptionKey.fromJson(Map<String, dynamic> json) {
-    final keyPair = KeyPair.fromPrivateKeyHex(json['privateKey'] as String);
+    final keyPair = KeyPair.fromPrivateKey(json['privateKey'] as String);
     return EncryptionKey._(keyPair);
   }
 
@@ -75,7 +75,7 @@ class EncryptionKey {
 
   // Create a public-only version of this key
   EncryptionKey toPublicOnly() {
-    final publicOnlyKeyPair = KeyPair.justPublicKey(publicKey);
+    final publicOnlyKeyPair = KeyPair.fromPublicKey(publicKey);
     return EncryptionKey._(publicOnlyKeyPair);
   }
 

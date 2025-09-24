@@ -2,7 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../contracts/lockbox_service.dart';
+import '../contracts/lockbox_service.dart' as contracts;
+import '../models/lockbox.dart';
+import '../services/lockbox_service.dart';
 import 'edit_lockbox_screen.dart';
 
 class LockboxDetailScreen extends StatefulWidget {
@@ -15,7 +17,7 @@ class LockboxDetailScreen extends StatefulWidget {
   });
 
   final String lockboxId;
-  final LockboxService lockboxService;
+  final LockboxServiceImpl lockboxService;
 
   @override
   State<LockboxDetailScreen> createState() => _LockboxDetailScreenState();

@@ -1,8 +1,10 @@
 // Lockbox List Screen - Main screen showing all user lockboxes
 
 import 'package:flutter/material.dart';
-import '../contracts/lockbox_service.dart';
+import '../contracts/lockbox_service.dart' as contracts;
+import '../models/lockbox.dart';
 import '../services/auth_service.dart';
+import '../services/lockbox_service.dart';
 import '../widgets/lockbox_list_widget.dart';
 import 'create_lockbox_screen.dart';
 import 'authentication_screen.dart';
@@ -17,8 +19,8 @@ class LockboxListScreen extends StatefulWidget {
     required this.authService,
   });
 
-  final LockboxService lockboxService;
-  final AuthService authService;
+  final LockboxServiceImpl lockboxService;
+  final AuthServiceImpl authService;
 
   @override
   State<LockboxListScreen> createState() => _LockboxListScreenState();

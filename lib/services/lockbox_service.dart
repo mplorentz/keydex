@@ -2,14 +2,14 @@
 // Implements lockbox operations with encryption and storage
 
 import 'package:uuid/uuid.dart';
-import '../contracts/lockbox_service.dart';
+import '../contracts/lockbox_service.dart' as contracts;
+import '../contracts/encryption_service.dart';
+import '../contracts/auth_service.dart';
 import '../models/lockbox.dart';
 import '../models/text_content.dart';
 import 'storage_service.dart';
-import 'encryption_service.dart';
-import 'auth_service.dart';
 
-class LockboxServiceImpl implements LockboxService {
+class LockboxServiceImpl implements contracts.LockboxService {
   final StorageService _storageService;
   final EncryptionService _encryptionService;
   final AuthService _authService;
@@ -34,7 +34,7 @@ class LockboxServiceImpl implements LockboxService {
       // Check if encryption key is available
       final hasKey = await _encryptionService.getCurrentKeyPair();
       if (hasKey == null) {
-        throw LockboxException(
+        throw contracts.contracts.LockboxException(
           'No encryption key available. Please set up encryption first.',
           errorCode: 'NO_ENCRYPTION_KEY',
         );
@@ -67,8 +67,8 @@ class LockboxServiceImpl implements LockboxService {
 
       return lockboxId;
     } catch (e) {
-      if (e is LockboxException) rethrow;
-      throw LockboxException(
+      if (e is contracts.contracts.LockboxException) rethrow;
+      throw contracts.contracts.LockboxException(
         'Failed to create lockbox: ${e.toString()}',
         errorCode: 'CREATE_FAILED',
       );
@@ -80,7 +80,7 @@ class LockboxServiceImpl implements LockboxService {
     try {
       return await _storageService.getAllLockboxes();
     } catch (e) {
-      throw LockboxException(
+      throw contracts.contracts.LockboxException(
         'Failed to retrieve lockboxes: ${e.toString()}',
         errorCode: 'RETRIEVAL_FAILED',
       );
@@ -93,7 +93,7 @@ class LockboxServiceImpl implements LockboxService {
       // Authenticate user before accessing sensitive content
       final isAuthenticated = await authenticateUser();
       if (!isAuthenticated) {
-        throw LockboxException(
+        throw contracts.LockboxException(
           'Authentication required to access lockbox content.',
           errorCode: 'AUTHENTICATION_REQUIRED',
         );
@@ -102,7 +102,7 @@ class LockboxServiceImpl implements LockboxService {
       // Get lockbox metadata
       final lockboxMetadata = await _storageService.getLockboxById(lockboxId);
       if (lockboxMetadata == null) {
-        throw LockboxException(
+        throw contracts.LockboxException(
           'Lockbox with ID $lockboxId not found.',
           errorCode: 'LOCKBOX_NOT_FOUND',
         );
@@ -111,7 +111,7 @@ class LockboxServiceImpl implements LockboxService {
       // Get encrypted content
       final encryptedContent = await _storageService.getEncryptedContent(lockboxId);
       if (encryptedContent == null) {
-        throw LockboxException(
+        throw contracts.LockboxException(
           'Encrypted content for lockbox $lockboxId not found.',
           errorCode: 'CONTENT_NOT_FOUND',
         );
@@ -128,8 +128,8 @@ class LockboxServiceImpl implements LockboxService {
         createdAt: lockboxMetadata.createdAt,
       );
     } catch (e) {
-      if (e is LockboxException) rethrow;
-      throw LockboxException(
+      if (e is contracts.LockboxException) rethrow;
+      throw contracts.LockboxException(
         'Failed to get lockbox content: ${e.toString()}',
         errorCode: 'CONTENT_RETRIEVAL_FAILED',
       );
@@ -148,7 +148,7 @@ class LockboxServiceImpl implements LockboxService {
       // Check if lockbox exists
       final existingLockbox = await _storageService.getLockboxById(lockboxId);
       if (existingLockbox == null) {
-        throw LockboxException(
+        throw contracts.LockboxException(
           'Lockbox with ID $lockboxId not found.',
           errorCode: 'LOCKBOX_NOT_FOUND',
         );
@@ -164,8 +164,8 @@ class LockboxServiceImpl implements LockboxService {
       // Save the new encrypted content
       await _storageService.saveEncryptedContent(lockboxId, encryptedContent);
     } catch (e) {
-      if (e is LockboxException) rethrow;
-      throw LockboxException(
+      if (e is contracts.LockboxException) rethrow;
+      throw contracts.LockboxException(
         'Failed to update lockbox: ${e.toString()}',
         errorCode: 'UPDATE_FAILED',
       );
@@ -184,7 +184,7 @@ class LockboxServiceImpl implements LockboxService {
       // Check if lockbox exists
       final existingLockbox = await _storageService.getLockboxById(lockboxId);
       if (existingLockbox == null) {
-        throw LockboxException(
+        throw contracts.LockboxException(
           'Lockbox with ID $lockboxId not found.',
           errorCode: 'LOCKBOX_NOT_FOUND',
         );
@@ -194,8 +194,8 @@ class LockboxServiceImpl implements LockboxService {
       final updatedMetadata = existingLockbox.copyWith(name: name);
       await _storageService.updateLockbox(updatedMetadata);
     } catch (e) {
-      if (e is LockboxException) rethrow;
-      throw LockboxException(
+      if (e is contracts.LockboxException) rethrow;
+      throw contracts.LockboxException(
         'Failed to update lockbox name: ${e.toString()}',
         errorCode: 'NAME_UPDATE_FAILED',
       );
@@ -208,7 +208,7 @@ class LockboxServiceImpl implements LockboxService {
       // Check if lockbox exists
       final existingLockbox = await _storageService.getLockboxById(lockboxId);
       if (existingLockbox == null) {
-        throw LockboxException(
+        throw contracts.LockboxException(
           'Lockbox with ID $lockboxId not found.',
           errorCode: 'LOCKBOX_NOT_FOUND',
         );
@@ -217,8 +217,8 @@ class LockboxServiceImpl implements LockboxService {
       // Delete the lockbox and its encrypted content
       await _storageService.deleteLockbox(lockboxId);
     } catch (e) {
-      if (e is LockboxException) rethrow;
-      throw LockboxException(
+      if (e is contracts.LockboxException) rethrow;
+      throw contracts.LockboxException(
         'Failed to delete lockbox: ${e.toString()}',
         errorCode: 'DELETE_FAILED',
       );
@@ -230,7 +230,7 @@ class LockboxServiceImpl implements LockboxService {
     try {
       return await _authService.authenticateUser();
     } catch (e) {
-      throw LockboxException(
+      throw contracts.LockboxException(
         'Authentication failed: ${e.toString()}',
         errorCode: 'AUTHENTICATION_FAILED',
       );
@@ -265,7 +265,7 @@ class LockboxServiceImpl implements LockboxService {
           .where((lockbox) => lockbox.name.toLowerCase().contains(lowercaseQuery))
           .toList();
     } catch (e) {
-      throw LockboxException(
+      throw contracts.LockboxException(
         'Failed to search lockboxes: ${e.toString()}',
         errorCode: 'SEARCH_FAILED',
       );
@@ -306,14 +306,14 @@ class LockboxServiceImpl implements LockboxService {
   // Private validation methods
   void _validateLockboxName(String name) {
     if (name.trim().isEmpty) {
-      throw LockboxException(
+      throw contracts.LockboxException(
         'Lockbox name cannot be empty.',
         errorCode: 'INVALID_NAME',
       );
     }
 
     if (name.length > 100) {
-      throw LockboxException(
+      throw contracts.LockboxException(
         'Lockbox name cannot exceed 100 characters.',
         errorCode: 'NAME_TOO_LONG',
       );
@@ -322,7 +322,7 @@ class LockboxServiceImpl implements LockboxService {
 
   void _validateContent(String content) {
     if (content.length > 4000) {
-      throw LockboxException(
+      throw contracts.LockboxException(
         'Content cannot exceed 4000 characters.',
         errorCode: 'CONTENT_TOO_LONG',
       );

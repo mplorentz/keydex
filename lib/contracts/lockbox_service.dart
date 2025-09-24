@@ -1,6 +1,7 @@
 // LockboxService Contract
 // This file defines the interface for lockbox operations
 
+// Note: LockboxMetadata and LockboxContent classes are imported from ../models/lockbox.dart
 abstract class LockboxService {
   /// Creates a new encrypted lockbox
   /// Returns the created lockbox ID on success
@@ -37,21 +38,6 @@ abstract class LockboxService {
   Future<bool> authenticateUser();
 }
 
-/// Lockbox metadata record - immutable data container
-typedef LockboxMetadata = ({
-  String id,
-  String name,
-  DateTime createdAt,
-  int size,
-});
-
-/// Lockbox content record - immutable data container
-typedef LockboxContent = ({
-  String id,
-  String name,
-  String content,
-  DateTime createdAt,
-});
 
 class LockboxException implements Exception {
   final String message;
