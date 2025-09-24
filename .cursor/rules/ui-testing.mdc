@@ -1,0 +1,6 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+If you need to manually verify some behavior in the UI you can run the app for web and use Playwright MCP to interact with it. Use the task "Flutter: Build and Serve for Playwright" to start.

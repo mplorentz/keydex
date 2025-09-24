@@ -1,99 +1,121 @@
-# Tasks: Encrypted Text Lockbox
+# Tasks: Encrypted Text Lockbox (UI-First Approach)
 
 **Input**: Design documents from `/specs/001-store-text-in-lockbox/`
-**Prerequisites**: plan.md (required), research.md, data-model.md, contracts/
+**Approach**: Start with working UI, expand incrementally, refactor as needed
 
-## Execution Flow (main)
-```
-1. Load plan.md from feature directory
-   → If not found: ERROR "No implementation plan found"
-   → Extract: tech stack, libraries, structure
-2. Load optional design documents:
-   → data-model.md: Extract entities → model tasks
-   → contracts/: Each file → contract test task
-   → research.md: Extract decisions → setup tasks
-3. Generate tasks by category:
-   → Setup: project init, dependencies, linting
-   → Tests: contract tests, integration tests
-   → Core: models, services, CLI commands
-   → Integration: DB, middleware, logging
-   → Polish: unit tests, performance, docs
-4. Apply task rules:
-   → Different files = mark [P] for parallel
-   → Same file = sequential (no [P])
-   → Tests before implementation (TDD)
-5. Number tasks sequentially (T001, T002...)
-6. Generate dependency graph
-7. Create parallel execution examples
-8. Validate task completeness:
-   → All contracts have tests?
-   → All entities have models?
-   → All endpoints implemented?
-9. Return: SUCCESS (tasks ready for execution)
-```
+## Development Philosophy
+- ✅ **Build working code first** - Start with a single file that works
+- ✅ **Expand incrementally** - Add one feature at a time
+- ✅ **Refactor when patterns emerge** - Don't abstract too early
+- ✅ **Test what you build** - Add tests after you understand what works
+- ❌ **No premature abstraction** - Don't create interfaces until you need them
 
-## Format: `[ID] [P?] Description`
-- **[P]**: Can run in parallel (different files, no dependencies)
-- Include exact file paths in descriptions
+## Phase 1: Single-File Prototype 🚀
+**Goal**: Get a working lockbox app in one file with fake data
 
-## Path Conventions
-- **Mobile**: `lib/`, `test/` at repository root (Flutter app structure)
-- Paths shown below assume Flutter mobile app structure
+- [x] T001 Create `lib/lockbox_app.dart` - Complete working app in single file
+  - Basic Flutter MaterialApp with navigation
+  - Hard-coded list of 3-4 fake lockboxes 
+  - Simple screens: list, create, edit, view
+  - No encryption, no auth, no persistence yet
+  - Focus: Get the UI flow working end-to-end
 
-## Phase 3.1: Setup
-- [x] T001 Create Flutter project structure with lib/, test/, integration_test/ directories
-- [x] T002 Initialize Flutter project with dependencies: ndk (Dart Nostr Development Kit), local_auth, shared_preferences
-- [x] T003 [P] Configure linting and formatting tools (analysis_options.yaml, dart format)
+- [ ] T002 Test the prototype manually
+  - Run `flutter run` and verify all screens work
+  - Can navigate between screens
+  - Can create/edit/delete lockboxes (in memory only)
+  - UI looks reasonable on phone
 
-## Phase 3.2: Tests First (TDD) ⚠️ MUST COMPLETE BEFORE 3.3
-**CRITICAL: These tests MUST be written and MUST FAIL before ANY implementation**
-- [x] T004 [P] Contract test AuthService in test/contract/auth_service_test.dart
-- [x] T005 [P] Contract test EncryptionService in test/contract/encryption_service_test.dart
-- [x] T006 [P] Contract test LockboxService in test/contract/lockbox_service_test.dart
-- [x] T007 [P] Integration test lockbox creation flow in integration_test/lockbox_creation_test.dart
-- [x] T008 [P] Integration test authentication flow in integration_test/authentication_test.dart
-- [x] T009 [P] Integration test encryption/decryption flow in integration_test/encryption_test.dart
+## Phase 2: Add Real Data 💾
+**Goal**: Make data persist and add basic functionality
 
-## Phase 3.3: Core Implementation (ONLY after tests are failing)
-- [ ] T010 [P] Lockbox model in lib/models/lockbox.dart
-- [ ] T011 [P] TextContent model in lib/models/text_content.dart
-- [ ] T012 [P] EncryptionKey model in lib/models/encryption_key.dart
-- [ ] T013 [P] NostrKeyPair model in lib/models/nostr_key_pair.dart
-- [ ] T014 [P] AuthService implementation in lib/services/auth_service.dart
-- [ ] T015 [P] EncryptionService implementation in lib/services/encryption_service.dart
-- [ ] T016 [P] LockboxService implementation in lib/services/lockbox_service.dart
-- [ ] T017 [P] StorageService implementation in lib/services/storage_service.dart
-- [ ] T018 [P] KeyService implementation in lib/services/key_service.dart
+- [ ] T003 Add SharedPreferences for persistence in `lib/lockbox_app.dart`
+  - Replace hard-coded data with SharedPreferences
+  - Simple JSON serialization for lockbox data
+  - Data survives app restarts
 
-## Phase 3.4: UI Implementation
-- [ ] T019 [P] Main app widget in lib/main.dart
-- [ ] T020 [P] Lockbox list screen in lib/screens/lockbox_list_screen.dart
-- [ ] T021 [P] Lockbox detail screen in lib/screens/lockbox_detail_screen.dart
-- [ ] T022 [P] Create lockbox screen in lib/screens/create_lockbox_screen.dart
-- [ ] T023 [P] Edit lockbox screen in lib/screens/edit_lockbox_screen.dart
-- [ ] T024 [P] Authentication screen in lib/screens/authentication_screen.dart
-- [ ] T025 [P] Settings screen in lib/screens/settings_screen.dart
-- [ ] T026 [P] Lockbox list widget in lib/widgets/lockbox_list_widget.dart
-- [ ] T027 [P] Lockbox card widget in lib/widgets/lockbox_card_widget.dart
-- [ ] T028 [P] Authentication widget in lib/widgets/authentication_widget.dart
+- [ ] T004 Add input validation and limits
+  - 4k character limit for text content
+  - Required name field
+  - Basic error messages
 
-## Phase 3.5: Integration
-- [ ] T029 Connect services to shared_preferences storage
-- [ ] T030 Implement biometric authentication with local_auth
-- [ ] T031 Implement NIP-44 encryption with NDK (Dart Nostr Development Kit)
-- [ ] T032 Add error handling and user-friendly messages
-- [ ] T033 Add input validation and size limits
-- [ ] T034 Implement navigation between screens
+## Phase 3: Extract and Organize 🏗️
+**Goal**: Split single file into logical components as it grows
 
-## Phase 3.6: Polish
-- [ ] T035 [P] Unit tests for models in test/unit/models_test.dart
-- [ ] T036 [P] Unit tests for services in test/unit/services_test.dart
-- [ ] T037 [P] Unit tests for widgets in test/unit/widgets_test.dart
-- [ ] T038 Performance tests (<200ms encryption/decryption)
-- [ ] T039 [P] Update README.md with setup instructions
-- [ ] T040 [P] Add error code documentation
-- [ ] T041 Remove code duplication and optimize
-- [ ] T042 Run quickstart.md validation scenarios
+- [ ] T005 Extract data models to `lib/models/`
+  - `lockbox.dart` - Simple class with toJson/fromJson
+  - Keep it simple - just id, name, content, createdAt
+
+- [ ] T006 Extract screens to `lib/screens/`
+  - `lockbox_list_screen.dart`
+  - `lockbox_detail_screen.dart` 
+  - `create_lockbox_screen.dart`
+  - Move screen widgets out of main file
+
+- [ ] T007 Extract storage logic to `lib/services/storage_service.dart`
+  - Simple class that wraps SharedPreferences
+  - Methods: saveLockbox, getLockboxes, deleteLockbox
+  - No interfaces yet - just a concrete class
+
+## Phase 4: Add Security 🔒
+**Goal**: Add encryption and authentication to working app
+
+- [ ] T008 Add basic encryption using NDK
+  - Generate/store Nostr keypair in SharedPreferences
+  - Encrypt content before saving, decrypt when loading
+  - Start with simple implementation in storage_service
+
+- [ ] T009 Add biometric authentication
+  - Use local_auth package
+  - Require auth before viewing/editing content
+  - Simple implementation - no complex auth flows
+
+## Phase 5: Polish and Improve ✨
+**Goal**: Make it production-ready
+
+- [ ] T010 Improve error handling
+  - Graceful handling of encryption failures
+  - User-friendly error messages
+  - Proper loading states
+
+- [ ] T011 Add better UI/UX
+  - Loading indicators
+  - Confirmation dialogs for delete
+  - Better visual design
+  - Empty states
+
+- [ ] T012 Performance optimization
+  - Lazy loading for large lists
+  - Efficient encryption/decryption
+  - Memory management
+
+## Phase 6: Add Tests 🧪
+**Goal**: Test the working application
+
+- [ ] T013 Add integration tests
+  - Test complete user flows with real app
+  - Create → Save → Retrieve → Edit → Delete
+  - Authentication flow
+  - Error scenarios
+
+- [ ] T014 Add unit tests for key components
+  - Storage service tests
+  - Model serialization tests
+  - Encryption/decryption tests
+
+## Phase 7: Architecture Cleanup 🏛️
+**Goal**: Refactor to clean architecture (only if needed)
+
+- [ ] T015 Add service interfaces (if you have multiple implementations)
+- [ ] T016 Implement dependency injection (if complexity warrants it)
+- [ ] T017 Add repository pattern (if you add cloud sync later)
+
+## Notes for AI Collaboration
+- **Start simple**: Don't create abstractions until you need them
+- **Build working code**: Always have a runnable app
+- **One feature at a time**: Complete each task before moving to next
+- **Refactor incrementally**: Improve code as you understand the problem better
+- **Test real behavior**: Focus on integration tests over unit tests initially
 
 ## Dependencies
 - Tests (T004-T009) before implementation (T010-T018)

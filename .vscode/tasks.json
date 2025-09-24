@@ -1,0 +1,126 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Flutter: Build Web for Testing",
+            "type": "shell",
+            "command": "flutter",
+            "args": [
+                "build",
+                "web",
+                "--web-renderer",
+                "html"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [],
+            "detail": "Build Flutter web app with HTML renderer for Playwright testing"
+        },
+        {
+            "label": "Flutter: Serve Web App",
+            "type": "shell",
+            "command": "python3",
+            "args": [
+                "-m",
+                "http.server",
+                "8084"
+            ],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "clear": false
+            },
+            "options": {
+                "cwd": "${workspaceFolder}/build/web"
+            },
+            "isBackground": true,
+            "problemMatcher": {
+                "pattern": {
+                    "regexp": "^Serving HTTP on .* port (\\d+).*$",
+                    "line": 1
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "^Serving HTTP on.*$",
+                    "endsPattern": "^Serving HTTP on .* port \\d+.*$"
+                }
+            },
+            "detail": "Serve the built Flutter web app on localhost:8084"
+        },
+        {
+            "label": "Flutter: Build and Serve for Playwright",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "Flutter: Build Web for Testing",
+                "Flutter: Serve Web App"
+            ],
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "detail": "Build and serve Flutter web app for Playwright MCP testing"
+        },
+        {
+            "label": "Flutter: Run Web for Development",
+            "type": "shell",
+            "command": "flutter",
+            "args": [
+                "run",
+                "-d",
+                "chrome",
+                "--web-renderer",
+                "html"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "dedicated"
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "isBackground": true,
+            "problemMatcher": [],
+            "detail": "Run Flutter web app with hot reload (use with Chrome extension for Playwright)"
+        },
+        {
+            "label": "Flutter: Stop Web Server",
+            "type": "shell",
+            "command": "pkill",
+            "args": [
+                "-f",
+                "python3.*http.server.*8084"
+            ],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "silent",
+                "focus": false,
+                "panel": "shared"
+            },
+            "detail": "Stop the web server running on port 8084"
+        }
+    ]
+}
