@@ -29,9 +29,9 @@
 ## Phase 2: Add Real Data 💾
 **Goal**: Make data persist and add basic functionality
 
-- [ ] T003.1 Generate a Nostr key for the user on app launch and store it in the keychain.
+- [x] T003.1 Generate a Nostr key for the user on app launch and store it in the keychain.
 
-- [ ] T003.2 Add SharedPreferences for persistence in `lib/lockbox_app.dart`
+- [x] T003.2 Add SharedPreferences for persistence in `lib/lockbox_app.dart`
   - Replace hard-coded data with SharedPreferences
   - Encrypt lockbox data with nostr key before storing it in user preferences
   - Data survives app restarts

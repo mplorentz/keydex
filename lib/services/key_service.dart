@@ -1,5 +1,6 @@
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
+import 'package:ndk/shared/nips/nip44/nip44.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 /// Key management service for storing Nostr keys securely
@@ -68,6 +69,36 @@ class KeyService {
   static Future<String?> getCurrentPublicKeyBech32() async {
     final keyPair = await getStoredNostrKey();
     return keyPair?.publicKeyBech32;
+  }
+
+  /// Encrypt text using NIP-44 (self-encryption)
+  static Future<String> encryptText(String plaintext) async {
+    final keyPair = await getStoredNostrKey();
+    if (keyPair?.privateKey == null || keyPair?.publicKey == null) {
+      throw Exception('No key pair available for encryption');
+    }
+
+    // Use NIP-44 to encrypt to ourselves (same key for sender and recipient)
+    return await Nip44.encryptMessage(
+      plaintext,
+      keyPair!.privateKey!,
+      keyPair.publicKey,
+    );
+  }
+
+  /// Decrypt text using NIP-44 (self-decryption)
+  static Future<String> decryptText(String encryptedText) async {
+    final keyPair = await getStoredNostrKey();
+    if (keyPair?.privateKey == null || keyPair?.publicKey == null) {
+      throw Exception('No key pair available for decryption');
+    }
+
+    // Use NIP-44 to decrypt from ourselves (same key for sender and recipient)
+    return await Nip44.decryptMessage(
+      encryptedText,
+      keyPair!.privateKey!,
+      keyPair.publicKey,
+    );
   }
 
   /// Clear stored keys (for testing or reset purposes)

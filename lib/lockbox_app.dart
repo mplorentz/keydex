@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'models/lockbox.dart';
 import 'services/key_service.dart';
+import 'services/lockbox_service.dart';
 
 void main() {
   runApp(const LockboxApp());
@@ -151,77 +153,6 @@ class _ErrorScreen extends StatelessWidget {
   }
 }
 
-// Simple data model
-class Lockbox {
-  final String id;
-  final String name;
-  final String content;
-  final DateTime createdAt;
-
-  Lockbox({
-    required this.id,
-    required this.name,
-    required this.content,
-    required this.createdAt,
-  });
-}
-
-// Global state for prototype (will be replaced with proper storage later)
-class LockboxData {
-  static final List<Lockbox> _lockboxes = [
-    Lockbox(
-      id: '1',
-      name: 'Personal Notes',
-      content:
-          'This is my private journal entry. It contains sensitive thoughts and ideas that I want to keep secure.',
-      createdAt: DateTime.now().subtract(const Duration(days: 2)),
-    ),
-    Lockbox(
-      id: '2',
-      name: 'Passwords',
-      content: 'Gmail: mypassword123\nBank: secretbank456\nSocial Media: social789',
-      createdAt: DateTime.now().subtract(const Duration(days: 1)),
-    ),
-    Lockbox(
-      id: '3',
-      name: 'Secret Recipe',
-      content:
-          'Grandma\'s secret chocolate chip cookie recipe:\n- 2 cups flour\n- 1 cup butter\n- Secret ingredient: love',
-      createdAt: DateTime.now().subtract(const Duration(hours: 3)),
-    ),
-  ];
-
-  static List<Lockbox> get lockboxes => List.unmodifiable(_lockboxes);
-
-  static void addLockbox(Lockbox lockbox) {
-    _lockboxes.add(lockbox);
-  }
-
-  static void updateLockbox(String id, String name, String content) {
-    final index = _lockboxes.indexWhere((lb) => lb.id == id);
-    if (index != -1) {
-      _lockboxes[index] = Lockbox(
-        id: id,
-        name: name,
-        content: content,
-        createdAt: _lockboxes[index].createdAt,
-      );
-    }
-  }
-
-  static void deleteLockbox(String id) {
-    _lockboxes.removeWhere((lb) => lb.id == id);
-  }
-
-  static Lockbox? getLockbox(String id) {
-    try {
-      return _lockboxes.firstWhere((lb) => lb.id == id);
-    } catch (e) {
-      return null;
-    }
-  }
-}
-
 // Main list screen
 class LockboxListScreen extends StatefulWidget {
   const LockboxListScreen({super.key});
@@ -232,19 +163,34 @@ class LockboxListScreen extends StatefulWidget {
 
 class _LockboxListScreenState extends State<LockboxListScreen> {
   String? _currentPublicKey;
+  List<Lockbox> _lockboxes = [];
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _loadCurrentPublicKey();
+    _loadData();
   }
 
-  Future<void> _loadCurrentPublicKey() async {
-    final publicKey = await KeyService.getCurrentPublicKey();
-    if (mounted) {
-      setState(() {
-        _currentPublicKey = publicKey;
-      });
+  Future<void> _loadData() async {
+    try {
+      final publicKey = await KeyService.getCurrentPublicKey();
+      final lockboxes = await LockboxService.getAllLockboxes();
+
+      if (mounted) {
+        setState(() {
+          _currentPublicKey = publicKey;
+          _lockboxes = lockboxes;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading data: $e');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -259,73 +205,76 @@ class _LockboxListScreenState extends State<LockboxListScreen> {
       body: Column(
         children: [
           Expanded(
-            child: LockboxData.lockboxes.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.lock_outline, size: 64, color: Colors.grey),
-                        const SizedBox(height: 16),
-                        Text(
-                          'No lockboxes yet',
-                          style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _lockboxes.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.lock_outline, size: 64, color: Colors.grey),
+                            const SizedBox(height: 16),
+                            Text(
+                              'No lockboxes yet',
+                              style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Tap + to create your first secure lockbox',
+                              style: TextStyle(color: Colors.grey[500]),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Tap + to create your first secure lockbox',
-                          style: TextStyle(color: Colors.grey[500]),
-                        ),
-                      ],
-                    ),
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: LockboxData.lockboxes.length,
-                    itemBuilder: (context, index) {
-                      final lockbox = LockboxData.lockboxes[index];
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        child: ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: Colors.blue[100],
-                            child: Icon(Icons.lock, color: Colors.blue[700]),
-                          ),
-                          title: Text(
-                            lockbox.name,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                lockbox.content.length > 50
-                                    ? '${lockbox.content.substring(0, 50)}...'
-                                    : lockbox.content,
-                                style: TextStyle(color: Colors.grey[600]),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: _lockboxes.length,
+                        itemBuilder: (context, index) {
+                          final lockbox = _lockboxes[index];
+                          return Card(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            child: ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor: Colors.blue[100],
+                                child: Icon(Icons.lock, color: Colors.blue[700]),
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Created ${_formatDate(lockbox.createdAt)}',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey[500],
-                                ),
+                              title: Text(
+                                lockbox.name,
+                                style: const TextStyle(fontWeight: FontWeight.bold),
                               ),
-                            ],
-                          ),
-                          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => LockboxDetailScreen(lockboxId: lockbox.id),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    lockbox.content.length > 50
+                                        ? '${lockbox.content.substring(0, 50)}...'
+                                        : lockbox.content,
+                                    style: TextStyle(color: Colors.grey[600]),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Created ${_formatDate(lockbox.createdAt)}',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey[500],
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ).then((_) => setState(() {})); // Refresh when returning
-                          },
-                        ),
-                      );
-                    },
-                  ),
+                              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        LockboxDetailScreen(lockboxId: lockbox.id),
+                                  ),
+                                ).then((_) => _loadData()); // Refresh when returning
+                              },
+                            ),
+                          );
+                        },
+                      ),
           ),
           // Debug section showing current user's public key
           Container(
@@ -373,7 +322,7 @@ class _LockboxListScreenState extends State<LockboxListScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const CreateLockboxScreen()),
-          ).then((_) => setState(() {})); // Refresh when returning
+          ).then((_) => _loadData()); // Refresh when returning
         },
         backgroundColor: Colors.blue[700],
         child: const Icon(Icons.add),
@@ -405,15 +354,34 @@ class LockboxDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final lockbox = LockboxData.getLockbox(lockboxId);
+    return FutureBuilder<Lockbox?>(
+      future: LockboxService.getLockbox(lockboxId),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text('Loading...'),
+              backgroundColor: Colors.blue[700],
+              foregroundColor: Colors.white,
+            ),
+            body: const Center(child: CircularProgressIndicator()),
+          );
+        }
 
-    if (lockbox == null) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Lockbox Not Found')),
-        body: const Center(child: Text('This lockbox no longer exists.')),
-      );
-    }
+        final lockbox = snapshot.data;
+        if (lockbox == null) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('Lockbox Not Found')),
+            body: const Center(child: Text('This lockbox no longer exists.')),
+          );
+        }
 
+        return _buildLockboxDetail(context, lockbox);
+      },
+    );
+  }
+
+  Widget _buildLockboxDetail(BuildContext context, Lockbox lockbox) {
     return Scaffold(
       appBar: AppBar(
         title: Text(lockbox.name),
@@ -528,10 +496,12 @@ class LockboxDetailScreen extends StatelessWidget {
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () {
-              LockboxData.deleteLockbox(lockbox.id);
-              Navigator.pop(context); // Close dialog
-              Navigator.pop(context); // Go back to list
+            onPressed: () async {
+              await LockboxService.deleteLockbox(lockbox.id);
+              if (context.mounted) {
+                Navigator.pop(context); // Close dialog
+                Navigator.pop(context); // Go back to list
+              }
             },
             child: const Text('Delete', style: TextStyle(color: Colors.red)),
           ),
@@ -574,7 +544,7 @@ class _CreateLockboxScreenState extends State<CreateLockboxScreen> {
         foregroundColor: Colors.white,
         actions: [
           TextButton(
-            onPressed: _saveLockbox,
+            onPressed: () => _saveLockbox(),
             child: const Text('Save',
                 style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           ),
@@ -656,24 +626,37 @@ class _CreateLockboxScreenState extends State<CreateLockboxScreen> {
     );
   }
 
-  void _saveLockbox() {
+  Future<void> _saveLockbox() async {
     if (_formKey.currentState!.validate()) {
-      final newLockbox = Lockbox(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        name: _nameController.text.trim(),
-        content: _contentController.text,
-        createdAt: DateTime.now(),
-      );
+      try {
+        final newLockbox = Lockbox(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          name: _nameController.text.trim(),
+          content: _contentController.text,
+          createdAt: DateTime.now(),
+        );
 
-      LockboxData.addLockbox(newLockbox);
-      Navigator.pop(context);
+        await LockboxService.addLockbox(newLockbox);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Lockbox "${newLockbox.name}" created successfully!'),
-          backgroundColor: Colors.green,
-        ),
-      );
+        if (mounted) {
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Lockbox "${newLockbox.name}" created successfully!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to save lockbox: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
     }
   }
 }
@@ -697,10 +680,17 @@ class _EditLockboxScreenState extends State<EditLockboxScreen> {
   @override
   void initState() {
     super.initState();
-    _lockbox = LockboxData.getLockbox(widget.lockboxId);
-    if (_lockbox != null) {
-      _nameController.text = _lockbox!.name;
-      _contentController.text = _lockbox!.content;
+    _loadLockbox();
+  }
+
+  Future<void> _loadLockbox() async {
+    final lockbox = await LockboxService.getLockbox(widget.lockboxId);
+    if (mounted && lockbox != null) {
+      setState(() {
+        _lockbox = lockbox;
+        _nameController.text = lockbox.name;
+        _contentController.text = lockbox.content;
+      });
     }
   }
 
@@ -727,7 +717,7 @@ class _EditLockboxScreenState extends State<EditLockboxScreen> {
         foregroundColor: Colors.white,
         actions: [
           TextButton(
-            onPressed: _saveLockbox,
+            onPressed: () => _saveLockbox(),
             child: const Text('Save',
                 style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           ),
@@ -807,22 +797,34 @@ class _EditLockboxScreenState extends State<EditLockboxScreen> {
     );
   }
 
-  void _saveLockbox() {
+  Future<void> _saveLockbox() async {
     if (_formKey.currentState!.validate()) {
-      LockboxData.updateLockbox(
-        widget.lockboxId,
-        _nameController.text.trim(),
-        _contentController.text,
-      );
+      try {
+        await LockboxService.updateLockbox(
+          widget.lockboxId,
+          _nameController.text.trim(),
+          _contentController.text,
+        );
 
-      Navigator.pop(context);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Lockbox updated successfully!'),
-          backgroundColor: Colors.green,
-        ),
-      );
+        if (mounted) {
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Lockbox "${_nameController.text.trim()}" updated successfully!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to update lockbox: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
     }
   }
 }
