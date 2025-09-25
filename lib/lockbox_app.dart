@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'models/lockbox.dart';
 import 'services/key_service.dart';
 import 'services/lockbox_service.dart';
+import 'services/logger.dart';
 
 void main() {
   runApp(const LockboxApp());
@@ -36,7 +37,7 @@ class _LockboxAppState extends State<LockboxApp> {
         });
       }
     } catch (e) {
-      print('Error initializing app: $e');
+      Log.error('Error initializing app', e);
       if (mounted) {
         setState(() {
           _isInitializing = false;
@@ -185,7 +186,7 @@ class _LockboxListScreenState extends State<LockboxListScreen> {
         });
       }
     } catch (e) {
-      print('Error loading data: $e');
+      Log.error('Error loading data', e);
       if (mounted) {
         setState(() {
           _isLoading = false;

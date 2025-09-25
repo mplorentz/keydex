@@ -2,6 +2,7 @@ import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip44/nip44.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'logger.dart';
 
 /// Key management service for storing Nostr keys securely
 /// Only stores the private key - public key is derived as needed
@@ -13,6 +14,7 @@ class KeyService {
 
   /// Generate a new Nostr key pair and store only the private key securely
   static Future<KeyPair> generateAndStoreNostrKey() async {
+    Log.info('Generating and storing new Nostr key pair');
     final keyPair = Bip340.generatePrivateKey();
 
     // Only store the private key - public key can be derived
@@ -37,10 +39,13 @@ class KeyService {
 
         // Create full KeyPair with derived public key
         _cachedKeyPair = KeyPair(privateKey, publicKey, null, null);
+        Log.info('Successfully loaded Nostr key pair from secure storage: $publicKey');
         return _cachedKeyPair;
+      } else {
+        Log.error('No private key found in secure storage');
       }
     } catch (e) {
-      print('Error reading stored key: $e');
+      Log.error('Error reading stored key', e);
     }
 
     return null;

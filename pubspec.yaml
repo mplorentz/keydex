@@ -18,6 +18,7 @@ dependencies:
   ndk: ^0.3.2
   shared_preferences: ^2.5.3
   flutter_secure_storage: ^9.2.2
+  logger: ^2.4.0
 
 dev_dependencies:
   flutter_test:

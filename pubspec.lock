@@ -506,7 +506,7 @@ packages:
     source: hosted
     version: "1.0.11"
   logger:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: logger
       sha256: "2621da01aabaf223f8f961e751f2c943dbb374dc3559b982f200ccedadaa6999"

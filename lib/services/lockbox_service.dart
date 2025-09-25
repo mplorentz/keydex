@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/lockbox.dart';
 import 'key_service.dart';
+import 'logger.dart';
 
 /// Service for managing persistent, encrypted lockbox storage
 class LockboxService {
@@ -23,7 +24,7 @@ class LockboxService {
 
       _isInitialized = true;
     } catch (e) {
-      print('Error initializing LockboxService: $e');
+      Log.error('Error initializing LockboxService', e);
       _cachedLockboxes = [];
       _isInitialized = true;
     }
@@ -33,9 +34,11 @@ class LockboxService {
   static Future<void> _loadLockboxes() async {
     final prefs = await SharedPreferences.getInstance();
     final encryptedData = prefs.getString(_lockboxesKey);
+    Log.info('Loading encrypted lockboxes from SharedPreferences');
 
     if (encryptedData == null || encryptedData.isEmpty) {
       _cachedLockboxes = [];
+      Log.info('No encrypted lockboxes found in SharedPreferences');
       return;
     }
 
@@ -43,11 +46,13 @@ class LockboxService {
       // Decrypt the data using our Nostr key
       final decryptedJson = await KeyService.decryptText(encryptedData);
       final List<dynamic> jsonList = json.decode(decryptedJson);
+      Log.info('Decrypted ${jsonList.length} lockboxes');
 
+      // TODO: Don't cache these decrypted in memory
       _cachedLockboxes =
           jsonList.map((json) => Lockbox.fromJson(json as Map<String, dynamic>)).toList();
     } catch (e) {
-      print('Error decrypting lockboxes: $e');
+      Log.error('Error decrypting lockboxes', e);
       _cachedLockboxes = [];
     }
   }
@@ -67,8 +72,9 @@ class LockboxService {
       // Save to SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_lockboxesKey, encryptedData);
+      Log.info('Saved ${jsonList.length} encrypted lockboxes to SharedPreferences');
     } catch (e) {
-      print('Error encrypting and saving lockboxes: $e');
+      Log.error('Error encrypting and saving lockboxes', e);
       throw Exception('Failed to save lockboxes: $e');
     }
   }
