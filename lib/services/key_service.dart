@@ -2,6 +2,7 @@ import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip44/nip44.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:meta/meta.dart';
 import 'logger.dart';
 
 /// Key management service for storing Nostr keys securely
@@ -109,6 +110,12 @@ class KeyService {
   /// Clear stored keys (for testing or reset purposes)
   static Future<void> clearStoredKeys() async {
     await _storage.delete(key: _nostrPrivateKeyKey);
+    _cachedKeyPair = null;
+  }
+
+  /// Test-only helper to reset the in-memory cache without touching storage
+  @visibleForTesting
+  static void resetCacheForTest() {
     _cachedKeyPair = null;
   }
 }
