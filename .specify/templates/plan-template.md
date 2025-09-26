@@ -193,7 +193,7 @@ ios/ or android/
 - Implementation tasks to make tests pass
 
 **Ordering Strategy**:
-- TDD order: Tests before implementation 
+- Outside-In order: UI stubs first, then implementation behind components
 - Dependency order: Models before services before UI
 - Mark [P] for parallel execution (independent files)
 
