@@ -1,8 +1,8 @@
 import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../models/lockbox.dart';
 import 'key_service.dart';
 import 'logger.dart';
+import 'stores.dart';
 import 'package:meta/meta.dart';
 
 /// Service for managing persistent, encrypted lockbox storage
@@ -10,23 +10,23 @@ class LockboxService {
   static const String _lockboxesKey = 'encrypted_lockboxes';
   static List<Lockbox>? _cachedLockboxes;
   static bool _isInitialized = false;
-  static bool _disableSampleDataForTest = false;
+  static PreferencesStore _prefsStore = SharedPreferencesStore();
 
-  /// Test-only helper to disable sample data creation during initialization
+  /// Test-only: inject custom stores
   @visibleForTesting
-  static void disableSampleDataForTest([bool disable = true]) {
-    _disableSampleDataForTest = disable;
+  static void setStoresForTest({PreferencesStore? prefsStore}) {
+    if (prefsStore != null) _prefsStore = prefsStore;
   }
 
   /// Initialize the storage and load existing lockboxes
-  static Future<void> initialize() async {
+  static Future<void> initialize({bool createSampleDataIfEmpty = true}) async {
     if (_isInitialized) return;
 
     try {
       await _loadLockboxes();
 
       // If no lockboxes exist, create some sample data for first-time users
-      if (_cachedLockboxes!.isEmpty && !_disableSampleDataForTest) {
+      if (_cachedLockboxes!.isEmpty && createSampleDataIfEmpty) {
         await _createSampleData();
       }
 
@@ -40,8 +40,7 @@ class LockboxService {
 
   /// Load lockboxes from SharedPreferences and decrypt them
   static Future<void> _loadLockboxes() async {
-    final prefs = await SharedPreferences.getInstance();
-    final encryptedData = prefs.getString(_lockboxesKey);
+    final encryptedData = await _prefsStore.getString(_lockboxesKey);
     Log.info('Loading encrypted lockboxes from SharedPreferences');
 
     if (encryptedData == null || encryptedData.isEmpty) {
@@ -72,14 +71,18 @@ class LockboxService {
     try {
       // Convert to JSON
       final jsonList = _cachedLockboxes!.map((lockbox) => lockbox.toJson()).toList();
+      if (jsonList.isEmpty) {
+        await _prefsStore.remove(_lockboxesKey);
+        Log.info('Saved 0 encrypted lockboxes to SharedPreferences (removed key)');
+        return;
+      }
       final jsonString = json.encode(jsonList);
 
       // Encrypt the JSON data using our Nostr key
       final encryptedData = await KeyService.encryptText(jsonString);
 
       // Save to SharedPreferences
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_lockboxesKey, encryptedData);
+      await _prefsStore.setString(_lockboxesKey, encryptedData);
       Log.info('Saved ${jsonList.length} encrypted lockboxes to SharedPreferences');
     } catch (e) {
       Log.error('Error encrypting and saving lockboxes', e);
@@ -164,8 +167,7 @@ class LockboxService {
   /// Clear all lockboxes (for testing)
   static Future<void> clearAll() async {
     _cachedLockboxes = [];
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_lockboxesKey);
+    await _prefsStore.remove(_lockboxesKey);
     _isInitialized = false;
   }
 

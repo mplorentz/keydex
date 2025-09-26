@@ -1,14 +1,14 @@
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip44/nip44.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:meta/meta.dart';
 import 'logger.dart';
+import 'stores.dart';
 
 /// Key management service for storing Nostr keys securely
 /// Only stores the private key - public key is derived as needed
 class KeyService {
-  static const _storage = FlutterSecureStorage();
+  static SecureKeyStore _keyStore = FlutterSecureKeyStore();
   static const String _nostrPrivateKeyKey = 'nostr_private_key';
 
   static KeyPair? _cachedKeyPair;
@@ -19,7 +19,7 @@ class KeyService {
     final keyPair = Bip340.generatePrivateKey();
 
     // Only store the private key - public key can be derived
-    await _storage.write(key: _nostrPrivateKeyKey, value: keyPair.privateKey);
+    await _keyStore.write(key: _nostrPrivateKeyKey, value: keyPair.privateKey);
 
     _cachedKeyPair = keyPair;
     return keyPair;
@@ -32,7 +32,7 @@ class KeyService {
     }
 
     try {
-      final privateKey = await _storage.read(key: _nostrPrivateKeyKey);
+      final privateKey = await _keyStore.read(key: _nostrPrivateKeyKey);
 
       if (privateKey != null) {
         // Derive public key from private key
@@ -109,7 +109,7 @@ class KeyService {
 
   /// Clear stored keys (for testing or reset purposes)
   static Future<void> clearStoredKeys() async {
-    await _storage.delete(key: _nostrPrivateKeyKey);
+    await _keyStore.delete(key: _nostrPrivateKeyKey);
     _cachedKeyPair = null;
   }
 
@@ -117,5 +117,11 @@ class KeyService {
   @visibleForTesting
   static void resetCacheForTest() {
     _cachedKeyPair = null;
+  }
+
+  /// Test-only: inject a custom key store
+  @visibleForTesting
+  static void setKeyStoreForTest(SecureKeyStore store) {
+    _keyStore = store;
   }
 }

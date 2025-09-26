@@ -1,61 +1,50 @@
-import 'dart:convert';
-
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:keydex/models/lockbox.dart';
 import 'package:keydex/services/key_service.dart';
 import 'package:keydex/services/lockbox_service.dart' as app_lockbox_service;
+import 'package:keydex/services/stores.dart';
+
+// In-memory fakes
+class FakeSecureKeyStore implements SecureKeyStore {
+  final Map<String, String> map = {};
+  @override
+  Future<void> delete({required String key}) async => map.remove(key);
+  @override
+  Future<String?> read({required String key}) async => map[key];
+  @override
+  Future<void> write({required String key, required String? value}) async {
+    if (value == null) {
+      map.remove(key);
+    } else {
+      map[key] = value;
+    }
+  }
+}
+
+class FakePreferencesStore implements PreferencesStore {
+  final Map<String, String> map = {};
+  @override
+  Future<String?> getString(String key) async => map[key];
+  @override
+  Future<void> setString(String key, String value) async => map[key] = value;
+  @override
+  Future<void> remove(String key) async => map.remove(key);
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  const MethodChannel secureStorageChannel =
-      MethodChannel('plugins.it_nomads.com/flutter_secure_storage');
-  final Map<String, String> secureStore = {};
+  late FakeSecureKeyStore fakeKeyStore;
+  late FakePreferencesStore fakePrefs;
 
   setUp(() async {
-    secureStore.clear();
-    SharedPreferences.setMockInitialValues({});
-
-    // Mock secure storage
-    secureStorageChannel.setMockMethodCallHandler((MethodCall call) async {
-      switch (call.method) {
-        case 'write':
-          final String key = (call.arguments as Map)['key'] as String;
-          final String? value = (call.arguments as Map)['value'] as String?;
-          if (value == null) {
-            secureStore.remove(key);
-          } else {
-            secureStore[key] = value;
-          }
-          return null;
-        case 'read':
-          final String key = (call.arguments as Map)['key'] as String;
-          return secureStore[key];
-        case 'readAll':
-          return Map<String, String>.from(secureStore);
-        case 'delete':
-          final String key = (call.arguments as Map)['key'] as String;
-          secureStore.remove(key);
-          return null;
-        case 'deleteAll':
-          secureStore.clear();
-          return null;
-        case 'containsKey':
-          final String key = (call.arguments as Map)['key'] as String;
-          return secureStore.containsKey(key);
-        default:
-          return null;
-      }
-    });
-
+    fakeKeyStore = FakeSecureKeyStore();
+    fakePrefs = FakePreferencesStore();
+    KeyService.setKeyStoreForTest(fakeKeyStore);
+    app_lockbox_service.LockboxService.setStoresForTest(prefsStore: fakePrefs);
     await KeyService.clearStoredKeys();
     KeyService.resetCacheForTest();
-
-    // Ensure no sample data during tests
-    app_lockbox_service.LockboxService.disableSampleDataForTest(true);
     await app_lockbox_service.LockboxService.clearAll();
   });
 
@@ -68,6 +57,8 @@ void main() {
   test('add/get/update/delete lockbox persists via encrypted SharedPreferences', () async {
     // Initialize key so encrypt/decrypt works
     await KeyService.generateAndStoreNostrKey();
+    // Ensure no sample data is created
+    await app_lockbox_service.LockboxService.initialize(createSampleDataIfEmpty: false);
 
     // Start with empty list
     final startList = await app_lockbox_service.LockboxService.getAllLockboxes();
@@ -83,8 +74,7 @@ void main() {
     await app_lockbox_service.LockboxService.addLockbox(lockbox);
 
     // Verify ciphertext stored, not plaintext
-    final prefs = await SharedPreferences.getInstance();
-    final encrypted = prefs.getString('encrypted_lockboxes');
+    final encrypted = await fakePrefs.getString('encrypted_lockboxes');
     expect(encrypted, isNotNull);
     expect(encrypted!.isNotEmpty, isTrue);
     expect(encrypted.contains('Top secret content'), isFalse);
@@ -107,7 +97,7 @@ void main() {
     expect(fetched2.content, 'Still hidden');
 
     // Ensure on disk string does not contain plaintext after update
-    final encrypted2 = prefs.getString('encrypted_lockboxes');
+    final encrypted2 = await fakePrefs.getString('encrypted_lockboxes');
     expect(encrypted2, isNotNull);
     expect(encrypted2!.contains('Still hidden'), isFalse);
     expect(encrypted2.contains('Renamed'), isFalse);
@@ -116,6 +106,9 @@ void main() {
     await app_lockbox_service.LockboxService.deleteLockbox('abc');
     final afterDelete = await app_lockbox_service.LockboxService.getLockbox('abc');
     expect(afterDelete, isNull);
+    // Verify preferences no longer contain the key
+    final afterDeleteStored = await fakePrefs.getString('encrypted_lockboxes');
+    expect(afterDeleteStored, isNull);
   });
 }
 
