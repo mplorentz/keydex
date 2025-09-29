@@ -84,7 +84,8 @@ specs/[###-feature]/
 ├── research.md          # Phase 0 output (/plan command)
 ├── data-model.md        # Phase 1 output (/plan command)
 ├── quickstart.md        # Phase 1 output (/plan command)
-├── contracts/           # Phase 1 output (/plan command)
+├── contracts/           # Phase 1 output (/plan command) - web services only
+├── service-interfaces/  # Phase 1 output (/plan command) - client apps only
 └── tasks.md             # Phase 2 output (/tasks command - NOT created by /plan)
 ```
 
@@ -156,15 +157,16 @@ ios/ or android/
    - Validation rules from requirements
    - State transitions if applicable
 
-2. **Generate API contracts** from functional requirements:
-   - For each user action → endpoint
-   - Use standard REST/GraphQL patterns
-   - Output OpenAPI/GraphQL schema to `/contracts/`
+2. **Design service interfaces** from functional requirements:
+   - For web services: Generate API contracts (REST/GraphQL) → `/contracts/`
+   - For client apps: Design service method signatures and return types
+   - For mobile apps: Focus on local service interfaces and data models
+   - Adapt approach based on project type from Technical Context
 
-3. **Generate contract tests** from contracts:
-   - One test file per endpoint
-   - Assert request/response schemas
-   - Tests must fail (no implementation yet)
+3. **Generate appropriate tests** based on project type:
+   - Web services: Contract tests for API endpoints
+   - Client apps: Unit tests for service methods and data models
+   - All projects: Integration tests for complete workflows
 
 4. **Extract test scenarios** from user stories:
    - Each story → integration test scenario
@@ -179,23 +181,25 @@ ios/ or android/
    - Keep under 150 lines for token efficiency
    - Output to repository root
 
-**Output**: data-model.md, /contracts/*, failing tests, quickstart.md, agent-specific file
+**Output**: data-model.md, service interfaces (or contracts/), failing tests, quickstart.md, agent-specific file
 
 ## Phase 2: Task Planning Approach
 *This section describes what the /tasks command will do - DO NOT execute during /plan*
 
 **Task Generation Strategy**:
 - Load `.specify/templates/tasks-template.md` as base
-- Generate tasks from Phase 1 design docs (contracts, data model, quickstart)
-- Each contract → contract test task [P]
+- Generate tasks from Phase 1 design docs (contracts/service-interfaces, data model, quickstart)
+- Web services: Each contract → contract test task [P]
+- Client apps: Each service interface → unit test task [P]
 - Each entity → model creation task [P] 
 - Each user story → integration test task
 - Implementation tasks to make tests pass
 
 **Ordering Strategy**:
 - Outside-In order: UI stubs first, then implementation behind components
-- Dependency order: Models before services before UI
+- Dependency order: UI, Models, Services (aligns with outside-in development)
 - Mark [P] for parallel execution (independent files)
+- Adapt based on project type: Web services may need API-first, client apps use UI-first
 
 **Estimated Output**: 25-30 numbered, ordered tasks in tasks.md
 
