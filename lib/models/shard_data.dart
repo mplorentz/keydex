@@ -112,12 +112,12 @@ extension ShardDataExtension on ShardData {
 /// Convert to JSON for storage
 Map<String, dynamic> shardDataToJson(ShardData shardData) {
   return {
-    'shard': shardData.shard,
+    'share': shardData.shard,
     'threshold': shardData.threshold,
-    'shardIndex': shardData.shardIndex,
-    'totalShards': shardData.totalShards,
-    'primeMod': shardData.primeMod,
-    'creatorPubkey': shardData.creatorPubkey,
+    'share_index': shardData.shardIndex,
+    'total_shares': shardData.totalShards,
+    'prime_mod': shardData.primeMod,
+    'creator_pubkey': shardData.creatorPubkey,
     'createdAt': shardData.createdAt,
   };
 }

@@ -11,27 +11,29 @@ import 'logger.dart';
 
 /// Service for distributing shards to key holders via Nostr
 class ShardDistributionService {
-  static Ndk? _ndk;
+  static Ndk? _defaultNdk;
 
-  /// Initialize NDK instance
-  static Future<void> _initializeNdk() async {
-    _ndk ??= Ndk.defaultConfig();
+  /// Get or initialize NDK instance
+  static Future<Ndk> _getNdk(Ndk? providedNdk) async {
+    if (providedNdk != null) {
+      return providedNdk;
+    }
+    _defaultNdk ??= Ndk.defaultConfig();
+    return _defaultNdk!;
   }
 
   /// Distribute shards to all key holders
   static Future<List<ShardEvent>> distributeShards({
     required BackupConfig config,
     required List<ShardData> shards,
+    Ndk? ndk, // Optional NDK instance for testing
   }) async {
     try {
       if (shards.length != config.totalKeys) {
         throw ArgumentError('Number of shards must equal totalKeys');
       }
 
-      await _initializeNdk();
-      if (_ndk == null) {
-        throw Exception('Failed to initialize NDK');
-      }
+      final activeNdk = await _getNdk(ndk);
 
       final shardEvents = <ShardEvent>[];
 
@@ -44,7 +46,7 @@ class ShardDistributionService {
           final shardJson = shardDataToJson(shard);
           final shardString = json.encode(shardJson);
 
-          final rumor = await _ndk!.giftWrap.createRumor(
+          final rumor = await activeNdk.giftWrap.createRumor(
             content: shardString,
             kind: 1, // Text note kind
             tags: [
@@ -55,13 +57,13 @@ class ShardDistributionService {
           );
 
           // Wrap the rumor in a gift wrap for the recipient
-          final giftWrap = await _ndk!.giftWrap.toGiftWrap(
+          final giftWrap = await activeNdk.giftWrap.toGiftWrap(
             rumor: rumor,
             recipientPubkey: keyHolder.pubkey, // Hex format
           );
 
           // Broadcast the gift wrap event
-          _ndk!.broadcast.broadcast(
+          activeNdk.broadcast.broadcast(
             nostrEvent: giftWrap,
             specificRelays: ['ws://localhost:10547'],
           );
@@ -101,12 +103,10 @@ class ShardDistributionService {
   static Future<void> updateDistributionStatus({
     required String lockboxId,
     required List<ShardEvent> shardEvents,
+    Ndk? ndk, // Optional NDK instance for testing
   }) async {
     try {
-      await _initializeNdk();
-      if (_ndk == null) {
-        throw Exception('Failed to initialize NDK');
-      }
+      final activeNdk = await _getNdk(ndk);
 
       for (final shardEvent in shardEvents) {
         try {
@@ -117,7 +117,7 @@ class ShardDistributionService {
             since: shardEvent.createdAt.millisecondsSinceEpoch ~/ 1000,
           );
 
-          final acknowledgmentResponse = _ndk!.requests.query(
+          final acknowledgmentResponse = activeNdk.requests.query(
             filters: [filter],
           );
 

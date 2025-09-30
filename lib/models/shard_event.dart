@@ -145,21 +145,10 @@ bool _isValidEventId(String eventId) {
   return RegExp(r'^[0-9a-fA-F]+$').hasMatch(eventId);
 }
 
-/// Validate hex pubkey format
+/// Validate hex pubkey format (64 characters, no 0x prefix)
 bool _isValidHexPubkey(String pubkey) {
-  if (!pubkey.startsWith('0x')) return false;
-  if (pubkey.length != 66) return false; // 0x + 64 hex chars
-
-  // Check if all characters after '0x' are valid hex
-  for (int i = 2; i < pubkey.length; i++) {
-    final char = pubkey[i];
-    if (!((char.codeUnitAt(0) >= 48 && char.codeUnitAt(0) <= 57) || // 0-9
-        (char.codeUnitAt(0) >= 97 && char.codeUnitAt(0) <= 102))) {
-      // a-f
-      return false;
-    }
-  }
-  return true;
+  if (pubkey.length != 64) return false; // 64 hex chars, no 0x prefix
+  return RegExp(r'^[0-9a-fA-F]+$').hasMatch(pubkey);
 }
 
 /// Validate npub format (bech32 encoded Nostr public key)
