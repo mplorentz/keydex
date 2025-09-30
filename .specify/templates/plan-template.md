@@ -156,6 +156,7 @@ ios/ or android/
    - Entity name, fields, relationships
    - Validation rules from requirements
    - State transitions if applicable
+   - Entities should be value types unless they have a specific need to be reference types.
 
 2. **Design service interfaces** from functional requirements:
    - For web services: Generate API contracts (REST/GraphQL) → `/contracts/`

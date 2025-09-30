@@ -32,46 +32,46 @@
 - Include exact file paths in descriptions
 
 ## Phase 3.1: Setup
-- [ ] T001 Add ntc_dcrypto dependency to pubspec.yaml for Shamir's Secret Sharing
+- [x] T001 Add ntc_dcrypto dependency to pubspec.yaml for Shamir's Secret Sharing
 
 ## Phase 3.2: UI Stubs & Manual Verification (Outside-In Approach)
 **Start with user-facing components for rapid feedback**
-- [ ] T002 [P] Stub BackupConfigScreen with placeholder content in lib/screens/backup_config_screen.dart
-- [ ] T003 [P] Stub KeyHolderList widget with placeholder content in lib/widgets/key_holder_list.dart
-- [ ] T004 [P] Stub BackupSummary widget with placeholder content in lib/widgets/backup_summary.dart
-- [ ] T005 [P] Stub RecoveryScreen with placeholder content in lib/screens/recovery_screen.dart
-- [ ] T006 [P] Integrate backup config into existing lockbox creation flow in lib/screens/
-- [ ] T007 Manual verification: Navigate through stubbed backup UI flow
+- [x] T002 [P] Stub BackupConfigScreen with placeholder content in lib/screens/backup_config_screen.dart
+- [x] T003 [P] Stub KeyHolderList widget with placeholder content in lib/widgets/key_holder_list.dart
+- [x] T004 [P] Stub BackupSummary widget with placeholder content in lib/widgets/backup_summary.dart
+- [x] T005 [P] Stub RecoveryScreen with placeholder content in lib/screens/recovery_screen.dart
+- [x] T006 [P] Integrate backup config into existing lockbox creation flow in lib/screens/
+- [x] T007 Manual verification: Navigate through stubbed backup UI flow
 
 ## Phase 3.3: Core Implementation - Data Models (Behind UI Components)
-- [ ] T008 [P] Create BackupConfig model in lib/models/backup_config.dart
-- [ ] T009 [P] Create KeyHolder model in lib/models/key_holder.dart
-- [ ] T010 [P] Create ShardEvent model in lib/models/shard_event.dart
-- [ ] T011 [P] Create ShardData model in lib/models/shard_data.dart
-- [ ] T012 [P] Create BackupStatus enum in lib/models/backup_status.dart
-- [ ] T013 [P] Create KeyHolderStatus enum in lib/models/key_holder_status.dart
-- [ ] T014 [P] Create EventStatus enum in lib/models/event_status.dart
+- [x] T008 [P] Create BackupConfig model in lib/models/backup_config.dart
+- [x] T009 [P] Create KeyHolder model in lib/models/key_holder.dart
+- [x] T010 [P] Create ShardEvent model in lib/models/shard_event.dart
+- [x] T011 [P] Create ShardData model in lib/models/shard_data.dart
+- [x] T012 [P] Create BackupStatus enum in lib/models/backup_status.dart
+- [x] T013 [P] Create KeyHolderStatus enum in lib/models/key_holder_status.dart
+- [x] T014 [P] Create EventStatus enum in lib/models/event_status.dart
 
 ## Phase 3.4: Core Implementation - Services
-- [ ] T015 [P] Create BackupService with Shamir's Secret Sharing in lib/services/backup_service.dart
-- [ ] T016 [P] Extend NostrService for gift wrap events in lib/services/nostr_service.dart
-- [ ] T017 [P] Create ShardDistributionService in lib/services/shard_distribution_service.dart
-- [ ] T018 [P] Create RecoveryService for key reconstruction in lib/services/recovery_service.dart
-- [ ] T019 [P] Extend existing KeyService for backup key management in lib/services/key_service.dart
+- [x] T015 [P] Create BackupService with Shamir's Secret Sharing in lib/services/backup_service.dart
+- [x] T016 [P] Extend NostrService for gift wrap events in lib/services/nostr_service.dart
+- [x] T017 [P] Create ShardDistributionService in lib/services/shard_distribution_service.dart
+- [x] T018 [P] Create RecoveryService for key reconstruction in lib/services/recovery_service.dart
+- [x] T019 [P] Extend existing KeyService for backup key management in lib/services/key_service.dart
 
 ## Phase 3.5: Core Implementation - UI Components
-- [ ] T020 Implement BackupConfigScreen functionality in lib/screens/backup_config_screen.dart
-- [ ] T021 Implement KeyHolderList widget functionality in lib/widgets/key_holder_list.dart
-- [ ] T022 Implement BackupSummary widget functionality in lib/widgets/backup_summary.dart
-- [ ] T023 Implement RecoveryScreen functionality in lib/screens/recovery_screen.dart
-- [ ] T024 Integrate backup configuration into lockbox creation workflow
+- [x] T020 Implement BackupConfigScreen functionality in lib/screens/backup_config_screen.dart
+- [x] T021 Implement KeyHolderList widget functionality in lib/widgets/key_holder_list.dart
+- [x] T022 Implement BackupSummary widget functionality in lib/widgets/backup_summary.dart
+- [x] T023 Implement RecoveryScreen functionality in lib/screens/recovery_screen.dart
+- [x] T024 Integrate backup configuration into lockbox creation workflow
 
 ## Phase 3.6: Refactoring Pass 1 (Post-Implementation)
 **Clean up implementation before adding complexity**
-- [ ] T025 Remove code duplication from core implementation
-- [ ] T026 Extract common patterns into reusable functions
-- [ ] T027 Improve naming and code clarity
-- [ ] T028 Consolidate error handling patterns
+- [x] T025 Remove code duplication from core implementation
+- [x] T026 Extract common patterns into reusable functions
+- [x] T027 Improve naming and code clarity
+- [x] T028 Consolidate error handling patterns
 
 ## Phase 3.7: Edge Cases & Error Handling
 - [ ] T029 Handle invalid threshold and key count scenarios
