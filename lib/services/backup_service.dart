@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:ntcdcrypto/ntcdcrypto.dart';
 import '../models/backup_config.dart';
 import '../models/key_holder.dart';
 import '../models/shard_data.dart';
@@ -173,28 +174,44 @@ class BackupService {
     required String creatorPubkey,
   }) async {
     try {
-      // Convert content to bytes
-      final contentBytes = utf8.encode(content);
+      // Validate inputs
+      if (threshold < 2) {
+        throw ArgumentError('Threshold must be at least 2');
+      }
+      if (threshold > totalShards) {
+        throw ArgumentError('Threshold cannot exceed total shards');
+      }
+      if (content.isEmpty) {
+        throw ArgumentError('Content cannot be empty');
+      }
 
-      // TODO: Implement actual Shamir's Secret Sharing using ntc_dcrypto
-      // For now, create mock shares for demonstration
+      // Create SSS instance
+      final sss = SSS();
+
+      // Generate shares using Base64Url encoding (isBase64 = true)
+      // The ntcdcrypto library returns shares as Base64Url-encoded strings
+      final shareStrings = sss.create(threshold, totalShards, content, true);
+
+      // The prime modulus is fixed in ntcdcrypto, convert to base64url for storage
+      // This matches the format expected by skb.py
+      final primeModHex = sss.prime.toRadixString(16);
+      final primeMod = base64Url.encode(utf8.encode(primeModHex));
+
+      // Convert to ShardData objects
       final shardDataList = <ShardData>[];
       for (int i = 0; i < totalShards; i++) {
-        final mockShard = base64Url.encode('mock_shard_${i}_${contentBytes.length}'.codeUnits);
-        final mockPrime = base64Url.encode('mock_prime_mod'.codeUnits);
-
         final shardData = createShardData(
-          shard: mockShard,
+          shard: shareStrings[i],
           threshold: threshold,
           shardIndex: i,
           totalShards: totalShards,
-          primeMod: mockPrime,
+          primeMod: primeMod,
           creatorPubkey: creatorPubkey,
         );
         shardDataList.add(shardData);
       }
 
-      Log.info('Generated $totalShards mock Shamir shares with threshold $threshold');
+      Log.info('Generated $totalShards Shamir shares with threshold $threshold');
       return shardDataList;
     } catch (e) {
       Log.error('Error generating Shamir shares', e);
@@ -230,12 +247,30 @@ class BackupService {
         throw ArgumentError('At least $threshold shares are required, got ${shares.length}');
       }
 
-      // TODO: Implement actual Shamir's Secret Sharing reconstruction using ntc_dcrypto
-      // For now, return mock reconstructed content
-      final content = 'Mock reconstructed content from ${shares.length} shares';
+      // Create SSS instance
+      final sss = SSS();
+
+      // Verify that the prime modulus matches the one ntcdcrypto uses
+      final expectedPrimeModHex = sss.prime.toRadixString(16);
+      final expectedPrimeMod = base64Url.encode(utf8.encode(expectedPrimeModHex));
+
+      if (primeMod != expectedPrimeMod) {
+        throw ArgumentError(
+            'Invalid prime modulus: shares were created with a different prime than ntcdcrypto uses');
+      }
+
+      // Extract the share strings from ShardData objects
+      final shareStrings = shares.map((s) => s.shard).toList();
+
+      // Combine shares using Base64Url encoding (isBase64 = true)
+      // This will reconstruct the original secret
+      final content = sss.combine(shareStrings, true);
 
       Log.info('Successfully reconstructed content from ${shares.length} shares');
       return content;
+    } on ArgumentError catch (e) {
+      Log.error('Error reconstructing from shares', e);
+      rethrow;
     } catch (e) {
       Log.error('Error reconstructing from shares', e);
       throw Exception('Failed to reconstruct content from shares: $e');
