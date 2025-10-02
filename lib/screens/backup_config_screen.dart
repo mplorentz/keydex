@@ -26,14 +26,57 @@ class _BackupConfigScreenState extends State<BackupConfigScreen> {
   final List<KeyHolder> _keyHolders = [];
   final List<String> _relays = ['ws://localhost:10547'];
   bool _isCreating = false;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
+    _loadExistingConfig();
+  }
+
+  /// Load existing backup configuration if one exists
+  Future<void> _loadExistingConfig() async {
+    try {
+      final existingConfig = await BackupService.getBackupConfig(widget.lockboxId);
+
+      if (existingConfig != null && mounted) {
+        setState(() {
+          _threshold = existingConfig.threshold;
+          _totalKeys = existingConfig.totalKeys;
+          _keyHolders.clear();
+          _keyHolders.addAll(existingConfig.keyHolders);
+          _relays.clear();
+          _relays.addAll(existingConfig.relays);
+          _isLoading = false;
+        });
+      } else {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Backup Configuration'),
+          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        ),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Backup Configuration'),
@@ -352,7 +395,8 @@ class _BackupConfigScreenState extends State<BackupConfigScreen> {
     });
 
     try {
-      // Use the high-level BackupService method that orchestrates everything
+      // Create/recreate the backup configuration and distribute shards
+      // BackupService will handle overwriting existing config
       await BackupService.createAndDistributeBackup(
         lockboxId: widget.lockboxId,
         threshold: _threshold,

@@ -352,9 +352,10 @@ class BackupService {
   ///
   /// This orchestrates the entire backup creation flow:
   /// 1. Loads lockbox content
-  /// 2. Creates backup configuration
-  /// 3. Generates Shamir shares
-  /// 4. Distributes shares to key holders via Nostr
+  /// 2. Deletes existing backup configuration if one exists
+  /// 3. Creates new backup configuration
+  /// 4. Generates Shamir shares
+  /// 5. Distributes shares to key holders via Nostr
   ///
   /// Throws exception if any step fails
   static Future<BackupConfig> createAndDistributeBackup({
@@ -382,7 +383,14 @@ class BackupService {
       }
       Log.info('Retrieved creator key pair');
 
-      // Step 3: Create backup configuration
+      // Step 3: Delete existing config if present (allows overwrite)
+      await initialize();
+      if (_cachedConfigs!.containsKey(lockboxId)) {
+        await deleteBackupConfig(lockboxId);
+        Log.info('Deleted existing backup configuration for overwrite');
+      }
+
+      // Step 4: Create backup configuration
       final config = await createBackupConfiguration(
         lockboxId: lockboxId,
         threshold: threshold,
@@ -392,7 +400,7 @@ class BackupService {
       );
       Log.info('Created backup configuration');
 
-      // Step 4: Generate Shamir shares
+      // Step 5: Generate Shamir shares
       final shards = await generateShamirShares(
         content: content,
         threshold: threshold,
@@ -401,7 +409,7 @@ class BackupService {
       );
       Log.info('Generated ${shards.length} Shamir shares');
 
-      // Step 5: Initialize NDK and distribute shards
+      // Step 6: Initialize NDK and distribute shards
       final ndk = Ndk.defaultConfig();
       ndk.accounts.loginPrivateKey(pubkey: creatorPubkey, privkey: creatorPrivkey);
       Log.info('Initialized NDK for shard distribution');
