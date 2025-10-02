@@ -4,6 +4,7 @@ import '../models/key_holder.dart';
 import '../services/backup_service.dart';
 import '../services/shard_distribution_service.dart';
 import '../services/key_service.dart';
+import '../services/lockbox_service.dart';
 import 'package:ndk/ndk.dart';
 
 /// Backup configuration screen for setting up distributed backup
@@ -12,10 +13,12 @@ import 'package:ndk/ndk.dart';
 /// - Threshold and total number of keys
 /// - Key holders (trusted contacts)
 /// - Nostr relay selection
+///
+/// Note: Requires a valid lockboxId to load the lockbox content for backup
 class BackupConfigScreen extends StatefulWidget {
-  final String? lockboxId;
+  final String lockboxId;
 
-  const BackupConfigScreen({super.key, this.lockboxId});
+  const BackupConfigScreen({super.key, required this.lockboxId});
 
   @override
   State<BackupConfigScreen> createState() => _BackupConfigScreenState();
@@ -27,12 +30,10 @@ class _BackupConfigScreenState extends State<BackupConfigScreen> {
   final List<KeyHolder> _keyHolders = [];
   final List<String> _relays = ['wss://relay.damus.io'];
   bool _isCreating = false;
-  String? _lockboxId;
 
   @override
   void initState() {
     super.initState();
-    _lockboxId = widget.lockboxId;
   }
 
   @override
@@ -304,8 +305,8 @@ class _BackupConfigScreenState extends State<BackupConfigScreen> {
     });
 
     try {
-      // Get lockbox ID from route arguments or generate one
-      final lockboxId = _lockboxId ?? DateTime.now().millisecondsSinceEpoch.toString();
+      // Use the lockbox ID passed to this screen
+      final lockboxId = widget.lockboxId;
 
       // Create backup configuration
       final config = await BackupService.createBackupConfiguration(
@@ -316,8 +317,13 @@ class _BackupConfigScreenState extends State<BackupConfigScreen> {
         relays: _relays,
       );
 
-      // Generate Shamir shares
-      const content = 'Mock lockbox content'; // TODO: Get actual lockbox content
+      // Get actual lockbox content
+      final lockbox = await LockboxService.getLockbox(lockboxId);
+      if (lockbox == null) {
+        throw Exception('Lockbox not found: $lockboxId');
+      }
+      final content = lockbox.content;
+
       final creatorKeyPair = await KeyService.getStoredNostrKey();
       final creatorPubkey = creatorKeyPair?.publicKey;
       final creatorPrivkey = creatorKeyPair?.privateKey;

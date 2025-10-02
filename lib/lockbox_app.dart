@@ -480,6 +480,60 @@ class LockboxDetailScreen extends StatelessWidget {
                 ),
               ),
             ),
+            const SizedBox(height: 16),
+            // Backup Configuration Section
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.backup, color: Colors.blue[700]),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Distributed Backup',
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                color: Colors.blue[700],
+                              ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Configure distributed backup for this lockbox using Shamir\'s Secret Sharing. '
+                      'Your data will be split into multiple encrypted shares and distributed to trusted contacts via Nostr.',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Colors.grey[600],
+                          ),
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => BackupConfigScreen(
+                                lockboxId: lockbox.id,
+                              ),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue[700],
+                          foregroundColor: Colors.white,
+                        ),
+                        icon: const Icon(Icons.settings),
+                        label: const Text('Configure Backup Settings'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -646,57 +700,6 @@ class _EditLockboxScreenState extends State<EditLockboxScreen> {
                     ),
                   ),
                 ],
-              ),
-              const SizedBox(height: 24),
-
-              // Backup Configuration Section
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(Icons.backup, color: Colors.blue[700]),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Distributed Backup',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  color: Colors.blue[700],
-                                ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Configure distributed backup for this lockbox using Shamir\'s Secret Sharing. '
-                        'Your data will be split into multiple encrypted shares and distributed to trusted contacts via Nostr.',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Colors.grey[600],
-                            ),
-                      ),
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton.icon(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => BackupConfigScreen(
-                                  lockboxId: widget.lockboxId,
-                                ),
-                              ),
-                            );
-                          },
-                          icon: const Icon(Icons.settings),
-                          label: const Text('Configure Backup Settings'),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
               ),
             ],
           ),

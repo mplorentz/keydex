@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/lockbox.dart';
 import '../services/lockbox_service.dart';
-import 'backup_config_screen.dart';
 
 /// Enhanced lockbox creation screen with integrated backup configuration
 class CreateLockboxWithBackupScreen extends StatefulWidget {
@@ -15,7 +14,6 @@ class _CreateLockboxWithBackupScreenState extends State<CreateLockboxWithBackupS
   final _nameController = TextEditingController();
   final _contentController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  bool _enableBackup = false;
 
   @override
   void dispose() {
@@ -107,74 +105,6 @@ class _CreateLockboxWithBackupScreenState extends State<CreateLockboxWithBackupS
                     ),
                   ),
                 ],
-              ),
-              const SizedBox(height: 24),
-
-              // Backup Configuration Section
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(Icons.backup, color: Colors.blue[700]),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Distributed Backup',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  color: Colors.blue[700],
-                                ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Create a distributed backup of this lockbox using Shamir\'s Secret Sharing. '
-                        'Your data will be split into multiple encrypted shares and distributed to trusted contacts via Nostr.',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Colors.grey[600],
-                            ),
-                      ),
-                      const SizedBox(height: 16),
-                      SwitchListTile(
-                        title: const Text('Enable Distributed Backup'),
-                        subtitle:
-                            const Text('Split lockbox into encrypted shares for trusted contacts'),
-                        value: _enableBackup,
-                        onChanged: (value) {
-                          setState(() {
-                            _enableBackup = value;
-                          });
-                        },
-                        secondary: Icon(
-                          _enableBackup ? Icons.security : Icons.security_outlined,
-                          color: _enableBackup ? Colors.green : Colors.grey,
-                        ),
-                      ),
-                      if (_enableBackup) ...[
-                        const SizedBox(height: 16),
-                        SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton.icon(
-                            onPressed: () {
-                              // TODO: Navigate to backup configuration screen
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const BackupConfigScreen(),
-                                ),
-                              );
-                            },
-                            icon: const Icon(Icons.settings),
-                            label: const Text('Configure Backup Settings'),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
               ),
             ],
           ),
