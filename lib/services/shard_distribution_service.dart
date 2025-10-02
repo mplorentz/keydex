@@ -11,29 +11,17 @@ import 'logger.dart';
 
 /// Service for distributing shards to key holders via Nostr
 class ShardDistributionService {
-  static Ndk? _defaultNdk;
-
-  /// Get or initialize NDK instance
-  static Future<Ndk> _getNdk(Ndk? providedNdk) async {
-    if (providedNdk != null) {
-      return providedNdk;
-    }
-    _defaultNdk ??= Ndk.defaultConfig();
-    return _defaultNdk!;
-  }
-
   /// Distribute shards to all key holders
   static Future<List<ShardEvent>> distributeShards({
+    required String ownerPubkey, // Hex format - lockbox owner's pubkey for signing
     required BackupConfig config,
     required List<ShardData> shards,
-    Ndk? ndk, // Optional NDK instance for testing
+    required Ndk ndk,
   }) async {
     try {
       if (shards.length != config.totalKeys) {
         throw ArgumentError('Number of shards must equal totalKeys');
       }
-
-      final activeNdk = await _getNdk(ndk);
 
       final shardEvents = <ShardEvent>[];
 
@@ -46,7 +34,8 @@ class ShardDistributionService {
           final shardJson = shardDataToJson(shard);
           final shardString = json.encode(shardJson);
 
-          final rumor = await activeNdk.giftWrap.createRumor(
+          final rumor = await ndk.giftWrap.createRumor(
+            customPubkey: ownerPubkey, // Lockbox owner signs the rumor
             content: shardString,
             kind: 1, // Text note kind
             tags: [
@@ -56,15 +45,17 @@ class ShardDistributionService {
             ],
           );
 
+          Log.debug('recipient pubkey: ${keyHolder.pubkey}');
           // Wrap the rumor in a gift wrap for the recipient
-          final giftWrap = await activeNdk.giftWrap.toGiftWrap(
+          final giftWrap = await ndk.giftWrap.toGiftWrap(
             rumor: rumor,
             recipientPubkey: keyHolder.pubkey, // Hex format
           );
 
           // Broadcast the gift wrap event
-          activeNdk.broadcast.broadcast(
+          ndk.broadcast.broadcast(
             nostrEvent: giftWrap,
+            // TODO: Use config.relays
             specificRelays: ['ws://localhost:10547'],
           );
 
@@ -103,11 +94,9 @@ class ShardDistributionService {
   static Future<void> updateDistributionStatus({
     required String lockboxId,
     required List<ShardEvent> shardEvents,
-    Ndk? ndk, // Optional NDK instance for testing
+    required Ndk ndk,
   }) async {
     try {
-      final activeNdk = await _getNdk(ndk);
-
       for (final shardEvent in shardEvents) {
         try {
           // Query for acknowledgment events (kind 1059) from the recipient
@@ -117,7 +106,7 @@ class ShardDistributionService {
             since: shardEvent.createdAt.millisecondsSinceEpoch ~/ 1000,
           );
 
-          final acknowledgmentResponse = activeNdk.requests.query(
+          final acknowledgmentResponse = ndk.requests.query(
             filters: [filter],
           );
 

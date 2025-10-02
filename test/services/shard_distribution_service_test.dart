@@ -28,6 +28,7 @@ void main() {
   group('ShardDistributionService', () {
     late BackupConfig testConfig;
     late List<ShardData> testShards;
+    late String testOwnerPubkey; // Alice will be the owner
 
     setUp(() {
       // Derive real public keys from the test nsec keys
@@ -35,6 +36,8 @@ void main() {
       final alicePubHex = Bip340.getPublicKey(alicePrivHex);
       final bobPrivHex = Helpers.decodeBech32(TestNsecKeys.bob)[0];
       final bobPubHex = Bip340.getPublicKey(bobPrivHex);
+
+      testOwnerPubkey = alicePubHex; // Alice is the lockbox owner
 
       testConfig = createBackupConfig(
         lockboxId: TestBackupConfigs.simple2of2LockboxId,
@@ -89,6 +92,7 @@ void main() {
       // Act & Assert
       expect(
         () => ShardDistributionService.distributeShards(
+          ownerPubkey: testOwnerPubkey,
           config: testConfig,
           shards: mismatchedShards,
         ),
@@ -104,6 +108,7 @@ void main() {
       try {
         // Act
         final result = await ShardDistributionService.distributeShards(
+          ownerPubkey: testOwnerPubkey,
           config: testConfig,
           shards: testShards,
         );
@@ -161,6 +166,7 @@ void main() {
       // Act - This should throw because shards.length (0) != totalKeys (2)
       expect(
         () => ShardDistributionService.distributeShards(
+          ownerPubkey: testOwnerPubkey,
           config: emptyConfig,
           shards: [],
         ),
@@ -215,6 +221,7 @@ void main() {
       // Act & Assert - Should not throw with valid hex pubkey
       expect(
         () => ShardDistributionService.distributeShards(
+          ownerPubkey: testOwnerPubkey,
           config: configWithDifferentPubkeys,
           shards: shards,
         ),
@@ -259,6 +266,7 @@ void main() {
 
       // Act
       await ShardDistributionService.distributeShards(
+        ownerPubkey: alicePubHex, // Alice is the lockbox owner
         config: testConfig,
         shards: testShards,
         ndk: testNdk,

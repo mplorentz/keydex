@@ -4,6 +4,7 @@ import '../models/key_holder.dart';
 import '../services/backup_service.dart';
 import '../services/shard_distribution_service.dart';
 import '../services/key_service.dart';
+import 'package:ndk/ndk.dart';
 
 /// Backup configuration screen for setting up distributed backup
 ///
@@ -317,9 +318,11 @@ class _BackupConfigScreenState extends State<BackupConfigScreen> {
 
       // Generate Shamir shares
       const content = 'Mock lockbox content'; // TODO: Get actual lockbox content
-      final creatorPubkey = await KeyService.getCurrentPublicKeyBech32();
-      if (creatorPubkey == null) {
-        throw Exception('No public key available');
+      final creatorKeyPair = await KeyService.getStoredNostrKey();
+      final creatorPubkey = creatorKeyPair?.publicKey;
+      final creatorPrivkey = creatorKeyPair?.privateKey;
+      if (creatorPubkey == null || creatorPrivkey == null) {
+        throw Exception('No key available');
       }
 
       final shards = await BackupService.generateShamirShares(
@@ -330,9 +333,16 @@ class _BackupConfigScreenState extends State<BackupConfigScreen> {
       );
 
       // Distribute shards
+      final ndk = Ndk.defaultConfig();
+      ndk.accounts.loginPrivateKey(
+        pubkey: creatorPubkey,
+        privkey: creatorPrivkey,
+      );
       await ShardDistributionService.distributeShards(
+        ownerPubkey: creatorPubkey,
         config: config,
         shards: shards,
+        ndk: ndk,
       );
 
       if (mounted) {
