@@ -465,15 +465,18 @@ class LockboxDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Expanded(
-              child: Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: SingleChildScrollView(
-                    child: SelectableText(
-                      lockbox.content,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        height: 1.5,
+              child: SizedBox(
+                width: double.infinity,
+                child: Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: SingleChildScrollView(
+                      child: SelectableText(
+                        lockbox.content,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          height: 1.5,
+                        ),
                       ),
                     ),
                   ),
