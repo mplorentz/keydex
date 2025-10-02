@@ -24,7 +24,7 @@ class _BackupConfigScreenState extends State<BackupConfigScreen> {
   int _threshold = 2;
   int _totalKeys = 3;
   final List<KeyHolder> _keyHolders = [];
-  final List<String> _relays = ['wss://relay.damus.io'];
+  final List<String> _relays = ['ws://localhost:10547'];
   bool _isCreating = false;
 
   @override
@@ -160,12 +160,7 @@ class _BackupConfigScreenState extends State<BackupConfigScreen> {
                       ),
                     ),
                     ElevatedButton.icon(
-                      onPressed: () {
-                        // TODO: Implement add relay functionality
-                        ScaffoldMessenger.of(
-                          context,
-                        ).showSnackBar(const SnackBar(content: Text('Add relay - TODO')));
-                      },
+                      onPressed: _addRelay,
                       icon: const Icon(Icons.add),
                       label: const Text('Add Relay'),
                     ),
@@ -277,6 +272,72 @@ class _BackupConfigScreenState extends State<BackupConfigScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Invalid key holder: $e'), backgroundColor: Colors.red),
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _addRelay() async {
+    final relayController = TextEditingController();
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Add Nostr Relay'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: relayController,
+              decoration: const InputDecoration(
+                labelText: 'Relay URL',
+                hintText: 'wss://relay.example.com',
+                border: OutlineInputBorder(),
+              ),
+              keyboardType: TextInputType.url,
+              autofocus: true,
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Must be a valid WebSocket URL (wss:// or ws://)',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text('Add')),
+        ],
+      ),
+    );
+
+    if (result == true) {
+      try {
+        final relayUrl = relayController.text.trim();
+
+        // Validate relay URL
+        if (relayUrl.isEmpty) {
+          throw Exception('Relay URL cannot be empty');
+        }
+
+        final uri = Uri.parse(relayUrl);
+        if (uri.scheme != 'wss' && uri.scheme != 'ws') {
+          throw Exception('Relay URL must start with wss:// or ws://');
+        }
+
+        // Check if relay already exists
+        if (_relays.contains(relayUrl)) {
+          throw Exception('This relay is already in the list');
+        }
+
+        setState(() {
+          _relays.add(relayUrl);
+        });
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Invalid relay URL: $e'), backgroundColor: Colors.red),
           );
         }
       }

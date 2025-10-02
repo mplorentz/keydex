@@ -55,8 +55,7 @@ class ShardDistributionService {
           // Broadcast the gift wrap event
           ndk.broadcast.broadcast(
             nostrEvent: giftWrap,
-            // TODO: Use config.relays
-            specificRelays: ['ws://localhost:10547'],
+            specificRelays: config.relays,
           );
 
           // Create ShardEvent record

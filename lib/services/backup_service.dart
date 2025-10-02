@@ -109,11 +109,6 @@ class BackupService {
       throw ArgumentError('At least one relay must be provided');
     }
 
-    // Check if backup already exists for this lockbox
-    if (_cachedConfigs!.containsKey(lockboxId)) {
-      throw ArgumentError('Backup configuration already exists for lockbox $lockboxId');
-    }
-
     // Create backup configuration
     final config = createBackupConfig(
       lockboxId: lockboxId,
