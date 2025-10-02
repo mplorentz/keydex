@@ -1,12 +1,15 @@
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:ntcdcrypto/ntcdcrypto.dart';
+import 'package:ndk/ndk.dart';
 import '../models/backup_config.dart';
 import '../models/key_holder.dart';
 import '../models/shard_data.dart';
 import '../models/backup_status.dart';
 import '../models/key_holder_status.dart';
 import 'key_service.dart';
+import 'lockbox_service.dart';
+import 'shard_distribution_service.dart';
 import '../services/logger.dart';
 
 /// Service for managing distributed backup using Shamir's Secret Sharing
@@ -220,9 +223,7 @@ class BackupService {
   }
 
   /// Reconstruct content from Shamir shares
-  static Future<String> reconstructFromShares({
-    required List<ShardData> shares,
-  }) async {
+  static Future<String> reconstructFromShares({required List<ShardData> shares}) async {
     try {
       if (shares.isEmpty) {
         throw ArgumentError('At least one share is required');
@@ -256,7 +257,8 @@ class BackupService {
 
       if (primeMod != expectedPrimeMod) {
         throw ArgumentError(
-            'Invalid prime modulus: shares were created with a different prime than ntcdcrypto uses');
+          'Invalid prime modulus: shares were created with a different prime than ntcdcrypto uses',
+        );
       }
 
       // Extract the share strings from ShardData objects
@@ -286,11 +288,7 @@ class BackupService {
       throw ArgumentError('Backup configuration not found for lockbox $lockboxId');
     }
 
-    final updatedConfig = copyBackupConfig(
-      config,
-      status: status,
-      lastUpdated: DateTime.now(),
-    );
+    final updatedConfig = copyBackupConfig(config, status: status, lastUpdated: DateTime.now());
 
     _cachedConfigs![lockboxId] = updatedConfig;
     await _saveBackupConfigs();
@@ -353,5 +351,78 @@ class BackupService {
     _cachedConfigs = {};
     await _storage.delete(key: _backupConfigsKey);
     _isInitialized = false;
+  }
+
+  /// High-level method to create and distribute a backup
+  ///
+  /// This orchestrates the entire backup creation flow:
+  /// 1. Loads lockbox content
+  /// 2. Creates backup configuration
+  /// 3. Generates Shamir shares
+  /// 4. Distributes shares to key holders via Nostr
+  ///
+  /// Throws exception if any step fails
+  static Future<BackupConfig> createAndDistributeBackup({
+    required String lockboxId,
+    required int threshold,
+    required int totalKeys,
+    required List<KeyHolder> keyHolders,
+    required List<String> relays,
+  }) async {
+    try {
+      // Step 1: Load lockbox content
+      final lockbox = await LockboxService.getLockbox(lockboxId);
+      if (lockbox == null) {
+        throw Exception('Lockbox not found: $lockboxId');
+      }
+      final content = lockbox.content;
+      Log.info('Loaded lockbox content for backup: $lockboxId');
+
+      // Step 2: Get creator's Nostr key pair
+      final creatorKeyPair = await KeyService.getStoredNostrKey();
+      final creatorPubkey = creatorKeyPair?.publicKey;
+      final creatorPrivkey = creatorKeyPair?.privateKey;
+      if (creatorPubkey == null || creatorPrivkey == null) {
+        throw Exception('No Nostr key available for backup creation');
+      }
+      Log.info('Retrieved creator key pair');
+
+      // Step 3: Create backup configuration
+      final config = await createBackupConfiguration(
+        lockboxId: lockboxId,
+        threshold: threshold,
+        totalKeys: totalKeys,
+        keyHolders: keyHolders,
+        relays: relays,
+      );
+      Log.info('Created backup configuration');
+
+      // Step 4: Generate Shamir shares
+      final shards = await generateShamirShares(
+        content: content,
+        threshold: threshold,
+        totalShards: totalKeys,
+        creatorPubkey: creatorPubkey,
+      );
+      Log.info('Generated ${shards.length} Shamir shares');
+
+      // Step 5: Initialize NDK and distribute shards
+      final ndk = Ndk.defaultConfig();
+      ndk.accounts.loginPrivateKey(pubkey: creatorPubkey, privkey: creatorPrivkey);
+      Log.info('Initialized NDK for shard distribution');
+
+      await ShardDistributionService.distributeShards(
+        ownerPubkey: creatorPubkey,
+        config: config,
+        shards: shards,
+        ndk: ndk,
+      );
+      Log.info('Successfully distributed all shards');
+
+      return config;
+    } catch (e) {
+      Log.error('Failed to create and distribute backup', e);
+      rethrow;
+    }
   }
 }

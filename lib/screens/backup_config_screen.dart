@@ -2,10 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import '../models/key_holder.dart';
 import '../services/backup_service.dart';
-import '../services/shard_distribution_service.dart';
-import '../services/key_service.dart';
-import '../services/lockbox_service.dart';
-import 'package:ndk/ndk.dart';
 
 /// Backup configuration screen for setting up distributed backup
 ///
@@ -55,10 +51,7 @@ class _BackupConfigScreenState extends State<BackupConfigScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Backup Settings',
-                      style: Theme.of(context).textTheme.headlineSmall,
-                    ),
+                    Text('Backup Settings', style: Theme.of(context).textTheme.headlineSmall),
                     const SizedBox(height: 16),
                     Text('Threshold: $_threshold (minimum keys needed)'),
                     Slider(
@@ -117,21 +110,24 @@ class _BackupConfigScreenState extends State<BackupConfigScreen> {
                     const SizedBox(height: 16),
                     if (_keyHolders.isEmpty)
                       const Text(
-                          'No key holders added yet. Add trusted contacts to distribute backup keys.')
+                        'No key holders added yet. Add trusted contacts to distribute backup keys.',
+                      )
                     else
-                      ..._keyHolders.map((holder) => ListTile(
-                            leading: const Icon(Icons.person),
-                            title: Text(holder.displayName),
-                            subtitle: Text(holder.npub),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.remove_circle),
-                              onPressed: () {
-                                setState(() {
-                                  _keyHolders.remove(holder);
-                                });
-                              },
-                            ),
-                          )),
+                      ..._keyHolders.map(
+                        (holder) => ListTile(
+                          leading: const Icon(Icons.person),
+                          title: Text(holder.displayName),
+                          subtitle: Text(holder.npub),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.remove_circle),
+                            onPressed: () {
+                              setState(() {
+                                _keyHolders.remove(holder);
+                              });
+                            },
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -145,31 +141,30 @@ class _BackupConfigScreenState extends State<BackupConfigScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Nostr Relays',
-                      style: Theme.of(context).textTheme.headlineSmall,
-                    ),
+                    Text('Nostr Relays', style: Theme.of(context).textTheme.headlineSmall),
                     const SizedBox(height: 16),
-                    ..._relays.map((relay) => ListTile(
-                          leading: const Icon(Icons.cloud),
-                          title: Text(relay),
-                          trailing: IconButton(
-                            icon: const Icon(Icons.remove_circle),
-                            onPressed: () {
-                              if (_relays.length > 1) {
-                                setState(() {
-                                  _relays.remove(relay);
-                                });
-                              }
-                            },
-                          ),
-                        )),
+                    ..._relays.map(
+                      (relay) => ListTile(
+                        leading: const Icon(Icons.cloud),
+                        title: Text(relay),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.remove_circle),
+                          onPressed: () {
+                            if (_relays.length > 1) {
+                              setState(() {
+                                _relays.remove(relay);
+                              });
+                            }
+                          },
+                        ),
+                      ),
+                    ),
                     ElevatedButton.icon(
                       onPressed: () {
                         // TODO: Implement add relay functionality
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Add relay - TODO')),
-                        );
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(const SnackBar(content: Text('Add relay - TODO')));
                       },
                       icon: const Icon(Icons.add),
                       label: const Text('Add Relay'),
@@ -255,14 +250,8 @@ class _BackupConfigScreenState extends State<BackupConfigScreen> {
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Add'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text('Add')),
         ],
       ),
     );
@@ -287,10 +276,7 @@ class _BackupConfigScreenState extends State<BackupConfigScreen> {
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Invalid key holder: $e'),
-              backgroundColor: Colors.red,
-            ),
+            SnackBar(content: Text('Invalid key holder: $e'), backgroundColor: Colors.red),
           );
         }
       }
@@ -305,50 +291,13 @@ class _BackupConfigScreenState extends State<BackupConfigScreen> {
     });
 
     try {
-      // Use the lockbox ID passed to this screen
-      final lockboxId = widget.lockboxId;
-
-      // Create backup configuration
-      final config = await BackupService.createBackupConfiguration(
-        lockboxId: lockboxId,
+      // Use the high-level BackupService method that orchestrates everything
+      await BackupService.createAndDistributeBackup(
+        lockboxId: widget.lockboxId,
         threshold: _threshold,
         totalKeys: _totalKeys,
         keyHolders: _keyHolders,
         relays: _relays,
-      );
-
-      // Get actual lockbox content
-      final lockbox = await LockboxService.getLockbox(lockboxId);
-      if (lockbox == null) {
-        throw Exception('Lockbox not found: $lockboxId');
-      }
-      final content = lockbox.content;
-
-      final creatorKeyPair = await KeyService.getStoredNostrKey();
-      final creatorPubkey = creatorKeyPair?.publicKey;
-      final creatorPrivkey = creatorKeyPair?.privateKey;
-      if (creatorPubkey == null || creatorPrivkey == null) {
-        throw Exception('No key available');
-      }
-
-      final shards = await BackupService.generateShamirShares(
-        content: content,
-        threshold: _threshold,
-        totalShards: _totalKeys,
-        creatorPubkey: creatorPubkey,
-      );
-
-      // Distribute shards
-      final ndk = Ndk.defaultConfig();
-      ndk.accounts.loginPrivateKey(
-        pubkey: creatorPubkey,
-        privkey: creatorPrivkey,
-      );
-      await ShardDistributionService.distributeShards(
-        ownerPubkey: creatorPubkey,
-        config: config,
-        shards: shards,
-        ndk: ndk,
       );
 
       if (mounted) {
@@ -363,10 +312,7 @@ class _BackupConfigScreenState extends State<BackupConfigScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to create backup: $e'),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text('Failed to create backup: $e'), backgroundColor: Colors.red),
         );
       }
     } finally {
