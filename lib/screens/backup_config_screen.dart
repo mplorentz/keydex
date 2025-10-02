@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import '../models/key_holder.dart';
+import '../models/lockbox.dart';
 import '../services/backup_service.dart';
 
 /// Backup configuration screen for setting up distributed backup
@@ -21,8 +22,8 @@ class BackupConfigScreen extends StatefulWidget {
 }
 
 class _BackupConfigScreenState extends State<BackupConfigScreen> {
-  int _threshold = 2;
-  int _totalKeys = 3;
+  int _threshold = LockboxBackupConstraints.defaultThreshold;
+  int _totalKeys = LockboxBackupConstraints.defaultTotalKeys;
   final List<KeyHolder> _keyHolders = [];
   final List<String> _relays = ['ws://localhost:10547'];
   bool _isCreating = false;
@@ -99,9 +100,9 @@ class _BackupConfigScreenState extends State<BackupConfigScreen> {
                     Text('Threshold: $_threshold (minimum keys needed)'),
                     Slider(
                       value: _threshold.toDouble(),
-                      min: 2,
+                      min: LockboxBackupConstraints.minThreshold.toDouble(),
                       max: _totalKeys.toDouble(),
-                      divisions: _totalKeys - 2,
+                      divisions: _totalKeys - LockboxBackupConstraints.minThreshold,
                       onChanged: (value) {
                         setState(() {
                           _threshold = value.round();
@@ -112,8 +113,8 @@ class _BackupConfigScreenState extends State<BackupConfigScreen> {
                     Slider(
                       value: _totalKeys.toDouble(),
                       min: _threshold.toDouble(),
-                      max: 10,
-                      divisions: 10 - _threshold,
+                      max: LockboxBackupConstraints.maxTotalKeys.toDouble(),
+                      divisions: LockboxBackupConstraints.maxTotalKeys - _threshold,
                       onChanged: (value) {
                         setState(() {
                           _totalKeys = value.round();

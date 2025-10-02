@@ -1,6 +1,7 @@
 import 'key_holder.dart';
 import 'key_holder_status.dart';
 import 'backup_status.dart';
+import 'lockbox.dart';
 
 /// Represents the backup configuration for a lockbox
 ///
@@ -31,11 +32,13 @@ BackupConfig createBackupConfig({
   String? contentHash,
 }) {
   // Validate inputs
-  if (threshold < 2 || threshold > totalKeys) {
-    throw ArgumentError('Threshold must be >= 2 and <= totalKeys');
+  if (threshold < LockboxBackupConstraints.minThreshold || threshold > totalKeys) {
+    throw ArgumentError(
+        'Threshold must be >= ${LockboxBackupConstraints.minThreshold} and <= totalKeys');
   }
-  if (totalKeys < threshold || totalKeys > 10) {
-    throw ArgumentError('TotalKeys must be >= threshold and <= 10');
+  if (totalKeys < threshold || totalKeys > LockboxBackupConstraints.maxTotalKeys) {
+    throw ArgumentError(
+        'TotalKeys must be >= threshold and <= ${LockboxBackupConstraints.maxTotalKeys}');
   }
   if (keyHolders.length != totalKeys) {
     throw ArgumentError('KeyHolders length must equal totalKeys');
@@ -111,8 +114,8 @@ extension BackupConfigExtension on BackupConfig {
   /// Check if this backup configuration is valid
   bool get isValid {
     try {
-      if (threshold < 2 || threshold > totalKeys) return false;
-      if (totalKeys < threshold || totalKeys > 10) return false;
+      if (threshold < LockboxBackupConstraints.minThreshold || threshold > totalKeys) return false;
+      if (totalKeys < threshold || totalKeys > LockboxBackupConstraints.maxTotalKeys) return false;
       if (keyHolders.length != totalKeys) return false;
       if (relays.isEmpty) return false;
 

@@ -7,6 +7,7 @@ import '../models/key_holder.dart';
 import '../models/shard_data.dart';
 import '../models/backup_status.dart';
 import '../models/key_holder_status.dart';
+import '../models/lockbox.dart';
 import 'key_service.dart';
 import 'lockbox_service.dart';
 import 'shard_distribution_service.dart';
@@ -96,11 +97,13 @@ class BackupService {
     await initialize();
 
     // Validate inputs
-    if (threshold < 2 || threshold > totalKeys) {
-      throw ArgumentError('Threshold must be >= 2 and <= totalKeys');
+    if (threshold < LockboxBackupConstraints.minThreshold || threshold > totalKeys) {
+      throw ArgumentError(
+          'Threshold must be >= ${LockboxBackupConstraints.minThreshold} and <= totalKeys');
     }
-    if (totalKeys < threshold || totalKeys > 10) {
-      throw ArgumentError('TotalKeys must be >= threshold and <= 10');
+    if (totalKeys < threshold || totalKeys > LockboxBackupConstraints.maxTotalKeys) {
+      throw ArgumentError(
+          'TotalKeys must be >= threshold and <= ${LockboxBackupConstraints.maxTotalKeys}');
     }
     if (keyHolders.length != totalKeys) {
       throw ArgumentError('KeyHolders length must equal totalKeys');
@@ -173,8 +176,8 @@ class BackupService {
   }) async {
     try {
       // Validate inputs
-      if (threshold < 2) {
-        throw ArgumentError('Threshold must be at least 2');
+      if (threshold < LockboxBackupConstraints.minThreshold) {
+        throw ArgumentError('Threshold must be at least ${LockboxBackupConstraints.minThreshold}');
       }
       if (threshold > totalShards) {
         throw ArgumentError('Threshold cannot exceed total shards');

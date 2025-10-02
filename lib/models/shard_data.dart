@@ -1,3 +1,5 @@
+import 'lockbox.dart';
+
 /// Represents the decrypted shard data contained within a ShardEvent
 ///
 /// This model contains the actual Shamir share data that is encrypted
@@ -24,8 +26,9 @@ ShardData createShardData({
   if (shard.isEmpty) {
     throw ArgumentError('Shard cannot be empty');
   }
-  if (threshold < 2 || threshold > totalShards) {
-    throw ArgumentError('Threshold must be >= 2 and <= totalShards');
+  if (threshold < LockboxBackupConstraints.minThreshold || threshold > totalShards) {
+    throw ArgumentError(
+        'Threshold must be >= ${LockboxBackupConstraints.minThreshold} and <= totalShards');
   }
   if (shardIndex < 0 || shardIndex >= totalShards) {
     throw ArgumentError('ShardIndex must be >= 0 and < totalShards');
@@ -76,7 +79,8 @@ extension ShardDataExtension on ShardData {
   bool get isValid {
     try {
       if (shard.isEmpty) return false;
-      if (threshold < 2 || threshold > totalShards) return false;
+      if (threshold < LockboxBackupConstraints.minThreshold || threshold > totalShards)
+        return false;
       if (shardIndex < 0 || shardIndex >= totalShards) return false;
       if (primeMod.isEmpty) return false;
       if (creatorPubkey.isEmpty) return false;

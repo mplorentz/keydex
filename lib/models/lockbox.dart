@@ -1,3 +1,18 @@
+/// Backup configuration constraints
+class LockboxBackupConstraints {
+  /// Minimum threshold value for Shamir's Secret Sharing
+  static const int minThreshold = 1;
+
+  /// Maximum number of total keys/shards for backup distribution
+  static const int maxTotalKeys = 10;
+
+  /// Default threshold value for new backups
+  static const int defaultThreshold = 2;
+
+  /// Default total keys value for new backups
+  static const int defaultTotalKeys = 3;
+}
+
 /// Data model for a secure lockbox containing encrypted text content
 class Lockbox {
   final String id;
