@@ -102,7 +102,9 @@ class _BackupConfigScreenState extends State<BackupConfigScreen> {
                       value: _threshold.toDouble(),
                       min: LockboxBackupConstraints.minThreshold.toDouble(),
                       max: _totalKeys.toDouble(),
-                      divisions: _totalKeys - LockboxBackupConstraints.minThreshold,
+                      divisions: (_totalKeys - LockboxBackupConstraints.minThreshold) > 0
+                          ? _totalKeys - LockboxBackupConstraints.minThreshold
+                          : null,
                       onChanged: (value) {
                         setState(() {
                           _threshold = value.round();
@@ -114,7 +116,9 @@ class _BackupConfigScreenState extends State<BackupConfigScreen> {
                       value: _totalKeys.toDouble(),
                       min: _threshold.toDouble(),
                       max: LockboxBackupConstraints.maxTotalKeys.toDouble(),
-                      divisions: LockboxBackupConstraints.maxTotalKeys - _threshold,
+                      divisions: (LockboxBackupConstraints.maxTotalKeys - _threshold) > 0
+                          ? LockboxBackupConstraints.maxTotalKeys - _threshold
+                          : null,
                       onChanged: (value) {
                         setState(() {
                           _totalKeys = value.round();
