@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'services/key_service.dart';
 import 'services/logger.dart';
 import 'screens/lockbox_list_screen.dart';
@@ -65,6 +66,7 @@ class _KeydexAppState extends State<KeydexApp> {
           ),
           elevation: 0,
         ),
+        textTheme: GoogleFonts.openSansTextTheme(),
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: _isInitializing
