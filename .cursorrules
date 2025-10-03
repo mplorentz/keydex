@@ -1,0 +1,20 @@
+# Keydex Cursor Rules
+
+## Nostr Key Format Conventions
+
+### Hex Format (Internal)
+- **Use hex format (64 characters, no 0x prefix) for:**
+  - All internal data storage and processing
+  - Service-to-service communication
+  - Database storage
+  - API payloads
+  - Cryptographic operations
+  - Model fields (e.g., `KeyHolder.pubkey`, `ShardEvent.recipientPubkey`)
+
+### Bech32 Format (UI/Display)
+- **Use bech32 format (npub1..., nsec1...) for:**
+  - User interface display
+  - User input fields
+  - Logging for human readability
+  - Error messages shown to users
+  - Configuration files that users edit

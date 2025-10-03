@@ -27,7 +27,28 @@ class InlineTimePrinter extends LogPrinter {
       message = '$levelColor$message\x1B[0m';
     }
 
-    return [message];
+    final output = <String>[message];
+
+    // Add error information if present
+    if (event.error != null) {
+      final errorColor = colors ? levelColor : '';
+      final resetColor = colors ? '\x1B[0m' : '';
+      output.add('$errorColor  Error: ${event.error}$resetColor');
+    }
+
+    // Add stack trace if present
+    if (event.stackTrace != null) {
+      final traceColor = colors ? '\x1B[38;5;244m' : ''; // Gray
+      final resetColor = colors ? '\x1B[0m' : '';
+      final stackLines = event.stackTrace.toString().split('\n');
+      for (final line in stackLines) {
+        if (line.isNotEmpty) {
+          output.add('$traceColor  $line$resetColor');
+        }
+      }
+    }
+
+    return output;
   }
 
   String _getEmoji(Level level) {

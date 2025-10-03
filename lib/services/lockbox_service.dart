@@ -3,12 +3,20 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/lockbox.dart';
 import 'key_service.dart';
 import 'logger.dart';
+import 'package:meta/meta.dart';
 
 /// Service for managing persistent, encrypted lockbox storage
 class LockboxService {
   static const String _lockboxesKey = 'encrypted_lockboxes';
   static List<Lockbox>? _cachedLockboxes;
   static bool _isInitialized = false;
+  static bool _disableSampleDataForTest = false;
+
+  /// Test-only helper to disable sample data creation during initialization
+  @visibleForTesting
+  static void disableSampleDataForTest([bool disable = true]) {
+    _disableSampleDataForTest = disable;
+  }
 
   /// Initialize the storage and load existing lockboxes
   static Future<void> initialize() async {
@@ -18,7 +26,7 @@ class LockboxService {
       await _loadLockboxes();
 
       // If no lockboxes exist, create some sample data for first-time users
-      if (_cachedLockboxes!.isEmpty) {
+      if (_cachedLockboxes!.isEmpty && !_disableSampleDataForTest) {
         await _createSampleData();
       }
 

@@ -1,8 +1,7 @@
+# Implementation Plan: Distributed Backup of Lockboxes
 
-# Implementation Plan: Encrypted Text Lockbox
-
-**Branch**: `001-store-text-in-lockbox` | **Date**: 2024-12-19 | **Spec**: [spec.md](./spec.md)
-**Input**: Feature specification from `/specs/001-store-text-in-lockbox/spec.md`
+**Branch**: `002-distributed-backup-of` | **Date**: 2025-01-27 | **Spec**: [spec.md](./spec.md)
+**Input**: Feature specification from `/specs/002-distributed-backup-of/spec.md`
 
 ## Execution Flow (/plan command scope)
 ```
@@ -31,107 +30,104 @@
 - Phase 3-4: Implementation execution (manual or via tools)
 
 ## Summary
-Users need to securely store sensitive text information in encrypted lockboxes using NIP-44 encryption with Nostr keys. The system provides a simple interface for creating, accessing, editing, and deleting encrypted text content with biometric/password authentication. Content is limited to 4k characters with single-user access model.
+Implement distributed backup functionality for Keydex lockboxes using Shamir's Secret Sharing and Nostr protocol. Users can configure backup settings during lockbox creation, specifying threshold and total key holders, then distribute encrypted keys to trusted contacts via Nostr gift wrap events.
 
 ## Technical Context
-**Language/Version**: Dart 3.0+ with Flutter 3.16+  
-**Primary Dependencies**: Flutter, ndk (Dart Nostr Development Kit), local_auth, shared_preferences  
-**Storage**: Local device storage (shared_preferences) with encrypted data  
-**Testing**: Flutter test framework with integration_test  
-**Target Platform**: Cross-platform (iOS, Android, macOS, Windows, Linux)  
-**Project Type**: mobile - Flutter app  
-**Performance Goals**: <200ms for encryption/decryption operations, <100ms UI response  
-**Constraints**: 4k character limit per lockbox, offline-capable, single-user access  
-**Scale/Scope**: Personal use app, 1-100 lockboxes per user, 5 platforms
+**Language/Version**: Dart 3.0+ / Flutter 3.16+  
+**Primary Dependencies**: Flutter, ndk (Nostr protocol), ntcdcrypto (Shamir's Secret Sharing)  
+**Storage**: FlutterSecureStorage (local), Nostr relays (distributed)  
+**Testing**: Flutter test framework, widget tests, integration tests  
+**Target Platform**: iOS, Android, macOS, Windows, Web (Flutter cross-platform)  
+**Project Type**: mobile (Flutter app)  
+**Performance Goals**: <2s backup configuration, <5s key distribution, <10s recovery process  
+**Constraints**: Offline-capable, secure key storage, Nostr protocol compliance  
+**Scale/Scope**: Individual users with 3-10 key holders per lockbox
 
 ## Constitution Check
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
+### Outside-In Development
+- [x] Feature starts from user scenarios and acceptance criteria
+- [x] UI components stubbed out first for manual verification
+- [x] Implementation proceeds from UI toward internal components
+- [x] Unit tests planned after implementation of isolated classes
+- [x] Integration tests planned last to validate complete workflows
+
 ### Security-First Development
-- [x] All cryptographic operations use industry-standard libraries (NIP-44)
-- [ ] Shamir's Secret Sharing implementation is mathematically verified (not applicable for this feature)
-- [x] No sensitive data stored in plaintext (all text encrypted before storage)
+- [x] All cryptographic operations use industry-standard libraries
+- [x] Shamir's Secret Sharing implementation is mathematically verified
+- [x] No sensitive data stored in plaintext
 - [x] Security review planned for cryptographic code
 
 ### Cross-Platform Consistency
 - [x] Flutter app targets all 5 platforms (iOS, Android, macOS, Windows, Linux)
-- [x] Platform-specific features justified if needed (biometric auth varies by platform)
+- [x] Platform-specific features justified if needed
 - [x] UI follows platform conventions while maintaining core consistency
 
 ### Nostr Protocol Integration
-- [x] Data transmission uses Nostr protocol (NIP-44 encryption)
-- [ ] NIP documentation planned for backup/restore processes (not applicable for this feature)
-- [ ] Relay selection and failover mechanisms designed (not applicable for this feature)
+- [x] Data transmission uses Nostr protocol
+- [x] NIP documentation planned for backup/restore processes
+- [x] Relay selection and failover mechanisms designed
 
 ### Non-Technical User Focus
-- [x] UI designed for non-technical users (simple lockbox interface)
-- [x] Complex concepts abstracted behind simple language (encryption hidden from user)
+- [x] UI designed for non-technical users
+- [x] Complex concepts abstracted behind simple language
 - [x] Error messages written in plain English
 
 ## Project Structure
 
 ### Documentation (this feature)
 ```
-specs/[###-feature]/
+specs/002-distributed-backup-of/
 ├── plan.md              # This file (/plan command output)
 ├── research.md          # Phase 0 output (/plan command)
 ├── data-model.md        # Phase 1 output (/plan command)
 ├── quickstart.md        # Phase 1 output (/plan command)
-├── contracts/           # Phase 1 output (/plan command)
+├── service-interfaces/  # Phase 1 output (/plan command)
 └── tasks.md             # Phase 2 output (/tasks command - NOT created by /plan)
 ```
 
 ### Source Code (repository root)
 ```
 # Option 1: Single project (DEFAULT)
-src/
+lib/
 ├── models/
+│   ├── lockbox.dart
+│   ├── backup_config.dart
+│   ├── key_holder.dart
+│   └── gift_wrap_event.dart
 ├── services/
-├── cli/
-└── lib/
+│   ├── lockbox_service.dart
+│   ├── backup_service.dart
+│   └── nostr_service.dart
+├── screens/
+│   ├── backup_config_screen.dart
+│   └── recovery_screen.dart
+└── widgets/
+    ├── key_holder_list.dart
+    └── backup_summary.dart
 
-tests/
+test/
 ├── contract/
 ├── integration/
 └── unit/
-
-# Option 2: Web application (when "frontend" + "backend" detected)
-backend/
-├── src/
-│   ├── models/
-│   ├── services/
-│   └── api/
-└── tests/
-
-frontend/
-├── src/
-│   ├── components/
-│   ├── pages/
-│   └── services/
-└── tests/
-
-# Option 3: Mobile + API (when "iOS/Android" detected)
-api/
-└── [same as backend above]
-
-ios/ or android/
-└── [platform-specific structure]
 ```
 
-**Structure Decision**: Option 3 - Mobile + API (Flutter app detected)
+**Structure Decision**: Option 1 (Single project) - Flutter mobile app with integrated services
 
 ## Phase 0: Outline & Research
 1. **Extract unknowns from Technical Context** above:
-   - For each NEEDS CLARIFICATION → research task
-   - For each dependency → best practices task
-   - For each integration → patterns task
+   - Research Shamir's Secret Sharing implementation for Dart/Flutter
+   - Research Nostr protocol integration patterns for Flutter
+   - Research NIP-44 encryption and NIP-59 gift wrap event standards
+   - Research FlutterSecureStorage best practices for key management
 
 2. **Generate and dispatch research agents**:
    ```
-   For each unknown in Technical Context:
-     Task: "Research {unknown} for {feature context}"
-   For each technology choice:
-     Task: "Find best practices for {tech} in {domain}"
+   Task: "Research Shamir's Secret Sharing libraries for Dart/Flutter"
+   Task: "Research Nostr protocol integration patterns for mobile apps"
+   Task: "Research NIP-44 and NIP-59 implementation requirements"
+   Task: "Research FlutterSecureStorage security best practices"
    ```
 
 3. **Consolidate findings** in `research.md` using format:
@@ -145,19 +141,17 @@ ios/ or android/
 *Prerequisites: research.md complete*
 
 1. **Extract entities from feature spec** → `data-model.md`:
-   - Entity name, fields, relationships
+   - BackupConfig entity (threshold, total_keys, key_holders)
+   - KeyHolder entity (npub, status, last_updated)
+   - GiftWrapEvent entity (encrypted_key, recipient_npub, timestamp)
    - Validation rules from requirements
    - State transitions if applicable
 
-2. **Generate API contracts** from functional requirements:
-   - For each user action → endpoint
-   - Use standard REST/GraphQL patterns
-   - Output OpenAPI/GraphQL schema to `/contracts/`
-
-3. **Generate contract tests** from contracts:
-   - One test file per endpoint
-   - Assert request/response schemas
-   - Tests must fail (no implementation yet)
+2. **Design service interfaces** from functional requirements:
+   - BackupService interface for configuration and key management
+   - NostrService extension for gift wrap events
+   - Service method signatures and return types
+   - No HTTP contracts needed (Nostr client architecture)
 
 4. **Extract test scenarios** from user stories:
    - Each story → integration test scenario
@@ -172,7 +166,7 @@ ios/ or android/
    - Keep under 150 lines for token efficiency
    - Output to repository root
 
-**Output**: data-model.md, /contracts/*, failing tests, quickstart.md, agent-specific file
+**Output**: data-model.md, service interfaces, failing tests, quickstart.md, agent-specific file
 
 ## Phase 2: Task Planning Approach
 *This section describes what the /tasks command will do - DO NOT execute during /plan*
@@ -185,11 +179,41 @@ ios/ or android/
 - Each user story → integration test task
 - Implementation tasks to make tests pass
 
-**Ordering Strategy**:
-- Outside-In order: UI stubs first, then implementation behind components, refactor, finally test
-- Mark [P] for parallel execution (independent files)
+**Specific Task Categories**:
+1. **Data Models** (Parallel execution):
+   - BackupConfig model with validation
+   - KeyHolder model with Nostr key validation
+   - GiftWrapEvent model with encryption handling
+   - BackupStatus and KeyHolderStatus enums
 
-**Estimated Output**: 25-30 numbered, ordered tasks in tasks.md
+2. **Services** (Sequential execution):
+   - BackupService with integrated Shamir's Secret Sharing using ntc_dcrypto library
+   - NostrService extension for gift wrap events
+   - Integration with existing KeyService
+
+3. **UI Components** (Outside-In approach):
+   - BackupConfigScreen stub for manual verification
+   - KeyHolderList widget for managing contacts
+   - BackupSummary widget for status display
+   - Integration with existing lockbox creation flow
+
+4. **Unit Tests** (Parallel execution):
+   - Data model constraint tests
+   - Service method tests
+   - Shamir's Secret Sharing algorithm tests
+
+5. **Integration Tests**:
+   - Complete backup setup workflow
+   - Recovery process validation
+   - Configuration update scenarios
+
+**Ordering Strategy**:
+- Outside-In order: UI stubs first, then implementation behind components
+- Dependency order: UI, Models, Services 
+- Mark [P] for parallel execution (independent files)
+- Security-first: Shamir's Secret Sharing implementation before UI integration
+
+**Estimated Output**: 30-35 numbered, ordered tasks in tasks.md
 
 **IMPORTANT**: This phase is executed by the /tasks command, NOT by /plan
 
@@ -205,9 +229,7 @@ ios/ or android/
 
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 |-----------|------------|-------------------------------------|
-| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
-| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
-
+| None | All constitutional requirements met | N/A |
 
 ## Progress Tracking
 *This checklist is updated during execution flow*
@@ -215,7 +237,7 @@ ios/ or android/
 **Phase Status**:
 - [x] Phase 0: Research complete (/plan command)
 - [x] Phase 1: Design complete (/plan command)
-- [ ] Phase 2: Task planning complete (/plan command - describe approach only)
+- [x] Phase 2: Task planning complete (/plan command - describe approach only)
 - [ ] Phase 3: Tasks generated (/tasks command)
 - [ ] Phase 4: Implementation complete
 - [ ] Phase 5: Validation passed
@@ -227,4 +249,4 @@ ios/ or android/
 - [x] Complexity deviations documented
 
 ---
-*Based on Constitution v2.1.1 - See `/memory/constitution.md`*
+*Based on Constitution v1.1.0 - See `/memory/constitution.md`*

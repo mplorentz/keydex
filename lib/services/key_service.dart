@@ -1,7 +1,9 @@
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
+import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:ndk/shared/nips/nip44/nip44.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:meta/meta.dart';
 import 'logger.dart';
 
 /// Key management service for storing Nostr keys securely
@@ -21,6 +23,7 @@ class KeyService {
     await _storage.write(key: _nostrPrivateKeyKey, value: keyPair.privateKey);
 
     _cachedKeyPair = keyPair;
+    Log.info('Generated new Nostr key pair with public key: ${keyPair.publicKeyBech32}');
     return keyPair;
   }
 
@@ -38,7 +41,11 @@ class KeyService {
         final publicKey = Bip340.getPublicKey(privateKey);
 
         // Create full KeyPair with derived public key
-        _cachedKeyPair = KeyPair(privateKey, publicKey, null, null);
+        // Convert hex keys to bech32 format using NDK helpers
+        final privateKeyBech32 = Helpers.encodeBech32(privateKey, 'nsec');
+        final publicKeyBech32 = Helpers.encodeBech32(publicKey, 'npub');
+
+        _cachedKeyPair = KeyPair(privateKey, publicKey, privateKeyBech32, publicKeyBech32);
         Log.info('Successfully loaded Nostr key pair from secure storage: $publicKey');
         return _cachedKeyPair;
       } else {
@@ -110,5 +117,58 @@ class KeyService {
   static Future<void> clearStoredKeys() async {
     await _storage.delete(key: _nostrPrivateKeyKey);
     _cachedKeyPair = null;
+  }
+
+  /// Test-only helper to reset the in-memory cache without touching storage
+  @visibleForTesting
+  static void resetCacheForTest() {
+    _cachedKeyPair = null;
+  }
+
+  /// Convert bech32 npub to hex public key
+  static String? npubToHex(String npub) {
+    try {
+      final decoded = Helpers.decodeBech32(npub);
+      return decoded[0]; // First element is the hex key
+    } catch (e) {
+      Log.error('Error converting npub to hex', e);
+      return null;
+    }
+  }
+
+  /// Encrypt text for a specific recipient using NIP-44
+  static Future<String> encryptForRecipient({
+    required String plaintext,
+    required String recipientPubkey, // Expects hex public key
+  }) async {
+    final keyPair = await getStoredNostrKey();
+    if (keyPair?.privateKey == null || keyPair?.publicKey == null) {
+      throw Exception('No key pair available for encryption');
+    }
+
+    // Use NIP-44 to encrypt to the recipient
+    return await Nip44.encryptMessage(
+      plaintext,
+      keyPair!.privateKey!,
+      recipientPubkey, // Already in hex format
+    );
+  }
+
+  /// Decrypt text from a specific sender using NIP-44
+  static Future<String> decryptFromSender({
+    required String encryptedText,
+    required String senderPubkey, // Expects hex public key
+  }) async {
+    final keyPair = await getStoredNostrKey();
+    if (keyPair?.privateKey == null || keyPair?.publicKey == null) {
+      throw Exception('No key pair available for decryption');
+    }
+
+    // Use NIP-44 to decrypt from the sender
+    return await Nip44.decryptMessage(
+      encryptedText,
+      keyPair!.privateKey!,
+      senderPubkey, // Already in hex format
+    );
   }
 }
