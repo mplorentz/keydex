@@ -27,7 +27,7 @@ class _CreateLockboxWithBackupScreenState extends State<CreateLockboxWithBackupS
     return Scaffold(
       appBar: AppBar(
         title: const Text('Create Lockbox'),
-        backgroundColor: Colors.blue[700],
+        backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
         actions: [
           TextButton(

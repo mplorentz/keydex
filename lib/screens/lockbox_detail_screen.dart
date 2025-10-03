@@ -19,7 +19,7 @@ class LockboxDetailScreen extends StatelessWidget {
           return Scaffold(
             appBar: AppBar(
               title: const Text('Loading...'),
-              backgroundColor: Colors.blue[700],
+              backgroundColor: Theme.of(context).primaryColor,
               foregroundColor: Colors.white,
             ),
             body: const Center(child: CircularProgressIndicator()),
@@ -43,7 +43,7 @@ class LockboxDetailScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(lockbox.name),
-        backgroundColor: Colors.blue[700],
+        backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
         actions: [
           IconButton(
@@ -88,7 +88,7 @@ class LockboxDetailScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(16),
                 child: Row(
                   children: [
-                    Icon(Icons.info_outline, color: Colors.blue[700]),
+                    Icon(Icons.info_outline, color: Theme.of(context).primaryColor),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
@@ -148,12 +148,12 @@ class LockboxDetailScreen extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.backup, color: Colors.blue[700]),
+                        Icon(Icons.backup, color: Theme.of(context).primaryColor),
                         const SizedBox(width: 8),
                         Text(
                           'Distributed Backup',
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                color: Colors.blue[700],
+                                color: Theme.of(context).primaryColor,
                               ),
                         ),
                       ],
@@ -181,7 +181,7 @@ class LockboxDetailScreen extends StatelessWidget {
                           );
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue[700],
+                          backgroundColor: Theme.of(context).primaryColor,
                           foregroundColor: Colors.white,
                         ),
                         icon: const Icon(Icons.settings),

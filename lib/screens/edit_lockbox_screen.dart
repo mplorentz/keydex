@@ -54,7 +54,7 @@ class _EditLockboxScreenState extends State<EditLockboxScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Edit Lockbox'),
-        backgroundColor: Colors.blue[700],
+        backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
         actions: [
           TextButton(

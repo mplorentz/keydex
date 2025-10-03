@@ -52,7 +52,7 @@ class _LockboxListScreenState extends State<LockboxListScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Lockboxes'),
-        backgroundColor: Colors.blue[700],
+        backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
       ),
       body: Column(
@@ -88,8 +88,8 @@ class _LockboxListScreenState extends State<LockboxListScreen> {
                             margin: const EdgeInsets.only(bottom: 12),
                             child: ListTile(
                               leading: CircleAvatar(
-                                backgroundColor: Colors.blue[100],
-                                child: Icon(Icons.lock, color: Colors.blue[700]),
+                                backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                                child: Icon(Icons.lock, color: Theme.of(context).primaryColor),
                               ),
                               title: Text(
                                 lockbox.name,
@@ -177,7 +177,7 @@ class _LockboxListScreenState extends State<LockboxListScreen> {
             MaterialPageRoute(builder: (context) => const CreateLockboxWithBackupScreen()),
           ).then((_) => _loadData()); // Refresh when returning
         },
-        backgroundColor: Colors.blue[700],
+        backgroundColor: Theme.of(context).primaryColor,
         child: const Icon(Icons.add),
       ),
     );

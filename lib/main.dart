@@ -5,17 +5,17 @@ import 'services/logger.dart';
 import 'screens/lockbox_list_screen.dart';
 
 void main() {
-  runApp(const LockboxApp());
+  runApp(const KeydexApp());
 }
 
-class LockboxApp extends StatefulWidget {
-  const LockboxApp({super.key});
+class KeydexApp extends StatefulWidget {
+  const KeydexApp({super.key});
 
   @override
-  State<LockboxApp> createState() => _LockboxAppState();
+  State<KeydexApp> createState() => _KeydexAppState();
 }
 
-class _LockboxAppState extends State<LockboxApp> {
+class _KeydexAppState extends State<KeydexApp> {
   bool _isInitializing = true;
   String? _initError;
 
@@ -51,7 +51,20 @@ class _LockboxAppState extends State<LockboxApp> {
     return MaterialApp(
       title: 'Keydex Lockbox',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primaryColor: const Color(0xFFf47331),
+        scaffoldBackgroundColor: Colors.white,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFFf47331),
+          brightness: Brightness.light,
+        ),
+        cardTheme: const CardThemeData(
+          color: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(15)),
+            side: BorderSide(color: Color(0xFF4F4F4F), width: 2),
+          ),
+          elevation: 0,
+        ),
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: _isInitializing
@@ -74,8 +87,8 @@ class _InitializingScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(
-              color: Colors.blue[700],
+            const CircularProgressIndicator(
+              color: Color(0xFFf47331),
             ),
             const SizedBox(height: 24),
             Text(
