@@ -71,16 +71,16 @@ extension RecoveryResponseStatusExtension on RecoveryResponseStatus {
 /// Represents a key holder's response to a recovery request
 class RecoveryResponse {
   final String pubkey; // hex format, 64 characters
-  final RecoveryResponseStatus status;
+  final bool approved; // Whether the key holder approved the request
   final DateTime? respondedAt;
-  final String? shardDataId; // Reference to collected shard data
+  final Map<String, dynamic>? shardData; // Actual shard data for reassembly (if approved)
   final String? nostrEventId;
 
   const RecoveryResponse({
     required this.pubkey,
-    required this.status,
+    required this.approved,
     this.respondedAt,
-    this.shardDataId,
+    this.shardData,
     this.nostrEventId,
   });
 
@@ -91,28 +91,32 @@ class RecoveryResponse {
       return false;
     }
 
-    // RespondedAt must be in the past if status is not pending
-    if (status != RecoveryResponseStatus.pending && respondedAt != null) {
-      if (respondedAt!.isAfter(DateTime.now())) {
-        return false;
-      }
+    // RespondedAt must be in the past if provided
+    if (respondedAt != null && respondedAt!.isAfter(DateTime.now())) {
+      return false;
     }
 
-    // ShardDataId must be present if status is approved
-    if (status == RecoveryResponseStatus.approved && shardDataId == null) {
+    // ShardData must be present if approved
+    if (approved && shardData == null) {
       return false;
     }
 
     return true;
   }
 
+  /// Status helper for backwards compatibility
+  RecoveryResponseStatus get status {
+    if (respondedAt == null) return RecoveryResponseStatus.pending;
+    return approved ? RecoveryResponseStatus.approved : RecoveryResponseStatus.denied;
+  }
+
   /// Convert to JSON
   Map<String, dynamic> toJson() {
     return {
       'pubkey': pubkey,
-      'status': status.name,
+      'approved': approved,
       'respondedAt': respondedAt?.toIso8601String(),
-      'shardDataId': shardDataId,
+      'shardData': shardData,
       'nostrEventId': nostrEventId,
     };
   }
@@ -121,29 +125,26 @@ class RecoveryResponse {
   factory RecoveryResponse.fromJson(Map<String, dynamic> json) {
     return RecoveryResponse(
       pubkey: json['pubkey'] as String,
-      status: RecoveryResponseStatus.values.firstWhere(
-        (e) => e.name == json['status'],
-        orElse: () => RecoveryResponseStatus.pending,
-      ),
+      approved: json['approved'] as bool? ?? false,
       respondedAt:
           json['respondedAt'] != null ? DateTime.parse(json['respondedAt'] as String) : null,
-      shardDataId: json['shardDataId'] as String?,
+      shardData: json['shardData'] as Map<String, dynamic>?,
       nostrEventId: json['nostrEventId'] as String?,
     );
   }
 
   RecoveryResponse copyWith({
     String? pubkey,
-    RecoveryResponseStatus? status,
+    bool? approved,
     DateTime? respondedAt,
-    String? shardDataId,
+    Map<String, dynamic>? shardData,
     String? nostrEventId,
   }) {
     return RecoveryResponse(
       pubkey: pubkey ?? this.pubkey,
-      status: status ?? this.status,
+      approved: approved ?? this.approved,
       respondedAt: respondedAt ?? this.respondedAt,
-      shardDataId: shardDataId ?? this.shardDataId,
+      shardData: shardData ?? this.shardData,
       nostrEventId: nostrEventId ?? this.nostrEventId,
     );
   }
@@ -163,6 +164,7 @@ class RecoveryRequest {
   final RecoveryRequestStatus status;
   final String? nostrEventId;
   final DateTime? expiresAt;
+  final int threshold; // Shamir threshold needed for recovery
   final Map<String, RecoveryResponse> keyHolderResponses; // pubkey -> response
 
   const RecoveryRequest({
@@ -171,6 +173,7 @@ class RecoveryRequest {
     required this.initiatorPubkey,
     required this.requestedAt,
     required this.status,
+    required this.threshold,
     this.nostrEventId,
     this.expiresAt,
     this.keyHolderResponses = const {},
@@ -233,6 +236,7 @@ class RecoveryRequest {
       'initiatorPubkey': initiatorPubkey,
       'requestedAt': requestedAt.toIso8601String(),
       'status': status.name,
+      'threshold': threshold,
       'nostrEventId': nostrEventId,
       'expiresAt': expiresAt?.toIso8601String(),
       'keyHolderResponses': keyHolderResponses.map(
@@ -261,6 +265,8 @@ class RecoveryRequest {
         (e) => e.name == json['status'],
         orElse: () => RecoveryRequestStatus.pending,
       ),
+      threshold: json['threshold'] as int? ??
+          1, // Default to 1 if not present (for backwards compatibility)
       nostrEventId: json['nostrEventId'] as String?,
       expiresAt: json['expiresAt'] != null ? DateTime.parse(json['expiresAt'] as String) : null,
       keyHolderResponses: responses,
@@ -273,6 +279,7 @@ class RecoveryRequest {
     String? initiatorPubkey,
     DateTime? requestedAt,
     RecoveryRequestStatus? status,
+    int? threshold,
     String? nostrEventId,
     DateTime? expiresAt,
     Map<String, RecoveryResponse>? keyHolderResponses,
@@ -283,6 +290,7 @@ class RecoveryRequest {
       initiatorPubkey: initiatorPubkey ?? this.initiatorPubkey,
       requestedAt: requestedAt ?? this.requestedAt,
       status: status ?? this.status,
+      threshold: threshold ?? this.threshold,
       nostrEventId: nostrEventId ?? this.nostrEventId,
       expiresAt: expiresAt ?? this.expiresAt,
       keyHolderResponses: keyHolderResponses ?? this.keyHolderResponses,

@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:ndk/ndk.dart';
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'key_service.dart';
-import 'recovery_notification_service.dart';
+import 'recovery_service.dart';
 import 'lockbox_share_service.dart';
 import 'logger.dart';
+import '../models/nostr_kinds.dart';
 import '../models/shard_data.dart';
 import '../models/recovery_request.dart';
 
@@ -14,11 +14,9 @@ import '../models/recovery_request.dart';
 class NdkService {
   static Ndk? _ndk;
   static bool _isInitialized = false;
-  static NdkResponse? _recoveryRequestSubscription;
-  static NdkResponse? _keyShareSubscription;
+  static NdkResponse? _giftWrapSubscription;
   static final List<String> _activeRelays = [];
-  static StreamSubscription<Nip01Event>? _recoveryStreamSub;
-  static StreamSubscription<Nip01Event>? _keyShareStreamSub;
+  static StreamSubscription<Nip01Event>? _giftWrapStreamSub;
 
   /// Initialize NDK with current user's key and set up subscriptions
   static Future<void> initialize() async {
@@ -113,128 +111,147 @@ class NdkService {
 
     Log.info('Setting up NDK subscriptions on ${_activeRelays.length} relays');
 
-    // Subscribe to recovery request DMs (kind 4 encrypted direct messages)
-    // These are recovery requests sent TO us (we are in the 'p' tag)
-    _recoveryRequestSubscription = _ndk!.requests.subscription(
+    // Subscribe to all gift wrap events (kind 1059)
+    // All Keydex data (shards, recovery requests, recovery responses) are sent as gift wraps
+    _giftWrapSubscription = _ndk!.requests.subscription(
       filters: [
         Filter(
-          kinds: [4], // Encrypted DMs
-          pTags: [myPubkey], // Messages sent to us
-          limit: 100, // Get recent messages
+          kinds: [NostrKind.giftWrap.value], // Gift wrap events
+          pTags: [myPubkey], // Events sent to us
+          limit: 100, // Get recent events
         ),
       ],
       explicitRelays: _activeRelays,
     );
 
-    // Listen to recovery request stream
-    _recoveryStreamSub = _recoveryRequestSubscription!.stream.listen(
-      (event) => _handleRecoveryRequest(event),
-      onError: (error) => Log.error('Error in recovery request stream', error),
+    // Listen to gift wrap stream - will route to appropriate handler based on inner kind
+    _giftWrapStreamSub = _giftWrapSubscription!.stream.listen(
+      (event) => _handleGiftWrap(event),
+      onError: (error) => Log.error('Error in gift wrap stream', error),
     );
 
-    // Subscribe to gift wrap key shares (kind 1059)
-    // These are encrypted key shares sent TO us
-    _keyShareSubscription = _ndk!.requests.subscription(
-      filters: [
-        Filter(
-          kinds: [1059], // Gift wrap events
-          pTags: [myPubkey], // Shares sent to us
-          limit: 100, // Get recent shares
-        ),
-      ],
-      explicitRelays: _activeRelays,
-    );
-
-    // Listen to key share stream
-    _keyShareStreamSub = _keyShareSubscription!.stream.listen(
-      (event) => _handleKeyShare(event),
-      onError: (error) => Log.error('Error in key share stream', error),
-    );
-
-    Log.info('NDK subscriptions active for recovery requests (kind 4) and key shares (kind 1059)');
+    Log.info('NDK subscriptions active for gift wrapped events (kind ${NostrKind.giftWrap.value})');
   }
 
-  /// Handle incoming recovery request event (kind 4 DM)
-  static Future<void> _handleRecoveryRequest(Nip01Event event) async {
+  /// Handle incoming gift wrap event (kind 1059)
+  /// Routes to appropriate handler based on the inner kind
+  static Future<void> _handleGiftWrap(Nip01Event event) async {
     try {
-      Log.info('Received recovery request event: ${event.id}');
-
-      // Get sender pubkey from tags
-      final pTags = event.tags.where((tag) => tag.isNotEmpty && tag[0] == 'p').toList();
-      if (pTags.isEmpty) {
-        Log.warning('No sender pubkey in recovery request event');
-        return;
-      }
-
-      // In DMs, we need to determine if we're the sender or recipient
-      // The 'p' tag contains the other party
-      final senderPubkey = pTags.first[1];
-
-      // Decrypt the DM content
-      final keyPair = await KeyService.getStoredNostrKey();
-      if (keyPair == null) {
-        Log.error('Cannot decrypt recovery request: no key pair');
-        return;
-      }
-
-      final decryptedContent = await KeyService.decryptFromSender(
-        encryptedText: event.content,
-        senderPubkey: senderPubkey,
-      );
-
-      Log.info('Decrypted recovery request from $senderPubkey');
-
-      // Parse the recovery request JSON
-      final requestData = json.decode(decryptedContent) as Map<String, dynamic>;
-
-      // Create RecoveryRequest object
-      final recoveryRequest = RecoveryRequest(
-        id: event.id,
-        lockboxId: requestData['lockboxId'] as String,
-        initiatorPubkey: senderPubkey,
-        requestedAt: DateTime.fromMillisecondsSinceEpoch(event.createdAt * 1000),
-        status: RecoveryRequestStatus.sent,
-        nostrEventId: event.id,
-        expiresAt: requestData['expiresAt'] != null
-            ? DateTime.parse(requestData['expiresAt'] as String)
-            : null,
-        keyHolderResponses: {}, // Will be populated later
-      );
-
-      // Add to notification service
-      await RecoveryNotificationService.addNotification(recoveryRequest);
-
-      Log.info('Added recovery request notification: ${event.id}');
-    } catch (e) {
-      Log.error('Error handling recovery request event ${event.id}', e);
-    }
-  }
-
-  /// Handle incoming key share event (kind 1059 gift wrap)
-  static Future<void> _handleKeyShare(Nip01Event event) async {
-    try {
-      Log.info('Received key share gift wrap event: ${event.id}');
+      Log.info('Received gift wrap event: ${event.id}');
 
       // Unwrap the gift wrap event using NDK
       final unwrappedEvent = await _ndk!.giftWrap.fromGiftWrap(giftWrap: event);
 
-      Log.info('Unwrapped gift wrap event: ${unwrappedEvent.id}');
+      Log.info('Unwrapped event: kind=${unwrappedEvent.kind}, id=${unwrappedEvent.id}');
+
+      // Route based on the inner event kind
+      if (unwrappedEvent.kind == NostrKind.shardData.value) {
+        await _handleShardData(unwrappedEvent);
+      } else if (unwrappedEvent.kind == NostrKind.recoveryRequest.value) {
+        await _handleRecoveryRequestData(unwrappedEvent);
+      } else if (unwrappedEvent.kind == NostrKind.recoveryResponse.value) {
+        await _handleRecoveryResponseData(unwrappedEvent);
+      } else {
+        Log.warning('Unknown gift wrap inner kind: ${unwrappedEvent.kind}');
+      }
+    } catch (e) {
+      Log.error('Error handling gift wrap event ${event.id}', e);
+    }
+  }
+
+  /// Handle incoming shard data (kind 1337)
+  static Future<void> _handleShardData(Nip01Event event) async {
+    try {
+      Log.info('Processing shard data event: ${event.id}');
 
       // Parse the shard data from the unwrapped content
-      final shardJson = json.decode(unwrappedEvent.content) as Map<String, dynamic>;
-      Log.debug(shardJson.toString());
-
-      // Create ShardData from the unwrapped content
+      final shardJson = json.decode(event.content) as Map<String, dynamic>;
       final shardData = shardDataFromJson(shardJson);
-      Log.info('Parsed shard data from gift wrap');
+      Log.debug('Shard data: $shardData');
 
       // Store the shard data
       final lockboxId = shardData.lockboxId ?? 'unknown';
       await LockboxShareService.addLockboxShare(lockboxId, shardData);
 
-      Log.info('Stored key share for lockbox: $lockboxId');
+      Log.info('Stored shard data for lockbox: $lockboxId');
     } catch (e) {
-      Log.error('Error handling key share event ${event.id}', e);
+      Log.error('Error handling shard data event ${event.id}', e);
+    }
+  }
+
+  /// Handle incoming recovery request data (kind 1338)
+  static Future<void> _handleRecoveryRequestData(Nip01Event event) async {
+    try {
+      // Parse the recovery request from the unwrapped content
+      final requestData = json.decode(event.content) as Map<String, dynamic>;
+      final senderPubkey = event.pubKey;
+
+      // Create RecoveryRequest object
+      final recoveryRequest = RecoveryRequest(
+        id: requestData['recovery_request_id'] as String? ?? event.id,
+        lockboxId: requestData['lockbox_id'] as String,
+        initiatorPubkey: senderPubkey,
+        requestedAt: DateTime.parse(requestData['requested_at'] as String),
+        status: RecoveryRequestStatus.sent,
+        threshold: requestData['threshold'] as int? ?? 1, // Default to 1 if not present
+        nostrEventId: event.id,
+        expiresAt: requestData['expires_at'] != null
+            ? DateTime.parse(requestData['expires_at'] as String)
+            : null,
+        keyHolderResponses: {}, // Will be populated later
+      );
+
+      // Add to recovery service (will automatically show as notification)
+      await RecoveryService.addIncomingRecoveryRequest(recoveryRequest);
+
+      Log.info('Added incoming recovery request: ${event.id}');
+    } catch (e) {
+      Log.error('Error handling recovery request data', e);
+    }
+  }
+
+  /// Handle incoming recovery response data (kind 1339)
+  static Future<void> _handleRecoveryResponseData(Nip01Event event) async {
+    try {
+      // Parse the recovery response from the unwrapped content
+      final responseData = json.decode(event.content) as Map<String, dynamic>;
+      final senderPubkey = event.pubKey;
+
+      final recoveryRequestId = responseData['recovery_request_id'] as String;
+      final lockboxId = responseData['lockbox_id'] as String;
+      final approved = responseData['approved'] as bool;
+
+      Log.info(
+          'Received recovery response from $senderPubkey for lockbox $lockboxId: approved=$approved');
+
+      Map<String, dynamic>? shardDataMap;
+
+      // If approved, extract and store the shard data FOR RECOVERY
+      if (approved && responseData.containsKey('shard_data')) {
+        final shardDataJson = responseData['shard_data'] as Map<String, dynamic>;
+        final shardData = shardDataFromJson(shardDataJson);
+
+        // Store as a recovery shard (not a key holder shard)
+        await LockboxShareService.addRecoveryShard(recoveryRequestId, shardData);
+
+        // Keep the shard data for the response
+        shardDataMap = shardDataJson;
+
+        Log.info(
+            'Stored recovery shard from $senderPubkey for recovery request $recoveryRequestId');
+      }
+
+      // Update the recovery service with this response
+      await RecoveryService.respondToRecoveryRequest(
+        recoveryRequestId,
+        senderPubkey,
+        approved,
+        shardData: shardDataMap,
+      );
+
+      Log.info('Updated recovery request $recoveryRequestId with response from $senderPubkey');
+    } catch (e) {
+      Log.error('Error handling recovery response data', e);
     }
   }
 
@@ -276,7 +293,7 @@ class NdkService {
 
         // Create kind 4 DM event
         final dmEvent = Nip01Event(
-          kind: 4,
+          kind: NostrKind.recoveryRequest.value,
           pubKey: keyPair.publicKey,
           content: encryptedContent,
           tags: [
@@ -338,7 +355,7 @@ class NdkService {
 
       // Create kind 4 DM event
       final dmEvent = Nip01Event(
-        kind: 4,
+        kind: NostrKind.recoveryResponse.value,
         pubKey: keyPair.publicKey,
         content: encryptedContent,
         tags: [
@@ -371,13 +388,9 @@ class NdkService {
 
   /// Close all active subscriptions
   static Future<void> _closeSubscriptions() async {
-    await _recoveryStreamSub?.cancel();
-    _recoveryStreamSub = null;
-    _recoveryRequestSubscription = null;
-
-    await _keyShareStreamSub?.cancel();
-    _keyShareStreamSub = null;
-    _keyShareSubscription = null;
+    await _giftWrapStreamSub?.cancel();
+    _giftWrapStreamSub = null;
+    _giftWrapSubscription = null;
   }
 
   /// Get the list of active relays

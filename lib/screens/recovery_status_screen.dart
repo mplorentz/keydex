@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/recovery_request.dart';
 import '../models/recovery_status.dart';
@@ -21,11 +22,30 @@ class _RecoveryStatusScreenState extends State<RecoveryStatusScreen> {
   RecoveryRequest? _request;
   RecoveryStatus? _status;
   bool _isLoading = true;
+  StreamSubscription<RecoveryRequest>? _recoveryRequestSubscription;
 
   @override
   void initState() {
     super.initState();
     _loadData();
+    _setupRecoveryListener();
+  }
+
+  @override
+  void dispose() {
+    _recoveryRequestSubscription?.cancel();
+    super.dispose();
+  }
+
+  /// Listen for real-time updates to the recovery request
+  void _setupRecoveryListener() {
+    _recoveryRequestSubscription = RecoveryService.recoveryRequestStream.listen((updatedRequest) {
+      // Only update if it's for this specific recovery request
+      if (updatedRequest.id == widget.recoveryRequestId && mounted) {
+        _loadData(); // Reload all data to get updated status
+        Log.info('Recovery status screen auto-updated for request ${updatedRequest.id}');
+      }
+    });
   }
 
   Future<void> _loadData() async {
@@ -86,6 +106,87 @@ class _RecoveryStatusScreenState extends State<RecoveryStatusScreen> {
             SnackBar(content: Text('Error: $e')),
           );
         }
+      }
+    }
+  }
+
+  Future<void> _performRecovery() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Recover Lockbox'),
+        content: const Text(
+          'This will recover and unlock your lockbox using the collected key shares. '
+          'The recovered content will be displayed. Continue?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Recover'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      setState(() {
+        _isLoading = true;
+      });
+
+      // Perform the recovery
+      final content = await RecoveryService.performRecovery(widget.recoveryRequestId);
+
+      if (mounted) {
+        // Show the recovered content in a dialog
+        await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Lockbox Recovered!'),
+            content: SingleChildScrollView(
+              child: SelectableText(
+                content,
+                style: const TextStyle(fontFamily: 'monospace'),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Close'),
+              ),
+            ],
+          ),
+        );
+
+        // Reload data to show updated status
+        await _loadData();
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Lockbox successfully recovered!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      Log.error('Error performing recovery', e);
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     }
   }
@@ -218,7 +319,7 @@ class _RecoveryStatusScreenState extends State<RecoveryStatusScreen> {
               'Awaiting response',
             ),
             const SizedBox(height: 16),
-            if (_status!.canRecover)
+            if (_status!.canRecover) ...[
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -241,6 +342,24 @@ class _RecoveryStatusScreenState extends State<RecoveryStatusScreen> {
                   ],
                 ),
               ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _performRecovery,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.all(16),
+                  ),
+                  icon: const Icon(Icons.lock_open),
+                  label: const Text(
+                    'Recover Lockbox',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),

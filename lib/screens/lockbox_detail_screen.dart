@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import '../models/lockbox.dart';
+import '../models/recovery_request.dart';
 import '../services/lockbox_service.dart';
 import '../services/lockbox_share_service.dart';
 import '../services/recovery_service.dart';
+import '../services/relay_scan_service.dart';
 import '../services/key_service.dart';
 import '../services/logger.dart';
 import 'backup_config_screen.dart';
@@ -251,6 +253,7 @@ class _RecoverySection extends StatefulWidget {
 class _RecoverySectionState extends State<_RecoverySection> {
   bool _canRecover = false;
   bool _isLoading = true;
+  RecoveryRequest? _activeRecoveryRequest;
 
   @override
   void initState() {
@@ -261,9 +264,26 @@ class _RecoverySectionState extends State<_RecoverySection> {
   Future<void> _checkRecoveryStatus() async {
     try {
       final canRecover = await RecoveryService.canRecoverLockbox(widget.lockboxId);
+
+      // Check for active recovery requests for this lockbox
+      final requests = await RecoveryService.getRecoveryRequests(
+        lockboxId: widget.lockboxId,
+      );
+
+      // Find the most recent active request (not completed, failed, or cancelled)
+      RecoveryRequest? activeRequest;
+      for (final request in requests) {
+        if (request.status.isActive) {
+          if (activeRequest == null || request.requestedAt.isAfter(activeRequest.requestedAt)) {
+            activeRequest = request;
+          }
+        }
+      }
+
       if (mounted) {
         setState(() {
           _canRecover = canRecover;
+          _activeRecoveryRequest = activeRequest;
           _isLoading = false;
         });
       }
@@ -302,14 +322,24 @@ class _RecoverySectionState extends State<_RecoverySection> {
         return;
       }
 
-      // Get the first shard to extract peers and creator info
+      // Get the first shard to extract peers info
       final firstShard = shards.first;
+      Log.debug('First shard: $firstShard');
 
-      // Build key holder list: peers + creatorPubkey
-      final keyHolderPubkeys = <String>[
-        firstShard.creatorPubkey, // Add the creator
-        ...?firstShard.peers, // Add all other key holders
-      ];
+      // Use peers list for recovery (excludes creator since they don't have a shard in current design)
+      final keyHolderPubkeys = firstShard.peers ?? [];
+
+      if (keyHolderPubkeys.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No key holders available for recovery')),
+          );
+        }
+        return;
+      }
+
+      Log.info(
+          'Initiating recovery with ${keyHolderPubkeys.length} key holders: ${keyHolderPubkeys.map((k) => k.substring(0, 8)).join(", ")}...');
 
       final recoveryRequest = await RecoveryService.initiateRecovery(
         widget.lockboxId,
@@ -318,20 +348,47 @@ class _RecoverySectionState extends State<_RecoverySection> {
         threshold: firstShard.threshold,
       );
 
+      // Get relays and send recovery request via Nostr
+      try {
+        final relays = await RelayScanService.getRelayConfigurations(enabledOnly: true);
+        final relayUrls = relays.map((r) => r.url).toList();
+
+        if (relayUrls.isEmpty) {
+          Log.warning('No relays configured, recovery request not sent via Nostr');
+        } else {
+          await RecoveryService.sendRecoveryRequestViaNostr(
+            recoveryRequest,
+            relays: relayUrls,
+          );
+        }
+      } catch (e) {
+        Log.error('Failed to send recovery request via Nostr', e);
+        // Continue anyway - the request is still created locally
+      }
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Recovery request initiated')),
+          const SnackBar(content: Text('Recovery request initiated and sent')),
         );
 
+        // Reload state to update button
+        await _checkRecoveryStatus();
+
         // Navigate to recovery status screen
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => RecoveryStatusScreen(
-              recoveryRequestId: recoveryRequest.id,
+        if (mounted) {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => RecoveryStatusScreen(
+                recoveryRequestId: recoveryRequest.id,
+              ),
             ),
-          ),
-        );
+          );
+          // Refresh state when returning (in case user cancelled)
+          if (mounted) {
+            await _checkRecoveryStatus();
+          }
+        }
       }
     } catch (e) {
       Log.error('Error initiating recovery', e);
@@ -381,18 +438,47 @@ class _RecoverySectionState extends State<_RecoverySection> {
                   ),
             ),
             const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: _initiateRecovery,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                  foregroundColor: Colors.white,
+            // Show either "View Recovery Status" or "Initiate Recovery" button
+            if (_activeRecoveryRequest != null) ...[
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => RecoveryStatusScreen(
+                          recoveryRequestId: _activeRecoveryRequest!.id,
+                        ),
+                      ),
+                    );
+                    // Refresh state when returning from recovery status screen
+                    if (mounted) {
+                      await _checkRecoveryStatus();
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                  ),
+                  icon: const Icon(Icons.visibility),
+                  label: const Text('View Recovery Status'),
                 ),
-                icon: const Icon(Icons.restore),
-                label: const Text('Initiate Recovery'),
               ),
-            ),
+            ] else ...[
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _initiateRecovery,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange,
+                    foregroundColor: Colors.white,
+                  ),
+                  icon: const Icon(Icons.restore),
+                  label: const Text('Initiate Recovery'),
+                ),
+              ),
+            ],
             if (_canRecover) ...[
               const SizedBox(height: 12),
               Container(

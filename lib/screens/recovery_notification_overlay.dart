@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/recovery_request.dart';
-import '../services/recovery_notification_service.dart';
+import '../services/recovery_service.dart';
 import '../services/logger.dart';
 import 'recovery_request_detail_screen.dart';
 
@@ -25,7 +25,7 @@ class _RecoveryNotificationOverlayState extends State<RecoveryNotificationOverla
 
   Future<void> _loadNotifications() async {
     try {
-      final notifications = await RecoveryNotificationService.getPendingNotifications();
+      final notifications = await RecoveryService.getPendingNotifications();
       if (mounted) {
         setState(() {
           _pendingNotifications = notifications;
@@ -37,7 +37,7 @@ class _RecoveryNotificationOverlayState extends State<RecoveryNotificationOverla
   }
 
   void _listenToNotifications() {
-    RecoveryNotificationService.notificationStream.listen((notifications) {
+    RecoveryService.notificationStream.listen((notifications) {
       if (mounted) {
         setState(() {
           _pendingNotifications = notifications;
@@ -48,7 +48,7 @@ class _RecoveryNotificationOverlayState extends State<RecoveryNotificationOverla
 
   Future<void> _viewNotification(RecoveryRequest request) async {
     try {
-      await RecoveryNotificationService.markNotificationAsViewed(request.id);
+      await RecoveryService.markNotificationAsViewed(request.id);
 
       if (mounted) {
         Navigator.push(
@@ -67,7 +67,7 @@ class _RecoveryNotificationOverlayState extends State<RecoveryNotificationOverla
 
   Future<void> _dismissNotification(RecoveryRequest request) async {
     try {
-      await RecoveryNotificationService.markNotificationAsViewed(request.id);
+      await RecoveryService.markNotificationAsViewed(request.id);
     } catch (e) {
       Log.error('Error dismissing notification', e);
     }

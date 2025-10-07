@@ -4,6 +4,10 @@ import 'package:flutter/services.dart';
 import '../models/lockbox.dart';
 import '../services/key_service.dart';
 import '../services/lockbox_service.dart';
+import '../services/lockbox_share_service.dart';
+import '../services/recovery_service.dart';
+import '../services/relay_scan_service.dart';
+import '../services/backup_service.dart';
 import '../services/logger.dart';
 import 'create_lockbox_with_backup_screen.dart';
 import 'lockbox_detail_screen.dart';
@@ -73,6 +77,92 @@ class _LockboxListScreenState extends State<LockboxListScreen> {
     }
   }
 
+  Future<void> _clearAllData() async {
+    // Show confirmation dialog
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Clear All Data?'),
+        content: const Text(
+          'This will permanently delete:\n'
+          '• All lockboxes\n'
+          '• All key holder shards\n'
+          '• All recovery requests\n'
+          '• All recovery shards\n'
+          '• All relay configurations\n'
+          '• Your Nostr keys\n\n'
+          'This action cannot be undone!',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('DELETE ALL'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      // Show loading indicator
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Clearing all data...'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+
+      // Clear all services
+      await LockboxService.clearAll();
+      await LockboxShareService.clearAll();
+      await RecoveryService.clearAll(); // Now includes notifications
+      await RelayScanService.clearAll();
+      await BackupService.clearAll();
+      await KeyService.clearStoredKeys();
+
+      Log.info('All app data cleared successfully');
+
+      // Reload data
+      if (mounted) {
+        setState(() {
+          _lockboxes = [];
+          _currentPublicKey = null;
+          _currentNpub = null;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('All data cleared! App will restart...'),
+            duration: Duration(seconds: 2),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        // Optional: Navigate back to force a fresh state
+        await Future.delayed(const Duration(seconds: 1));
+        _loadData();
+      }
+    } catch (e) {
+      Log.error('Error clearing all data', e);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error clearing data: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -92,6 +182,11 @@ class _LockboxListScreenState extends State<LockboxListScreen> {
               );
             },
             tooltip: 'Scan for Keys',
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete_forever),
+            onPressed: _clearAllData,
+            tooltip: 'Clear All Data (Debug)',
           ),
         ],
       ),

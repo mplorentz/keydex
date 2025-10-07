@@ -1,14 +1,33 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ndk/ndk.dart';
+import '../models/nostr_kinds.dart';
 import '../models/recovery_request.dart';
 import '../models/recovery_status.dart';
+import '../models/shard_data.dart';
+import 'key_service.dart';
+import 'lockbox_share_service.dart';
+import 'backup_service.dart';
 import 'logger.dart';
 
 /// Service for managing lockbox recovery operations
+/// Includes notification tracking for incoming recovery requests
 class RecoveryService {
   static const String _recoveryRequestsKey = 'recovery_requests';
+  static const String _viewedNotificationIdsKey = 'viewed_recovery_notification_ids';
+
   static List<RecoveryRequest>? _cachedRequests;
+  static Set<String>? _viewedNotificationIds;
   static bool _isInitialized = false;
+
+  // Stream for real-time notification updates
+  static final _notificationController = StreamController<List<RecoveryRequest>>.broadcast();
+  static Stream<List<RecoveryRequest>> get notificationStream => _notificationController.stream;
+
+  // Stream for recovery request updates (for status screen)
+  static final _recoveryRequestController = StreamController<RecoveryRequest>.broadcast();
+  static Stream<RecoveryRequest> get recoveryRequestStream => _recoveryRequestController.stream;
 
   /// Initialize the service
   static Future<void> initialize() async {
@@ -16,11 +35,13 @@ class RecoveryService {
 
     try {
       await _loadRecoveryRequests();
+      await _loadViewedNotificationIds();
       _isInitialized = true;
       Log.info('RecoveryService initialized with ${_cachedRequests?.length ?? 0} requests');
     } catch (e) {
       Log.error('Error initializing RecoveryService', e);
       _cachedRequests = [];
+      _viewedNotificationIds = {};
       _isInitialized = true;
     }
   }
@@ -57,9 +78,58 @@ class RecoveryService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_recoveryRequestsKey, jsonString);
       Log.info('Saved ${jsonList.length} recovery requests to storage');
+
+      // Emit notification update
+      _emitNotificationUpdate();
     } catch (e) {
       Log.error('Error saving recovery requests', e);
       throw Exception('Failed to save recovery requests: $e');
+    }
+  }
+
+  /// Load viewed notification IDs from storage
+  static Future<void> _loadViewedNotificationIds() async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonData = prefs.getString(_viewedNotificationIdsKey);
+
+    if (jsonData == null || jsonData.isEmpty) {
+      _viewedNotificationIds = {};
+      return;
+    }
+
+    try {
+      final List<dynamic> jsonList = json.decode(jsonData);
+      _viewedNotificationIds = Set<String>.from(jsonList);
+      Log.info('Loaded ${_viewedNotificationIds!.length} viewed notification IDs from storage');
+    } catch (e) {
+      Log.error('Error loading viewed notification IDs', e);
+      _viewedNotificationIds = {};
+    }
+  }
+
+  /// Save viewed notification IDs to storage
+  static Future<void> _saveViewedNotificationIds() async {
+    if (_viewedNotificationIds == null) return;
+
+    try {
+      final jsonList = _viewedNotificationIds!.toList();
+      final jsonString = json.encode(jsonList);
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_viewedNotificationIdsKey, jsonString);
+      Log.info('Saved ${jsonList.length} viewed notification IDs to storage');
+    } catch (e) {
+      Log.error('Error saving viewed notification IDs', e);
+      throw Exception('Failed to save viewed notification IDs: $e');
+    }
+  }
+
+  /// Emit notification update to stream
+  static void _emitNotificationUpdate() {
+    if (_cachedRequests != null && _viewedNotificationIds != null) {
+      final unviewed =
+          _cachedRequests!.where((req) => !_viewedNotificationIds!.contains(req.id)).toList();
+      _notificationController.add(unviewed);
     }
   }
 
@@ -85,7 +155,7 @@ class RecoveryService {
     for (final pubkey in keyHolderPubkeys) {
       keyHolderResponses[pubkey] = RecoveryResponse(
         pubkey: pubkey,
-        status: RecoveryResponseStatus.pending,
+        approved: false,
       );
     }
 
@@ -95,6 +165,7 @@ class RecoveryService {
       initiatorPubkey: initiatorPubkey,
       requestedAt: DateTime.now(),
       status: RecoveryRequestStatus.pending,
+      threshold: threshold,
       expiresAt: expiresAt,
       keyHolderResponses: keyHolderResponses,
     );
@@ -109,6 +180,26 @@ class RecoveryService {
 
     Log.info('Created recovery request $requestId for lockbox $lockboxId');
     return recoveryRequest;
+  }
+
+  /// Add an incoming recovery request (received via Nostr)
+  /// This is different from initiateRecovery which creates a new request
+  static Future<void> addIncomingRecoveryRequest(RecoveryRequest request) async {
+    await initialize();
+
+    // Check if request already exists
+    final existingIndex = _cachedRequests!.indexWhere((r) => r.id == request.id);
+    if (existingIndex != -1) {
+      // Update existing request
+      _cachedRequests![existingIndex] = request;
+      Log.info('Updated existing recovery request ${request.id}');
+    } else {
+      // Add new request
+      _cachedRequests!.add(request);
+      Log.info('Added incoming recovery request ${request.id}');
+    }
+
+    await _saveRecoveryRequests();
   }
 
   /// Get all recovery requests for the current user
@@ -151,15 +242,14 @@ class RecoveryService {
     final request = await getRecoveryRequest(recoveryRequestId);
     if (request == null) return null;
 
+    // Count responses that have shard data (approved responses)
     final collectedShardIds = request.keyHolderResponses.values
-        .where((r) => r.shardDataId != null)
-        .map((r) => r.shardDataId!)
+        .where((r) => r.shardData != null)
+        .map((r) => r.pubkey) // Use pubkey as identifier
         .toList();
 
-    // Determine if recovery is possible
-    // For now, we use a simple heuristic based on the number of key holders
-    // In a real implementation, this would check against the Shamir threshold
-    final threshold = (request.totalKeyHolders * 0.67).ceil(); // Example: need 67% of key holders
+    // Use the actual Shamir threshold from the recovery request
+    final threshold = request.threshold;
 
     return RecoveryStatus(
       recoveryRequestId: recoveryRequestId,
@@ -174,15 +264,16 @@ class RecoveryService {
     );
   }
 
-  /// Respond to a recovery request
+  /// Respond to a recovery request (from a key holder)
   static Future<void> respondToRecoveryRequest(
     String recoveryRequestId,
     String responderPubkey,
-    RecoveryResponseStatus responseStatus, {
-    String? shardDataId,
+    bool approved, {
+    Map<String, dynamic>? shardData,
   }) async {
     await initialize();
 
+    Log.debug('cachedRequests: $_cachedRequests');
     final requestIndex = _cachedRequests!.indexWhere((r) => r.id == recoveryRequestId);
     if (requestIndex == -1) {
       throw ArgumentError('Recovery request not found: $recoveryRequestId');
@@ -190,18 +281,13 @@ class RecoveryService {
 
     final request = _cachedRequests![requestIndex];
 
-    // Check if this pubkey is a valid key holder
-    if (!request.keyHolderResponses.containsKey(responderPubkey)) {
-      throw ArgumentError('Responder is not a key holder for this request');
-    }
-
     // Update the response
     final updatedResponses = Map<String, RecoveryResponse>.from(request.keyHolderResponses);
     updatedResponses[responderPubkey] = RecoveryResponse(
       pubkey: responderPubkey,
-      status: responseStatus,
+      approved: approved,
       respondedAt: DateTime.now(),
-      shardDataId: shardDataId,
+      shardData: shardData,
     );
 
     // Update request status
@@ -212,11 +298,9 @@ class RecoveryService {
     }
 
     // Check if we have enough approvals to complete
-    final approvedCount =
-        updatedResponses.values.where((r) => r.status == RecoveryResponseStatus.approved).length;
-    final threshold = (request.totalKeyHolders * 0.67).ceil();
+    final approvedCount = updatedResponses.values.where((r) => r.approved).length;
 
-    if (approvedCount >= threshold) {
+    if (approvedCount >= request.threshold) {
       newStatus = RecoveryRequestStatus.completed;
     }
 
@@ -229,8 +313,11 @@ class RecoveryService {
     _cachedRequests![requestIndex] = updatedRequest;
     await _saveRecoveryRequests();
 
+    // Emit update to stream for real-time UI updates
+    _recoveryRequestController.add(updatedRequest);
+
     Log.info(
-        'Updated recovery request $recoveryRequestId with response from ${responderPubkey.substring(0, 8)}...');
+        'Updated recovery request $recoveryRequestId with response from ${responderPubkey.substring(0, 8)}... (approved: $approved)');
   }
 
   /// Cancel a recovery request
@@ -272,6 +359,49 @@ class RecoveryService {
     return false;
   }
 
+  /// Perform lockbox recovery using collected shards
+  /// Returns the recovered lockbox content
+  static Future<String> performRecovery(String recoveryRequestId) async {
+    await initialize();
+
+    final request = await getRecoveryRequest(recoveryRequestId);
+    if (request == null) {
+      throw ArgumentError('Recovery request not found: $recoveryRequestId');
+    }
+
+    // Get the recovery status to check if recovery is possible
+    final status = await getRecoveryStatus(recoveryRequestId);
+    if (status == null || !status.canRecover) {
+      throw Exception('Recovery is not yet possible - insufficient shares collected');
+    }
+
+    // Get the collected recovery shards
+    final shards = await LockboxShareService.getRecoveryShards(recoveryRequestId);
+    if (shards.isEmpty) {
+      throw Exception('No recovery shards found');
+    }
+
+    if (shards.length < request.threshold) {
+      throw Exception('Insufficient shards: need ${request.threshold}, have ${shards.length}');
+    }
+
+    // Reconstruct the lockbox content from the shards
+    final content = await BackupService.reconstructFromShares(shares: shards);
+
+    // Update the recovery request status to completed
+    final updatedRequest = request.copyWith(
+      status: RecoveryRequestStatus.completed,
+    );
+    final requestIndex = _cachedRequests!.indexWhere((r) => r.id == recoveryRequestId);
+    if (requestIndex != -1) {
+      _cachedRequests![requestIndex] = updatedRequest;
+      await _saveRecoveryRequests();
+    }
+
+    Log.info('Successfully recovered lockbox ${request.lockboxId} from $recoveryRequestId');
+    return content;
+  }
+
   /// Get key holder responses for a recovery request
   static Future<List<RecoveryResponse>> getKeyHolderResponses(String recoveryRequestId) async {
     await initialize();
@@ -307,19 +437,258 @@ class RecoveryService {
     Log.info('Updated recovery request $recoveryRequestId status to ${status.displayName}');
   }
 
+  /// Send recovery request to key holders via Nostr gift wraps
+  /// Returns the list of gift wrap event IDs
+  static Future<List<String>> sendRecoveryRequestViaNostr(
+    RecoveryRequest request, {
+    required List<String> relays,
+  }) async {
+    try {
+      // Get current user's keys
+      final keyPair = await KeyService.getStoredNostrKey();
+      final currentPubkey = keyPair?.publicKey;
+      final currentPrivkey = keyPair?.privateKey;
+
+      if (currentPubkey == null || currentPrivkey == null) {
+        throw Exception('Unable to get current user keys for signing');
+      }
+
+      // Initialize NDK
+      final ndk = Ndk.defaultConfig();
+      ndk.accounts.loginPrivateKey(pubkey: currentPubkey, privkey: currentPrivkey);
+      Log.info('Initialized NDK for recovery request distribution');
+
+      // Prepare recovery request data
+      final requestData = {
+        'type': 'recovery_request',
+        'recovery_request_id': request.id,
+        'lockbox_id': request.lockboxId,
+        'initiator_pubkey': request.initiatorPubkey,
+        'requested_at': request.requestedAt.toIso8601String(),
+        'expires_at': request.expiresAt?.toIso8601String(),
+        'threshold': request.threshold,
+      };
+
+      final requestJson = json.encode(requestData);
+      final eventIds = <String>[];
+
+      // Send gift wrap to each key holder
+      for (final pubkey in request.keyHolderResponses.keys) {
+        try {
+          Log.debug('Sending recovery request to ${pubkey.substring(0, 8)}...');
+
+          // Create rumor event with recovery request data
+          final rumor = await ndk.giftWrap.createRumor(
+            customPubkey: currentPubkey,
+            content: requestJson,
+            kind: NostrKind.recoveryRequest.value, // Keydex custom kind for recovery requests
+            tags: [
+              ['d', 'recovery_request_${request.id}'],
+              ['lockbox_id', request.lockboxId],
+              ['recovery_request_id', request.id],
+            ],
+          );
+
+          // Wrap the rumor in a gift wrap for the recipient
+          final giftWrap = await ndk.giftWrap.toGiftWrap(
+            rumor: rumor,
+            recipientPubkey: pubkey,
+          );
+
+          // Broadcast the gift wrap event
+          ndk.broadcast.broadcast(
+            nostrEvent: giftWrap,
+            specificRelays: relays,
+          );
+
+          eventIds.add(giftWrap.id);
+          Log.info(
+              'Sent recovery request to ${pubkey.substring(0, 8)}... (event: ${giftWrap.id.substring(0, 8)}...)');
+        } catch (e) {
+          Log.error('Failed to send recovery request to ${pubkey.substring(0, 8)}...', e);
+        }
+      }
+
+      // Update request status to sent
+      await updateRecoveryRequestStatus(
+        request.id,
+        RecoveryRequestStatus.sent,
+        nostrEventId: eventIds.isNotEmpty ? eventIds.first : null,
+      );
+
+      Log.info(
+          'Successfully sent recovery request ${request.id} to ${eventIds.length} key holders');
+      return eventIds;
+    } catch (e) {
+      Log.error('Failed to send recovery request via Nostr', e);
+      rethrow;
+    }
+  }
+
+  /// Send recovery response (shard data) back to initiator via Nostr gift wrap
+  /// Returns the gift wrap event ID
+  static Future<String> sendRecoveryResponseViaNostr(
+    RecoveryRequest request,
+    ShardData shardData,
+    bool approved, {
+    required List<String> relays,
+  }) async {
+    try {
+      // Get current user's keys
+      final keyPair = await KeyService.getStoredNostrKey();
+      final currentPubkey = keyPair?.publicKey;
+      final currentPrivkey = keyPair?.privateKey;
+
+      if (currentPubkey == null || currentPrivkey == null) {
+        throw Exception('Unable to get current user keys for signing');
+      }
+
+      // Initialize NDK
+      final ndk = Ndk.defaultConfig();
+      ndk.accounts.loginPrivateKey(pubkey: currentPubkey, privkey: currentPrivkey);
+      Log.info('Initialized NDK for recovery response');
+
+      // Prepare recovery response data
+      final responseData = {
+        'type': 'recovery_response',
+        'recovery_request_id': request.id,
+        'lockbox_id': request.lockboxId,
+        'responder_pubkey': currentPubkey,
+        'approved': approved,
+        'responded_at': DateTime.now().toIso8601String(),
+      };
+
+      // Include shard data if approved
+      if (approved) {
+        responseData['shard_data'] = shardDataToJson(shardData);
+      }
+
+      final responseJson = json.encode(responseData);
+
+      Log.debug('Sending recovery response to ${request.initiatorPubkey.substring(0, 8)}...');
+
+      // Create rumor event with recovery response data
+      final rumor = await ndk.giftWrap.createRumor(
+        customPubkey: currentPubkey,
+        content: responseJson,
+        kind: NostrKind.recoveryResponse.value, // Keydex custom kind for recovery responses
+        tags: [
+          ['d', 'recovery_response_${request.id}_$currentPubkey'],
+          ['lockbox_id', request.lockboxId],
+          ['recovery_request_id', request.id],
+          ['approved', approved.toString()],
+        ],
+      );
+
+      // Wrap the rumor in a gift wrap for the initiator
+      final giftWrap = await ndk.giftWrap.toGiftWrap(
+        rumor: rumor,
+        recipientPubkey: request.initiatorPubkey,
+      );
+
+      // Broadcast the gift wrap event
+      ndk.broadcast.broadcast(
+        nostrEvent: giftWrap,
+        specificRelays: relays,
+      );
+
+      Log.info(
+          'Sent recovery response to ${request.initiatorPubkey.substring(0, 8)}... (event: ${giftWrap.id.substring(0, 8)}..., approved: $approved)');
+
+      return giftWrap.id;
+    } catch (e) {
+      Log.error('Failed to send recovery response via Nostr', e);
+      rethrow;
+    }
+  }
+
+  // ========== Notification Methods ==========
+
+  /// Get pending (unviewed) recovery request notifications
+  static Future<List<RecoveryRequest>> getPendingNotifications() async {
+    await initialize();
+
+    return _cachedRequests!
+        .where((request) => !_viewedNotificationIds!.contains(request.id))
+        .toList();
+  }
+
+  /// Get all recovery request notifications (including viewed)
+  static Future<List<RecoveryRequest>> getAllNotifications() async {
+    await initialize();
+    return List.unmodifiable(_cachedRequests!);
+  }
+
+  /// Mark a recovery request notification as viewed
+  static Future<void> markNotificationAsViewed(String recoveryRequestId) async {
+    await initialize();
+
+    if (!_viewedNotificationIds!.contains(recoveryRequestId)) {
+      _viewedNotificationIds!.add(recoveryRequestId);
+      await _saveViewedNotificationIds();
+      _emitNotificationUpdate();
+      Log.info('Marked recovery request $recoveryRequestId as viewed');
+    }
+  }
+
+  /// Mark a recovery request notification as unviewed
+  static Future<void> markNotificationAsUnviewed(String recoveryRequestId) async {
+    await initialize();
+
+    if (_viewedNotificationIds!.contains(recoveryRequestId)) {
+      _viewedNotificationIds!.remove(recoveryRequestId);
+      await _saveViewedNotificationIds();
+      _emitNotificationUpdate();
+      Log.info('Marked recovery request $recoveryRequestId as unviewed');
+    }
+  }
+
+  /// Get notification count
+  static Future<int> getNotificationCount({bool unviewedOnly = true}) async {
+    await initialize();
+
+    if (unviewedOnly) {
+      return _cachedRequests!
+          .where((request) => !_viewedNotificationIds!.contains(request.id))
+          .length;
+    } else {
+      return _cachedRequests!.length;
+    }
+  }
+
+  /// Check if a notification has been viewed
+  static Future<bool> isNotificationViewed(String recoveryRequestId) async {
+    await initialize();
+    return _viewedNotificationIds!.contains(recoveryRequestId);
+  }
+
+  /// Clear all viewed notification markers (doesn't delete requests)
+  static Future<void> clearViewedNotifications() async {
+    await initialize();
+
+    _viewedNotificationIds!.clear();
+    await _saveViewedNotificationIds();
+    _emitNotificationUpdate();
+    Log.info('Cleared all viewed notification markers');
+  }
+
   /// Clear all recovery requests (for testing)
   static Future<void> clearAll() async {
     _cachedRequests = [];
+    _viewedNotificationIds = {};
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_recoveryRequestsKey);
+    await prefs.remove(_viewedNotificationIdsKey);
     _isInitialized = false;
-    Log.info('Cleared all recovery requests');
+    _notificationController.add([]);
+    Log.info('Cleared all recovery requests and notifications');
   }
 
   /// Refresh the cached data from storage
   static Future<void> refresh() async {
     _isInitialized = false;
     _cachedRequests = null;
+    _viewedNotificationIds = null;
     await initialize();
   }
 }
