@@ -5,6 +5,8 @@ void main() {
   group('BackupService - Shamir Secret Sharing', () {
     const testSecret = 'This is a test secret that we want to protect with Shamir Secret Sharing!';
     const testCreatorPubkey = '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
+    const testLockboxId = 'test-lockbox-123';
+    const testLockboxName = 'Test Lockbox';
 
     test('generateShamirShares creates correct number of shares', () async {
       // Arrange
@@ -17,6 +19,8 @@ void main() {
         threshold: threshold,
         totalShards: totalShards,
         creatorPubkey: testCreatorPubkey,
+        lockboxId: testLockboxId,
+        lockboxName: testLockboxName,
       );
 
       // Assert
@@ -44,6 +48,8 @@ void main() {
         threshold: threshold,
         totalShards: totalShards,
         creatorPubkey: testCreatorPubkey,
+        lockboxId: testLockboxId,
+        lockboxName: testLockboxName,
       );
 
       // Assert - All shares should be unique
@@ -60,6 +66,8 @@ void main() {
         threshold: threshold,
         totalShards: totalShards,
         creatorPubkey: testCreatorPubkey,
+        lockboxId: testLockboxId,
+        lockboxName: testLockboxName,
       );
 
       // Act - Use exactly threshold number of shares
@@ -80,6 +88,8 @@ void main() {
         threshold: threshold,
         totalShards: totalShards,
         creatorPubkey: testCreatorPubkey,
+        lockboxId: testLockboxId,
+        lockboxName: testLockboxName,
       );
 
       // Act - Use more than threshold shares (all 4)
@@ -100,6 +110,8 @@ void main() {
         threshold: threshold,
         totalShards: totalShards,
         creatorPubkey: testCreatorPubkey,
+        lockboxId: testLockboxId,
+        lockboxName: testLockboxName,
       );
 
       // Act - Try different combinations of threshold shares
@@ -128,6 +140,8 @@ void main() {
         threshold: threshold,
         totalShards: totalShards,
         creatorPubkey: testCreatorPubkey,
+        lockboxId: testLockboxId,
+        lockboxName: testLockboxName,
       );
 
       // Act & Assert - Should throw when fewer than threshold shares provided
@@ -146,12 +160,16 @@ void main() {
         threshold: 2,
         totalShards: 3,
         creatorPubkey: testCreatorPubkey,
+        lockboxId: testLockboxId,
+        lockboxName: testLockboxName,
       );
       final shares2 = await BackupService.generateShamirShares(
         content: 'Different secret',
         threshold: 2,
         totalShards: 3,
         creatorPubkey: 'differentpubkey1234567890abcdef1234567890abcdef1234567890abcdef',
+        lockboxId: 'different-lockbox',
+        lockboxName: 'Different Lockbox',
       );
 
       // Act & Assert - Should throw when mixing shares from different sets
@@ -183,6 +201,8 @@ void main() {
         threshold: threshold,
         totalShards: totalShards,
         creatorPubkey: testCreatorPubkey,
+        lockboxId: testLockboxId,
+        lockboxName: testLockboxName,
       );
 
       final reconstructed = await BackupService.reconstructFromShares(
@@ -205,6 +225,8 @@ void main() {
         threshold: threshold,
         totalShards: totalShards,
         creatorPubkey: testCreatorPubkey,
+        lockboxId: testLockboxId,
+        lockboxName: testLockboxName,
       );
 
       final reconstructed = await BackupService.reconstructFromShares(
@@ -226,6 +248,8 @@ void main() {
         threshold: threshold,
         totalShards: totalShards,
         creatorPubkey: testCreatorPubkey,
+        lockboxId: testLockboxId,
+        lockboxName: testLockboxName,
       );
 
       // Create tampered shares with an invalid prime modulus
@@ -241,6 +265,12 @@ void main() {
           primeMod: invalidPrimeMod, // Replace with invalid prime
           creatorPubkey: share.creatorPubkey,
           createdAt: share.createdAt,
+          lockboxId: share.lockboxId,
+          lockboxName: share.lockboxName,
+          recipientPubkey: share.recipientPubkey,
+          isReceived: share.isReceived,
+          receivedAt: share.receivedAt,
+          nostrEventId: share.nostrEventId,
         );
       }).toList();
 

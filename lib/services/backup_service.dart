@@ -173,6 +173,8 @@ class BackupService {
     required int threshold,
     required int totalShards,
     required String creatorPubkey,
+    required String lockboxId,
+    required String lockboxName,
   }) async {
     try {
       // Validate inputs
@@ -192,6 +194,7 @@ class BackupService {
       // Generate shares using Base64Url encoding (isBase64 = true)
       // The ntcdcrypto library returns shares as Base64Url-encoded strings
       final shareStrings = sss.create(threshold, totalShards, content, true);
+      Log.debug('Share Strings: $shareStrings');
 
       // The prime modulus is fixed in ntcdcrypto, convert to base64url for storage
       // This matches the format expected by skb.py
@@ -208,7 +211,10 @@ class BackupService {
           totalShards: totalShards,
           primeMod: primeMod,
           creatorPubkey: creatorPubkey,
+          lockboxId: lockboxId,
+          lockboxName: lockboxName,
         );
+        Log.debug(shardData.toString());
         shardDataList.add(shardData);
       }
 
@@ -409,6 +415,8 @@ class BackupService {
         threshold: threshold,
         totalShards: totalKeys,
         creatorPubkey: creatorPubkey,
+        lockboxId: lockbox.id,
+        lockboxName: lockbox.name,
       );
       Log.info('Generated ${shards.length} Shamir shares');
 

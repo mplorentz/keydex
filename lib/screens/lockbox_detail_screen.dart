@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import '../models/lockbox.dart';
 import '../services/lockbox_service.dart';
+import '../services/recovery_service.dart';
+import '../services/key_service.dart';
+import '../services/logger.dart';
 import 'backup_config_screen.dart';
 import 'edit_lockbox_screen.dart';
+import 'recovery_status_screen.dart';
 
 /// Detail/view screen for displaying a lockbox
 class LockboxDetailScreen extends StatelessWidget {
@@ -192,6 +196,9 @@ class LockboxDetailScreen extends StatelessWidget {
                 ),
               ),
             ),
+            const SizedBox(height: 16),
+            // Recovery Section
+            _RecoverySection(lockboxId: lockbox.id),
           ],
         ),
       ),
@@ -227,5 +234,178 @@ class LockboxDetailScreen extends StatelessWidget {
 
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year} at ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
+  }
+}
+
+/// Widget for recovery section on lockbox detail screen
+class _RecoverySection extends StatefulWidget {
+  final String lockboxId;
+
+  const _RecoverySection({required this.lockboxId});
+
+  @override
+  _RecoverySectionState createState() => _RecoverySectionState();
+}
+
+class _RecoverySectionState extends State<_RecoverySection> {
+  bool _canRecover = false;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkRecoveryStatus();
+  }
+
+  Future<void> _checkRecoveryStatus() async {
+    try {
+      final canRecover = await RecoveryService.canRecoverLockbox(widget.lockboxId);
+      if (mounted) {
+        setState(() {
+          _canRecover = canRecover;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      Log.error('Error checking recovery status', e);
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _initiateRecovery() async {
+    try {
+      final currentPubkey = await KeyService.getCurrentPublicKey();
+
+      if (currentPubkey == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Error: Could not load current user')),
+          );
+        }
+        return;
+      }
+
+      // For demo purposes, create a recovery request with placeholder key holders
+      // In a real implementation, this would get the actual key holders from the lockbox backup config
+      final keyHolderPubkeys = <String>[
+        currentPubkey,
+        // Add more key holder pubkeys here
+      ];
+
+      final recoveryRequest = await RecoveryService.initiateRecovery(
+        widget.lockboxId,
+        initiatorPubkey: currentPubkey,
+        keyHolderPubkeys: keyHolderPubkeys,
+        threshold: 2,
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Recovery request initiated')),
+        );
+
+        // Navigate to recovery status screen
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => RecoveryStatusScreen(
+              recoveryRequestId: recoveryRequest.id,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      Log.error('Error initiating recovery', e);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Card(
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Center(child: CircularProgressIndicator()),
+        ),
+      );
+    }
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.lock_open, color: Theme.of(context).primaryColor),
+                const SizedBox(width: 8),
+                Text(
+                  'Lockbox Recovery',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Theme.of(context).primaryColor,
+                      ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'If you have a key share for this lockbox, you can initiate a recovery request '
+              'to collect shares from other key holders and restore the contents.',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.grey[600],
+                  ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _initiateRecovery,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                  foregroundColor: Colors.white,
+                ),
+                icon: const Icon(Icons.restore),
+                label: const Text('Initiate Recovery'),
+              ),
+            ),
+            if (_canRecover) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.green[100],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.check_circle, color: Colors.green),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Recovery is available for this lockbox',
+                        style: TextStyle(
+                          color: Colors.green[900],
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
   }
 }

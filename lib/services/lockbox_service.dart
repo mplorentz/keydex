@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/lockbox.dart';
@@ -11,6 +12,13 @@ class LockboxService {
   static List<Lockbox>? _cachedLockboxes;
   static bool _isInitialized = false;
   static bool _disableSampleDataForTest = false;
+
+  // Stream controller for notifying listeners when lockboxes change
+  static final StreamController<List<Lockbox>> _lockboxesController =
+      StreamController<List<Lockbox>>.broadcast();
+
+  /// Stream that emits the updated list of lockboxes whenever they change
+  static Stream<List<Lockbox>> get lockboxesStream => _lockboxesController.stream;
 
   /// Test-only helper to disable sample data creation during initialization
   @visibleForTesting
@@ -81,6 +89,9 @@ class LockboxService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_lockboxesKey, encryptedData);
       Log.info('Saved ${jsonList.length} encrypted lockboxes to SharedPreferences');
+
+      // Notify listeners that lockboxes have changed
+      _lockboxesController.add(List.unmodifiable(_cachedLockboxes!));
     } catch (e) {
       Log.error('Error encrypting and saving lockboxes', e);
       throw Exception('Failed to save lockboxes: $e');
