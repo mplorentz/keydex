@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/lockbox.dart';
 import '../services/lockbox_service.dart';
+import '../services/lockbox_share_service.dart';
 import '../services/recovery_service.dart';
 import '../services/key_service.dart';
 import '../services/logger.dart';
@@ -289,18 +290,32 @@ class _RecoverySectionState extends State<_RecoverySection> {
         return;
       }
 
-      // For demo purposes, create a recovery request with placeholder key holders
-      // In a real implementation, this would get the actual key holders from the lockbox backup config
+      // Get shard data to extract peers and creator information
+      final shards = await LockboxShareService.getLockboxShares(widget.lockboxId);
+
+      if (shards.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No shard data available for recovery')),
+          );
+        }
+        return;
+      }
+
+      // Get the first shard to extract peers and creator info
+      final firstShard = shards.first;
+
+      // Build key holder list: peers + creatorPubkey
       final keyHolderPubkeys = <String>[
-        currentPubkey,
-        // Add more key holder pubkeys here
+        firstShard.creatorPubkey, // Add the creator
+        ...?firstShard.peers, // Add all other key holders
       ];
 
       final recoveryRequest = await RecoveryService.initiateRecovery(
         widget.lockboxId,
         initiatorPubkey: currentPubkey,
         keyHolderPubkeys: keyHolderPubkeys,
-        threshold: 2,
+        threshold: firstShard.threshold,
       );
 
       if (mounted) {

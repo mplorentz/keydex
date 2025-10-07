@@ -175,6 +175,7 @@ class BackupService {
     required String creatorPubkey,
     required String lockboxId,
     required String lockboxName,
+    required List<String> peers,
   }) async {
     try {
       // Validate inputs
@@ -213,6 +214,7 @@ class BackupService {
           creatorPubkey: creatorPubkey,
           lockboxId: lockboxId,
           lockboxName: lockboxName,
+          peers: peers,
         );
         Log.debug(shardData.toString());
         shardDataList.add(shardData);
@@ -410,6 +412,9 @@ class BackupService {
       Log.info('Created backup configuration');
 
       // Step 5: Generate Shamir shares
+      // Note: peers list excludes the creator - recipients need to know OTHER key holders
+      final peers =
+          keyHolders.map((kh) => kh.pubkey).where((pubkey) => pubkey != creatorPubkey).toList();
       final shards = await generateShamirShares(
         content: content,
         threshold: threshold,
@@ -417,6 +422,7 @@ class BackupService {
         creatorPubkey: creatorPubkey,
         lockboxId: lockbox.id,
         lockboxName: lockbox.name,
+        peers: peers,
       );
       Log.info('Generated ${shards.length} Shamir shares');
 

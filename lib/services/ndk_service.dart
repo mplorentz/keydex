@@ -229,7 +229,7 @@ class NdkService {
       Log.info('Parsed shard data from gift wrap');
 
       // Store the shard data
-      final lockboxId = shardJson['lockbox_id'] as String? ?? 'unknown';
+      final lockboxId = shardData.lockboxId ?? 'unknown';
       await LockboxShareService.addLockboxShare(lockboxId, shardData);
 
       Log.info('Stored key share for lockbox: $lockboxId');

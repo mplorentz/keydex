@@ -7,6 +7,11 @@ void main() {
     const testCreatorPubkey = '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
     const testLockboxId = 'test-lockbox-123';
     const testLockboxName = 'Test Lockbox';
+    // Note: peers list excludes the creator
+    const testPeers = [
+      'fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321',
+      'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
+    ];
 
     test('generateShamirShares creates correct number of shares', () async {
       // Arrange
@@ -21,6 +26,7 @@ void main() {
         creatorPubkey: testCreatorPubkey,
         lockboxId: testLockboxId,
         lockboxName: testLockboxName,
+        peers: testPeers,
       );
 
       // Assert
@@ -50,6 +56,7 @@ void main() {
         creatorPubkey: testCreatorPubkey,
         lockboxId: testLockboxId,
         lockboxName: testLockboxName,
+        peers: testPeers,
       );
 
       // Assert - All shares should be unique
@@ -68,6 +75,7 @@ void main() {
         creatorPubkey: testCreatorPubkey,
         lockboxId: testLockboxId,
         lockboxName: testLockboxName,
+        peers: testPeers,
       );
 
       // Act - Use exactly threshold number of shares
@@ -90,6 +98,7 @@ void main() {
         creatorPubkey: testCreatorPubkey,
         lockboxId: testLockboxId,
         lockboxName: testLockboxName,
+        peers: testPeers,
       );
 
       // Act - Use more than threshold shares (all 4)
@@ -112,6 +121,7 @@ void main() {
         creatorPubkey: testCreatorPubkey,
         lockboxId: testLockboxId,
         lockboxName: testLockboxName,
+        peers: testPeers,
       );
 
       // Act - Try different combinations of threshold shares
@@ -142,6 +152,7 @@ void main() {
         creatorPubkey: testCreatorPubkey,
         lockboxId: testLockboxId,
         lockboxName: testLockboxName,
+        peers: testPeers,
       );
 
       // Act & Assert - Should throw when fewer than threshold shares provided
@@ -162,14 +173,20 @@ void main() {
         creatorPubkey: testCreatorPubkey,
         lockboxId: testLockboxId,
         lockboxName: testLockboxName,
+        peers: testPeers,
       );
       final shares2 = await BackupService.generateShamirShares(
         content: 'Different secret',
         threshold: 2,
         totalShards: 3,
-        creatorPubkey: 'differentpubkey1234567890abcdef1234567890abcdef1234567890abcdef',
+        creatorPubkey: 'abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdef1234',
         lockboxId: 'different-lockbox',
         lockboxName: 'Different Lockbox',
+        peers: [
+          'abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdef1234',
+          '1111111111111111111111111111111111111111111111111111111111111111',
+          '2222222222222222222222222222222222222222222222222222222222222222',
+        ],
       );
 
       // Act & Assert - Should throw when mixing shares from different sets
@@ -203,6 +220,7 @@ void main() {
         creatorPubkey: testCreatorPubkey,
         lockboxId: testLockboxId,
         lockboxName: testLockboxName,
+        peers: testPeers,
       );
 
       final reconstructed = await BackupService.reconstructFromShares(
@@ -227,6 +245,7 @@ void main() {
         creatorPubkey: testCreatorPubkey,
         lockboxId: testLockboxId,
         lockboxName: testLockboxName,
+        peers: testPeers,
       );
 
       final reconstructed = await BackupService.reconstructFromShares(
@@ -250,6 +269,7 @@ void main() {
         creatorPubkey: testCreatorPubkey,
         lockboxId: testLockboxId,
         lockboxName: testLockboxName,
+        peers: testPeers,
       );
 
       // Create tampered shares with an invalid prime modulus
@@ -267,6 +287,7 @@ void main() {
           createdAt: share.createdAt,
           lockboxId: share.lockboxId,
           lockboxName: share.lockboxName,
+          peers: share.peers,
           recipientPubkey: share.recipientPubkey,
           isReceived: share.isReceived,
           receivedAt: share.receivedAt,

@@ -25,6 +25,11 @@ void main() {
         ...validJsonFixture,
         'lockboxId': 'lockbox-abc-456',
         'lockboxName': 'Shared Lockbox Test',
+        'peers': [
+          'a11ac73f57e93ef42ef8bce513de552bcda3b6169c8f9ab96c6143f0c9b73437',
+          'b22bd84f68f94fa53fa9cdf624ef663ccdeb4c7260d9f0ab97d7254f1d9c8454',
+          'c33ce95f79fa5gb64fg0def735fg774ddfc5d8371e0g1bc08e8263g2e0d9546'
+        ],
         'recipientPubkey': 'b22bd84f68f94fa53fa9cdf624ef663ccdeb4c7260d9f0ab97d7254f1d9c8454',
         'isReceived': true,
         'receivedAt': '2025-02-06T12:00:00.000Z',
@@ -44,6 +49,7 @@ void main() {
       expect(shardData.createdAt, validJsonFixture['createdAt']);
       expect(shardData.lockboxId, isNull);
       expect(shardData.lockboxName, isNull);
+      expect(shardData.peers, isNull);
       expect(shardData.recipientPubkey, isNull);
       expect(shardData.isReceived, isNull);
       expect(shardData.receivedAt, isNull);
@@ -62,6 +68,7 @@ void main() {
       expect(shardData.createdAt, validJsonWithRecoveryMetadata['createdAt']);
       expect(shardData.lockboxId, validJsonWithRecoveryMetadata['lockboxId']);
       expect(shardData.lockboxName, validJsonWithRecoveryMetadata['lockboxName']);
+      expect(shardData.peers, validJsonWithRecoveryMetadata['peers']);
       expect(shardData.recipientPubkey, validJsonWithRecoveryMetadata['recipientPubkey']);
       expect(shardData.isReceived, validJsonWithRecoveryMetadata['isReceived']);
       expect(shardData.receivedAt, DateTime.parse(validJsonWithRecoveryMetadata['receivedAt']));
@@ -81,6 +88,7 @@ void main() {
       expect(json['createdAt'], validJsonFixture['createdAt']);
       expect(json.containsKey('lockboxId'), isFalse);
       expect(json.containsKey('lockboxName'), isFalse);
+      expect(json.containsKey('peers'), isFalse);
       expect(json.containsKey('recipientPubkey'), isFalse);
       expect(json.containsKey('isReceived'), isFalse);
       expect(json.containsKey('receivedAt'), isFalse);
@@ -100,6 +108,7 @@ void main() {
       expect(json['createdAt'], validJsonWithRecoveryMetadata['createdAt']);
       expect(json['lockboxId'], validJsonWithRecoveryMetadata['lockboxId']);
       expect(json['lockboxName'], validJsonWithRecoveryMetadata['lockboxName']);
+      expect(json['peers'], validJsonWithRecoveryMetadata['peers']);
       expect(json['recipientPubkey'], validJsonWithRecoveryMetadata['recipientPubkey']);
       expect(json['isReceived'], validJsonWithRecoveryMetadata['isReceived']);
       expect(json['receivedAt'], validJsonWithRecoveryMetadata['receivedAt']);
@@ -386,6 +395,7 @@ void main() {
         createdAt: pastTimestamp,
         lockboxId: null,
         lockboxName: null,
+        peers: null,
         recipientPubkey: null,
         isReceived: null,
         receivedAt: null,
@@ -408,6 +418,7 @@ void main() {
         createdAt: pastTimestamp,
         lockboxId: null,
         lockboxName: null,
+        peers: null,
         recipientPubkey: null,
         isReceived: null,
         receivedAt: null,
@@ -430,6 +441,7 @@ void main() {
         createdAt: recentTimestamp,
         lockboxId: null,
         lockboxName: null,
+        peers: null,
         recipientPubkey: null,
         isReceived: null,
         receivedAt: null,
@@ -452,6 +464,7 @@ void main() {
         createdAt: oldTimestamp,
         lockboxId: null,
         lockboxName: null,
+        peers: null,
         recipientPubkey: null,
         isReceived: null,
         receivedAt: null,

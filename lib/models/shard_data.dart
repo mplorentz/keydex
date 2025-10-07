@@ -18,6 +18,7 @@ typedef ShardData = ({
   // Recovery metadata (optional fields)
   String? lockboxId,
   String? lockboxName,
+  List<String>? peers, // List of all OTHER key holder pubkeys (excludes creatorPubkey)
   String? recipientPubkey,
   bool? isReceived,
   DateTime? receivedAt,
@@ -34,6 +35,7 @@ ShardData createShardData({
   required String creatorPubkey,
   String? lockboxId,
   String? lockboxName,
+  List<String>? peers,
   String? recipientPubkey,
   bool? isReceived,
   DateTime? receivedAt,
@@ -63,6 +65,13 @@ ShardData createShardData({
   if (isReceived == true && receivedAt != null && receivedAt.isAfter(DateTime.now())) {
     throw ArgumentError('ReceivedAt must be in the past if isReceived is true');
   }
+  if (peers != null) {
+    for (final peer in peers) {
+      if (peer.length != 64 || !_isHexString(peer)) {
+        throw ArgumentError('All peers must be valid hex format (64 characters): $peer');
+      }
+    }
+  }
 
   return (
     shard: shard,
@@ -74,6 +83,7 @@ ShardData createShardData({
     createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000, // Unix timestamp
     lockboxId: lockboxId,
     lockboxName: lockboxName,
+    peers: peers,
     recipientPubkey: recipientPubkey,
     isReceived: isReceived,
     receivedAt: receivedAt,
@@ -98,6 +108,7 @@ ShardData copyShardData(
   int? createdAt,
   String? lockboxId,
   String? lockboxName,
+  List<String>? peers,
   String? recipientPubkey,
   bool? isReceived,
   DateTime? receivedAt,
@@ -113,6 +124,7 @@ ShardData copyShardData(
     createdAt: createdAt ?? shardData.createdAt,
     lockboxId: lockboxId ?? shardData.lockboxId,
     lockboxName: lockboxName ?? shardData.lockboxName,
+    peers: peers ?? shardData.peers,
     recipientPubkey: recipientPubkey ?? shardData.recipientPubkey,
     isReceived: isReceived ?? shardData.isReceived,
     receivedAt: receivedAt ?? shardData.receivedAt,
@@ -204,6 +216,7 @@ Map<String, dynamic> shardDataToJson(ShardData shardData) {
     'createdAt': shardData.createdAt,
     if (shardData.lockboxId != null) 'lockboxId': shardData.lockboxId,
     if (shardData.lockboxName != null) 'lockboxName': shardData.lockboxName,
+    if (shardData.peers != null) 'peers': shardData.peers,
     if (shardData.recipientPubkey != null) 'recipientPubkey': shardData.recipientPubkey,
     if (shardData.isReceived != null) 'isReceived': shardData.isReceived,
     if (shardData.receivedAt != null) 'receivedAt': shardData.receivedAt!.toIso8601String(),
@@ -223,6 +236,7 @@ ShardData shardDataFromJson(Map<String, dynamic> json) {
     createdAt: json['createdAt'] as int,
     lockboxId: json['lockboxId'] as String?,
     lockboxName: json['lockboxName'] as String?,
+    peers: json['peers'] != null ? List<String>.from(json['peers'] as List) : null,
     recipientPubkey: json['recipientPubkey'] as String?,
     isReceived: json['isReceived'] as bool?,
     receivedAt: json['receivedAt'] != null ? DateTime.parse(json['receivedAt'] as String) : null,
