@@ -13,6 +13,9 @@
 migrate_working_dir/
 todo.txt
 
+# Python SKB directory (embedded project)
+skb/
+
 # IntelliJ related
 *.iml
 *.ipr
