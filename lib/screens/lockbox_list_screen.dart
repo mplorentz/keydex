@@ -1,10 +1,18 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../models/lockbox.dart';
 import '../services/key_service.dart';
 import '../services/lockbox_service.dart';
+import '../services/lockbox_share_service.dart';
+import '../services/recovery_service.dart';
+import '../services/relay_scan_service.dart';
+import '../services/backup_service.dart';
 import '../services/logger.dart';
 import 'create_lockbox_with_backup_screen.dart';
 import 'lockbox_detail_screen.dart';
+import 'relay_management_screen.dart';
+import 'recovery_notification_overlay.dart';
 
 /// Main list screen showing all lockboxes
 class LockboxListScreen extends StatefulWidget {
@@ -16,23 +24,45 @@ class LockboxListScreen extends StatefulWidget {
 
 class _LockboxListScreenState extends State<LockboxListScreen> {
   String? _currentPublicKey;
+  String? _currentNpub;
   List<Lockbox> _lockboxes = [];
   bool _isLoading = true;
+  StreamSubscription<List<Lockbox>>? _lockboxesSubscription;
 
   @override
   void initState() {
     super.initState();
     _loadData();
+    _setupLockboxListener();
+  }
+
+  @override
+  void dispose() {
+    _lockboxesSubscription?.cancel();
+    super.dispose();
+  }
+
+  void _setupLockboxListener() {
+    // Listen to lockbox changes and update UI
+    _lockboxesSubscription = LockboxService.lockboxesStream.listen((lockboxes) {
+      if (mounted) {
+        setState(() {
+          _lockboxes = lockboxes;
+        });
+      }
+    });
   }
 
   Future<void> _loadData() async {
     try {
       final publicKey = await KeyService.getCurrentPublicKey();
+      final publicKeyBech32 = await KeyService.getCurrentPublicKeyBech32();
       final lockboxes = await LockboxService.getAllLockboxes();
 
       if (mounted) {
         setState(() {
           _currentPublicKey = publicKey;
+          _currentNpub = publicKeyBech32;
           _lockboxes = lockboxes;
           _isLoading = false;
         });
@@ -47,6 +77,92 @@ class _LockboxListScreenState extends State<LockboxListScreen> {
     }
   }
 
+  Future<void> _clearAllData() async {
+    // Show confirmation dialog
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Clear All Data?'),
+        content: const Text(
+          'This will permanently delete:\n'
+          '• All lockboxes\n'
+          '• All key holder shards\n'
+          '• All recovery requests\n'
+          '• All recovery shards\n'
+          '• All relay configurations\n'
+          '• Your Nostr keys\n\n'
+          'This action cannot be undone!',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('DELETE ALL'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      // Show loading indicator
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Clearing all data...'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+
+      // Clear all services
+      await LockboxService.clearAll();
+      await LockboxShareService.clearAll();
+      await RecoveryService.clearAll(); // Now includes notifications
+      await RelayScanService.clearAll();
+      await BackupService.clearAll();
+      await KeyService.clearStoredKeys();
+
+      Log.info('All app data cleared successfully');
+
+      // Reload data
+      if (mounted) {
+        setState(() {
+          _lockboxes = [];
+          _currentPublicKey = null;
+          _currentNpub = null;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('All data cleared! App will restart...'),
+            duration: Duration(seconds: 2),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        // Optional: Navigate back to force a fresh state
+        await Future.delayed(const Duration(seconds: 1));
+        _loadData();
+      }
+    } catch (e) {
+      Log.error('Error clearing all data', e);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error clearing data: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -54,80 +170,111 @@ class _LockboxListScreenState extends State<LockboxListScreen> {
         title: const Text('My Lockboxes'),
         backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const RelayManagementScreen(),
+                ),
+              );
+            },
+            tooltip: 'Scan for Keys',
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete_forever),
+            onPressed: _clearAllData,
+            tooltip: 'Clear All Data (Debug)',
+          ),
+        ],
       ),
       body: Column(
         children: [
           Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _lockboxes.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.lock_outline, size: 64, color: Colors.grey),
-                            const SizedBox(height: 16),
-                            Text(
-                              'No lockboxes yet',
-                              style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+            child: Stack(
+              children: [
+                _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _lockboxes.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.lock_outline, size: 64, color: Colors.grey),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'No lockboxes yet',
+                                  style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Tap + to create your first secure lockbox',
+                                  style: TextStyle(color: Colors.grey[500]),
+                                ),
+                              ],
                             ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Tap + to create your first secure lockbox',
-                              style: TextStyle(color: Colors.grey[500]),
-                            ),
-                          ],
-                        ),
-                      )
-                    : ListView.builder(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: _lockboxes.length,
-                        itemBuilder: (context, index) {
-                          final lockbox = _lockboxes[index];
-                          return Card(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            child: ListTile(
-                              leading: CircleAvatar(
-                                backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
-                                child: Icon(Icons.lock, color: Theme.of(context).primaryColor),
-                              ),
-                              title: Text(
-                                lockbox.name,
-                                style: const TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              subtitle: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    lockbox.content.length > 50
-                                        ? '${lockbox.content.substring(0, 50)}...'
-                                        : lockbox.content,
-                                    style: TextStyle(color: Colors.grey[600]),
+                          )
+                        : ListView.builder(
+                            padding: const EdgeInsets.all(16),
+                            itemCount: _lockboxes.length,
+                            itemBuilder: (context, index) {
+                              final lockbox = _lockboxes[index];
+                              return Card(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                child: ListTile(
+                                  leading: CircleAvatar(
+                                    backgroundColor:
+                                        Theme.of(context).primaryColor.withOpacity(0.1),
+                                    child: Icon(Icons.lock, color: Theme.of(context).primaryColor),
                                   ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'Created ${_formatDate(lockbox.createdAt)}',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey[500],
-                                    ),
+                                  title: Text(
+                                    lockbox.name,
+                                    style: const TextStyle(fontWeight: FontWeight.bold),
                                   ),
-                                ],
-                              ),
-                              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        LockboxDetailScreen(lockboxId: lockbox.id),
+                                  subtitle: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        lockbox.content.length > 50
+                                            ? '${lockbox.content.substring(0, 50)}...'
+                                            : lockbox.content,
+                                        style: TextStyle(color: Colors.grey[600]),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Created ${_formatDate(lockbox.createdAt)}',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey[500],
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ).then((_) => _loadData()); // Refresh when returning
-                              },
-                            ),
-                          );
-                        },
-                      ),
+                                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            LockboxDetailScreen(lockboxId: lockbox.id),
+                                      ),
+                                    ).then((_) => _loadData()); // Refresh when returning
+                                  },
+                                ),
+                              );
+                            },
+                          ),
+                // Recovery notification overlay (inside the Stack)
+                const Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: RecoveryNotificationOverlay(),
+                ),
+              ],
+            ),
           ),
           // Debug section showing current user's public key
           Container(
@@ -156,14 +303,87 @@ class _LockboxListScreenState extends State<LockboxListScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  'Public Key: ${_currentPublicKey ?? 'Loading...'}',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontFamily: 'monospace',
-                    color: Colors.grey[700],
-                  ),
+                const SizedBox(height: 8),
+                // Npub
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Npub (bech32):',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            _currentNpub ?? 'Loading...',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontFamily: 'monospace',
+                              color: Colors.grey[700],
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.copy, size: 16),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      onPressed: _currentNpub != null
+                          ? () => _copyToClipboard(_currentNpub!, 'Npub')
+                          : null,
+                      tooltip: 'Copy npub',
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                // Hex Public Key
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Public Key (hex):',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            _currentPublicKey ?? 'Loading...',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontFamily: 'monospace',
+                              color: Colors.grey[700],
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.copy, size: 16),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      onPressed: _currentPublicKey != null
+                          ? () => _copyToClipboard(_currentPublicKey!, 'Hex key')
+                          : null,
+                      tooltip: 'Copy hex key',
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -196,5 +416,16 @@ class _LockboxListScreenState extends State<LockboxListScreen> {
     } else {
       return 'Just now';
     }
+  }
+
+  void _copyToClipboard(String text, String label) {
+    Clipboard.setData(ClipboardData(text: text));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('$label copied to clipboard'),
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 }

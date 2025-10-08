@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:ndk/ndk.dart';
 import '../models/backup_config.dart';
+import '../models/nostr_kinds.dart';
 import '../models/shard_event.dart';
 import '../models/shard_data.dart';
 import '../models/key_holder.dart';
@@ -37,7 +38,7 @@ class ShardDistributionService {
           final rumor = await ndk.giftWrap.createRumor(
             customPubkey: ownerPubkey, // Lockbox owner signs the rumor
             content: shardString,
-            kind: 1, // Text note kind
+            kind: NostrKind.shardData.value, // Keydex custom kind for shard data
             tags: [
               ['d', 'shard_${config.lockboxId}_$i'], // Distinguisher tag
               ['backup_config_id', config.lockboxId],
