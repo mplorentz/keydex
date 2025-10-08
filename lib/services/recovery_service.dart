@@ -269,7 +269,7 @@ class RecoveryService {
     String recoveryRequestId,
     String responderPubkey,
     bool approved, {
-    Map<String, dynamic>? shardData,
+    ShardData? shardData,
   }) async {
     await initialize();
 

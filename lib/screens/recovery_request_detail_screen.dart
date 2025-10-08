@@ -58,7 +58,6 @@ class _RecoveryRequestDetailScreenState extends State<RecoveryRequestDetailScree
     try {
       final approved = status == RecoveryResponseStatus.approved;
       ShardData? shardData;
-      Map<String, dynamic>? shardDataMap;
 
       // If approving, get the shard data for this lockbox
       if (approved) {
@@ -81,16 +80,12 @@ class _RecoveryRequestDetailScreenState extends State<RecoveryRequestDetailScree
         }
 
         shardData = shares.first;
-        shardDataMap = shardDataToJson(shardData);
       }
 
       // Submit response locally
       await RecoveryService.respondToRecoveryRequest(
-        widget.recoveryRequest.id,
-        _currentPubkey!,
-        approved,
-        shardData: shardDataMap,
-      );
+          widget.recoveryRequest.id, _currentPubkey!, approved,
+          shardData: shardData);
 
       // Send response via Nostr
       try {

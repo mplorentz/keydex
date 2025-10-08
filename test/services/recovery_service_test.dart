@@ -227,10 +227,6 @@ void main() {
         threshold: 2,
       );
 
-      // Calculate threshold (should match the logic in sendRecoveryRequestViaNostr)
-      final calculatedThreshold = (recoveryRequest.totalKeyHolders * 0.67).ceil();
-
-      expect(calculatedThreshold, 2); // 67% of 2 is 2
       expect(recoveryRequest.totalKeyHolders, 2);
     });
 
@@ -331,8 +327,8 @@ void main() {
       await RecoveryService.respondToRecoveryRequest(
         recoveryRequest.id,
         testKeyHolder1,
-        RecoveryResponseStatus.approved,
-        shardDataId: 'test_shard_event_id',
+        true, // approved
+        shardData: shardData,
       );
 
       // Verify the response was recorded
@@ -340,7 +336,9 @@ void main() {
       expect(updatedRequest, isNotNull);
       expect(updatedRequest!.keyHolderResponses[testKeyHolder1]?.status,
           RecoveryResponseStatus.approved);
-      expect(updatedRequest.keyHolderResponses[testKeyHolder1]?.shardDataId, 'test_shard_event_id');
+      expect(updatedRequest.keyHolderResponses[testKeyHolder1]?.shardData, isNotNull);
+      expect(updatedRequest.keyHolderResponses[testKeyHolder1]?.shardData?.shard,
+          'recovered_shard_AAA=');
     });
 
     test('recovery response denial does not include shard data', () async {
@@ -356,7 +354,7 @@ void main() {
       await RecoveryService.respondToRecoveryRequest(
         recoveryRequest.id,
         testKeyHolder1,
-        RecoveryResponseStatus.denied,
+        false, // denied
       );
 
       // Verify the response was recorded without shard data
@@ -364,7 +362,7 @@ void main() {
       expect(updatedRequest, isNotNull);
       expect(updatedRequest!.keyHolderResponses[testKeyHolder1]?.status,
           RecoveryResponseStatus.denied);
-      expect(updatedRequest.keyHolderResponses[testKeyHolder1]?.shardDataId, isNull);
+      expect(updatedRequest.keyHolderResponses[testKeyHolder1]?.shardData, isNull);
     });
 
     test('multiple recovery responses accumulate correctly', () async {
@@ -376,20 +374,42 @@ void main() {
         threshold: 2,
       );
 
+      // Create shard data for first key holder
+      final shardData1 = createShardData(
+        shard: 'shard_data_1_AAA=',
+        threshold: 2,
+        shardIndex: 0,
+        totalShards: 2,
+        primeMod: 'test_prime_DDD=',
+        creatorPubkey: testCreatorPubkey,
+        lockboxId: testLockboxId,
+      );
+
+      // Create shard data for second key holder
+      final shardData2 = createShardData(
+        shard: 'shard_data_2_BBB=',
+        threshold: 2,
+        shardIndex: 1,
+        totalShards: 2,
+        primeMod: 'test_prime_DDD=',
+        creatorPubkey: testCreatorPubkey,
+        lockboxId: testLockboxId,
+      );
+
       // First key holder approves
       await RecoveryService.respondToRecoveryRequest(
         recoveryRequest.id,
         testKeyHolder1,
-        RecoveryResponseStatus.approved,
-        shardDataId: 'shard_event_1',
+        true, // approved
+        shardData: shardData1,
       );
 
       // Second key holder approves
       await RecoveryService.respondToRecoveryRequest(
         recoveryRequest.id,
         testKeyHolder2,
-        RecoveryResponseStatus.approved,
-        shardDataId: 'shard_event_2',
+        true, // approved
+        shardData: shardData2,
       );
 
       // Verify both responses were recorded
@@ -400,8 +420,12 @@ void main() {
           RecoveryResponseStatus.approved);
       expect(updatedRequest.keyHolderResponses[testKeyHolder2]?.status,
           RecoveryResponseStatus.approved);
-      expect(updatedRequest.keyHolderResponses[testKeyHolder1]?.shardDataId, 'shard_event_1');
-      expect(updatedRequest.keyHolderResponses[testKeyHolder2]?.shardDataId, 'shard_event_2');
+      expect(updatedRequest.keyHolderResponses[testKeyHolder1]?.shardData, isNotNull);
+      expect(updatedRequest.keyHolderResponses[testKeyHolder2]?.shardData, isNotNull);
+      expect(
+          updatedRequest.keyHolderResponses[testKeyHolder1]?.shardData?.shard, 'shard_data_1_AAA=');
+      expect(
+          updatedRequest.keyHolderResponses[testKeyHolder2]?.shardData?.shard, 'shard_data_2_BBB=');
 
       // When threshold is met, status should be completed
       expect(updatedRequest.status, RecoveryRequestStatus.completed);

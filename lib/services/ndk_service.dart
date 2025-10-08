@@ -224,18 +224,15 @@ class NdkService {
       Log.info(
           'Received recovery response from $senderPubkey for lockbox $lockboxId: approved=$approved');
 
-      Map<String, dynamic>? shardDataMap;
+      ShardData? shardData;
 
       // If approved, extract and store the shard data FOR RECOVERY
       if (approved && responseData.containsKey('shard_data')) {
         final shardDataJson = responseData['shard_data'] as Map<String, dynamic>;
-        final shardData = shardDataFromJson(shardDataJson);
+        shardData = shardDataFromJson(shardDataJson);
 
         // Store as a recovery shard (not a key holder shard)
         await LockboxShareService.addRecoveryShard(recoveryRequestId, shardData);
-
-        // Keep the shard data for the response
-        shardDataMap = shardDataJson;
 
         Log.info(
             'Stored recovery shard from $senderPubkey for recovery request $recoveryRequestId');
@@ -246,7 +243,7 @@ class NdkService {
         recoveryRequestId,
         senderPubkey,
         approved,
-        shardData: shardDataMap,
+        shardData: shardData,
       );
 
       Log.info('Updated recovery request $recoveryRequestId with response from $senderPubkey');

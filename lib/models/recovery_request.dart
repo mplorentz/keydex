@@ -1,3 +1,5 @@
+import 'shard_data.dart';
+
 /// Recovery request status enum
 enum RecoveryRequestStatus {
   pending, // Request created but not yet sent
@@ -73,7 +75,7 @@ class RecoveryResponse {
   final String pubkey; // hex format, 64 characters
   final bool approved; // Whether the key holder approved the request
   final DateTime? respondedAt;
-  final Map<String, dynamic>? shardData; // Actual shard data for reassembly (if approved)
+  final ShardData? shardData; // Actual shard data for reassembly (if approved)
   final String? nostrEventId;
 
   const RecoveryResponse({
@@ -116,7 +118,7 @@ class RecoveryResponse {
       'pubkey': pubkey,
       'approved': approved,
       'respondedAt': respondedAt?.toIso8601String(),
-      'shardData': shardData,
+      'shardData': shardData != null ? shardDataToJson(shardData!) : null,
       'nostrEventId': nostrEventId,
     };
   }
@@ -128,7 +130,9 @@ class RecoveryResponse {
       approved: json['approved'] as bool? ?? false,
       respondedAt:
           json['respondedAt'] != null ? DateTime.parse(json['respondedAt'] as String) : null,
-      shardData: json['shardData'] as Map<String, dynamic>?,
+      shardData: json['shardData'] != null
+          ? shardDataFromJson(json['shardData'] as Map<String, dynamic>)
+          : null,
       nostrEventId: json['nostrEventId'] as String?,
     );
   }
@@ -137,7 +141,7 @@ class RecoveryResponse {
     String? pubkey,
     bool? approved,
     DateTime? respondedAt,
-    Map<String, dynamic>? shardData,
+    ShardData? shardData,
     String? nostrEventId,
   }) {
     return RecoveryResponse(
