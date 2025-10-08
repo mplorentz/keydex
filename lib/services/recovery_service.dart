@@ -273,6 +273,10 @@ class RecoveryService {
   }) async {
     await initialize();
 
+    if (_cachedRequests == null) {
+      throw StateError('Recovery service not properly initialized: _cachedRequests is null.');
+    }
+
     Log.debug('cachedRequests: $_cachedRequests');
     final requestIndex = _cachedRequests!.indexWhere((r) => r.id == recoveryRequestId);
     if (requestIndex == -1) {
