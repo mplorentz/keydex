@@ -28,7 +28,7 @@ void main() {
         'peers': [
           'a11ac73f57e93ef42ef8bce513de552bcda3b6169c8f9ab96c6143f0c9b73437',
           'b22bd84f68f94fa53fa9cdf624ef663ccdeb4c7260d9f0ab97d7254f1d9c8454',
-          'c33ce95f79fa5gb64fg0def735fg774ddfc5d8371e0g1bc08e8263g2e0d9546'
+          'c33ce95f79fa5ab64fa0def735fa774ddfc5d8371e0a1bc08e8263a2e0d9546'
         ],
         'recipientPubkey': 'b22bd84f68f94fa53fa9cdf624ef663ccdeb4c7260d9f0ab97d7254f1d9c8454',
         'isReceived': true,
