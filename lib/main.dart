@@ -1,12 +1,18 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'services/key_service.dart';
 import 'services/logger.dart';
 import 'screens/lockbox_list_screen.dart';
 
 void main() {
-  runApp(const KeydexApp());
+  runApp(
+    // Wrap the entire app with ProviderScope to enable Riverpod
+    const ProviderScope(
+      child: KeydexApp(),
+    ),
+  );
 }
 
 class KeydexApp extends StatefulWidget {

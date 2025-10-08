@@ -22,6 +22,7 @@ dependencies:
   meta: ^1.11.0
   ntcdcrypto: ^0.4.0
   google_fonts: ^6.1.0
+  flutter_riverpod: ^2.6.1
 
 dev_dependencies:
   flutter_test:
