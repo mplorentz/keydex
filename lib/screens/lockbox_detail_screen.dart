@@ -1,39 +1,56 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/lockbox.dart';
 import '../models/recovery_request.dart';
-import '../services/lockbox_service.dart';
+import '../providers/lockbox_provider.dart';
+import '../providers/key_provider.dart';
 import '../services/lockbox_share_service.dart';
 import '../services/recovery_service.dart';
 import '../services/relay_scan_service.dart';
-import '../services/key_service.dart';
 import '../services/logger.dart';
 import 'backup_config_screen.dart';
 import 'edit_lockbox_screen.dart';
 import 'recovery_status_screen.dart';
 
 /// Detail/view screen for displaying a lockbox
-class LockboxDetailScreen extends StatelessWidget {
+class LockboxDetailScreen extends ConsumerWidget {
   final String lockboxId;
 
   const LockboxDetailScreen({super.key, required this.lockboxId});
 
   @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<Lockbox?>(
-      future: LockboxService.getLockbox(lockboxId),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Scaffold(
-            appBar: AppBar(
-              title: const Text('Loading...'),
-              backgroundColor: Theme.of(context).primaryColor,
-              foregroundColor: Colors.white,
-            ),
-            body: const Center(child: CircularProgressIndicator()),
-          );
-        }
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Watch the lockbox provider for this specific ID
+    final lockboxAsync = ref.watch(lockboxProvider(lockboxId));
 
-        final lockbox = snapshot.data;
+    return lockboxAsync.when(
+      loading: () => Scaffold(
+        appBar: AppBar(
+          title: const Text('Loading...'),
+          backgroundColor: Theme.of(context).primaryColor,
+          foregroundColor: Colors.white,
+        ),
+        body: const Center(child: CircularProgressIndicator()),
+      ),
+      error: (error, stack) => Scaffold(
+        appBar: AppBar(title: const Text('Error')),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, size: 64, color: Colors.red),
+              const SizedBox(height: 16),
+              Text('Error loading lockbox: $error'),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => ref.refresh(lockboxProvider(lockboxId)),
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      ),
+      data: (lockbox) {
         if (lockbox == null) {
           return Scaffold(
             appBar: AppBar(title: const Text('Lockbox Not Found')),
@@ -41,12 +58,20 @@ class LockboxDetailScreen extends StatelessWidget {
           );
         }
 
-        return _buildLockboxDetail(context, lockbox);
+        return _LockboxDetailContent(lockbox: lockbox);
       },
     );
   }
+}
 
-  Widget _buildLockboxDetail(BuildContext context, Lockbox lockbox) {
+/// Extracted widget for lockbox detail content
+class _LockboxDetailContent extends ConsumerWidget {
+  final Lockbox lockbox;
+
+  const _LockboxDetailContent({required this.lockbox});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
         title: Text(lockbox.name),
@@ -79,7 +104,7 @@ class LockboxDetailScreen extends StatelessWidget {
             ],
             onSelected: (value) {
               if (value == 'delete') {
-                _showDeleteDialog(context, lockbox);
+                _showDeleteDialog(context, ref, lockbox);
               }
             },
           ),
@@ -208,23 +233,31 @@ class LockboxDetailScreen extends StatelessWidget {
     );
   }
 
-  void _showDeleteDialog(BuildContext context, Lockbox lockbox) {
+  void _showDeleteDialog(BuildContext context, WidgetRef ref, Lockbox lockbox) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Delete Lockbox'),
         content: Text(
             'Are you sure you want to delete "${lockbox.name}"? This action cannot be undone.'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () async {
-              await LockboxService.deleteLockbox(lockbox.id);
+              // Use repository provider for deletion
+              await ref.read(lockboxRepositoryProvider).deleteLockbox(lockbox.id);
+              
+              // Invalidate providers to refresh data
+              ref.invalidate(lockboxProvider(lockbox.id));
+              ref.invalidate(lockboxListProvider);
+              
+              if (dialogContext.mounted) {
+                Navigator.pop(dialogContext); // Close dialog
+              }
               if (context.mounted) {
-                Navigator.pop(context); // Close dialog
                 Navigator.pop(context); // Go back to list
               }
             },
@@ -241,16 +274,16 @@ class LockboxDetailScreen extends StatelessWidget {
 }
 
 /// Widget for recovery section on lockbox detail screen
-class _RecoverySection extends StatefulWidget {
+class _RecoverySection extends ConsumerStatefulWidget {
   final String lockboxId;
 
   const _RecoverySection({required this.lockboxId});
 
   @override
-  _RecoverySectionState createState() => _RecoverySectionState();
+  ConsumerState<_RecoverySection> createState() => _RecoverySectionState();
 }
 
-class _RecoverySectionState extends State<_RecoverySection> {
+class _RecoverySectionState extends ConsumerState<_RecoverySection> {
   bool _canRecover = false;
   bool _isLoading = true;
   RecoveryRequest? _activeRecoveryRequest;
@@ -299,7 +332,8 @@ class _RecoverySectionState extends State<_RecoverySection> {
 
   Future<void> _initiateRecovery() async {
     try {
-      final currentPubkey = await KeyService.getCurrentPublicKey();
+      // Use key provider instead of direct service call
+      final currentPubkey = await ref.read(currentPublicKeyProvider.future);
 
       if (currentPubkey == null) {
         if (mounted) {

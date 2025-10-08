@@ -1,39 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/lockbox.dart';
-import '../services/lockbox_service.dart';
+import '../providers/lockbox_provider.dart';
 
 /// Edit existing lockbox screen
-class EditLockboxScreen extends StatefulWidget {
+class EditLockboxScreen extends ConsumerStatefulWidget {
   final String lockboxId;
 
   const EditLockboxScreen({super.key, required this.lockboxId});
 
   @override
-  _EditLockboxScreenState createState() => _EditLockboxScreenState();
+  ConsumerState<EditLockboxScreen> createState() => _EditLockboxScreenState();
 }
 
-class _EditLockboxScreenState extends State<EditLockboxScreen> {
+class _EditLockboxScreenState extends ConsumerState<EditLockboxScreen> {
   final _nameController = TextEditingController();
   final _contentController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  Lockbox? _lockbox;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadLockbox();
-  }
-
-  Future<void> _loadLockbox() async {
-    final lockbox = await LockboxService.getLockbox(widget.lockboxId);
-    if (mounted && lockbox != null) {
-      setState(() {
-        _lockbox = lockbox;
-        _nameController.text = lockbox.name;
-        _contentController.text = lockbox.content;
-      });
-    }
-  }
+  bool _isInitialized = false;
 
   @override
   void dispose() {
@@ -42,110 +26,159 @@ class _EditLockboxScreenState extends State<EditLockboxScreen> {
     super.dispose();
   }
 
+  void _initializeControllers(Lockbox lockbox) {
+    if (!_isInitialized) {
+      _nameController.text = lockbox.name;
+      _contentController.text = lockbox.content;
+      _isInitialized = true;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (_lockbox == null) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Lockbox Not Found')),
-        body: const Center(child: Text('This lockbox no longer exists.')),
-      );
-    }
+    // Watch the lockbox provider for this specific ID
+    final lockboxAsync = ref.watch(lockboxProvider(widget.lockboxId));
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Edit Lockbox'),
-        backgroundColor: Theme.of(context).primaryColor,
-        foregroundColor: Colors.white,
-        actions: [
-          TextButton(
-            onPressed: () => _saveLockbox(),
-            child: const Text('Save',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          ),
-        ],
+    return lockboxAsync.when(
+      loading: () => Scaffold(
+        appBar: AppBar(
+          title: const Text('Edit Lockbox'),
+          backgroundColor: Theme.of(context).primaryColor,
+          foregroundColor: Colors.white,
+        ),
+        body: const Center(child: CircularProgressIndicator()),
       ),
-      body: Form(
-        key: _formKey,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
+      error: (error, stack) => Scaffold(
+        appBar: AppBar(title: const Text('Error')),
+        body: Center(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Lockbox Name',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.label_outline),
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Please enter a name for your lockbox';
-                  }
-                  return null;
-                },
-              ),
+              const Icon(Icons.error_outline, size: 64, color: Colors.red),
               const SizedBox(height: 16),
-              Text(
-                'Content',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey[700],
-                ),
-              ),
-              const SizedBox(height: 8),
-              Expanded(
-                child: TextFormField(
-                  controller: _contentController,
-                  decoration: const InputDecoration(
-                    hintText: 'Enter your sensitive text here...',
-                    border: OutlineInputBorder(),
-                    alignLabelWithHint: true,
-                  ),
-                  maxLines: null,
-                  expands: true,
-                  textAlignVertical: TextAlignVertical.top,
-                  validator: (value) {
-                    if (value != null && value.length > 4000) {
-                      return 'Content cannot exceed 4000 characters (currently ${value.length})';
-                    }
-                    return null;
-                  },
-                ),
-              ),
+              Text('Error loading lockbox: $error'),
               const SizedBox(height: 16),
-              Row(
-                children: [
-                  Icon(Icons.info_outline, size: 16, color: Colors.grey[600]),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Content limit: ${_contentController.text.length}/4000 characters',
-                      style: TextStyle(
-                        color:
-                            _contentController.text.length > 4000 ? Colors.red : Colors.grey[600],
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                ],
+              ElevatedButton(
+                onPressed: () => ref.refresh(lockboxProvider(widget.lockboxId)),
+                child: const Text('Retry'),
               ),
             ],
           ),
         ),
       ),
+      data: (lockbox) {
+        if (lockbox == null) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('Lockbox Not Found')),
+            body: const Center(child: Text('This lockbox no longer exists.')),
+          );
+        }
+
+        // Initialize controllers with lockbox data
+        _initializeControllers(lockbox);
+
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('Edit Lockbox'),
+            backgroundColor: Theme.of(context).primaryColor,
+            foregroundColor: Colors.white,
+            actions: [
+              TextButton(
+                onPressed: () => _saveLockbox(context),
+                child: const Text('Save',
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+          body: Form(
+            key: _formKey,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextFormField(
+                    controller: _nameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Lockbox Name',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.label_outline),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Please enter a name for your lockbox';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Content',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _contentController,
+                      decoration: const InputDecoration(
+                        hintText: 'Enter your sensitive text here...',
+                        border: OutlineInputBorder(),
+                        alignLabelWithHint: true,
+                      ),
+                      maxLines: null,
+                      expands: true,
+                      textAlignVertical: TextAlignVertical.top,
+                      validator: (value) {
+                        if (value != null && value.length > 4000) {
+                          return 'Content cannot exceed 4000 characters (currently ${value.length})';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Icon(Icons.info_outline, size: 16, color: Colors.grey[600]),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Content limit: ${_contentController.text.length}/4000 characters',
+                          style: TextStyle(
+                            color:
+                                _contentController.text.length > 4000 ? Colors.red : Colors.grey[600],
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
-  Future<void> _saveLockbox() async {
+  Future<void> _saveLockbox(BuildContext context) async {
     if (_formKey.currentState!.validate()) {
       try {
-        await LockboxService.updateLockbox(
-          widget.lockboxId,
-          _nameController.text.trim(),
-          _contentController.text,
-        );
+        // Use repository provider for the update operation
+        await ref.read(lockboxRepositoryProvider).updateLockbox(
+              widget.lockboxId,
+              _nameController.text.trim(),
+              _contentController.text,
+            );
+
+        // Invalidate the providers to refresh the data
+        ref.invalidate(lockboxProvider(widget.lockboxId));
+        ref.invalidate(lockboxListProvider);
 
         if (mounted) {
           Navigator.pop(context);

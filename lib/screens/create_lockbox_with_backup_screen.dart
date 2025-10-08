@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/lockbox.dart';
-import '../services/lockbox_service.dart';
+import '../providers/lockbox_provider.dart';
 
 /// Enhanced lockbox creation screen with integrated backup configuration
-class CreateLockboxWithBackupScreen extends StatefulWidget {
+class CreateLockboxWithBackupScreen extends ConsumerStatefulWidget {
   const CreateLockboxWithBackupScreen({super.key});
 
   @override
-  State<CreateLockboxWithBackupScreen> createState() => _CreateLockboxWithBackupScreenState();
+  ConsumerState<CreateLockboxWithBackupScreen> createState() => _CreateLockboxWithBackupScreenState();
 }
 
-class _CreateLockboxWithBackupScreenState extends State<CreateLockboxWithBackupScreen> {
+class _CreateLockboxWithBackupScreenState extends ConsumerState<CreateLockboxWithBackupScreen> {
   final _nameController = TextEditingController();
   final _contentController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -123,7 +124,8 @@ class _CreateLockboxWithBackupScreenState extends State<CreateLockboxWithBackupS
           createdAt: DateTime.now(),
         );
 
-        await LockboxService.addLockbox(newLockbox);
+        // Use repository provider to add lockbox
+        await ref.read(lockboxRepositoryProvider).addLockbox(newLockbox);
 
         if (mounted) {
           Navigator.pop(context);

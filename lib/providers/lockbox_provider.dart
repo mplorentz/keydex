@@ -21,6 +21,12 @@ final lockboxListProvider = StreamProvider<List<Lockbox>>((ref) async* {
   }
 });
 
+/// FutureProvider family for getting a single lockbox by ID
+/// This will automatically cache the result and can be invalidated
+final lockboxProvider = FutureProvider.family<Lockbox?, String>((ref, id) async {
+  return await LockboxService.getLockbox(id);
+});
+
 /// Provider for lockbox repository operations
 /// This is a simple Provider (not StateProvider) because it provides
 /// a stateless repository object

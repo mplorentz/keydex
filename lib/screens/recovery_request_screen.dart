@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Screen for initiating recovery of a lockbox
 ///
 /// This screen allows key holders to initiate recovery of a lockbox
 /// they have a key share for.
-class RecoveryRequestScreen extends StatefulWidget {
+class RecoveryRequestScreen extends ConsumerStatefulWidget {
   final String lockboxId;
 
   const RecoveryRequestScreen({
@@ -13,10 +14,10 @@ class RecoveryRequestScreen extends StatefulWidget {
   });
 
   @override
-  State<RecoveryRequestScreen> createState() => _RecoveryRequestScreenState();
+  ConsumerState<RecoveryRequestScreen> createState() => _RecoveryRequestScreenState();
 }
 
-class _RecoveryRequestScreenState extends State<RecoveryRequestScreen> {
+class _RecoveryRequestScreenState extends ConsumerState<RecoveryRequestScreen> {
   bool _isLoading = false;
 
   @override

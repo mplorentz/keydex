@@ -1,54 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/recovery_request.dart';
-import '../services/recovery_service.dart';
+import '../providers/recovery_provider.dart';
 import '../services/logger.dart';
 import 'recovery_request_detail_screen.dart';
 
 /// Overlay widget for displaying recovery request notifications
-class RecoveryNotificationOverlay extends StatefulWidget {
+class RecoveryNotificationOverlay extends ConsumerStatefulWidget {
   const RecoveryNotificationOverlay({super.key});
 
   @override
-  _RecoveryNotificationOverlayState createState() => _RecoveryNotificationOverlayState();
+  ConsumerState<RecoveryNotificationOverlay> createState() => _RecoveryNotificationOverlayState();
 }
 
-class _RecoveryNotificationOverlayState extends State<RecoveryNotificationOverlay> {
-  List<RecoveryRequest> _pendingNotifications = [];
+class _RecoveryNotificationOverlayState extends ConsumerState<RecoveryNotificationOverlay> {
   bool _isExpanded = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadNotifications();
-    _listenToNotifications();
-  }
-
-  Future<void> _loadNotifications() async {
-    try {
-      final notifications = await RecoveryService.getPendingNotifications();
-      if (mounted) {
-        setState(() {
-          _pendingNotifications = notifications;
-        });
-      }
-    } catch (e) {
-      Log.error('Error loading notifications', e);
-    }
-  }
-
-  void _listenToNotifications() {
-    RecoveryService.notificationStream.listen((notifications) {
-      if (mounted) {
-        setState(() {
-          _pendingNotifications = notifications;
-        });
-      }
-    });
-  }
 
   Future<void> _viewNotification(RecoveryRequest request) async {
     try {
-      await RecoveryService.markNotificationAsViewed(request.id);
+      await ref.read(recoveryRepositoryProvider).markNotificationAsViewed(request.id);
 
       if (mounted) {
         Navigator.push(
@@ -67,7 +37,7 @@ class _RecoveryNotificationOverlayState extends State<RecoveryNotificationOverla
 
   Future<void> _dismissNotification(RecoveryRequest request) async {
     try {
-      await RecoveryService.markNotificationAsViewed(request.id);
+      await ref.read(recoveryRepositoryProvider).markNotificationAsViewed(request.id);
     } catch (e) {
       Log.error('Error dismissing notification', e);
     }
@@ -75,86 +45,98 @@ class _RecoveryNotificationOverlayState extends State<RecoveryNotificationOverla
 
   @override
   Widget build(BuildContext context) {
-    if (_pendingNotifications.isEmpty) {
-      return const SizedBox.shrink();
-    }
+    // Watch the pending notifications provider
+    final notificationsAsync = ref.watch(pendingNotificationsProvider);
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-      height: _isExpanded ? 300 : 80,
-      child: Card(
-        margin: EdgeInsets.zero,
-        elevation: 8,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-        ),
-        child: Column(
-          children: [
-            // Header
-            InkWell(
-              onTap: () {
-                setState(() {
-                  _isExpanded = !_isExpanded;
-                });
-              },
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      backgroundColor: Theme.of(context).primaryColor,
-                      child: Text(
-                        '${_pendingNotifications.length}',
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Recovery Requests',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                          Text(
-                            '${_pendingNotifications.length} pending request${_pendingNotifications.length == 1 ? '' : 's'}',
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Icon(
-                      _isExpanded ? Icons.expand_more : Icons.expand_less,
-                      color: Theme.of(context).primaryColor,
-                    ),
-                  ],
-                ),
-              ),
+    return notificationsAsync.when(
+      loading: () => const SizedBox.shrink(),
+      error: (error, stack) {
+        Log.error('Error loading notifications', error);
+        return const SizedBox.shrink();
+      },
+      data: (pendingNotifications) {
+        if (pendingNotifications.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+          height: _isExpanded ? 300 : 80,
+          child: Card(
+            margin: EdgeInsets.zero,
+            elevation: 8,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
             ),
-
-            // Notification list (when expanded)
-            if (_isExpanded)
-              Expanded(
-                child: ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: _pendingNotifications.length,
-                  itemBuilder: (context, index) {
-                    final notification = _pendingNotifications[index];
-                    return _buildNotificationItem(notification);
+            child: Column(
+              children: [
+                // Header
+                InkWell(
+                  onTap: () {
+                    setState(() {
+                      _isExpanded = !_isExpanded;
+                    });
                   },
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          backgroundColor: Theme.of(context).primaryColor,
+                          child: Text(
+                            '${pendingNotifications.length}',
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Recovery Requests',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              Text(
+                                '${pendingNotifications.length} pending request${pendingNotifications.length == 1 ? '' : 's'}',
+                                style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Icon(
+                          _isExpanded ? Icons.expand_more : Icons.expand_less,
+                          color: Theme.of(context).primaryColor,
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-          ],
-        ),
-      ),
+
+                // Notification list (when expanded)
+                if (_isExpanded)
+                  Expanded(
+                    child: ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: pendingNotifications.length,
+                      itemBuilder: (context, index) {
+                        final notification = pendingNotifications[index];
+                        return _buildNotificationItem(notification);
+                      },
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 

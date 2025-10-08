@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import '../models/key_holder.dart';
 import '../models/lockbox.dart';
-import '../services/backup_service.dart';
+import '../providers/backup_provider.dart';
 
 /// Backup configuration screen for setting up distributed backup
 ///
@@ -12,71 +13,85 @@ import '../services/backup_service.dart';
 /// - Nostr relay selection
 ///
 /// Note: Requires a valid lockboxId to load the lockbox content for backup
-class BackupConfigScreen extends StatefulWidget {
+class BackupConfigScreen extends ConsumerStatefulWidget {
   final String lockboxId;
 
   const BackupConfigScreen({super.key, required this.lockboxId});
 
   @override
-  State<BackupConfigScreen> createState() => _BackupConfigScreenState();
+  ConsumerState<BackupConfigScreen> createState() => _BackupConfigScreenState();
 }
 
-class _BackupConfigScreenState extends State<BackupConfigScreen> {
+class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
   int _threshold = LockboxBackupConstraints.defaultThreshold;
   int _totalKeys = LockboxBackupConstraints.defaultTotalKeys;
   final List<KeyHolder> _keyHolders = [];
   final List<String> _relays = ['ws://localhost:10547'];
   bool _isCreating = false;
-  bool _isLoading = true;
+  bool _isInitialized = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _loadExistingConfig();
-  }
-
-  /// Load existing backup configuration if one exists
-  Future<void> _loadExistingConfig() async {
-    try {
-      final existingConfig = await BackupService.getBackupConfig(widget.lockboxId);
-
-      if (existingConfig != null && mounted) {
-        setState(() {
-          _threshold = existingConfig.threshold;
-          _totalKeys = existingConfig.totalKeys;
-          _keyHolders.clear();
-          _keyHolders.addAll(existingConfig.keyHolders);
-          _relays.clear();
-          _relays.addAll(existingConfig.relays);
-          _isLoading = false;
-        });
-      } else {
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
-          });
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+  void _initializeFromConfig(dynamic config) {
+    if (config != null && !_isInitialized) {
+      setState(() {
+        _threshold = config.threshold;
+        _totalKeys = config.totalKeys;
+        _keyHolders.clear();
+        _keyHolders.addAll(config.keyHolders);
+        _relays.clear();
+        _relays.addAll(config.relays);
+        _isInitialized = true;
+      });
+    } else if (config == null && !_isInitialized) {
+      setState(() {
+        _isInitialized = true;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return Scaffold(
+    // Watch the backup config provider
+    final backupConfigAsync = ref.watch(backupConfigProvider(widget.lockboxId));
+
+    return backupConfigAsync.when(
+      loading: () => Scaffold(
         appBar: AppBar(
           title: const Text('Backup Configuration'),
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         ),
         body: const Center(child: CircularProgressIndicator()),
-      );
-    }
+      ),
+      error: (error, stack) => Scaffold(
+        appBar: AppBar(
+          title: const Text('Backup Configuration'),
+          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, size: 64, color: Colors.red),
+              const SizedBox(height: 16),
+              Text('Error loading backup config: $error'),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => ref.refresh(backupConfigProvider(widget.lockboxId)),
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      ),
+      data: (config) {
+        // Initialize from config if available
+        _initializeFromConfig(config);
+
+        return _buildConfigScreen(context);
+      },
+    );
+  }
+
+  Widget _buildConfigScreen(BuildContext context) {
 
     return Scaffold(
       appBar: AppBar(
@@ -400,15 +415,14 @@ class _BackupConfigScreenState extends State<BackupConfigScreen> {
     });
 
     try {
-      // Create/recreate the backup configuration and distribute shards
-      // BackupService will handle overwriting existing config
-      await BackupService.createAndDistributeBackup(
-        lockboxId: widget.lockboxId,
-        threshold: _threshold,
-        totalKeys: _totalKeys,
-        keyHolders: _keyHolders,
-        relays: _relays,
-      );
+      // Create/recreate the backup configuration and distribute shards using repository
+      await ref.read(backupRepositoryProvider).createAndDistributeBackup(
+            lockboxId: widget.lockboxId,
+            threshold: _threshold,
+            totalKeys: _totalKeys,
+            keyHolders: _keyHolders,
+            relays: _relays,
+          );
 
       if (mounted) {
         Navigator.pop(context, true);
