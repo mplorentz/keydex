@@ -159,9 +159,9 @@ extension ShardDataExtension on ShardData {
         return false;
       }
 
-      if (shardIndex > totalShards) {
+      if (shardIndex >= totalShards) {
         Log.error(
-            'ShardData validation failed: shardIndex ($shardIndex) exceeds totalShards ($totalShards)');
+            'ShardData validation failed: shardIndex ($shardIndex) is out of bounds (should be 0 to ${totalShards - 1})');
         return false;
       }
 
