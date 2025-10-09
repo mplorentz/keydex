@@ -106,8 +106,6 @@ class LockboxListScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Lockboxes'),
-        backgroundColor: Theme.of(context).primaryColor,
-        foregroundColor: Colors.white,
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
@@ -135,38 +133,63 @@ class LockboxListScreen extends ConsumerWidget {
               children: [
                 // Use AsyncValue.when() to handle loading/error/data states
                 lockboxesAsync.when(
-                  loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (error, stack) => Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.error_outline, size: 64, color: Colors.red),
-                        const SizedBox(height: 16),
-                        Text('Error: $error'),
-                        const SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed: () => ref.refresh(lockboxListProvider),
-                          child: const Text('Retry'),
-                        ),
-                      ],
+                  loading: () => Center(
+                    child: CircularProgressIndicator(
+                      color: Theme.of(context).colorScheme.secondary,
                     ),
                   ),
+                  error: (error, stack) {
+                    final textTheme = Theme.of(context).textTheme;
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.error_outline,
+                            size: 64,
+                            color: Theme.of(context).colorScheme.secondary,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Error: $error',
+                            style: textTheme.bodyMedium,
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: () => ref.refresh(lockboxListProvider),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Theme.of(context).colorScheme.secondary,
+                              foregroundColor: Colors.white,
+                            ),
+                            child: const Text('Retry'),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                   data: (lockboxes) {
                     if (lockboxes.isEmpty) {
+                      final theme = Theme.of(context);
+                      final textTheme = theme.textTheme;
                       return Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.lock_outline, size: 64, color: Colors.grey),
+                            Icon(
+                              Icons.lock_outline,
+                              size: 64,
+                              color: theme.colorScheme.surfaceContainerHighest,
+                            ),
                             const SizedBox(height: 16),
                             Text(
                               'No lockboxes yet',
-                              style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                              style: textTheme.titleLarge,
                             ),
                             const SizedBox(height: 8),
                             Text(
                               'Tap + to create your first secure lockbox',
-                              style: TextStyle(color: Colors.grey[500]),
+                              style: textTheme.bodySmall,
                             ),
                           ],
                         ),
@@ -174,7 +197,7 @@ class LockboxListScreen extends ConsumerWidget {
                     }
 
                     return ListView.builder(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       itemCount: lockboxes.length,
                       itemBuilder: (context, index) {
                         final lockbox = lockboxes[index];
@@ -206,7 +229,8 @@ class LockboxListScreen extends ConsumerWidget {
             ),
           );
         },
-        backgroundColor: Theme.of(context).primaryColor,
+        backgroundColor: Theme.of(context).colorScheme.secondary,
+        foregroundColor: Colors.white,
         child: const Icon(Icons.add),
       ),
     );
@@ -221,37 +245,12 @@ class _LockboxCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
+
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
-          child: Icon(Icons.lock, color: Theme.of(context).primaryColor),
-        ),
-        title: Text(
-          lockbox.name,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              lockbox.content.length > 50
-                  ? '${lockbox.content.substring(0, 50)}...'
-                  : lockbox.content,
-              style: TextStyle(color: Colors.grey[600]),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Created ${_formatDate(lockbox.createdAt)}',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[500],
-              ),
-            ),
-          ],
-        ),
-        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+      margin: const EdgeInsets.only(bottom: 8),
+      child: InkWell(
         onTap: () {
           Navigator.push(
             context,
@@ -260,6 +259,68 @@ class _LockboxCard extends StatelessWidget {
             ),
           );
         },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          child: Row(
+            children: [
+              // Icon container with darker background
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.lock,
+                  color: theme.scaffoldBackgroundColor,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 16),
+              // Content
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      lockbox.name,
+                      style: textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      lockbox.content.length > 40
+                          ? '${lockbox.content.substring(0, 40)}...'
+                          : lockbox.content,
+                      style: textTheme.bodySmall,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Date on the right
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    size: 16,
+                    color: theme.colorScheme.secondary,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _formatDate(lockbox.createdAt),
+                    style: textTheme.bodySmall,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -289,14 +350,19 @@ class _DebugSection extends ConsumerWidget {
     // Watch both key providers
     final publicKeyAsync = ref.watch(currentPublicKeyProvider);
     final publicKeyBech32Async = ref.watch(currentPublicKeyBech32Provider);
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.grey[100],
+        color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.1),
         border: Border(
-          top: BorderSide(color: Colors.grey[300]!),
+          top: BorderSide(
+            color: theme.colorScheme.surfaceContainerHighest,
+            width: 1,
+          ),
         ),
       ),
       child: Column(
@@ -304,14 +370,17 @@ class _DebugSection extends ConsumerWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.bug_report, size: 16, color: Colors.grey[600]),
+              Icon(
+                Icons.bug_report,
+                size: 16,
+                color: theme.colorScheme.secondary,
+              ),
               const SizedBox(width: 6),
               Text(
                 'DEBUG INFO',
-                style: TextStyle(
-                  fontSize: 12,
+                style: textTheme.labelSmall?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: Colors.grey[600],
+                  letterSpacing: 0.5,
                 ),
               ),
             ],
@@ -319,8 +388,14 @@ class _DebugSection extends ConsumerWidget {
           const SizedBox(height: 8),
           // Bech32 key
           publicKeyBech32Async.when(
-            loading: () => const Text('Loading...', style: TextStyle(fontSize: 10)),
-            error: (err, _) => Text('Error: $err', style: const TextStyle(fontSize: 10)),
+            loading: () => Text(
+              'Loading...',
+              style: textTheme.bodySmall,
+            ),
+            error: (err, _) => Text(
+              'Error: $err',
+              style: textTheme.bodySmall,
+            ),
             data: (npub) => _KeyDisplay(
               label: 'Npub (bech32):',
               value: npub ?? 'Not available',
@@ -330,8 +405,14 @@ class _DebugSection extends ConsumerWidget {
           const SizedBox(height: 8),
           // Hex key
           publicKeyAsync.when(
-            loading: () => const Text('Loading...', style: TextStyle(fontSize: 10)),
-            error: (err, _) => Text('Error: $err', style: const TextStyle(fontSize: 10)),
+            loading: () => Text(
+              'Loading...',
+              style: textTheme.bodySmall,
+            ),
+            error: (err, _) => Text(
+              'Error: $err',
+              style: textTheme.bodySmall,
+            ),
             data: (pubkey) => _KeyDisplay(
               label: 'Public Key (hex):',
               value: pubkey ?? 'Not available',
@@ -358,6 +439,8 @@ class _KeyDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
     return Row(
       children: [
         Expanded(
@@ -366,19 +449,16 @@ class _KeyDisplay extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: TextStyle(
-                  fontSize: 10,
+                style: textTheme.labelSmall?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: Colors.grey[600],
                 ),
               ),
               const SizedBox(height: 2),
               Text(
                 value,
-                style: TextStyle(
-                  fontSize: 10,
+                style: textTheme.bodySmall?.copyWith(
                   fontFamily: 'monospace',
-                  color: Colors.grey[700],
+                  fontSize: 10,
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -387,7 +467,11 @@ class _KeyDisplay extends StatelessWidget {
           ),
         ),
         IconButton(
-          icon: const Icon(Icons.copy, size: 16),
+          icon: Icon(
+            Icons.copy,
+            size: 16,
+            color: Theme.of(context).colorScheme.secondary,
+          ),
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(),
           onPressed: value != 'Not available' && value != 'Loading...'
