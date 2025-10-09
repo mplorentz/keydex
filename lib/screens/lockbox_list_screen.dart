@@ -106,7 +106,7 @@ class LockboxListScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Lockboxes'),
+        title: const Text('Lockboxes'),
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
