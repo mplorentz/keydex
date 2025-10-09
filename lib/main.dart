@@ -1,10 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'services/key_service.dart';
 import 'services/logger.dart';
 import 'screens/lockbox_list_screen.dart';
+import 'widgets/theme.dart';
 
 void main() {
   runApp(
@@ -57,24 +57,7 @@ class _KeydexAppState extends State<KeydexApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Keydex Lockbox',
-      theme: ThemeData(
-        primaryColor: const Color(0xFFf47331),
-        scaffoldBackgroundColor: Colors.white,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFFf47331),
-          brightness: Brightness.light,
-        ),
-        cardTheme: const CardThemeData(
-          color: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(15)),
-            side: BorderSide(color: Color(0xFF4F4F4F), width: 2),
-          ),
-          elevation: 0,
-        ),
-        textTheme: GoogleFonts.openSansTextTheme(),
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
+      theme: keydexTheme,
       home: _isInitializing
           ? const _InitializingScreen()
           : _initError != null
