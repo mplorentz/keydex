@@ -9,6 +9,7 @@ import '../services/recovery_service.dart';
 import '../services/relay_scan_service.dart';
 import '../services/backup_service.dart';
 import '../services/logger.dart';
+import '../widgets/row_button.dart';
 import 'create_lockbox_with_backup_screen.dart';
 import 'lockbox_detail_screen.dart';
 import 'relay_management_screen.dart';
@@ -218,20 +219,20 @@ class LockboxListScreen extends ConsumerWidget {
           ),
           // Debug section showing current user's public key
           const _DebugSection(),
+          // Create lockbox button at bottom
+          RowButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const CreateLockboxWithBackupScreen(),
+                ),
+              );
+            },
+            icon: Icons.add,
+            text: 'Create New Lockbox',
+          ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const CreateLockboxWithBackupScreen(),
-            ),
-          );
-        },
-        backgroundColor: Theme.of(context).colorScheme.secondary,
-        foregroundColor: Colors.white,
-        child: const Icon(Icons.add),
       ),
     );
   }

@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 final keydexTheme = ThemeData(
-  primaryColor: const Color(0xFFf47331),
+  primaryColor: const Color(0xFFdc714e),
   scaffoldBackgroundColor: const Color(0xFFc1c4b1),
   colorScheme: ColorScheme.fromSeed(
-    seedColor: const Color(0xFFf47331),
+    seedColor: const Color(0xFFdc714e),
     brightness: Brightness.light,
     secondary: const Color(0xFF212746), // Accent color
     surfaceContainerHighest: const Color(0xFF7f8571), // Border/surface color
