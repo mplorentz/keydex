@@ -7,10 +7,10 @@ final keydexTheme = ThemeData(
   colorScheme: ColorScheme.fromSeed(
     seedColor: const Color(0xFFf47331),
     brightness: Brightness.light,
-    secondary: const Color(0xFFdc714e), // Accent color
+    secondary: const Color(0xFF212746), // Accent color
     surfaceContainerHighest: const Color(0xFF7f8571), // Border/surface color
   ),
-  textTheme: GoogleFonts.openSansTextTheme()
+  textTheme: GoogleFonts.archivoTextTheme()
       .apply(
         bodyColor: const Color(0xFF212746), // Primary text color
         displayColor: const Color(0xFF212746), // Primary text color for headlines
@@ -35,7 +35,10 @@ final keydexTheme = ThemeData(
     backgroundColor: const Color(0xFFc1c4b1), // Scaffold background color
     foregroundColor: const Color(0xFF212746), // Primary text color
     elevation: 0,
-    titleTextStyle: GoogleFonts.openSans(
+    toolbarHeight: 100.0, // Increased height for more vertical spacing
+    titleSpacing: 32.0, // Double the default spacing
+    leadingWidth: 32.0,
+    titleTextStyle: GoogleFonts.archivo(
       fontSize: 36,
       fontWeight: FontWeight.w500,
       color: const Color(0xFF212746),
