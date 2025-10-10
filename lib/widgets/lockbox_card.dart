@@ -1,14 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ndk/shared/nips/nip01/helpers.dart';
 import '../models/lockbox.dart';
+import '../providers/key_provider.dart';
 import '../screens/lockbox_detail_screen.dart';
 
-class LockboxCard extends StatelessWidget {
+class LockboxCard extends ConsumerWidget {
   final Lockbox lockbox;
 
   const LockboxCard({super.key, required this.lockbox});
 
+  String _getOwnerDisplayText(String? currentPubkey) {
+    if (currentPubkey == null) {
+      return Helpers.encodeBech32(lockbox.ownerPubkey, 'npub');
+    }
+    return currentPubkey == lockbox.ownerPubkey
+        ? 'You'
+        : Helpers.encodeBech32(lockbox.ownerPubkey, 'npub');
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final textTheme = theme.textTheme;
 
@@ -27,12 +39,14 @@ class LockboxCard extends StatelessWidget {
         break;
     }
 
-    // Determine content preview text
-    final contentPreview = lockbox.content != null
-        ? (lockbox.content!.length > 40
-            ? '${lockbox.content!.substring(0, 40)}...'
-            : lockbox.content!)
-        : '[Encrypted - ${lockbox.shards.length} shard${lockbox.shards.length == 1 ? '' : 's'}]';
+    // Get current user's pubkey and determine owner display
+    final currentPubkeyAsync = ref.watch(currentPublicKeyProvider);
+    final currentPubkey = currentPubkeyAsync.maybeWhen(
+      data: (pubkey) => pubkey,
+      orElse: () => null,
+    );
+    final ownerDisplayText = _getOwnerDisplayText(currentPubkey);
+    final isOwnedByCurrentUser = currentPubkey == lockbox.ownerPubkey;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
@@ -77,8 +91,10 @@ class LockboxCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      contentPreview,
-                      style: textTheme.bodySmall,
+                      "Owner: $ownerDisplayText",
+                      style: textTheme.bodySmall?.copyWith(
+                        fontFamily: isOwnedByCurrentUser ? null : 'monospace',
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -96,10 +112,6 @@ class LockboxCard extends StatelessWidget {
                     color: theme.colorScheme.secondary,
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    _formatDate(lockbox.createdAt),
-                    style: textTheme.bodySmall,
-                  ),
                 ],
               ),
             ],
