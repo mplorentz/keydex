@@ -230,7 +230,7 @@ class LockboxListScreen extends ConsumerWidget {
               );
             },
             icon: Icons.add,
-            text: 'Create New Lockbox',
+            text: 'Create Lockbox',
           ),
         ],
       ),
