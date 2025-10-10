@@ -58,6 +58,7 @@ class _KeydexAppState extends State<KeydexApp> {
     return MaterialApp(
       title: 'Keydex Lockbox',
       theme: keydexTheme,
+      debugShowCheckedModeBanner: false,
       home: _isInitializing
           ? const _InitializingScreen()
           : _initError != null
