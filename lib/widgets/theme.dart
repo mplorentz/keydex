@@ -9,6 +9,7 @@ final keydexTheme = ThemeData(
     brightness: Brightness.light,
     secondary: const Color(0xFF212746), // Accent color
     surfaceContainerHighest: const Color(0xFF7f8571), // Border/surface color
+    surfaceContainer: const Color(0xFF464d41), // Icon background color
   ),
   textTheme: GoogleFonts.archivoTextTheme()
       .apply(

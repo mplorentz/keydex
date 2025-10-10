@@ -12,22 +12,18 @@ class LockboxCard extends StatelessWidget {
     final theme = Theme.of(context);
     final textTheme = theme.textTheme;
 
-    // Determine icon and color based on lockbox state
+    // Determine icon based on lockbox state
     IconData stateIcon;
-    Color iconColor;
 
     switch (lockbox.state) {
       case LockboxState.recovery:
         stateIcon = Icons.refresh;
-        iconColor = Colors.orange;
         break;
       case LockboxState.owned:
         stateIcon = Icons.lock_open;
-        iconColor = Colors.green;
         break;
       case LockboxState.keyHolder:
         stateIcon = Icons.key;
-        iconColor = Colors.blue;
         break;
     }
 
@@ -53,17 +49,17 @@ class LockboxCard extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           child: Row(
             children: [
-              // Icon container with state-based icon and color
+              // Icon container with state-based icon
               Container(
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: iconColor.withOpacity(0.2),
+                  color: theme.colorScheme.surfaceContainer,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
                   stateIcon,
-                  color: iconColor,
+                  color: theme.scaffoldBackgroundColor,
                   size: 24,
                 ),
               ),
