@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/lockbox.dart';
+import '../models/shard_data.dart';
+import '../models/recovery_request.dart';
 import 'key_service.dart';
 import 'logger.dart';
 import 'package:meta/meta.dart';
@@ -34,9 +36,9 @@ class LockboxService {
       await _loadLockboxes();
 
       // If no lockboxes exist, create some sample data for first-time users
-      if (_cachedLockboxes!.isEmpty && !_disableSampleDataForTest) {
-        await _createSampleData();
-      }
+      // if (_cachedLockboxes!.isEmpty && !_disableSampleDataForTest) {
+      //   await _createSampleData();
+      // }
 
       _isInitialized = true;
     } catch (e) {
@@ -100,6 +102,14 @@ class LockboxService {
 
   /// Create sample data for first-time users
   static Future<void> _createSampleData() async {
+    // Get current user's public key for ownership
+    final currentPubkey = await KeyService.getCurrentPublicKey();
+    if (currentPubkey == null) {
+      Log.warning('Cannot create sample data: no user public key available');
+      _cachedLockboxes = [];
+      return;
+    }
+
     _cachedLockboxes = [
       Lockbox(
         id: '1',
@@ -107,12 +117,14 @@ class LockboxService {
         content:
             'This is my private journal entry. It contains sensitive thoughts and ideas that I want to keep secure.',
         createdAt: DateTime.now().subtract(const Duration(days: 2)),
+        ownerPubkey: currentPubkey,
       ),
       Lockbox(
         id: '2',
         name: 'Passwords',
         content: 'Gmail: mypassword123\nBank: secretbank456\nSocial Media: social789',
         createdAt: DateTime.now().subtract(const Duration(days: 1)),
+        ownerPubkey: currentPubkey,
       ),
       Lockbox(
         id: '3',
@@ -120,6 +132,7 @@ class LockboxService {
         content:
             'Grandma\'s secret chocolate chip cookie recipe:\n- 2 cups flour\n- 1 cup butter\n- Secret ingredient: love',
         createdAt: DateTime.now().subtract(const Duration(hours: 3)),
+        ownerPubkey: currentPubkey,
       ),
     ];
 
@@ -145,11 +158,10 @@ class LockboxService {
     await initialize();
     final index = _cachedLockboxes!.indexWhere((lb) => lb.id == id);
     if (index != -1) {
-      _cachedLockboxes![index] = Lockbox(
-        id: id,
+      final existingLockbox = _cachedLockboxes![index];
+      _cachedLockboxes![index] = existingLockbox.copyWith(
         name: name,
         content: content,
-        createdAt: _cachedLockboxes![index].createdAt,
       );
       await _saveLockboxes();
     }
@@ -170,6 +182,149 @@ class LockboxService {
     } catch (e) {
       return null;
     }
+  }
+
+  // ========== Shard Management Methods ==========
+
+  /// Add a shard to a lockbox (supports multiple shards during recovery)
+  static Future<void> addShardToLockbox(String lockboxId, ShardData shard) async {
+    await initialize();
+
+    final index = _cachedLockboxes!.indexWhere((lb) => lb.id == lockboxId);
+    if (index == -1) {
+      throw ArgumentError('Lockbox not found: $lockboxId');
+    }
+
+    final lockbox = _cachedLockboxes![index];
+    final updatedShards = List<ShardData>.from(lockbox.shards)..add(shard);
+
+    _cachedLockboxes![index] = lockbox.copyWith(shards: updatedShards);
+    await _saveLockboxes();
+    Log.info('Added shard to lockbox $lockboxId (total shards: ${updatedShards.length})');
+  }
+
+  /// Get all shards for a lockbox
+  static Future<List<ShardData>> getShardsForLockbox(String lockboxId) async {
+    await initialize();
+
+    final lockbox = _cachedLockboxes!.firstWhere(
+      (lb) => lb.id == lockboxId,
+      orElse: () => throw ArgumentError('Lockbox not found: $lockboxId'),
+    );
+
+    return List.unmodifiable(lockbox.shards);
+  }
+
+  /// Clear all shards for a lockbox
+  static Future<void> clearShardsForLockbox(String lockboxId) async {
+    await initialize();
+
+    final index = _cachedLockboxes!.indexWhere((lb) => lb.id == lockboxId);
+    if (index == -1) {
+      throw ArgumentError('Lockbox not found: $lockboxId');
+    }
+
+    _cachedLockboxes![index] = _cachedLockboxes![index].copyWith(shards: []);
+    await _saveLockboxes();
+    Log.info('Cleared all shards for lockbox $lockboxId');
+  }
+
+  /// Check if we are a key holder for a lockbox (have any shards)
+  static Future<bool> isKeyHolderForLockbox(String lockboxId) async {
+    await initialize();
+
+    final lockbox = _cachedLockboxes!.firstWhere(
+      (lb) => lb.id == lockboxId,
+      orElse: () => throw ArgumentError('Lockbox not found: $lockboxId'),
+    );
+
+    return lockbox.isKeyHolder;
+  }
+
+  // ========== Recovery Request Management Methods ==========
+
+  /// Add a recovery request to a lockbox
+  static Future<void> addRecoveryRequestToLockbox(
+    String lockboxId,
+    RecoveryRequest request,
+  ) async {
+    await initialize();
+
+    final index = _cachedLockboxes!.indexWhere((lb) => lb.id == lockboxId);
+    if (index == -1) {
+      throw ArgumentError('Lockbox not found: $lockboxId');
+    }
+
+    final lockbox = _cachedLockboxes![index];
+    final updatedRequests = List<RecoveryRequest>.from(lockbox.recoveryRequests)..add(request);
+
+    _cachedLockboxes![index] = lockbox.copyWith(recoveryRequests: updatedRequests);
+    await _saveLockboxes();
+    Log.info('Added recovery request ${request.id} to lockbox $lockboxId');
+  }
+
+  /// Update a recovery request in a lockbox
+  static Future<void> updateRecoveryRequestInLockbox(
+    String lockboxId,
+    String requestId,
+    RecoveryRequest updatedRequest,
+  ) async {
+    await initialize();
+
+    final index = _cachedLockboxes!.indexWhere((lb) => lb.id == lockboxId);
+    if (index == -1) {
+      throw ArgumentError('Lockbox not found: $lockboxId');
+    }
+
+    final lockbox = _cachedLockboxes![index];
+    final requestIndex = lockbox.recoveryRequests.indexWhere((r) => r.id == requestId);
+
+    if (requestIndex == -1) {
+      throw ArgumentError('Recovery request not found: $requestId');
+    }
+
+    final updatedRequests = List<RecoveryRequest>.from(lockbox.recoveryRequests);
+    updatedRequests[requestIndex] = updatedRequest;
+
+    _cachedLockboxes![index] = lockbox.copyWith(recoveryRequests: updatedRequests);
+    await _saveLockboxes();
+    Log.info('Updated recovery request $requestId in lockbox $lockboxId');
+  }
+
+  /// Get all recovery requests for a lockbox
+  static Future<List<RecoveryRequest>> getRecoveryRequestsForLockbox(String lockboxId) async {
+    await initialize();
+
+    final lockbox = _cachedLockboxes!.firstWhere(
+      (lb) => lb.id == lockboxId,
+      orElse: () => throw ArgumentError('Lockbox not found: $lockboxId'),
+    );
+
+    return List.unmodifiable(lockbox.recoveryRequests);
+  }
+
+  /// Get the active recovery request for a lockbox (if any)
+  static Future<RecoveryRequest?> getActiveRecoveryRequest(String lockboxId) async {
+    await initialize();
+
+    final lockbox = _cachedLockboxes!.firstWhere(
+      (lb) => lb.id == lockboxId,
+      orElse: () => throw ArgumentError('Lockbox not found: $lockboxId'),
+    );
+
+    return lockbox.activeRecoveryRequest;
+  }
+
+  /// Get all recovery requests across all lockboxes
+  static Future<List<RecoveryRequest>> getAllRecoveryRequests() async {
+    await initialize();
+
+    final allRequests = <RecoveryRequest>[];
+    for (final lockbox in _cachedLockboxes!) {
+      allRequests.addAll(lockbox.recoveryRequests);
+    }
+
+    return allRequests;
   }
 
   /// Clear all lockboxes (for testing)

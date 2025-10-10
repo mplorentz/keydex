@@ -14,9 +14,6 @@ class DebugInfoSheet extends ConsumerWidget {
   const DebugInfoSheet({super.key});
 
   Future<void> _clearAllData(BuildContext context, WidgetRef ref) async {
-    // Close the bottom sheet first
-    Navigator.pop(context);
-
     // Show confirmation dialog
     final confirmed = await showDialog<bool>(
       context: context,

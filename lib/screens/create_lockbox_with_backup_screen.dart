@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/lockbox.dart';
 import '../services/lockbox_service.dart';
+import '../services/key_service.dart';
 
 /// Enhanced lockbox creation screen with integrated backup configuration
 class CreateLockboxWithBackupScreen extends StatefulWidget {
@@ -116,11 +117,18 @@ class _CreateLockboxWithBackupScreenState extends State<CreateLockboxWithBackupS
   Future<void> _saveLockbox() async {
     if (_formKey.currentState!.validate()) {
       try {
+        // Get current user's public key for ownership
+        final currentPubkey = await KeyService.getCurrentPublicKey();
+        if (currentPubkey == null) {
+          throw Exception('Unable to get current user public key');
+        }
+
         final newLockbox = Lockbox(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
           name: _nameController.text.trim(),
           content: _contentController.text,
           createdAt: DateTime.now(),
+          ownerPubkey: currentPubkey,
         );
 
         await LockboxService.addLockbox(newLockbox);

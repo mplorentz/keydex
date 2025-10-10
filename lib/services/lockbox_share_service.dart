@@ -131,20 +131,17 @@ class LockboxShareService {
     }
   }
 
-  /// Get all shares for a lockbox (returns a list for backward compatibility)
+  /// Get all shares for a lockbox
+  /// Now delegates to LockboxService
   static Future<List<ShardData>> getLockboxShares(String lockboxId) async {
-    await initialize();
-
-    final shard = _cachedShardData![lockboxId];
-    if (shard == null) return [];
-
-    return [shard];
+    return await LockboxService.getShardsForLockbox(lockboxId);
   }
 
-  /// Get the share for a lockbox
+  /// Get the share for a lockbox (returns first shard if multiple exist)
+  /// Now delegates to LockboxService
   static Future<ShardData?> getLockboxShare(String lockboxId) async {
-    await initialize();
-    return _cachedShardData![lockboxId];
+    final shards = await LockboxService.getShardsForLockbox(lockboxId);
+    return shards.isNotEmpty ? shards.first : null;
   }
 
   /// Get a specific share by nostr event ID
@@ -161,52 +158,40 @@ class LockboxShareService {
   }
 
   /// Add or update shard data for a lockbox
-  /// If a shard already exists for this lockbox, it will be overwritten
+  /// Now delegates to LockboxService
   static Future<void> addLockboxShare(String lockboxId, ShardData shardData) async {
-    await initialize();
-
     // Validate shard data
     if (!shardData.isValid) {
       throw ArgumentError('Invalid shard data');
     }
 
-    // Check if we're updating an existing shard
-    final existingShard = _cachedShardData![lockboxId];
-    if (existingShard != null) {
-      Log.info(
-          'Overwriting existing shard for lockbox $lockboxId (old event: ${existingShard.nostrEventId}, new event: ${shardData.nostrEventId})');
-    } else {
-      Log.info('Added shard for lockbox $lockboxId (event: ${shardData.nostrEventId})');
-    }
-
-    // Store the shard (overwrites any existing shard for this lockbox)
-    _cachedShardData![lockboxId] = shardData;
-    await _saveShardData();
-
     // Create a lockbox record if one doesn't exist yet
     await _ensureLockboxExists(lockboxId, shardData);
+
+    // Add shard to lockbox via LockboxService
+    await LockboxService.addShardToLockbox(lockboxId, shardData);
+    Log.info('Added shard for lockbox $lockboxId (event: ${shardData.nostrEventId})');
   }
 
   /// Ensure a lockbox record exists for received shares
   static Future<void> _ensureLockboxExists(String lockboxId, ShardData shardData) async {
     try {
-      // // Check if lockbox already exists
-      // final existingLockbox = await LockboxService.getLockbox(lockboxId);
-      // if (existingLockbox != null) {
-      //   Log.info('Lockbox $lockboxId already exists');
-      //   return;
-      // }
+      // Check if lockbox already exists
+      final existingLockbox = await LockboxService.getLockbox(lockboxId);
+      if (existingLockbox != null) {
+        Log.info('Lockbox $lockboxId already exists');
+        return;
+      }
 
       // Create a new lockbox entry for the shared key
       final lockboxName = shardData.lockboxName ?? 'Shared Lockbox';
-      final content =
-          '[Encrypted - Need ${shardData.threshold} of ${shardData.totalShards} keys to recover]';
 
       final lockbox = Lockbox(
         id: lockboxId,
         name: lockboxName,
-        content: content,
+        content: null, // No decrypted content yet - we only have a shard
         createdAt: DateTime.fromMillisecondsSinceEpoch(shardData.createdAt * 1000),
+        ownerPubkey: shardData.creatorPubkey, // Owner is the creator of the shard
       );
 
       await LockboxService.addLockbox(lockbox);
@@ -289,26 +274,23 @@ class LockboxShareService {
   }
 
   /// Check if user is a key holder for a lockbox
+  /// Now delegates to LockboxService
   static Future<bool> isKeyHolderForLockbox(String lockboxId) async {
-    await initialize();
-    return _cachedShardData!.containsKey(lockboxId);
+    return await LockboxService.isKeyHolderForLockbox(lockboxId);
   }
 
-  /// Get shard count for a lockbox (will always return 0 or 1)
+  /// Get shard count for a lockbox
+  /// Now delegates to LockboxService
   static Future<int> getShardCount(String lockboxId) async {
-    await initialize();
-    return _cachedShardData!.containsKey(lockboxId) ? 1 : 0;
+    final shards = await LockboxService.getShardsForLockbox(lockboxId);
+    return shards.length;
   }
 
   /// Remove shard for a lockbox
+  /// Now delegates to LockboxService
   static Future<void> removeLockboxShare(String lockboxId) async {
-    await initialize();
-
-    if (_cachedShardData!.containsKey(lockboxId)) {
-      final shard = _cachedShardData!.remove(lockboxId);
-      await _saveShardData();
-      Log.info('Removed shard for lockbox $lockboxId (event: ${shard?.nostrEventId})');
-    }
+    await LockboxService.clearShardsForLockbox(lockboxId);
+    Log.info('Removed all shards for lockbox $lockboxId');
   }
 
   /// Remove a specific shard by nostr event ID

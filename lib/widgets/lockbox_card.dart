@@ -12,6 +12,32 @@ class LockboxCard extends StatelessWidget {
     final theme = Theme.of(context);
     final textTheme = theme.textTheme;
 
+    // Determine icon and color based on lockbox state
+    IconData stateIcon;
+    Color iconColor;
+
+    switch (lockbox.state) {
+      case LockboxState.recovery:
+        stateIcon = Icons.refresh;
+        iconColor = Colors.orange;
+        break;
+      case LockboxState.owned:
+        stateIcon = Icons.lock_open;
+        iconColor = Colors.green;
+        break;
+      case LockboxState.keyHolder:
+        stateIcon = Icons.key;
+        iconColor = Colors.blue;
+        break;
+    }
+
+    // Determine content preview text
+    final contentPreview = lockbox.content != null
+        ? (lockbox.content!.length > 40
+            ? '${lockbox.content!.substring(0, 40)}...'
+            : lockbox.content!)
+        : '[Encrypted - ${lockbox.shards.length} shard${lockbox.shards.length == 1 ? '' : 's'}]';
+
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: InkWell(
@@ -27,17 +53,17 @@ class LockboxCard extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           child: Row(
             children: [
-              // Icon container with darker background
+              // Icon container with state-based icon and color
               Container(
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.surfaceContainerHighest,
+                  color: iconColor.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
-                  Icons.lock,
-                  color: theme.scaffoldBackgroundColor,
+                  stateIcon,
+                  color: iconColor,
                   size: 24,
                 ),
               ),
@@ -55,9 +81,7 @@ class LockboxCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      lockbox.content.length > 40
-                          ? '${lockbox.content.substring(0, 40)}...'
-                          : lockbox.content,
+                      contentPreview,
                       style: textTheme.bodySmall,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,

@@ -1,3 +1,6 @@
+import 'shard_data.dart';
+import 'recovery_request.dart';
+
 /// Backup configuration constraints
 class LockboxBackupConstraints {
   /// Minimum threshold value for Shamir's Secret Sharing
@@ -13,19 +16,66 @@ class LockboxBackupConstraints {
   static const int defaultTotalKeys = 3;
 }
 
+/// Lockbox state enum indicating the current state of a lockbox
+enum LockboxState {
+  recovery, // Active recovery in progress
+  owned, // Has decrypted content
+  keyHolder, // Has shard but no content
+}
+
 /// Data model for a secure lockbox containing encrypted text content
 class Lockbox {
   final String id;
   final String name;
-  final String content;
+  final String? content; // Nullable - null when content is not decrypted
   final DateTime createdAt;
+  final String ownerPubkey; // Hex format, 64 characters
+  final List<ShardData> shards; // List of shards (single as key holder, multiple during recovery)
+  final List<RecoveryRequest> recoveryRequests; // Embedded recovery requests
 
   Lockbox({
     required this.id,
     required this.name,
     required this.content,
     required this.createdAt,
+    required this.ownerPubkey,
+    this.shards = const [],
+    this.recoveryRequests = const [],
   });
+
+  /// Get the state of this lockbox based on priority:
+  /// 1. Recovery (if has active recovery request)
+  /// 2. Owned (if has decrypted content)
+  /// 3. Key holder (if has shards but no content)
+  LockboxState get state {
+    if (hasActiveRecovery) {
+      return LockboxState.recovery;
+    }
+    if (isOwned) {
+      return LockboxState.owned;
+    }
+    return LockboxState.keyHolder;
+  }
+
+  /// Check if this lockbox has decrypted content (owned)
+  bool get isOwned => content != null;
+
+  /// Check if we are a key holder for this lockbox (have shards)
+  bool get isKeyHolder => shards.isNotEmpty;
+
+  /// Check if this lockbox has an active recovery request
+  bool get hasActiveRecovery {
+    return recoveryRequests.any((request) => request.status.isActive);
+  }
+
+  /// Get the active recovery request if one exists
+  RecoveryRequest? get activeRecoveryRequest {
+    try {
+      return recoveryRequests.firstWhere((request) => request.status.isActive);
+    } catch (e) {
+      return null;
+    }
+  }
 
   /// Convert to JSON for storage
   Map<String, dynamic> toJson() {
@@ -34,6 +84,9 @@ class Lockbox {
       'name': name,
       'content': content,
       'createdAt': createdAt.toIso8601String(),
+      'ownerPubkey': ownerPubkey,
+      'shards': shards.map((shard) => shardDataToJson(shard)).toList(),
+      'recoveryRequests': recoveryRequests.map((request) => request.toJson()).toList(),
     };
   }
 
@@ -42,8 +95,40 @@ class Lockbox {
     return Lockbox(
       id: json['id'] as String,
       name: json['name'] as String,
-      content: json['content'] as String,
+      content: json['content'] as String?,
       createdAt: DateTime.parse(json['createdAt'] as String),
+      ownerPubkey: json['ownerPubkey'] as String,
+      shards: json['shards'] != null
+          ? (json['shards'] as List)
+              .map((shardJson) => shardDataFromJson(shardJson as Map<String, dynamic>))
+              .toList()
+          : [],
+      recoveryRequests: json['recoveryRequests'] != null
+          ? (json['recoveryRequests'] as List)
+              .map((reqJson) => RecoveryRequest.fromJson(reqJson as Map<String, dynamic>))
+              .toList()
+          : [],
+    );
+  }
+
+  /// Create a copy with updated fields
+  Lockbox copyWith({
+    String? id,
+    String? name,
+    String? content,
+    DateTime? createdAt,
+    String? ownerPubkey,
+    List<ShardData>? shards,
+    List<RecoveryRequest>? recoveryRequests,
+  }) {
+    return Lockbox(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      content: content ?? this.content,
+      createdAt: createdAt ?? this.createdAt,
+      ownerPubkey: ownerPubkey ?? this.ownerPubkey,
+      shards: shards ?? this.shards,
+      recoveryRequests: recoveryRequests ?? this.recoveryRequests,
     );
   }
 
@@ -57,6 +142,6 @@ class Lockbox {
 
   @override
   String toString() {
-    return 'Lockbox{id: $id, name: $name, createdAt: $createdAt}';
+    return 'Lockbox{id: $id, name: $name, state: ${state.name}, createdAt: $createdAt}';
   }
 }

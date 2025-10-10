@@ -67,7 +67,8 @@ void main() {
 
   test('add/get/update/delete lockbox persists via encrypted SharedPreferences', () async {
     // Initialize key so encrypt/decrypt works
-    await KeyService.generateAndStoreNostrKey();
+    final keyPair = await KeyService.generateAndStoreNostrKey();
+    final ownerPubkey = keyPair.publicKey;
 
     // Start with empty list
     final startList = await app_lockbox_service.LockboxService.getAllLockboxes();
@@ -78,6 +79,7 @@ void main() {
       name: 'Secret',
       content: 'Top secret content',
       createdAt: DateTime(2024, 1, 1),
+      ownerPubkey: ownerPubkey,
     );
 
     await app_lockbox_service.LockboxService.addLockbox(lockbox);
@@ -118,4 +120,3 @@ void main() {
     expect(afterDelete, isNull);
   });
 }
-

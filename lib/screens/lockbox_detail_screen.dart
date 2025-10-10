@@ -106,7 +106,9 @@ class LockboxDetailScreen extends StatelessWidget {
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                           Text(
-                            '${lockbox.content.length} characters',
+                            lockbox.content != null
+                                ? '${lockbox.content!.length} characters'
+                                : 'Encrypted (${lockbox.shards.length} shard${lockbox.shards.length == 1 ? '' : 's'})',
                             style: TextStyle(color: Colors.grey[600]),
                           ),
                         ],
@@ -132,15 +134,53 @@ class LockboxDetailScreen extends StatelessWidget {
                 child: Card(
                   child: Padding(
                     padding: const EdgeInsets.all(16),
-                    child: SingleChildScrollView(
-                      child: SelectableText(
-                        lockbox.content,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          height: 1.5,
-                        ),
-                      ),
-                    ),
+                    child: lockbox.content != null
+                        ? SingleChildScrollView(
+                            child: SelectableText(
+                              lockbox.content!,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                height: 1.5,
+                              ),
+                            ),
+                          )
+                        : Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.lock,
+                                  size: 64,
+                                  color: Colors.grey[400],
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'Content Encrypted',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'You have ${lockbox.shards.length} shard${lockbox.shards.length == 1 ? '' : 's'} for this lockbox',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Initiate recovery to restore the content',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                   ),
                 ),
               ),
@@ -263,22 +303,24 @@ class _RecoverySectionState extends State<_RecoverySection> {
 
   Future<void> _checkRecoveryStatus() async {
     try {
-      final canRecover = await RecoveryService.canRecoverLockbox(widget.lockboxId);
+      // Get the lockbox to check for active recovery requests
+      final lockbox = await LockboxService.getLockbox(widget.lockboxId);
 
-      // Check for active recovery requests for this lockbox
-      final requests = await RecoveryService.getRecoveryRequests(
-        lockboxId: widget.lockboxId,
-      );
-
-      // Find the most recent active request (not completed, failed, or cancelled)
-      RecoveryRequest? activeRequest;
-      for (final request in requests) {
-        if (request.status.isActive) {
-          if (activeRequest == null || request.requestedAt.isAfter(activeRequest.requestedAt)) {
-            activeRequest = request;
-          }
+      if (lockbox == null) {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
         }
+        return;
       }
+
+      // Use the embedded active recovery request
+      final activeRequest = lockbox.activeRecoveryRequest;
+
+      // Check if we can recover (has sufficient shards)
+      final canRecover =
+          activeRequest != null && activeRequest.approvedCount >= activeRequest.threshold;
 
       if (mounted) {
         setState(() {

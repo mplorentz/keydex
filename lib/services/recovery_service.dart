@@ -7,7 +7,7 @@ import '../models/recovery_request.dart';
 import '../models/recovery_status.dart';
 import '../models/shard_data.dart';
 import 'key_service.dart';
-import 'lockbox_share_service.dart';
+import 'lockbox_service.dart';
 import 'backup_service.dart';
 import 'logger.dart';
 
@@ -175,6 +175,10 @@ class RecoveryService {
       throw ArgumentError('Invalid recovery request');
     }
 
+    // Add to lockbox via LockboxService
+    await LockboxService.addRecoveryRequestToLockbox(lockboxId, recoveryRequest);
+
+    // Also add to local cache for notifications
     _cachedRequests!.add(recoveryRequest);
     await _saveRecoveryRequests();
 
@@ -187,16 +191,36 @@ class RecoveryService {
   static Future<void> addIncomingRecoveryRequest(RecoveryRequest request) async {
     await initialize();
 
-    // Check if request already exists
+    // Check if request already exists in local cache
     final existingIndex = _cachedRequests!.indexWhere((r) => r.id == request.id);
     if (existingIndex != -1) {
-      // Update existing request
+      // Update existing request in local cache
       _cachedRequests![existingIndex] = request;
       Log.info('Updated existing recovery request ${request.id}');
     } else {
-      // Add new request
+      // Add new request to local cache
       _cachedRequests!.add(request);
       Log.info('Added incoming recovery request ${request.id}');
+    }
+
+    // Also add to lockbox
+    try {
+      final existingRequests =
+          await LockboxService.getRecoveryRequestsForLockbox(request.lockboxId);
+      final existingInLockbox = existingRequests.any((r) => r.id == request.id);
+
+      if (existingInLockbox) {
+        await LockboxService.updateRecoveryRequestInLockbox(
+          request.lockboxId,
+          request.id,
+          request,
+        );
+      } else {
+        await LockboxService.addRecoveryRequestToLockbox(request.lockboxId, request);
+      }
+    } catch (e) {
+      Log.error('Error saving recovery request to lockbox', e);
+      // Continue anyway - request is saved in local cache
     }
 
     await _saveRecoveryRequests();
@@ -317,6 +341,18 @@ class RecoveryService {
     _cachedRequests![requestIndex] = updatedRequest;
     await _saveRecoveryRequests();
 
+    // Also update in lockbox
+    try {
+      await LockboxService.updateRecoveryRequestInLockbox(
+        request.lockboxId,
+        recoveryRequestId,
+        updatedRequest,
+      );
+    } catch (e) {
+      Log.error('Error updating recovery request in lockbox', e);
+      // Continue anyway - request is updated in local cache
+    }
+
     // Emit update to stream for real-time UI updates
     _recoveryRequestController.add(updatedRequest);
 
@@ -340,6 +376,17 @@ class RecoveryService {
 
     _cachedRequests![requestIndex] = updatedRequest;
     await _saveRecoveryRequests();
+
+    // Also update in lockbox
+    try {
+      await LockboxService.updateRecoveryRequestInLockbox(
+        request.lockboxId,
+        recoveryRequestId,
+        updatedRequest,
+      );
+    } catch (e) {
+      Log.error('Error updating cancelled recovery request in lockbox', e);
+    }
 
     Log.info('Cancelled recovery request $recoveryRequestId');
   }
@@ -379,8 +426,12 @@ class RecoveryService {
       throw Exception('Recovery is not yet possible - insufficient shares collected');
     }
 
-    // Get the collected recovery shards
-    final shards = await LockboxShareService.getRecoveryShards(recoveryRequestId);
+    // Collect shards from approved responses
+    final shards = request.keyHolderResponses.values
+        .where((r) => r.approved && r.shardData != null)
+        .map((r) => r.shardData!)
+        .toList();
+
     if (shards.isEmpty) {
       throw Exception('No recovery shards found');
     }
@@ -392,6 +443,16 @@ class RecoveryService {
     // Reconstruct the lockbox content from the shards
     final content = await BackupService.reconstructFromShares(shares: shards);
 
+    // Update the lockbox with recovered content
+    final lockbox = await LockboxService.getLockbox(request.lockboxId);
+    if (lockbox != null) {
+      await LockboxService.updateLockbox(
+        request.lockboxId,
+        lockbox.name,
+        content,
+      );
+    }
+
     // Update the recovery request status to completed
     final updatedRequest = request.copyWith(
       status: RecoveryRequestStatus.completed,
@@ -400,6 +461,17 @@ class RecoveryService {
     if (requestIndex != -1) {
       _cachedRequests![requestIndex] = updatedRequest;
       await _saveRecoveryRequests();
+    }
+
+    // Also update in lockbox
+    try {
+      await LockboxService.updateRecoveryRequestInLockbox(
+        request.lockboxId,
+        recoveryRequestId,
+        updatedRequest,
+      );
+    } catch (e) {
+      Log.error('Error updating completed recovery request in lockbox', e);
     }
 
     Log.info('Successfully recovered lockbox ${request.lockboxId} from $recoveryRequestId');
@@ -437,6 +509,17 @@ class RecoveryService {
 
     _cachedRequests![requestIndex] = updatedRequest;
     await _saveRecoveryRequests();
+
+    // Also update in lockbox
+    try {
+      await LockboxService.updateRecoveryRequestInLockbox(
+        request.lockboxId,
+        recoveryRequestId,
+        updatedRequest,
+      );
+    } catch (e) {
+      Log.error('Error updating recovery request status in lockbox', e);
+    }
 
     Log.info('Updated recovery request $recoveryRequestId status to ${status.displayName}');
   }

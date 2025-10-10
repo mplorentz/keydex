@@ -383,6 +383,9 @@ class BackupService {
         throw Exception('Lockbox not found: $lockboxId');
       }
       final content = lockbox.content;
+      if (content == null) {
+        throw Exception('Cannot backup encrypted lockbox - content is not available');
+      }
       Log.info('Loaded lockbox content for backup: $lockboxId');
 
       // Step 2: Get creator's Nostr key pair

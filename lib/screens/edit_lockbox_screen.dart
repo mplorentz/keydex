@@ -30,7 +30,7 @@ class _EditLockboxScreenState extends State<EditLockboxScreen> {
       setState(() {
         _lockbox = lockbox;
         _nameController.text = lockbox.name;
-        _contentController.text = lockbox.content;
+        _contentController.text = lockbox.content ?? '';
       });
     }
   }

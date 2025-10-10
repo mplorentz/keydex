@@ -172,8 +172,6 @@ class NdkService {
       // Store the shard data
       final lockboxId = shardData.lockboxId ?? 'unknown';
       await LockboxShareService.addLockboxShare(lockboxId, shardData);
-
-      Log.info('Stored shard data for lockbox: $lockboxId');
     } catch (e) {
       Log.error('Error handling shard data event ${event.id}', e);
     }
