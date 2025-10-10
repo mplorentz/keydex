@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/lockbox.dart';
 import '../providers/lockbox_provider.dart';
 import '../widgets/row_button.dart';
 import '../widgets/debug_info_sheet.dart';
 import 'create_lockbox_with_backup_screen.dart';
-import 'lockbox_detail_screen.dart';
 import 'relay_management_screen.dart';
 import 'recovery_notification_overlay.dart';
+import '../widgets/lockbox_card.dart';
 
 /// Main list screen showing all lockboxes
 class LockboxListScreen extends ConsumerWidget {
@@ -32,7 +31,7 @@ class LockboxListScreen extends ConsumerWidget {
         title: const Text('Lockboxes'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.search),
+            icon: const Icon(Icons.wifi),
             onPressed: () {
               Navigator.push(
                 context,
@@ -125,7 +124,7 @@ class LockboxListScreen extends ConsumerWidget {
                       itemCount: lockboxes.length,
                       itemBuilder: (context, index) {
                         final lockbox = lockboxes[index];
-                        return _LockboxCard(lockbox: lockbox);
+                        return LockboxCard(key: ValueKey(lockbox.id), lockbox: lockbox);
                       },
                     );
                   },
@@ -156,109 +155,5 @@ class LockboxListScreen extends ConsumerWidget {
         ],
       ),
     );
-  }
-}
-
-// Extracted widget for lockbox card
-class _LockboxCard extends StatelessWidget {
-  final Lockbox lockbox;
-
-  const _LockboxCard({required this.lockbox});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final textTheme = theme.textTheme;
-
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => LockboxDetailScreen(lockboxId: lockbox.id),
-            ),
-          );
-        },
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          child: Row(
-            children: [
-              // Icon container with darker background
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  Icons.lock,
-                  color: theme.scaffoldBackgroundColor,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 16),
-              // Content
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      lockbox.name,
-                      style: textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      lockbox.content.length > 40
-                          ? '${lockbox.content.substring(0, 40)}...'
-                          : lockbox.content,
-                      style: textTheme.bodySmall,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              // Date on the right
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    size: 16,
-                    color: theme.colorScheme.secondary,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    _formatDate(lockbox.createdAt),
-                    style: textTheme.bodySmall,
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final difference = now.difference(date);
-
-    if (difference.inDays > 0) {
-      return '${difference.inDays} day${difference.inDays == 1 ? '' : 's'} ago';
-    } else if (difference.inHours > 0) {
-      return '${difference.inHours} hour${difference.inHours == 1 ? '' : 's'} ago';
-    } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes} minute${difference.inMinutes == 1 ? '' : 's'} ago';
-    } else {
-      return 'Just now';
-    }
   }
 }
