@@ -15,7 +15,7 @@ class RecoveryStatusScreen extends StatefulWidget {
   });
 
   @override
-  _RecoveryStatusScreenState createState() => _RecoveryStatusScreenState();
+  State<RecoveryStatusScreen> createState() => _RecoveryStatusScreenState();
 }
 
 class _RecoveryStatusScreenState extends State<RecoveryStatusScreen> {
@@ -398,7 +398,7 @@ class _RecoveryStatusScreenState extends State<RecoveryStatusScreen> {
       child: Row(
         children: [
           CircleAvatar(
-            backgroundColor: _getResponseColor(response.status).withOpacity(0.1),
+            backgroundColor: _getResponseColor(response.status).withValues(alpha: 0.1),
             child: Icon(
               _getResponseIcon(response.status),
               color: _getResponseColor(response.status),
@@ -423,7 +423,7 @@ class _RecoveryStatusScreenState extends State<RecoveryStatusScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: _getResponseColor(response.status).withOpacity(0.1),
+                        color: _getResponseColor(response.status).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(

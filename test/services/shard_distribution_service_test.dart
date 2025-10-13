@@ -151,7 +151,6 @@ void main() {
       } catch (e) {
         // Expected to fail without proper NDK setup
         expect(e, isA<Exception>());
-        print('Test failed as expected without NDK setup: $e');
       }
     });
 

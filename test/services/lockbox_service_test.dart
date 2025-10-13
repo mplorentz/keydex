@@ -18,7 +18,8 @@ void main() {
     SharedPreferences.setMockInitialValues({});
 
     // Mock secure storage
-    secureStorageChannel.setMockMethodCallHandler((MethodCall call) async {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(secureStorageChannel, (MethodCall call) async {
       switch (call.method) {
         case 'write':
           final String key = (call.arguments as Map)['key'] as String;

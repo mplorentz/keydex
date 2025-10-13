@@ -9,7 +9,7 @@ class RecoveryNotificationOverlay extends StatefulWidget {
   const RecoveryNotificationOverlay({super.key});
 
   @override
-  _RecoveryNotificationOverlayState createState() => _RecoveryNotificationOverlayState();
+  State<RecoveryNotificationOverlay> createState() => _RecoveryNotificationOverlayState();
 }
 
 class _RecoveryNotificationOverlayState extends State<RecoveryNotificationOverlay> {

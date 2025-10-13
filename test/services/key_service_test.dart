@@ -19,7 +19,8 @@ void main() {
 
     // Mock flutter_secure_storage platform channel
     // This simulates secure writes/reads in memory for tests
-    secureStorageChannel.setMockMethodCallHandler((MethodCall call) async {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(secureStorageChannel, (MethodCall call) async {
       switch (call.method) {
         case 'write':
           final String key = (call.arguments as Map)['key'] as String;
@@ -79,4 +80,3 @@ void main() {
     expect(keyPair2.privateKey, equals(keyPair1.privateKey));
   });
 }
-

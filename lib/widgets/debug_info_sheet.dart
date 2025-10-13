@@ -135,10 +135,10 @@ class DebugInfoSheet extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.1),
+              color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
                 width: 1,
               ),
             ),

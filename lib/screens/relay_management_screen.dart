@@ -8,7 +8,7 @@ class RelayManagementScreen extends StatefulWidget {
   const RelayManagementScreen({super.key});
 
   @override
-  _RelayManagementScreenState createState() => _RelayManagementScreenState();
+  State<RelayManagementScreen> createState() => _RelayManagementScreenState();
 }
 
 class _RelayManagementScreenState extends State<RelayManagementScreen> {
@@ -209,9 +209,8 @@ class _RelayManagementScreenState extends State<RelayManagementScreen> {
                         child: ElevatedButton.icon(
                           onPressed: _toggleScanning,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: _isScanning
-                                ? Colors.red
-                                : Theme.of(context).primaryColor,
+                            backgroundColor:
+                                _isScanning ? Colors.red : Theme.of(context).primaryColor,
                             foregroundColor: Colors.white,
                           ),
                           icon: Icon(_isScanning ? Icons.stop : Icons.play_arrow),
@@ -337,7 +336,7 @@ class _RelayManagementScreenState extends State<RelayManagementScreen> {
       child: ListTile(
         leading: CircleAvatar(
           backgroundColor: relay.isEnabled
-              ? Theme.of(context).primaryColor.withOpacity(0.1)
+              ? Theme.of(context).primaryColor.withValues(alpha: 0.1)
               : Colors.grey[300],
           child: Icon(
             Icons.dns,
