@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -54,8 +52,6 @@ void main() {
     await KeyService.clearStoredKeys();
     KeyService.resetCacheForTest();
 
-    // Ensure no sample data during tests
-    app_lockbox_service.LockboxService.disableSampleDataForTest(true);
     await app_lockbox_service.LockboxService.clearAll();
   });
 

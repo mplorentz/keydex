@@ -69,7 +69,6 @@ void main() {
 
       // Clear any existing recovery requests and lockboxes
       await RecoveryService.clearAll();
-      LockboxService.disableSampleDataForTest(true);
       await LockboxService.clearAll();
 
       // Create a test lockbox for recovery tests

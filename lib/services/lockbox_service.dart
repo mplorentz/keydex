@@ -6,14 +6,12 @@ import '../models/shard_data.dart';
 import '../models/recovery_request.dart';
 import 'key_service.dart';
 import 'logger.dart';
-import 'package:meta/meta.dart';
 
 /// Service for managing persistent, encrypted lockbox storage
 class LockboxService {
   static const String _lockboxesKey = 'encrypted_lockboxes';
   static List<Lockbox>? _cachedLockboxes;
   static bool _isInitialized = false;
-  static bool _disableSampleDataForTest = false;
 
   // Stream controller for notifying listeners when lockboxes change
   static final StreamController<List<Lockbox>> _lockboxesController =
@@ -21,12 +19,6 @@ class LockboxService {
 
   /// Stream that emits the updated list of lockboxes whenever they change
   static Stream<List<Lockbox>> get lockboxesStream => _lockboxesController.stream;
-
-  /// Test-only helper to disable sample data creation during initialization
-  @visibleForTesting
-  static void disableSampleDataForTest([bool disable = true]) {
-    _disableSampleDataForTest = disable;
-  }
 
   /// Initialize the storage and load existing lockboxes
   static Future<void> initialize() async {
@@ -98,46 +90,6 @@ class LockboxService {
       Log.error('Error encrypting and saving lockboxes', e);
       throw Exception('Failed to save lockboxes: $e');
     }
-  }
-
-  /// Create sample data for first-time users
-  static Future<void> _createSampleData() async {
-    // Get current user's public key for ownership
-    final currentPubkey = await KeyService.getCurrentPublicKey();
-    if (currentPubkey == null) {
-      Log.warning('Cannot create sample data: no user public key available');
-      _cachedLockboxes = [];
-      return;
-    }
-
-    _cachedLockboxes = [
-      Lockbox(
-        id: '1',
-        name: 'Personal Notes',
-        content:
-            'This is my private journal entry. It contains sensitive thoughts and ideas that I want to keep secure.',
-        createdAt: DateTime.now().subtract(const Duration(days: 2)),
-        ownerPubkey: currentPubkey,
-      ),
-      Lockbox(
-        id: '2',
-        name: 'Passwords',
-        content: 'Gmail: mypassword123\nBank: secretbank456\nSocial Media: social789',
-        createdAt: DateTime.now().subtract(const Duration(days: 1)),
-        ownerPubkey: currentPubkey,
-      ),
-      Lockbox(
-        id: '3',
-        name: 'Secret Recipe',
-        content:
-            'Grandma\'s secret chocolate chip cookie recipe:\n- 2 cups flour\n- 1 cup butter\n- Secret ingredient: love',
-        createdAt: DateTime.now().subtract(const Duration(hours: 3)),
-        ownerPubkey: currentPubkey,
-      ),
-    ];
-
-    // Save the sample data
-    await _saveLockboxes();
   }
 
   /// Get all lockboxes

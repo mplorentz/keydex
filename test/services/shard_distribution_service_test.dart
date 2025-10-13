@@ -90,11 +90,14 @@ void main() {
       ];
 
       // Act & Assert
+      // Note: ndk is required but won't be used since validation should fail first
+      final mockNdk = Ndk.defaultConfig();
       expect(
         () => ShardDistributionService.distributeShards(
           ownerPubkey: testOwnerPubkey,
           config: testConfig,
           shards: mismatchedShards,
+          ndk: mockNdk,
         ),
         throwsA(isA<Exception>()),
       );
@@ -107,10 +110,20 @@ void main() {
 
       try {
         // Act
+        // Create a real NDK for this test since it's checking the result structure
+        final testNdk = Ndk.defaultConfig();
+        final alicePrivHex = Helpers.decodeBech32(TestNsecKeys.alice)[0];
+        final alicePubHex = Bip340.getPublicKey(alicePrivHex);
+        testNdk.accounts.loginPrivateKey(
+          pubkey: alicePubHex,
+          privkey: alicePrivHex,
+        );
+
         final result = await ShardDistributionService.distributeShards(
           ownerPubkey: testOwnerPubkey,
           config: testConfig,
           shards: testShards,
+          ndk: testNdk,
         );
 
         // Assert - Verify result structure
@@ -164,11 +177,14 @@ void main() {
       );
 
       // Act - This should throw because shards.length (0) != totalKeys (2)
+      // Note: ndk is required but won't be used since validation should fail first
+      final mockNdk = Ndk.defaultConfig();
       expect(
         () => ShardDistributionService.distributeShards(
           ownerPubkey: testOwnerPubkey,
           config: emptyConfig,
           shards: [],
+          ndk: mockNdk,
         ),
         throwsA(isA<Exception>()),
       );
@@ -219,11 +235,14 @@ void main() {
       ];
 
       // Act & Assert - Should not throw with valid hex pubkey
+      // Note: ndk is required
+      final mockNdk = Ndk.defaultConfig();
       expect(
         () => ShardDistributionService.distributeShards(
           ownerPubkey: testOwnerPubkey,
           config: configWithDifferentPubkeys,
           shards: shards,
+          ndk: mockNdk,
         ),
         returnsNormally,
       );
