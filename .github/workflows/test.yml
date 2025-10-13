@@ -18,9 +18,11 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.35.5'
+          flutter-version-file: 'pubspec.yaml'
           channel: 'stable'
           cache: true
+          cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:" 
+          pub-cache-key: "flutter-pub-:os:-:channel:-:version:-:arch:-:hash:" 
       
       - name: Install dependencies
         run: flutter pub get
