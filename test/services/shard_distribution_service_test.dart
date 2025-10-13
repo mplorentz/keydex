@@ -313,14 +313,14 @@ void main() {
 
       final unwrapped = await unwrapNdk.giftWrap.fromGiftWrap(giftWrap: firstGiftWrap);
 
-      // Should match the format from skb.py
+      // Should match the Dart implementation format (camelCase)
       final unwrappedContent = json.decode(unwrapped.content);
-      expect(unwrappedContent['share'], testShards[0].shard);
+      expect(unwrappedContent['shard'], testShards[0].shard);
       expect(unwrappedContent['threshold'], 2);
-      expect(unwrappedContent['share_index'], 0);
-      expect(unwrappedContent['total_shares'], 2);
-      expect(unwrappedContent['prime_mod'], TestShardData.testPrimeMod);
-      expect(unwrappedContent['creator_pubkey'], alicePubHex);
+      expect(unwrappedContent['shardIndex'], 0);
+      expect(unwrappedContent['totalShards'], 2);
+      expect(unwrappedContent['primeMod'], TestShardData.testPrimeMod);
+      expect(unwrappedContent['creatorPubkey'], alicePubHex);
     });
   });
 }
