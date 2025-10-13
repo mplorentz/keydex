@@ -12,13 +12,17 @@
             ]
         },
         {
-            "name": "AuthService Contract Tests",
-            "type": "dart",
+            "name": "Golden",
             "request": "launch",
-            "program": "test/contract/test_auth_service.dart",
+            "type": "dart",
+            "codeLens": {
+                "for": [
+                    "run-test",
+                    "run-test-file"
+                ]
+            },
             "args": [
-                "--reporter",
-                "expanded"
+                "--update-goldens"
             ]
         }
     ]
