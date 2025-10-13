@@ -21,8 +21,8 @@ jobs:
           flutter-version-file: 'pubspec.yaml'
           channel: 'stable'
           cache: true
-          cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:" 
-          pub-cache-key: "flutter-pub-:os:-:channel:-:version:-:arch:-:hash:" 
+          cache-key: 'flutter-${{ runner.os }}-${{ hashFiles('**/pubspec.lock') }}'
+          pub-cache-key: 'flutter-pub-${{ runner.os }}-${{ hashFiles('**/pubspec.lock') }}'
       
       - name: Install dependencies
         run: flutter pub get
