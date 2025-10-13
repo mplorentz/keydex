@@ -10,6 +10,10 @@ jobs:
   test:
     name: Run Tests
     runs-on: macos-latest  # macOS required for consistent golden test rendering
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
     
     steps:
       - name: Checkout code
