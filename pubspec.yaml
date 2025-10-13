@@ -21,7 +21,6 @@ dependencies:
   logger: ^2.4.0
   meta: ^1.11.0
   ntcdcrypto: ^0.4.0
-  google_fonts: ^6.1.0
   flutter_riverpod: ^2.6.1
 
 dev_dependencies:
@@ -43,4 +42,18 @@ flutter:
   assets:
     # Add assets from the images directory to the application.
     - assets/images/
+
+  # Bundled fonts for consistent rendering in tests and app
+  fonts:
+    - family: Archivo
+      fonts:
+        - asset: fonts/Archivo-Regular.ttf
+        - asset: fonts/Archivo-Medium.ttf
+          weight: 500
+    - family: OpenSans
+      fonts:
+        - asset: fonts/OpenSans-Regular.ttf
+    - family: RobotoMono
+      fonts:
+        - asset: fonts/RobotoMono-Regular.ttf
 

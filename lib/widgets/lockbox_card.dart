@@ -93,7 +93,7 @@ class LockboxCard extends ConsumerWidget {
                     Text(
                       "Owner: $ownerDisplayText",
                       style: textTheme.bodySmall?.copyWith(
-                        fontFamily: isOwnedByCurrentUser ? null : 'monospace',
+                        fontFamily: isOwnedByCurrentUser ? null : 'RobotoMono',
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
