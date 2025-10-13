@@ -106,7 +106,7 @@ class LockboxListScreen extends ConsumerWidget {
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              'boop beep',
+                              'No lockboxes yet',
                               style: textTheme.titleLarge,
                             ),
                             const SizedBox(height: 8),
