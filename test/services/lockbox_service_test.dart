@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -20,7 +18,8 @@ void main() {
     SharedPreferences.setMockInitialValues({});
 
     // Mock secure storage
-    secureStorageChannel.setMockMethodCallHandler((MethodCall call) async {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(secureStorageChannel, (MethodCall call) async {
       switch (call.method) {
         case 'write':
           final String key = (call.arguments as Map)['key'] as String;
@@ -54,8 +53,6 @@ void main() {
     await KeyService.clearStoredKeys();
     KeyService.resetCacheForTest();
 
-    // Ensure no sample data during tests
-    app_lockbox_service.LockboxService.disableSampleDataForTest(true);
     await app_lockbox_service.LockboxService.clearAll();
   });
 

@@ -1,0 +1,73 @@
+name: Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: macos-latest  # macOS required for consistent golden test rendering
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version-file: 'pubspec.yaml'
+          channel: 'stable'
+          cache: true
+          cache-key: flutter-${{ runner.os }}-${{ hashFiles('**/pubspec.lock') }}
+          pub-cache-key: flutter-pub-${{ runner.os }}-${{ hashFiles('**/pubspec.lock') }}
+      
+      - name: Install dependencies
+        run: flutter pub get
+      
+      - name: Verify formatting
+        run: dart format --set-exit-if-changed .
+        continue-on-error: true
+      
+      - name: Analyze code
+        run: flutter analyze
+      
+      - name: Run unit tests
+        run: flutter test --exclude-tags=golden
+      
+      - name: Run golden tests
+        run: flutter test --tags=golden
+        id: golden_tests
+        # Note: If this fails, it means the rendered UI doesn't match the committed golden images
+        # Developer needs to either:
+        # 1. Fix the unintended UI change, OR
+        # 2. Update goldens: flutter test test/screens --update-goldens
+      
+      - name: Upload golden test failures
+        if: failure() && steps.golden_tests.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: golden-test-failures
+          path: |
+            test/**/failures/
+            test/**/goldens/
+          retention-days: 7
+      
+      - name: Comment on PR with golden test instructions
+        if: failure() && steps.golden_tests.outcome == 'failure' && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '## ⚠️ Golden Tests Failed\n\nThe golden screenshot tests have failed. This could mean:\n\n1. **Intentional UI changes**: If you updated the UI, you need to update the golden files:\n   ```bash\n   flutter test test/screens --update-goldens\n   git add test/screens/goldens/*.png\n   git commit -m "Update golden test screenshots"\n   ```\n\n2. **Unintentional changes**: Review the diff images in the [test artifacts](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) to see what changed.\n\n3. **Platform differences**: Golden tests must be generated on macOS. If you\'re on Linux/Windows, ask a macOS team member to regenerate them.\n\n📦 Download the failure artifacts above to see before/after comparisons.'
+            })
+

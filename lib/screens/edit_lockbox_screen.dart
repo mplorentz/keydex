@@ -9,7 +9,7 @@ class EditLockboxScreen extends StatefulWidget {
   const EditLockboxScreen({super.key, required this.lockboxId});
 
   @override
-  _EditLockboxScreenState createState() => _EditLockboxScreenState();
+  State<EditLockboxScreen> createState() => _EditLockboxScreenState();
 }
 
 class _EditLockboxScreenState extends State<EditLockboxScreen> {

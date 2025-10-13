@@ -17,7 +17,7 @@ class RecoveryRequestDetailScreen extends StatefulWidget {
   });
 
   @override
-  _RecoveryRequestDetailScreenState createState() => _RecoveryRequestDetailScreenState();
+  State<RecoveryRequestDetailScreen> createState() => _RecoveryRequestDetailScreenState();
 }
 
 class _RecoveryRequestDetailScreenState extends State<RecoveryRequestDetailScreen> {
@@ -282,7 +282,8 @@ class _RecoveryRequestDetailScreenState extends State<RecoveryRequestDetailScree
                           Row(
                             children: [
                               CircleAvatar(
-                                backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                                backgroundColor:
+                                    Theme.of(context).primaryColor.withValues(alpha: 0.1),
                                 child: Icon(
                                   Icons.person,
                                   color: Theme.of(context).primaryColor,

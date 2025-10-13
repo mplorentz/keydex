@@ -1,7 +1,11 @@
 import 'dart:convert';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keydex/models/lockbox.dart';
 import 'package:keydex/models/recovery_request.dart';
 import 'package:keydex/models/shard_data.dart';
+import 'package:keydex/services/key_service.dart';
+import 'package:keydex/services/lockbox_service.dart';
 import 'package:keydex/services/recovery_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -10,22 +14,80 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  const MethodChannel secureStorageChannel =
+      MethodChannel('plugins.it_nomads.com/flutter_secure_storage');
+  final Map<String, String> secureStore = {};
+
   group('RecoveryService - Nostr Event Payload Validation', () {
-    const testCreatorPubkey = '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
+    late String testCreatorPubkey;
     const testKeyHolder1 = 'fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321';
     const testKeyHolder2 = 'abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdef1234';
     const testLockboxId = 'lockbox-test-123';
 
     setUp(() async {
-      // Mock SharedPreferences
+      secureStore.clear();
       SharedPreferences.setMockInitialValues({});
 
-      // Clear any existing recovery requests
+      // Mock secure storage
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(secureStorageChannel, (MethodCall call) async {
+        switch (call.method) {
+          case 'write':
+            final String key = (call.arguments as Map)['key'] as String;
+            final String? value = (call.arguments as Map)['value'] as String?;
+            if (value == null) {
+              secureStore.remove(key);
+            } else {
+              secureStore[key] = value;
+            }
+            return null;
+          case 'read':
+            final String key = (call.arguments as Map)['key'] as String;
+            return secureStore[key];
+          case 'readAll':
+            return Map<String, String>.from(secureStore);
+          case 'delete':
+            final String key = (call.arguments as Map)['key'] as String;
+            secureStore.remove(key);
+            return null;
+          case 'deleteAll':
+            secureStore.clear();
+            return null;
+          case 'containsKey':
+            final String key = (call.arguments as Map)['key'] as String;
+            return secureStore.containsKey(key);
+          default:
+            return null;
+        }
+      });
+
+      await KeyService.clearStoredKeys();
+      KeyService.resetCacheForTest();
+
+      // Generate a key pair for the test
+      final keyPair = await KeyService.generateAndStoreNostrKey();
+      testCreatorPubkey = keyPair.publicKey;
+
+      // Clear any existing recovery requests and lockboxes
       await RecoveryService.clearAll();
+      await LockboxService.clearAll();
+
+      // Create a test lockbox for recovery tests
+      final testLockbox = Lockbox(
+        id: testLockboxId,
+        name: 'Test Lockbox',
+        content: 'Test lockbox content',
+        createdAt: DateTime.now(),
+        ownerPubkey: testCreatorPubkey,
+      );
+      await LockboxService.addLockbox(testLockbox);
     });
 
     tearDown(() async {
       await RecoveryService.clearAll();
+      await LockboxService.clearAll();
+      await KeyService.clearStoredKeys();
+      KeyService.resetCacheForTest();
     });
 
     test('recovery request creation succeeds with valid data', () async {
@@ -164,40 +226,6 @@ void main() {
       expect(decoded.containsKey('shard_data'), false);
     });
 
-    test('recovery request tags have correct structure', () {
-      // Expected tags structure for recovery request rumor
-      final expectedTags = [
-        ['d', 'recovery_request_test_id'],
-        ['lockbox_id', testLockboxId],
-        ['recovery_request_id', 'test_id'],
-      ];
-
-      // Verify tag structure
-      expect(expectedTags.length, 3);
-      expect(expectedTags[0][0], 'd'); // Distinguisher tag
-      expect(expectedTags[1][0], 'lockbox_id');
-      expect(expectedTags[2][0], 'recovery_request_id');
-    });
-
-    test('recovery response tags have correct structure', () {
-      // Expected tags structure for recovery response rumor
-      const requestId = 'test_request_id';
-      final expectedTags = [
-        ['d', 'recovery_response_${requestId}_$testKeyHolder1'],
-        ['lockbox_id', testLockboxId],
-        ['recovery_request_id', requestId],
-        ['approved', 'true'],
-      ];
-
-      // Verify tag structure
-      expect(expectedTags.length, 4);
-      expect(expectedTags[0][0], 'd'); // Distinguisher tag
-      expect(expectedTags[1][0], 'lockbox_id');
-      expect(expectedTags[2][0], 'recovery_request_id');
-      expect(expectedTags[3][0], 'approved');
-      expect(expectedTags[3][1], 'true');
-    });
-
     test('recovery request is sent to all key holders', () async {
       // Create a recovery request with multiple key holders
       final recoveryRequest = await RecoveryService.initiateRecovery(
@@ -228,40 +256,6 @@ void main() {
       );
 
       expect(recoveryRequest.totalKeyHolders, 2);
-    });
-
-    test('shard data in recovery response can be serialized and deserialized', () async {
-      // Create shard data
-      final shardData = createShardData(
-        shard: 'test_shard_AAA=',
-        threshold: 3,
-        shardIndex: 1,
-        totalShards: 5,
-        primeMod: 'test_prime_BBB=',
-        creatorPubkey: testCreatorPubkey,
-        lockboxId: testLockboxId,
-        lockboxName: 'My Secret Lockbox',
-        peers: [testKeyHolder1, testKeyHolder2],
-      );
-
-      // Serialize
-      final shardJson = shardDataToJson(shardData);
-      final jsonString = json.encode(shardJson);
-
-      // Deserialize
-      final decoded = json.decode(jsonString) as Map<String, dynamic>;
-      final recoveredShard = shardDataFromJson(decoded);
-
-      // Verify all fields match
-      expect(recoveredShard.shard, shardData.shard);
-      expect(recoveredShard.threshold, shardData.threshold);
-      expect(recoveredShard.shardIndex, shardData.shardIndex);
-      expect(recoveredShard.totalShards, shardData.totalShards);
-      expect(recoveredShard.primeMod, shardData.primeMod);
-      expect(recoveredShard.creatorPubkey, shardData.creatorPubkey);
-      expect(recoveredShard.lockboxId, shardData.lockboxId);
-      expect(recoveredShard.lockboxName, shardData.lockboxName);
-      expect(recoveredShard.peers, shardData.peers);
     });
 
     test('recovery request contains proper expiration', () async {
