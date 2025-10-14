@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/lockbox.dart';
-import '../services/lockbox_service.dart';
+import '../providers/lockbox_provider.dart';
 import '../services/key_service.dart';
 import '../widgets/row_button.dart';
 import 'backup_config_screen.dart';
 
 /// Enhanced lockbox creation screen with integrated backup configuration
-class LockboxCreateScreen extends StatefulWidget {
+class LockboxCreateScreen extends ConsumerStatefulWidget {
   const LockboxCreateScreen({super.key});
 
   @override
-  State<LockboxCreateScreen> createState() => _LockboxCreateScreenState();
+  ConsumerState<LockboxCreateScreen> createState() => _LockboxCreateScreenState();
 }
 
-class _LockboxCreateScreenState extends State<LockboxCreateScreen> {
+class _LockboxCreateScreenState extends ConsumerState<LockboxCreateScreen> {
   final _nameController = TextEditingController();
   final _contentController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -121,48 +122,61 @@ class _LockboxCreateScreenState extends State<LockboxCreateScreen> {
   }
 
   Future<void> _saveLockbox() async {
-    if (_formKey.currentState!.validate()) {
-      try {
-        // Get current user's public key for ownership
-        final currentPubkey = await KeyService.getCurrentPublicKey();
-        if (currentPubkey == null) {
-          throw Exception('Unable to get current user public key');
-        }
+    if (!_formKey.currentState!.validate()) return;
 
-        final newLockbox = Lockbox(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          name: _nameController.text.trim(),
-          content: _contentController.text,
-          createdAt: DateTime.now(),
-          ownerPubkey: currentPubkey,
-        );
-
-        await LockboxService.addLockbox(newLockbox);
-
-        if (mounted) {
-          // Navigate to backup configuration screen
-          await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => BackupConfigScreen(lockboxId: newLockbox.id),
-            ),
-          );
-
-          // After backup configuration is complete, go back to the list screen
-          if (mounted) {
-            Navigator.pop(context);
-          }
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Failed to save lockbox: ${e.toString()}'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      }
+    try {
+      final lockbox = await _createLockbox();
+      await _saveLockboxToRepository(lockbox);
+      await _navigateToBackupConfig(lockbox.id);
+    } catch (e) {
+      _showError('Failed to save lockbox: ${e.toString()}');
     }
+  }
+
+  Future<Lockbox> _createLockbox() async {
+    final currentPubkey = await KeyService.getCurrentPublicKey();
+    if (currentPubkey == null) {
+      throw Exception('Unable to get current user public key');
+    }
+
+    return Lockbox(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      name: _nameController.text.trim(),
+      content: _contentController.text,
+      createdAt: DateTime.now(),
+      ownerPubkey: currentPubkey,
+    );
+  }
+
+  Future<void> _saveLockboxToRepository(Lockbox lockbox) async {
+    final repository = ref.read(lockboxRepositoryProvider);
+    await repository.addLockbox(lockbox);
+  }
+
+  Future<void> _navigateToBackupConfig(String lockboxId) async {
+    if (!mounted) return;
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BackupConfigScreen(lockboxId: lockboxId),
+      ),
+    );
+
+    // After backup configuration is complete, go back to the list screen
+    if (mounted) {
+      Navigator.pop(context);
+    }
+  }
+
+  void _showError(String message) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
+    );
   }
 }
