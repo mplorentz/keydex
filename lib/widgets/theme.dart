@@ -98,5 +98,12 @@ final keydexTheme = ThemeData(
       fontFamily: 'Archivo', // Uses bundled Archivo font
     ),
   ),
+  inputDecorationTheme: const InputDecorationTheme(
+    errorStyle: TextStyle(
+      fontFamily: 'OpenSans', // Same as bodySmall
+      fontSize: 12,
+      // Color will be set from theme.colorScheme.error automatically
+    ),
+  ),
   visualDensity: VisualDensity.adaptivePlatformDensity,
 );

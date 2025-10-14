@@ -20,6 +20,8 @@ class LockboxContentForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Form(
       key: formKey,
       child: Padding(
@@ -44,7 +46,7 @@ class LockboxContentForm extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Content',
+              'Lockbox Contents',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
@@ -83,8 +85,8 @@ class LockboxContentForm extends StatelessWidget {
                     Expanded(
                       child: Text(
                         'Content limit: $length/4000 characters',
-                        style: TextStyle(
-                          color: length > 4000 ? Colors.red : Colors.grey[600],
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: length > 4000 ? theme.colorScheme.error : Colors.grey[600],
                           fontSize: 12,
                         ),
                       ),
