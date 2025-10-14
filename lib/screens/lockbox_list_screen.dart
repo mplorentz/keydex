@@ -147,6 +147,7 @@ class LockboxListScreen extends ConsumerWidget {
                 context,
                 MaterialPageRoute(
                   builder: (context) => const CreateLockboxWithBackupScreen(),
+                  fullscreenDialog: true,
                 ),
               );
             },

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../models/lockbox.dart';
 import '../services/lockbox_service.dart';
 import '../services/key_service.dart';
+import '../widgets/row_button.dart';
+import 'backup_config_screen.dart';
 
 /// Enhanced lockbox creation screen with integrated backup configuration
 class CreateLockboxWithBackupScreen extends StatefulWidget {
@@ -29,85 +31,91 @@ class _CreateLockboxWithBackupScreenState extends State<CreateLockboxWithBackupS
       appBar: AppBar(
         title: const Text('New Lockbox'),
         centerTitle: false,
-        actions: [
-          TextButton(
-            onPressed: () => _saveLockbox(),
-            child: const Text('Create', style: TextStyle(fontWeight: FontWeight.bold)),
-          ),
-        ],
       ),
-      body: Form(
-        key: _formKey,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Lockbox Name',
-                  hintText: 'Give your lockbox a memorable name',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.label_outline),
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Please enter a name for your lockbox';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Content',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey[700],
-                ),
-              ),
-              const SizedBox(height: 8),
-              Expanded(
-                child: TextFormField(
-                  controller: _contentController,
-                  decoration: const InputDecoration(
-                    hintText:
-                        'Enter your sensitive text here...\n\nThis content will be encrypted and stored securely.',
-                    border: OutlineInputBorder(),
-                    alignLabelWithHint: true,
-                  ),
-                  maxLines: null,
-                  expands: true,
-                  textAlignVertical: TextAlignVertical.top,
-                  validator: (value) {
-                    if (value != null && value.length > 4000) {
-                      return 'Content cannot exceed 4000 characters (currently ${value.length})';
-                    }
-                    return null;
-                  },
-                ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Icon(Icons.info_outline, size: 16, color: Colors.grey[600]),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Content limit: ${_contentController.text.length}/4000 characters',
+      body: Column(
+        children: [
+          Expanded(
+            child: Form(
+              key: _formKey,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextFormField(
+                      controller: _nameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Lockbox Name',
+                        hintText: 'Give your lockbox a memorable name',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.label_outline),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Please enter a name for your lockbox';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Content',
                       style: TextStyle(
-                        color:
-                            _contentController.text.length > 4000 ? Colors.red : Colors.grey[600],
-                        fontSize: 12,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey[700],
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 8),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _contentController,
+                        decoration: const InputDecoration(
+                          hintText:
+                              'Enter your sensitive text here...\n\nThis content will be encrypted and stored securely.',
+                          border: OutlineInputBorder(),
+                          alignLabelWithHint: true,
+                        ),
+                        maxLines: null,
+                        expands: true,
+                        textAlignVertical: TextAlignVertical.top,
+                        validator: (value) {
+                          if (value != null && value.length > 4000) {
+                            return 'Content cannot exceed 4000 characters (currently ${value.length})';
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Icon(Icons.info_outline, size: 16, color: Colors.grey[600]),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Content limit: ${_contentController.text.length}/4000 characters',
+                            style: TextStyle(
+                              color: _contentController.text.length > 4000
+                                  ? Colors.red
+                                  : Colors.grey[600],
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ],
+            ),
           ),
-        ),
+          RowButton(
+            onPressed: () => _saveLockbox(),
+            icon: Icons.arrow_forward,
+            text: 'Next',
+          ),
+        ],
       ),
     );
   }
@@ -132,13 +140,18 @@ class _CreateLockboxWithBackupScreenState extends State<CreateLockboxWithBackupS
         await LockboxService.addLockbox(newLockbox);
 
         if (mounted) {
-          Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Lockbox "${newLockbox.name}" created successfully!'),
-              backgroundColor: Colors.green,
+          // Navigate to backup configuration screen
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => BackupConfigScreen(lockboxId: newLockbox.id),
             ),
           );
+
+          // After backup configuration is complete, go back to the list screen
+          if (mounted) {
+            Navigator.pop(context);
+          }
         }
       } catch (e) {
         if (mounted) {
