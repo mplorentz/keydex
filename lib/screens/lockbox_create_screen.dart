@@ -6,14 +6,14 @@ import '../widgets/row_button.dart';
 import 'backup_config_screen.dart';
 
 /// Enhanced lockbox creation screen with integrated backup configuration
-class CreateLockboxWithBackupScreen extends StatefulWidget {
-  const CreateLockboxWithBackupScreen({super.key});
+class LockboxCreateScreen extends StatefulWidget {
+  const LockboxCreateScreen({super.key});
 
   @override
-  State<CreateLockboxWithBackupScreen> createState() => _CreateLockboxWithBackupScreenState();
+  State<LockboxCreateScreen> createState() => _LockboxCreateScreenState();
 }
 
-class _CreateLockboxWithBackupScreenState extends State<CreateLockboxWithBackupScreen> {
+class _LockboxCreateScreenState extends State<LockboxCreateScreen> {
   final _nameController = TextEditingController();
   final _contentController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
