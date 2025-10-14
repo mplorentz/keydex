@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/lockbox.dart';
-import '../providers/lockbox_provider.dart';
-import '../services/key_service.dart';
 import '../widgets/row_button.dart';
 import '../widgets/lockbox_content_form.dart';
+import '../widgets/lockbox_content_save_mixin.dart';
 import 'backup_config_screen.dart';
 
 /// Enhanced lockbox creation screen with integrated backup configuration
@@ -15,7 +13,8 @@ class LockboxCreateScreen extends ConsumerStatefulWidget {
   ConsumerState<LockboxCreateScreen> createState() => _LockboxCreateScreenState();
 }
 
-class _LockboxCreateScreenState extends ConsumerState<LockboxCreateScreen> {
+class _LockboxCreateScreenState extends ConsumerState<LockboxCreateScreen>
+    with LockboxContentSaveMixin {
   final _nameController = TextEditingController();
   final _contentController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -54,35 +53,15 @@ class _LockboxCreateScreenState extends ConsumerState<LockboxCreateScreen> {
   }
 
   Future<void> _saveLockbox() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    try {
-      final lockbox = await _createLockbox();
-      await _saveLockboxToRepository(lockbox);
-      await _navigateToBackupConfig(lockbox.id);
-    } catch (e) {
-      _showError('Failed to save lockbox: ${e.toString()}');
-    }
-  }
-
-  Future<Lockbox> _createLockbox() async {
-    final currentPubkey = await KeyService.getCurrentPublicKey();
-    if (currentPubkey == null) {
-      throw Exception('Unable to get current user public key');
-    }
-
-    return Lockbox(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      name: _nameController.text.trim(),
+    final lockboxId = await saveLockbox(
+      formKey: _formKey,
+      name: _nameController.text,
       content: _contentController.text,
-      createdAt: DateTime.now(),
-      ownerPubkey: currentPubkey,
     );
-  }
 
-  Future<void> _saveLockboxToRepository(Lockbox lockbox) async {
-    final repository = ref.read(lockboxRepositoryProvider);
-    await repository.addLockbox(lockbox);
+    if (lockboxId != null && mounted) {
+      await _navigateToBackupConfig(lockboxId);
+    }
   }
 
   Future<void> _navigateToBackupConfig(String lockboxId) async {
@@ -99,16 +78,5 @@ class _LockboxCreateScreenState extends ConsumerState<LockboxCreateScreen> {
     if (mounted) {
       Navigator.pop(context);
     }
-  }
-
-  void _showError(String message) {
-    if (!mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
-    );
   }
 }

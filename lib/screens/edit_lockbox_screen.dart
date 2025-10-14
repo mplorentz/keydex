@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/lockbox.dart';
 import '../providers/lockbox_provider.dart';
 import '../widgets/lockbox_content_form.dart';
+import '../widgets/lockbox_content_save_mixin.dart';
 
 /// Edit existing lockbox screen
 class EditLockboxScreen extends ConsumerStatefulWidget {
@@ -14,7 +15,8 @@ class EditLockboxScreen extends ConsumerStatefulWidget {
   ConsumerState<EditLockboxScreen> createState() => _EditLockboxScreenState();
 }
 
-class _EditLockboxScreenState extends ConsumerState<EditLockboxScreen> {
+class _EditLockboxScreenState extends ConsumerState<EditLockboxScreen>
+    with LockboxContentSaveMixin {
   final _nameController = TextEditingController();
   final _contentController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -75,45 +77,21 @@ class _EditLockboxScreenState extends ConsumerState<EditLockboxScreen> {
   }
 
   Future<void> _saveLockbox() async {
-    if (!_formKey.currentState!.validate()) return;
+    final savedId = await saveLockbox(
+      formKey: _formKey,
+      name: _nameController.text,
+      content: _contentController.text,
+      lockboxId: widget.lockboxId,
+    );
 
-    try {
-      await _updateLockboxInRepository();
-      _showSuccessAndClose();
-    } catch (e) {
-      _showError('Failed to update lockbox: ${e.toString()}');
+    if (savedId != null && mounted) {
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Lockbox "${_nameController.text.trim()}" updated successfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
     }
-  }
-
-  Future<void> _updateLockboxInRepository() async {
-    final repository = ref.read(lockboxRepositoryProvider);
-    await repository.updateLockbox(
-      widget.lockboxId,
-      _nameController.text.trim(),
-      _contentController.text,
-    );
-  }
-
-  void _showSuccessAndClose() {
-    if (!mounted) return;
-
-    Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Lockbox "${_nameController.text.trim()}" updated successfully!'),
-        backgroundColor: Colors.green,
-      ),
-    );
-  }
-
-  void _showError(String message) {
-    if (!mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
-    );
   }
 }
