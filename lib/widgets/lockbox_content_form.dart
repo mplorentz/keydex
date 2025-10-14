@@ -72,20 +72,26 @@ class LockboxContentForm extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            Row(
-              children: [
-                Icon(Icons.info_outline, size: 16, color: Colors.grey[600]),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Content limit: ${contentController.text.length}/4000 characters',
-                    style: TextStyle(
-                      color: contentController.text.length > 4000 ? Colors.red : Colors.grey[600],
-                      fontSize: 12,
+            ValueListenableBuilder<TextEditingValue>(
+              valueListenable: contentController,
+              builder: (context, value, child) {
+                final length = value.text.length;
+                return Row(
+                  children: [
+                    Icon(Icons.info_outline, size: 16, color: Colors.grey[600]),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Content limit: $length/4000 characters',
+                        style: TextStyle(
+                          color: length > 4000 ? Colors.red : Colors.grey[600],
+                          fontSize: 12,
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              ],
+                  ],
+                );
+              },
             ),
           ],
         ),
