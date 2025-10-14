@@ -50,7 +50,7 @@ class LockboxContentForm extends StatelessWidget {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
-                color: Colors.grey[700],
+                color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: 8),
@@ -80,13 +80,15 @@ class LockboxContentForm extends StatelessWidget {
                 final length = value.text.length;
                 return Row(
                   children: [
-                    Icon(Icons.info_outline, size: 16, color: Colors.grey[600]),
+                    Icon(Icons.info_outline, size: 16, color: theme.colorScheme.onSurfaceVariant),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         'Content limit: $length/4000 characters',
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: length > 4000 ? theme.colorScheme.error : Colors.grey[600],
+                          color: length > 4000
+                              ? theme.colorScheme.error
+                              : theme.colorScheme.onSurfaceVariant,
                           fontSize: 12,
                         ),
                       ),

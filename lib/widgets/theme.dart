@@ -104,6 +104,11 @@ final keydexTheme = ThemeData(
       fontSize: 12,
       // Color will be set from theme.colorScheme.error automatically
     ),
+    hintStyle: TextStyle(
+      color: Color.fromRGBO(
+          103, 111, 98, 0.6), // Lighter version of secondary text (0xFF676f62 at 60%)
+      fontFamily: 'Archivo',
+    ),
   ),
   visualDensity: VisualDensity.adaptivePlatformDensity,
 );
