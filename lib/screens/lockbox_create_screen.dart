@@ -4,6 +4,7 @@ import '../models/lockbox.dart';
 import '../providers/lockbox_provider.dart';
 import '../services/key_service.dart';
 import '../widgets/row_button.dart';
+import '../widgets/lockbox_content_form.dart';
 import 'backup_config_screen.dart';
 
 /// Enhanced lockbox creation screen with integrated backup configuration
@@ -36,79 +37,10 @@ class _LockboxCreateScreenState extends ConsumerState<LockboxCreateScreen> {
       body: Column(
         children: [
           Expanded(
-            child: Form(
-              key: _formKey,
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextFormField(
-                      controller: _nameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Lockbox Name',
-                        hintText: 'Give your lockbox a memorable name',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.label_outline),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Please enter a name for your lockbox';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Content',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey[700],
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Expanded(
-                      child: TextFormField(
-                        controller: _contentController,
-                        decoration: const InputDecoration(
-                          hintText:
-                              'Enter your sensitive text here...\n\nThis content will be encrypted and stored securely.',
-                          border: OutlineInputBorder(),
-                          alignLabelWithHint: true,
-                        ),
-                        maxLines: null,
-                        expands: true,
-                        textAlignVertical: TextAlignVertical.top,
-                        validator: (value) {
-                          if (value != null && value.length > 4000) {
-                            return 'Content cannot exceed 4000 characters (currently ${value.length})';
-                          }
-                          return null;
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Icon(Icons.info_outline, size: 16, color: Colors.grey[600]),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            'Content limit: ${_contentController.text.length}/4000 characters',
-                            style: TextStyle(
-                              color: _contentController.text.length > 4000
-                                  ? Colors.red
-                                  : Colors.grey[600],
-                              fontSize: 12,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
+            child: LockboxContentForm(
+              formKey: _formKey,
+              nameController: _nameController,
+              contentController: _contentController,
             ),
           ),
           RowButton(

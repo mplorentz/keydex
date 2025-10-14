@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/lockbox.dart';
-import '../services/lockbox_service.dart';
+import '../providers/lockbox_provider.dart';
+import '../widgets/lockbox_content_form.dart';
 
 /// Edit existing lockbox screen
-class EditLockboxScreen extends StatefulWidget {
+class EditLockboxScreen extends ConsumerStatefulWidget {
   final String lockboxId;
 
   const EditLockboxScreen({super.key, required this.lockboxId});
 
   @override
-  State<EditLockboxScreen> createState() => _EditLockboxScreenState();
+  ConsumerState<EditLockboxScreen> createState() => _EditLockboxScreenState();
 }
 
-class _EditLockboxScreenState extends State<EditLockboxScreen> {
+class _EditLockboxScreenState extends ConsumerState<EditLockboxScreen> {
   final _nameController = TextEditingController();
   final _contentController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -25,7 +27,8 @@ class _EditLockboxScreenState extends State<EditLockboxScreen> {
   }
 
   Future<void> _loadLockbox() async {
-    final lockbox = await LockboxService.getLockbox(widget.lockboxId);
+    final repository = ref.read(lockboxRepositoryProvider);
+    final lockbox = await repository.getLockbox(widget.lockboxId);
     if (mounted && lockbox != null) {
       setState(() {
         _lockbox = lockbox;
@@ -54,118 +57,63 @@ class _EditLockboxScreenState extends State<EditLockboxScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Edit Lockbox'),
-        backgroundColor: Theme.of(context).primaryColor,
-        foregroundColor: Colors.white,
+        centerTitle: false,
         actions: [
           TextButton(
             onPressed: () => _saveLockbox(),
-            child: const Text('Save',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            child: const Text('Save', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
-      body: Form(
-        key: _formKey,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Lockbox Name',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.label_outline),
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Please enter a name for your lockbox';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Content',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey[700],
-                ),
-              ),
-              const SizedBox(height: 8),
-              Expanded(
-                child: TextFormField(
-                  controller: _contentController,
-                  decoration: const InputDecoration(
-                    hintText: 'Enter your sensitive text here...',
-                    border: OutlineInputBorder(),
-                    alignLabelWithHint: true,
-                  ),
-                  maxLines: null,
-                  expands: true,
-                  textAlignVertical: TextAlignVertical.top,
-                  validator: (value) {
-                    if (value != null && value.length > 4000) {
-                      return 'Content cannot exceed 4000 characters (currently ${value.length})';
-                    }
-                    return null;
-                  },
-                ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Icon(Icons.info_outline, size: 16, color: Colors.grey[600]),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Content limit: ${_contentController.text.length}/4000 characters',
-                      style: TextStyle(
-                        color:
-                            _contentController.text.length > 4000 ? Colors.red : Colors.grey[600],
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
+      body: LockboxContentForm(
+        formKey: _formKey,
+        nameController: _nameController,
+        contentController: _contentController,
+        contentHintText: 'Enter your sensitive text here...',
       ),
     );
   }
 
   Future<void> _saveLockbox() async {
-    if (_formKey.currentState!.validate()) {
-      try {
-        await LockboxService.updateLockbox(
-          widget.lockboxId,
-          _nameController.text.trim(),
-          _contentController.text,
-        );
+    if (!_formKey.currentState!.validate()) return;
 
-        if (mounted) {
-          Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Lockbox "${_nameController.text.trim()}" updated successfully!'),
-              backgroundColor: Colors.green,
-            ),
-          );
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Failed to update lockbox: ${e.toString()}'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      }
+    try {
+      await _updateLockboxInRepository();
+      _showSuccessAndClose();
+    } catch (e) {
+      _showError('Failed to update lockbox: ${e.toString()}');
     }
+  }
+
+  Future<void> _updateLockboxInRepository() async {
+    final repository = ref.read(lockboxRepositoryProvider);
+    await repository.updateLockbox(
+      widget.lockboxId,
+      _nameController.text.trim(),
+      _contentController.text,
+    );
+  }
+
+  void _showSuccessAndClose() {
+    if (!mounted) return;
+
+    Navigator.pop(context);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Lockbox "${_nameController.text.trim()}" updated successfully!'),
+        backgroundColor: Colors.green,
+      ),
+    );
+  }
+
+  void _showError(String message) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
+    );
   }
 }
