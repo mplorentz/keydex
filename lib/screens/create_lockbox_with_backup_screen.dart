@@ -27,14 +27,12 @@ class _CreateLockboxWithBackupScreenState extends State<CreateLockboxWithBackupS
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create Lockbox'),
-        backgroundColor: Theme.of(context).primaryColor,
-        foregroundColor: Colors.white,
+        title: const Text('New Lockbox'),
+        centerTitle: false,
         actions: [
           TextButton(
             onPressed: () => _saveLockbox(),
-            child: const Text('Save',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            child: const Text('Create', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),

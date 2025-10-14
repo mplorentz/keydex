@@ -29,6 +29,7 @@ class LockboxListScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Lockboxes'),
+        centerTitle: false,
         actions: [
           IconButton(
             icon: const Icon(Icons.wifi),
