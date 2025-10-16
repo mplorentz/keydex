@@ -26,8 +26,7 @@ class LockboxDetailScreen extends StatelessWidget {
           return Scaffold(
             appBar: AppBar(
               title: const Text('Loading...'),
-              backgroundColor: Theme.of(context).primaryColor,
-              foregroundColor: Colors.white,
+              centerTitle: false,
             ),
             body: const Center(child: CircularProgressIndicator()),
           );
@@ -50,8 +49,7 @@ class LockboxDetailScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(lockbox.name),
-        backgroundColor: Theme.of(context).primaryColor,
-        foregroundColor: Colors.white,
+        centerTitle: false,
         actions: [
           IconButton(
             icon: const Icon(Icons.edit),
