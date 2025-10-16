@@ -72,7 +72,7 @@ class _BackupConfigScreenState extends State<BackupConfigScreen> {
       return Scaffold(
         appBar: AppBar(
           title: const Text('Backup Configuration'),
-          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+          centerTitle: false,
         ),
         body: const Center(child: CircularProgressIndicator()),
       );
@@ -81,7 +81,7 @@ class _BackupConfigScreenState extends State<BackupConfigScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Backup Configuration'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        centerTitle: false,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

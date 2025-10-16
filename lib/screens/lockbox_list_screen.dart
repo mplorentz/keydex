@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/lockbox_provider.dart';
 import '../widgets/row_button.dart';
 import '../widgets/debug_info_sheet.dart';
-import 'create_lockbox_with_backup_screen.dart';
+import 'lockbox_create_screen.dart';
 import 'relay_management_screen.dart';
 import 'recovery_notification_overlay.dart';
 import '../widgets/lockbox_card.dart';
@@ -29,6 +29,7 @@ class LockboxListScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Lockboxes'),
+        centerTitle: false,
         actions: [
           IconButton(
             icon: const Icon(Icons.wifi),
@@ -145,7 +146,8 @@ class LockboxListScreen extends ConsumerWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const CreateLockboxWithBackupScreen(),
+                  builder: (context) => const LockboxCreateScreen(),
+                  fullscreenDialog: true,
                 ),
               );
             },
