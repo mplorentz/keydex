@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/lockbox.dart';
 import '../models/recovery_request.dart';
+import '../providers/lockbox_provider.dart';
 import '../services/lockbox_service.dart';
 import '../services/lockbox_share_service.dart';
 import '../services/recovery_service.dart';
@@ -12,30 +14,51 @@ import 'edit_lockbox_screen.dart';
 import 'recovery_status_screen.dart';
 
 /// Detail/view screen for displaying a lockbox
-class LockboxDetailScreen extends StatelessWidget {
+class LockboxDetailScreen extends ConsumerWidget {
   final String lockboxId;
 
   const LockboxDetailScreen({super.key, required this.lockboxId});
 
   @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<Lockbox?>(
-      future: LockboxService.getLockbox(lockboxId),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Scaffold(
-            appBar: AppBar(
-              title: const Text('Loading...'),
-              centerTitle: false,
-            ),
-            body: const Center(child: CircularProgressIndicator()),
-          );
-        }
+  Widget build(BuildContext context, WidgetRef ref) {
+    final lockboxAsync = ref.watch(lockboxProvider(lockboxId));
 
-        final lockbox = snapshot.data;
+    return lockboxAsync.when(
+      loading: () => Scaffold(
+        appBar: AppBar(
+          title: const Text('Loading...'),
+          centerTitle: false,
+        ),
+        body: const Center(child: CircularProgressIndicator()),
+      ),
+      error: (error, stack) => Scaffold(
+        appBar: AppBar(
+          title: const Text('Error'),
+          centerTitle: false,
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, size: 64),
+              const SizedBox(height: 16),
+              Text('Error: $error'),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => ref.refresh(lockboxProvider(lockboxId)),
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      ),
+      data: (lockbox) {
         if (lockbox == null) {
           return Scaffold(
-            appBar: AppBar(title: const Text('Lockbox Not Found')),
+            appBar: AppBar(
+              title: const Text('Lockbox Not Found'),
+              centerTitle: false,
+            ),
             body: const Center(child: Text('This lockbox no longer exists.')),
           );
         }
@@ -88,97 +111,49 @@ class LockboxDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    Icon(Icons.info_outline, color: Theme.of(context).primaryColor),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Created ${_formatDate(lockbox.createdAt)}',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          Text(
-                            lockbox.content != null
-                                ? '${lockbox.content!.length} characters'
-                                : 'Encrypted (${lockbox.shards.length} shard${lockbox.shards.length == 1 ? '' : 's'})',
-                            style: TextStyle(color: Colors.grey[600]),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Content',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey[800],
-              ),
-            ),
-            const SizedBox(height: 8),
             Expanded(
               child: SizedBox(
                 width: double.infinity,
                 child: Card(
                   child: Padding(
                     padding: const EdgeInsets.all(16),
-                    child: lockbox.content != null
-                        ? SingleChildScrollView(
-                            child: SelectableText(
-                              lockbox.content!,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                height: 1.5,
-                              ),
-                            ),
-                          )
-                        : Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.lock,
-                                  size: 64,
-                                  color: Colors.grey[400],
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'Content Encrypted',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'You have ${lockbox.shards.length} shard${lockbox.shards.length == 1 ? '' : 's'} for this lockbox',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Initiate recovery to restore the content',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                              ],
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.lock,
+                            size: 64,
+                            color: Colors.grey[400],
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Content Encrypted',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey[600],
                             ),
                           ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'You have ${lockbox.shards.length} shard${lockbox.shards.length == 1 ? '' : 's'} for this lockbox',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Edit to view or modify the content',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -271,10 +246,6 @@ class LockboxDetailScreen extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year} at ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
   }
 }
 

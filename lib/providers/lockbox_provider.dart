@@ -21,6 +21,24 @@ final lockboxListProvider = StreamProvider<List<Lockbox>>((ref) async* {
   }
 });
 
+/// Provider for a specific lockbox by ID
+/// This will automatically update when the lockbox changes
+final lockboxProvider = Provider.family<AsyncValue<Lockbox?>, String>((ref, lockboxId) {
+  final lockboxesAsync = ref.watch(lockboxListProvider);
+
+  return lockboxesAsync.when(
+    data: (lockboxes) {
+      final lockbox = lockboxes.firstWhere(
+        (box) => box.id == lockboxId,
+        orElse: () => throw StateError('Lockbox not found'),
+      );
+      return AsyncValue.data(lockbox);
+    },
+    loading: () => const AsyncValue.loading(),
+    error: (error, stack) => AsyncValue.error(error, stack),
+  );
+});
+
 /// Provider for lockbox repository operations
 /// This is a simple Provider (not StateProvider) because it provides
 /// a stateless repository object
