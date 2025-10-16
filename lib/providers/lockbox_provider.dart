@@ -28,11 +28,13 @@ final lockboxProvider = Provider.family<AsyncValue<Lockbox?>, String>((ref, lock
 
   return lockboxesAsync.when(
     data: (lockboxes) {
-      final lockbox = lockboxes.firstWhere(
-        (box) => box.id == lockboxId,
-        orElse: () => throw StateError('Lockbox not found'),
-      );
-      return AsyncValue.data(lockbox);
+      try {
+        final lockbox = lockboxes.firstWhere((box) => box.id == lockboxId);
+        return AsyncValue.data(lockbox);
+      } catch (e) {
+        // Lockbox not found in the list
+        return const AsyncValue.data(null);
+      }
     },
     loading: () => const AsyncValue.loading(),
     error: (error, stack) => AsyncValue.error(error, stack),
