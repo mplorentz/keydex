@@ -7,6 +7,7 @@ import 'package:keydex/models/recovery_request.dart';
 import 'package:keydex/models/shard_data.dart';
 import 'package:keydex/providers/lockbox_provider.dart';
 import 'package:keydex/providers/key_provider.dart';
+import 'package:keydex/providers/recovery_provider.dart';
 import 'package:keydex/screens/lockbox_detail_screen.dart';
 import 'package:keydex/widgets/theme.dart';
 
