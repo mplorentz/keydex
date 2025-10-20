@@ -4,6 +4,7 @@ import '../models/lockbox.dart';
 import '../providers/lockbox_provider.dart';
 import '../services/lockbox_service.dart';
 import '../widgets/recovery_section.dart';
+import '../widgets/row_button.dart';
 import 'backup_config_screen.dart';
 import 'edit_lockbox_screen.dart';
 
@@ -154,59 +155,22 @@ class LockboxDetailScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
             // Backup Configuration Section
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.backup, color: Theme.of(context).primaryColor),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Distributed Backup',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                color: Theme.of(context).primaryColor,
-                              ),
-                        ),
-                      ],
+            RowButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => BackupConfigScreen(
+                      lockboxId: lockbox.id,
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Configure distributed backup for this lockbox using Shamir\'s Secret Sharing. '
-                      'Your data will be split into multiple encrypted shares and distributed to trusted contacts via Nostr.',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.grey[600],
-                          ),
-                    ),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => BackupConfigScreen(
-                                lockboxId: lockbox.id,
-                              ),
-                            ),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Theme.of(context).primaryColor,
-                          foregroundColor: Colors.white,
-                        ),
-                        icon: const Icon(Icons.settings),
-                        label: const Text('Configure Backup Settings'),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+                  ),
+                );
+              },
+              icon: Icons.settings,
+              text: 'Backup Settings',
+              backgroundColor: Theme.of(context).primaryColor,
+              foregroundColor: Colors.white,
             ),
-            const SizedBox(height: 16),
             // Recovery Section
             RecoverySection(lockboxId: lockbox.id),
           ],
