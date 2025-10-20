@@ -85,7 +85,7 @@ class KeyHolderList extends ConsumerWidget {
 
     return Container(
       width: double.infinity,
-      color: const Color(0xFF666f62),
+      color: const Color(0xAa666f62),
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -139,7 +139,7 @@ class KeyHolderList extends ConsumerWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Configure backup settings to add key holders',
+                    'Change backup settings to add key holders',
                     style: TextStyle(
                       color: const Color(0xFFd2d7bf).withValues(alpha: 0.7),
                       fontSize: 14,

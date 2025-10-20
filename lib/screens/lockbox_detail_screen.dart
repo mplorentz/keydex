@@ -124,27 +124,24 @@ class LockboxDetailScreen extends ConsumerWidget {
               },
               icon: Icons.edit,
               text: 'Change Contents',
-              backgroundColor: Theme.of(context).primaryColor,
-              foregroundColor: Colors.white,
+              backgroundColor: const Color(0xaa798472),
             ),
+            // Backup Configuration Section
+            RowButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => BackupConfigScreen(
+                        lockboxId: lockbox.id,
+                      ),
+                    ),
+                  );
+                },
+                icon: Icons.settings,
+                text: 'Backup Settings',
+                backgroundColor: const Color(0xAA6f7a69)),
           ],
-          // Backup Configuration Section
-          RowButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => BackupConfigScreen(
-                    lockboxId: lockbox.id,
-                  ),
-                ),
-              );
-            },
-            icon: Icons.settings,
-            text: 'Backup Settings',
-            backgroundColor: Theme.of(context).primaryColor,
-            foregroundColor: Colors.white,
-          ),
           // Recovery Section
           RecoverySection(lockboxId: lockbox.id),
         ],

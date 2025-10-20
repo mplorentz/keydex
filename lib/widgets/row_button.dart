@@ -27,7 +27,7 @@ class RowButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final effectiveBackgroundColor = backgroundColor ?? theme.primaryColor;
-    final effectiveForegroundColor = foregroundColor ?? const Color(0xFFdcd0b5);
+    final effectiveForegroundColor = foregroundColor ?? const Color.fromARGB(255, 253, 255, 240);
 
     return InkWell(
       onTap: onPressed,

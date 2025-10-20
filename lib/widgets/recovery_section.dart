@@ -84,8 +84,8 @@ class RecoverySection extends ConsumerWidget {
             onPressed: () => _initiateRecovery(context),
             icon: Icons.restore,
             text: 'Initiate Recovery',
-            backgroundColor: Colors.orange,
-            foregroundColor: Colors.white,
+            backgroundColor: Theme.of(context).primaryColor,
+            foregroundColor: const Color.fromARGB(255, 253, 255, 240),
           ),
         ],
         if (recoveryStatus.canRecover) ...[
