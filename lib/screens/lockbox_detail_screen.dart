@@ -114,7 +114,7 @@ class LockboxDetailScreen extends ConsumerWidget {
               },
               icon: Icons.edit,
               text: 'Change Contents',
-              backgroundColor: const Color(0xaa798472),
+              backgroundColor: const Color(0xFF798472),
             ),
             // Backup Configuration Section
             RowButton(
@@ -130,7 +130,7 @@ class LockboxDetailScreen extends ConsumerWidget {
                 },
                 icon: Icons.settings,
                 text: 'Backup Settings',
-                backgroundColor: const Color(0xAA6f7a69)),
+                backgroundColor: const Color(0xFF6f7a69)),
           ],
           // Recovery Section
           RecoverySection(lockboxId: lockbox.id),

@@ -105,33 +105,24 @@ class LockboxMetadataSection extends ConsumerWidget {
               // Key holder state
               Row(
                 children: [
-                  Icon(Icons.key, color: Colors.orange[600]),
+                  Icon(Icons.key, color: Theme.of(context).textTheme.titleMedium?.color),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'You hold a key for this lockbox',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      'You hold a key to this lockbox',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
-                            color: Colors.orange[800],
                           ),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 8),
-              Text(
-                'Owner: ${_abbreviateNpub(lockbox.ownerPubkey)}',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey[600],
-                    ),
-              ),
+              Text('Owner: ${Helpers.encodeBech32(lockbox.ownerPubkey, 'npub')}',
+                  style: Theme.of(context).textTheme.bodyMedium, overflow: TextOverflow.ellipsis),
               const SizedBox(height: 8),
-              Text(
-                '$threshold keys are needed to recover and unlock the vault.',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey[600],
-                    ),
-              ),
+              Text('A minimum of $threshold keys are needed to recover and unlock the vault.',
+                  style: Theme.of(context).textTheme.bodyMedium),
             ],
           ],
         ),
