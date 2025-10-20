@@ -131,7 +131,7 @@ void main() {
             home: child,
           ),
         ),
-        surfaceSize: const Size(375, 1200), // Further increased height to prevent overflow
+        surfaceSize: const Size(375, 1000), // Increased height to handle overflow
       );
 
       await tester.pumpAndSettle();
@@ -160,7 +160,7 @@ void main() {
             home: child,
           ),
         ),
-        surfaceSize: const Size(375, 1200), // Further increased height to prevent overflow
+        surfaceSize: const Size(375, 1000), // Increased height to handle overflow
       );
 
       await tester.pumpAndSettle();
@@ -199,7 +199,7 @@ void main() {
             home: child,
           ),
         ),
-        surfaceSize: const Size(375, 1200), // Further increased height to prevent overflow
+        surfaceSize: const Size(375, 1000), // Increased height to handle overflow
       );
 
       await tester.pumpAndSettle();
@@ -249,7 +249,7 @@ void main() {
             home: child,
           ),
         ),
-        surfaceSize: const Size(375, 1200), // Further increased height to prevent overflow
+        surfaceSize: const Size(375, 1000), // Increased height to handle overflow
       );
 
       await tester.pumpAndSettle();
@@ -309,7 +309,7 @@ void main() {
             home: child,
           ),
         ),
-        surfaceSize: const Size(375, 1200), // Further increased height to prevent overflow
+        surfaceSize: const Size(375, 1000), // Increased height to handle overflow
       );
 
       await tester.pumpAndSettle();
@@ -358,7 +358,7 @@ void main() {
             home: child,
           ),
         ),
-        surfaceSize: const Size(375, 1200), // Further increased height to prevent overflow
+        surfaceSize: const Size(375, 1000), // Increased height to handle overflow
       );
 
       await tester.pumpAndSettle();
@@ -417,7 +417,7 @@ void main() {
             home: child,
           ),
         ),
-        surfaceSize: const Size(375, 1200), // Further increased height to prevent overflow
+        surfaceSize: const Size(375, 1000), // Increased height to handle overflow
       );
 
       await tester.pumpAndSettle();
