@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/lockbox.dart';
 import '../providers/lockbox_provider.dart';
+import '../providers/key_provider.dart';
 import '../services/lockbox_service.dart';
 import '../widgets/recovery_section.dart';
 import '../widgets/row_button.dart';
@@ -60,12 +61,12 @@ class LockboxDetailScreen extends ConsumerWidget {
           );
         }
 
-        return _buildLockboxDetail(context, lockbox);
+        return _buildLockboxDetail(context, ref, lockbox);
       },
     );
   }
 
-  Widget _buildLockboxDetail(BuildContext context, Lockbox lockbox) {
+  Widget _buildLockboxDetail(BuildContext context, WidgetRef ref, Lockbox lockbox) {
     return Scaffold(
       appBar: AppBar(
         title: Text(lockbox.name),
@@ -101,7 +102,7 @@ class LockboxDetailScreen extends ConsumerWidget {
           KeyHolderList(lockboxId: lockbox.id),
           const Spacer(),
           // Edit Lockbox Button (only show if user owns the lockbox)
-          if (_isOwner(context, lockbox)) ...[
+          if (_isOwned(context, ref, lockbox)) ...[
             RowButton(
               onPressed: () {
                 Navigator.push(
@@ -138,10 +139,13 @@ class LockboxDetailScreen extends ConsumerWidget {
     );
   }
 
-  bool _isOwner(BuildContext context, Lockbox lockbox) {
-    // This is a simplified check - in a real app you'd want to use the provider
-    // For now, we'll assume the user is the owner if they have decrypted content
-    return lockbox.isOwned;
+  bool _isOwned(BuildContext context, WidgetRef ref, Lockbox lockbox) {
+    final currentPubkeyAsync = ref.read(currentPublicKeyProvider);
+    return currentPubkeyAsync.when(
+      data: (currentPubkey) => currentPubkey != null && lockbox.isOwned(currentPubkey),
+      loading: () => false,
+      error: (_, __) => false,
+    );
   }
 
   void _showDeleteDialog(BuildContext context, Lockbox lockbox) {
