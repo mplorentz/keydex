@@ -7,6 +7,7 @@ import '../services/recovery_service.dart';
 import '../services/relay_scan_service.dart';
 import '../services/logger.dart';
 import '../screens/recovery_status_screen.dart';
+import 'row_button.dart';
 
 /// Widget for recovery section on lockbox detail screen
 class RecoverySection extends ConsumerWidget {
@@ -57,98 +58,60 @@ class RecoverySection extends ConsumerWidget {
   }
 
   Widget _buildRecoveryContent(BuildContext context, RecoveryStatus recoveryStatus) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.lock_open, color: Theme.of(context).primaryColor),
-                const SizedBox(width: 8),
-                Text(
-                  'Lockbox Recovery',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Theme.of(context).primaryColor,
-                      ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'If you have a key share for this lockbox, you can initiate a recovery request '
-              'to collect shares from other key holders and restore the contents.',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey[600],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Title section in a card
+        if (recoveryStatus.hasActiveRecovery) ...[
+          RowButton(
+            onPressed: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => RecoveryStatusScreen(
+                    recoveryRequestId: recoveryStatus.activeRecoveryRequest!.id,
                   ),
-            ),
-            const SizedBox(height: 16),
-            // Show either "View Recovery Status" or "Initiate Recovery" button
-            if (recoveryStatus.hasActiveRecovery) ...[
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () async {
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => RecoveryStatusScreen(
-                          recoveryRequestId: recoveryStatus.activeRecoveryRequest!.id,
-                        ),
-                      ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    foregroundColor: Colors.white,
-                  ),
-                  icon: const Icon(Icons.visibility),
-                  label: const Text('View Recovery Status'),
                 ),
-              ),
-            ] else ...[
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () => _initiateRecovery(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
-                    foregroundColor: Colors.white,
-                  ),
-                  icon: const Icon(Icons.restore),
-                  label: const Text('Initiate Recovery'),
-                ),
-              ),
-            ],
-            if (recoveryStatus.canRecover) ...[
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.green[100],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.check_circle, color: Colors.green),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'Recovery is available for this lockbox',
-                        style: TextStyle(
-                          color: Colors.green[900],
-                          fontWeight: FontWeight.bold,
-                        ),
+              );
+            },
+            icon: Icons.visibility,
+            text: 'Manage Recovery',
+            backgroundColor: Colors.blue,
+            foregroundColor: Colors.white,
+          ),
+        ] else ...[
+          RowButton(
+            onPressed: () => _initiateRecovery(context),
+            icon: Icons.restore,
+            text: 'Initiate Recovery',
+            backgroundColor: Colors.orange,
+            foregroundColor: Colors.white,
+          ),
+        ],
+        if (recoveryStatus.canRecover) ...[
+          const SizedBox(height: 16),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                children: [
+                  const Icon(Icons.check_circle, color: Colors.green),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Recovery is available for this lockbox',
+                      style: TextStyle(
+                        color: Colors.green[900],
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
-          ],
-        ),
-      ),
+            ),
+          ),
+        ],
+      ],
     );
   }
 
