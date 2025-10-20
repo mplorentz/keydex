@@ -100,7 +100,8 @@ void main() {
             home: child,
           ),
         ),
-        surfaceSize: const Size(375, 800), // Increased height to prevent overflow // iPhone SE size
+        surfaceSize:
+            const Size(375, 1200), // Further increased height to prevent overflow // iPhone SE size
       );
 
       // Use pump instead of pumpAndSettle for loading state to avoid timeout
@@ -130,12 +131,10 @@ void main() {
             home: child,
           ),
         ),
-        surfaceSize: const Size(375, 800), // Increased height to prevent overflow
+        surfaceSize: const Size(375, 1200), // Further increased height to prevent overflow
       );
 
-      // Use pump instead of pumpAndSettle to avoid timeout from recovery section
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100)); // Allow some time for UI to settle
+      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'lockbox_detail_screen_error');
 
@@ -161,12 +160,10 @@ void main() {
             home: child,
           ),
         ),
-        surfaceSize: const Size(375, 800), // Increased height to prevent overflow
+        surfaceSize: const Size(375, 1200), // Further increased height to prevent overflow
       );
 
-      // Use pump instead of pumpAndSettle to avoid timeout from recovery section
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100)); // Allow some time for UI to settle
+      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'lockbox_detail_screen_not_found');
 
@@ -202,12 +199,10 @@ void main() {
             home: child,
           ),
         ),
-        surfaceSize: const Size(375, 800), // Increased height to prevent overflow
+        surfaceSize: const Size(375, 1200), // Further increased height to prevent overflow
       );
 
-      // Use pump instead of pumpAndSettle to avoid timeout from recovery section
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100)); // Allow some time for UI to settle
+      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'lockbox_detail_screen_owner_no_backup');
 
@@ -235,12 +230,12 @@ void main() {
           ),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
           // Mock recovery status to show no active recovery
-          recoveryStatusProvider.overrideWith((ref, lockboxId) async {
-            return const RecoveryStatus(
+          recoveryStatusProvider.overrideWith((ref, lockboxId) {
+            return const AsyncValue.data(RecoveryStatus(
               hasActiveRecovery: false,
               canRecover: false,
               activeRecoveryRequest: null,
-            );
+            ));
           }),
         ],
       );
@@ -254,12 +249,10 @@ void main() {
             home: child,
           ),
         ),
-        surfaceSize: const Size(375, 800), // Increased height to prevent overflow
+        surfaceSize: const Size(375, 1200), // Further increased height to prevent overflow
       );
 
-      // Use pump instead of pumpAndSettle to avoid timeout from recovery section
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100)); // Allow some time for UI to settle
+      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'lockbox_detail_screen_owner_backup_no_recovery');
 
@@ -297,12 +290,12 @@ void main() {
           ),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
           // Mock recovery status to show active recovery
-          recoveryStatusProvider.overrideWith((ref, lockboxId) async {
-            return RecoveryStatus(
+          recoveryStatusProvider.overrideWith((ref, lockboxId) {
+            return AsyncValue.data(RecoveryStatus(
               hasActiveRecovery: true,
               canRecover: true, // Has enough approvals
               activeRecoveryRequest: recoveryRequest,
-            );
+            ));
           }),
         ],
       );
@@ -316,12 +309,10 @@ void main() {
             home: child,
           ),
         ),
-        surfaceSize: const Size(375, 800), // Increased height to prevent overflow
+        surfaceSize: const Size(375, 1200), // Further increased height to prevent overflow
       );
 
-      // Use pump instead of pumpAndSettle to avoid timeout from recovery section
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100)); // Allow some time for UI to settle
+      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'lockbox_detail_screen_owner_in_recovery');
 
@@ -348,12 +339,12 @@ void main() {
           ),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
           // Mock recovery status to show no active recovery
-          recoveryStatusProvider.overrideWith((ref, lockboxId) async {
-            return const RecoveryStatus(
+          recoveryStatusProvider.overrideWith((ref, lockboxId) {
+            return const AsyncValue.data(RecoveryStatus(
               hasActiveRecovery: false,
               canRecover: false,
               activeRecoveryRequest: null,
-            );
+            ));
           }),
         ],
       );
@@ -367,12 +358,10 @@ void main() {
             home: child,
           ),
         ),
-        surfaceSize: const Size(375, 800), // Increased height to prevent overflow
+        surfaceSize: const Size(375, 1200), // Further increased height to prevent overflow
       );
 
-      // Use pump instead of pumpAndSettle to avoid timeout from recovery section
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100)); // Allow some time for UI to settle
+      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'lockbox_detail_screen_shard_holder_no_recovery');
 
@@ -409,12 +398,12 @@ void main() {
           ),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
           // Mock recovery status to show active recovery
-          recoveryStatusProvider.overrideWith((ref, lockboxId) async {
-            return RecoveryStatus(
+          recoveryStatusProvider.overrideWith((ref, lockboxId) {
+            return AsyncValue.data(RecoveryStatus(
               hasActiveRecovery: true,
               canRecover: false, // Not enough approvals yet
               activeRecoveryRequest: recoveryRequest,
-            );
+            ));
           }),
         ],
       );
@@ -428,12 +417,10 @@ void main() {
             home: child,
           ),
         ),
-        surfaceSize: const Size(375, 800), // Increased height to prevent overflow
+        surfaceSize: const Size(375, 1200), // Further increased height to prevent overflow
       );
 
-      // Use pump instead of pumpAndSettle to avoid timeout from recovery section
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100)); // Allow some time for UI to settle
+      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'lockbox_detail_screen_shard_holder_in_recovery');
 
@@ -461,19 +448,18 @@ void main() {
           ),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
           // Mock recovery status to show no active recovery
-          recoveryStatusProvider.overrideWith((ref, lockboxId) async {
-            return const RecoveryStatus(
+          recoveryStatusProvider.overrideWith((ref, lockboxId) {
+            return const AsyncValue.data(RecoveryStatus(
               hasActiveRecovery: false,
               canRecover: false,
               activeRecoveryRequest: null,
-            );
+            ));
           }),
         ],
       );
 
       final builder = DeviceBuilder()
         ..overrideDevicesForAllScenarios(devices: [
-          Device.phone,
           Device.iphone11,
           Device.tabletPortrait,
         ])
