@@ -6,190 +6,9 @@ import 'package:keydex/models/lockbox.dart';
 import 'package:keydex/models/recovery_request.dart';
 import 'package:keydex/models/shard_data.dart';
 import 'package:keydex/providers/lockbox_provider.dart';
+import 'package:keydex/providers/key_provider.dart';
 import 'package:keydex/screens/lockbox_detail_screen.dart';
 import 'package:keydex/widgets/theme.dart';
-
-// Custom test widget that excludes the problematic _RecoverySection
-class TestLockboxDetailScreen extends StatelessWidget {
-  final String lockboxId;
-
-  const TestLockboxDetailScreen({super.key, required this.lockboxId});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Test Lockbox'),
-        centerTitle: false,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: () {},
-          ),
-          PopupMenuButton(
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'delete',
-                child: Row(
-                  children: [
-                    Icon(Icons.delete, color: Colors.red),
-                    SizedBox(width: 8),
-                    Text('Delete', style: TextStyle(color: Colors.red)),
-                  ],
-                ),
-              ),
-            ],
-            onSelected: (value) {},
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              height: 300, // Fixed height instead of Expanded
-              width: double.infinity,
-              child: Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.lock,
-                          size: 64,
-                          color: Colors.grey[400],
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Content Encrypted',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'You have 2 shards for this lockbox',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Edit to view or modify the content',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            // Backup Configuration Section
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.backup, color: Theme.of(context).primaryColor),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Distributed Backup',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                color: Theme.of(context).primaryColor,
-                              ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Configure distributed backup for this lockbox using Shamir\'s Secret Sharing. '
-                      'Your data will be split into multiple encrypted shares and distributed to trusted contacts via Nostr.',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.grey[600],
-                          ),
-                    ),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Theme.of(context).primaryColor,
-                          foregroundColor: Colors.white,
-                        ),
-                        icon: const Icon(Icons.settings),
-                        label: const Text('Configure Backup Settings'),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            // Simplified Recovery Section (no async loading)
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.lock_open, color: Theme.of(context).primaryColor),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Lockbox Recovery',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                color: Theme.of(context).primaryColor,
-                              ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'If you have a key share for this lockbox, you can initiate a recovery request '
-                      'to collect shares from other key holders and restore the contents.',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.grey[600],
-                          ),
-                    ),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orange,
-                          foregroundColor: Colors.white,
-                        ),
-                        icon: const Icon(Icons.restore),
-                        label: const Text('Initiate Recovery'),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 void main() {
   // Sample test data
@@ -280,7 +99,7 @@ void main() {
             home: child,
           ),
         ),
-        surfaceSize: const Size(375, 667), // iPhone SE size
+        surfaceSize: const Size(375, 800), // Increased height to prevent overflow // iPhone SE size
       );
 
       // Use pump instead of pumpAndSettle for loading state to avoid timeout
@@ -310,10 +129,12 @@ void main() {
             home: child,
           ),
         ),
-        surfaceSize: const Size(375, 667),
+        surfaceSize: const Size(375, 800), // Increased height to prevent overflow
       );
 
-      await tester.pumpAndSettle();
+      // Use pump instead of pumpAndSettle to avoid timeout from recovery section
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100)); // Allow some time for UI to settle
 
       await screenMatchesGolden(tester, 'lockbox_detail_screen_error');
 
@@ -339,10 +160,12 @@ void main() {
             home: child,
           ),
         ),
-        surfaceSize: const Size(375, 667),
+        surfaceSize: const Size(375, 800), // Increased height to prevent overflow
       );
 
-      await tester.pumpAndSettle();
+      // Use pump instead of pumpAndSettle to avoid timeout from recovery section
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100)); // Allow some time for UI to settle
 
       await screenMatchesGolden(tester, 'lockbox_detail_screen_not_found');
 
@@ -350,91 +173,303 @@ void main() {
     });
 
     testGoldens('owner - no backup configured', (tester) async {
+      final ownedLockbox = Lockbox(
+        id: 'test-lockbox',
+        name: 'My Private Keys',
+        content: null, // Content is encrypted, not shown in detail view
+        createdAt: DateTime(2024, 10, 1, 10, 30),
+        ownerPubkey: testPubkey,
+        shards: [], // No shards yet - backup not configured
+        recoveryRequests: [],
+      );
+
+      final container = ProviderContainer(
+        overrides: [
+          lockboxListProvider.overrideWith(
+            (ref) => Stream.value([ownedLockbox]),
+          ),
+          currentPublicKeyProvider.overrideWith((ref) => testPubkey),
+        ],
+      );
+
       await tester.pumpWidgetBuilder(
-        const TestLockboxDetailScreen(lockboxId: 'test-lockbox'),
-        wrapper: (child) => ProviderScope(
+        const LockboxDetailScreen(lockboxId: 'test-lockbox'),
+        wrapper: (child) => UncontrolledProviderScope(
+          container: container,
           child: MaterialApp(
             theme: keydexTheme,
             home: child,
           ),
         ),
-        surfaceSize: const Size(375, 667),
+        surfaceSize: const Size(375, 800), // Increased height to prevent overflow
       );
 
-      await tester.pumpAndSettle();
+      // Use pump instead of pumpAndSettle to avoid timeout from recovery section
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100)); // Allow some time for UI to settle
 
       await screenMatchesGolden(tester, 'lockbox_detail_screen_owner_no_backup');
+
+      container.dispose();
     });
 
     testGoldens('owner - backup configured, not in recovery', (tester) async {
+      final ownedLockbox = Lockbox(
+        id: 'test-lockbox',
+        name: 'My Private Keys',
+        content: null, // Content is encrypted, not shown in detail view
+        createdAt: DateTime(2024, 10, 1, 10, 30),
+        ownerPubkey: testPubkey,
+        shards: [
+          createTestShard(shardIndex: 0, recipientPubkey: otherPubkey, lockboxId: 'test-lockbox'),
+          createTestShard(shardIndex: 1, recipientPubkey: thirdPubkey, lockboxId: 'test-lockbox'),
+        ],
+        recoveryRequests: [], // No active recovery
+      );
+
+      final container = ProviderContainer(
+        overrides: [
+          lockboxListProvider.overrideWith(
+            (ref) => Stream.value([ownedLockbox]),
+          ),
+          currentPublicKeyProvider.overrideWith((ref) => testPubkey),
+          // Mock recovery status to show no active recovery
+          recoveryStatusProvider.overrideWith((ref, lockboxId) async {
+            return const RecoveryStatus(
+              hasActiveRecovery: false,
+              canRecover: false,
+              activeRecoveryRequest: null,
+            );
+          }),
+        ],
+      );
+
       await tester.pumpWidgetBuilder(
-        const TestLockboxDetailScreen(lockboxId: 'test-lockbox'),
-        wrapper: (child) => ProviderScope(
+        const LockboxDetailScreen(lockboxId: 'test-lockbox'),
+        wrapper: (child) => UncontrolledProviderScope(
+          container: container,
           child: MaterialApp(
             theme: keydexTheme,
             home: child,
           ),
         ),
-        surfaceSize: const Size(375, 667),
+        surfaceSize: const Size(375, 800), // Increased height to prevent overflow
       );
 
-      await tester.pumpAndSettle();
+      // Use pump instead of pumpAndSettle to avoid timeout from recovery section
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100)); // Allow some time for UI to settle
 
       await screenMatchesGolden(tester, 'lockbox_detail_screen_owner_backup_no_recovery');
+
+      container.dispose();
     });
 
     testGoldens('owner - in recovery', (tester) async {
+      final recoveryRequest = createTestRecoveryRequest(
+        lockboxId: 'test-lockbox',
+        initiatorPubkey: testPubkey,
+        status: RecoveryRequestStatus.inProgress,
+        responses: {
+          otherPubkey: createTestRecoveryResponse(pubkey: otherPubkey, approved: true),
+          thirdPubkey: createTestRecoveryResponse(pubkey: thirdPubkey, approved: false),
+        },
+      );
+
+      final ownedLockbox = Lockbox(
+        id: 'test-lockbox',
+        name: 'My Private Keys',
+        content: null, // Content is encrypted, not shown in detail view
+        createdAt: DateTime(2024, 10, 1, 10, 30),
+        ownerPubkey: testPubkey,
+        shards: [
+          createTestShard(shardIndex: 0, recipientPubkey: otherPubkey, lockboxId: 'test-lockbox'),
+          createTestShard(shardIndex: 1, recipientPubkey: thirdPubkey, lockboxId: 'test-lockbox'),
+        ],
+        recoveryRequests: [recoveryRequest],
+      );
+
+      final container = ProviderContainer(
+        overrides: [
+          lockboxListProvider.overrideWith(
+            (ref) => Stream.value([ownedLockbox]),
+          ),
+          currentPublicKeyProvider.overrideWith((ref) => testPubkey),
+          // Mock recovery status to show active recovery
+          recoveryStatusProvider.overrideWith((ref, lockboxId) async {
+            return RecoveryStatus(
+              hasActiveRecovery: true,
+              canRecover: true, // Has enough approvals
+              activeRecoveryRequest: recoveryRequest,
+            );
+          }),
+        ],
+      );
+
       await tester.pumpWidgetBuilder(
-        const TestLockboxDetailScreen(lockboxId: 'test-lockbox'),
-        wrapper: (child) => ProviderScope(
+        const LockboxDetailScreen(lockboxId: 'test-lockbox'),
+        wrapper: (child) => UncontrolledProviderScope(
+          container: container,
           child: MaterialApp(
             theme: keydexTheme,
             home: child,
           ),
         ),
-        surfaceSize: const Size(375, 667),
+        surfaceSize: const Size(375, 800), // Increased height to prevent overflow
       );
 
-      await tester.pumpAndSettle();
+      // Use pump instead of pumpAndSettle to avoid timeout from recovery section
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100)); // Allow some time for UI to settle
 
       await screenMatchesGolden(tester, 'lockbox_detail_screen_owner_in_recovery');
+
+      container.dispose();
     });
 
     testGoldens('shard holder - not in recovery', (tester) async {
+      final shardHolderLockbox = Lockbox(
+        id: 'test-lockbox',
+        name: "Alice's Backup",
+        content: null,
+        createdAt: DateTime(2024, 9, 15, 14, 20),
+        ownerPubkey: otherPubkey, // Different owner
+        shards: [
+          createTestShard(shardIndex: 1, recipientPubkey: testPubkey, lockboxId: 'test-lockbox'),
+        ],
+        recoveryRequests: [], // No active recovery
+      );
+
+      final container = ProviderContainer(
+        overrides: [
+          lockboxListProvider.overrideWith(
+            (ref) => Stream.value([shardHolderLockbox]),
+          ),
+          currentPublicKeyProvider.overrideWith((ref) => testPubkey),
+          // Mock recovery status to show no active recovery
+          recoveryStatusProvider.overrideWith((ref, lockboxId) async {
+            return const RecoveryStatus(
+              hasActiveRecovery: false,
+              canRecover: false,
+              activeRecoveryRequest: null,
+            );
+          }),
+        ],
+      );
+
       await tester.pumpWidgetBuilder(
-        const TestLockboxDetailScreen(lockboxId: 'test-lockbox'),
-        wrapper: (child) => ProviderScope(
+        const LockboxDetailScreen(lockboxId: 'test-lockbox'),
+        wrapper: (child) => UncontrolledProviderScope(
+          container: container,
           child: MaterialApp(
             theme: keydexTheme,
             home: child,
           ),
         ),
-        surfaceSize: const Size(375, 667),
+        surfaceSize: const Size(375, 800), // Increased height to prevent overflow
       );
 
-      await tester.pumpAndSettle();
+      // Use pump instead of pumpAndSettle to avoid timeout from recovery section
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100)); // Allow some time for UI to settle
 
       await screenMatchesGolden(tester, 'lockbox_detail_screen_shard_holder_no_recovery');
+
+      container.dispose();
     });
 
     testGoldens('shard holder - in recovery', (tester) async {
+      final recoveryRequest = createTestRecoveryRequest(
+        lockboxId: 'test-lockbox',
+        initiatorPubkey: otherPubkey, // Different initiator
+        status: RecoveryRequestStatus.inProgress,
+        responses: {
+          testPubkey: createTestRecoveryResponse(pubkey: testPubkey, approved: true),
+          thirdPubkey: createTestRecoveryResponse(pubkey: thirdPubkey, approved: false),
+        },
+      );
+
+      final shardHolderLockbox = Lockbox(
+        id: 'test-lockbox',
+        name: "Alice's Backup",
+        content: null,
+        createdAt: DateTime(2024, 9, 15, 14, 20),
+        ownerPubkey: otherPubkey, // Different owner
+        shards: [
+          createTestShard(shardIndex: 1, recipientPubkey: testPubkey, lockboxId: 'test-lockbox'),
+        ],
+        recoveryRequests: [recoveryRequest],
+      );
+
+      final container = ProviderContainer(
+        overrides: [
+          lockboxListProvider.overrideWith(
+            (ref) => Stream.value([shardHolderLockbox]),
+          ),
+          currentPublicKeyProvider.overrideWith((ref) => testPubkey),
+          // Mock recovery status to show active recovery
+          recoveryStatusProvider.overrideWith((ref, lockboxId) async {
+            return RecoveryStatus(
+              hasActiveRecovery: true,
+              canRecover: false, // Not enough approvals yet
+              activeRecoveryRequest: recoveryRequest,
+            );
+          }),
+        ],
+      );
+
       await tester.pumpWidgetBuilder(
-        const TestLockboxDetailScreen(lockboxId: 'test-lockbox'),
-        wrapper: (child) => ProviderScope(
+        const LockboxDetailScreen(lockboxId: 'test-lockbox'),
+        wrapper: (child) => UncontrolledProviderScope(
+          container: container,
           child: MaterialApp(
             theme: keydexTheme,
             home: child,
           ),
         ),
-        surfaceSize: const Size(375, 667),
+        surfaceSize: const Size(375, 800), // Increased height to prevent overflow
       );
 
-      await tester.pumpAndSettle();
+      // Use pump instead of pumpAndSettle to avoid timeout from recovery section
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100)); // Allow some time for UI to settle
 
       await screenMatchesGolden(tester, 'lockbox_detail_screen_shard_holder_in_recovery');
+
+      container.dispose();
     });
 
     testGoldens('multiple device sizes', (tester) async {
+      final ownedLockbox = Lockbox(
+        id: 'test-lockbox',
+        name: 'My Private Keys',
+        content: null,
+        createdAt: DateTime(2024, 10, 1, 10, 30),
+        ownerPubkey: testPubkey,
+        shards: [
+          createTestShard(shardIndex: 0, recipientPubkey: otherPubkey, lockboxId: 'test-lockbox'),
+          createTestShard(shardIndex: 1, recipientPubkey: thirdPubkey, lockboxId: 'test-lockbox'),
+        ],
+        recoveryRequests: [],
+      );
+
+      final container = ProviderContainer(
+        overrides: [
+          lockboxListProvider.overrideWith(
+            (ref) => Stream.value([ownedLockbox]),
+          ),
+          currentPublicKeyProvider.overrideWith((ref) => testPubkey),
+          // Mock recovery status to show no active recovery
+          recoveryStatusProvider.overrideWith((ref, lockboxId) async {
+            return const RecoveryStatus(
+              hasActiveRecovery: false,
+              canRecover: false,
+              activeRecoveryRequest: null,
+            );
+          }),
+        ],
+      );
+
       final builder = DeviceBuilder()
         ..overrideDevicesForAllScenarios(devices: [
           Device.phone,
@@ -442,13 +477,14 @@ void main() {
           Device.tabletPortrait,
         ])
         ..addScenario(
-          widget: const TestLockboxDetailScreen(lockboxId: 'test-lockbox'),
+          widget: const LockboxDetailScreen(lockboxId: 'test-lockbox'),
           name: 'owner_backup_no_recovery',
         );
 
       await tester.pumpDeviceBuilder(
         builder,
-        wrapper: (child) => ProviderScope(
+        wrapper: (child) => UncontrolledProviderScope(
+          container: container,
           child: MaterialApp(
             theme: keydexTheme,
             home: child,
@@ -457,6 +493,8 @@ void main() {
       );
 
       await screenMatchesGolden(tester, 'lockbox_detail_screen_multiple_devices');
+
+      container.dispose();
     });
   });
 }
