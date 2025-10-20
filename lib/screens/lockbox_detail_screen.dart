@@ -5,6 +5,8 @@ import '../providers/lockbox_provider.dart';
 import '../services/lockbox_service.dart';
 import '../widgets/recovery_section.dart';
 import '../widgets/row_button.dart';
+import '../widgets/lockbox_metadata_section.dart';
+import '../widgets/key_holder_list.dart';
 import 'backup_config_screen.dart';
 import 'edit_lockbox_screen.dart';
 
@@ -101,82 +103,62 @@ class LockboxDetailScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: SizedBox(
-                width: double.infinity,
-                child: Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.lock,
-                            size: 64,
-                            color: Colors.grey[400],
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Content Encrypted',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'You have ${lockbox.shards.length} shard${lockbox.shards.length == 1 ? '' : 's'} for this lockbox',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Edit to view or modify the content',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            // Backup Configuration Section
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Lockbox Metadata Section
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: LockboxMetadataSection(lockboxId: lockbox.id),
+          ),
+          // Key Holder List (extends to edges)
+          KeyHolderList(lockboxId: lockbox.id),
+          const Spacer(),
+          // Edit Lockbox Button (only show if user owns the lockbox)
+          if (_isOwner(context, lockbox)) ...[
             RowButton(
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => BackupConfigScreen(
-                      lockboxId: lockbox.id,
-                    ),
+                    builder: (context) => EditLockboxScreen(lockboxId: lockbox.id),
                   ),
                 );
               },
-              icon: Icons.settings,
-              text: 'Backup Settings',
+              icon: Icons.edit,
+              text: 'Change Contents',
               backgroundColor: Theme.of(context).primaryColor,
               foregroundColor: Colors.white,
             ),
-            // Recovery Section
-            RecoverySection(lockboxId: lockbox.id),
           ],
-        ),
+          // Backup Configuration Section
+          RowButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => BackupConfigScreen(
+                    lockboxId: lockbox.id,
+                  ),
+                ),
+              );
+            },
+            icon: Icons.settings,
+            text: 'Backup Settings',
+            backgroundColor: Theme.of(context).primaryColor,
+            foregroundColor: Colors.white,
+          ),
+          // Recovery Section
+          RecoverySection(lockboxId: lockbox.id),
+        ],
       ),
     );
+  }
+
+  bool _isOwner(BuildContext context, Lockbox lockbox) {
+    // This is a simplified check - in a real app you'd want to use the provider
+    // For now, we'll assume the user is the owner if they have decrypted content
+    return lockbox.isOwned;
   }
 
   void _showDeleteDialog(BuildContext context, Lockbox lockbox) {
