@@ -107,10 +107,7 @@ class LockboxDetailScreen extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Lockbox Metadata Section
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: LockboxMetadataSection(lockboxId: lockbox.id),
-          ),
+          LockboxMetadataSection(lockboxId: lockbox.id),
           // Key Holder List (extends to edges)
           KeyHolderList(lockboxId: lockbox.id),
           const Spacer(),

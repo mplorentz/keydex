@@ -92,6 +92,7 @@ class KeyHolderList extends ConsumerWidget {
         children: [
           Row(
             children: [
+              const SizedBox(width: 4),
               const Icon(Icons.people, color: Color(0xFFd2d7bf)),
               const SizedBox(width: 8),
               Text(
