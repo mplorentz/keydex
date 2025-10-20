@@ -71,17 +71,6 @@ class LockboxDetailScreen extends ConsumerWidget {
         title: Text(lockbox.name),
         centerTitle: false,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => EditLockboxScreen(lockboxId: lockbox.id),
-                ),
-              );
-            },
-          ),
           PopupMenuButton(
             itemBuilder: (context) => [
               const PopupMenuItem(
