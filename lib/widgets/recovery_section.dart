@@ -88,29 +88,6 @@ class RecoverySection extends ConsumerWidget {
             foregroundColor: const Color.fromARGB(255, 253, 255, 240),
           ),
         ],
-        if (recoveryStatus.canRecover) ...[
-          const SizedBox(height: 16),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Row(
-                children: [
-                  const Icon(Icons.check_circle, color: Colors.green),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      'Recovery is available for this lockbox',
-                      style: TextStyle(
-                        color: Colors.green[900],
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
       ],
     );
   }

@@ -85,7 +85,7 @@ class KeyHolderList extends ConsumerWidget {
 
     return Container(
       width: double.infinity,
-      color: const Color(0xAa666f62),
+      color: const Color(0xFF666f62),
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -102,8 +102,8 @@ class KeyHolderList extends ConsumerWidget {
                     ),
               ),
               const Spacer(),
-              IconButton(
-                onPressed: () {
+              InkWell(
+                onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -113,8 +113,20 @@ class KeyHolderList extends ConsumerWidget {
                     ),
                   );
                 },
-                icon: const Icon(Icons.settings, color: Color(0xFFd2d7bf)),
-                tooltip: 'Edit Backup Settings',
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFd2d7bf).withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Icon(
+                    Icons.settings,
+                    color: Color(0xFFd2d7bf),
+                    size: 20,
+                  ),
+                ),
               ),
             ],
           ),
@@ -159,12 +171,10 @@ class KeyHolderList extends ConsumerWidget {
 
   Widget _buildKeyHolderItem(BuildContext context, KeyHolderInfo keyHolder) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
+      margin: const EdgeInsets.only(bottom: 4),
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFd2d7bf).withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFd2d7bf).withValues(alpha: 0.3)),
+      decoration: const BoxDecoration(
+        color: Color(0xFF666f62),
       ),
       child: Row(
         children: [
@@ -187,6 +197,9 @@ class KeyHolderList extends ConsumerWidget {
                         fontWeight: FontWeight.bold,
                         color: const Color(0xFFd2d7bf),
                       ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  softWrap: false,
                 ),
                 if (keyHolder.isOwner) ...[
                   Text(
@@ -197,16 +210,7 @@ class KeyHolderList extends ConsumerWidget {
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                ] else ...[
-                  Text(
-                    'Key Holder',
-                    style: TextStyle(
-                      color: const Color(0xFFd2d7bf).withValues(alpha: 0.8),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
+                ]
               ],
             ),
           ),
@@ -230,7 +234,7 @@ class KeyHolderList extends ConsumerWidget {
       for (final peerPubkey in shard.peers!) {
         keyHolders.add(KeyHolderInfo(
           pubkey: peerPubkey,
-          displayName: _abbreviateNpub(peerPubkey),
+          displayName: Helpers.encodeBech32(peerPubkey, 'npub'),
           isOwner: false,
         ));
       }
@@ -240,7 +244,7 @@ class KeyHolderList extends ConsumerWidget {
     if (!isCurrentUserOwner && shard.peers != null && shard.peers!.contains(lockbox.ownerPubkey)) {
       keyHolders.add(KeyHolderInfo(
         pubkey: lockbox.ownerPubkey,
-        displayName: _abbreviateNpub(lockbox.ownerPubkey),
+        displayName: Helpers.encodeBech32(lockbox.ownerPubkey, 'npub'),
         isOwner: true,
       ));
     }
@@ -253,17 +257,6 @@ class KeyHolderList extends ConsumerWidget {
     });
 
     return keyHolders;
-  }
-
-  /// Abbreviate npub address for display
-  String _abbreviateNpub(String hexPubkey) {
-    try {
-      final npub = Helpers.encodeBech32(hexPubkey, 'npub');
-      return '${npub.substring(0, 8)}...${npub.substring(npub.length - 8)}';
-    } catch (e) {
-      // Fallback to hex abbreviation if bech32 conversion fails
-      return '${hexPubkey.substring(0, 8)}...${hexPubkey.substring(hexPubkey.length - 8)}';
-    }
   }
 }
 
