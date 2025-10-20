@@ -76,8 +76,8 @@ class RecoverySection extends ConsumerWidget {
             },
             icon: Icons.visibility,
             text: 'Manage Recovery',
-            backgroundColor: Colors.blue,
-            foregroundColor: Colors.white,
+            backgroundColor: Theme.of(context).primaryColor,
+            foregroundColor: const Color.fromARGB(255, 253, 255, 240),
           ),
         ] else ...[
           RowButton(
