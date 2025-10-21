@@ -129,15 +129,4 @@ class LockboxMetadataSection extends ConsumerWidget {
       ),
     );
   }
-
-  /// Abbreviate npub address for display
-  String _abbreviateNpub(String hexPubkey) {
-    try {
-      final npub = Helpers.encodeBech32(hexPubkey, 'npub');
-      return '${npub.substring(0, 8)}...${npub.substring(npub.length - 8)}';
-    } catch (e) {
-      // Fallback to hex abbreviation if bech32 conversion fails
-      return '${hexPubkey.substring(0, 8)}...${hexPubkey.substring(hexPubkey.length - 8)}';
-    }
-  }
 }
