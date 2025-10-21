@@ -140,7 +140,7 @@ class LockboxDetailScreen extends ConsumerWidget {
   }
 
   bool _isOwned(BuildContext context, WidgetRef ref, Lockbox lockbox) {
-    final currentPubkeyAsync = ref.read(currentPublicKeyProvider);
+    final currentPubkeyAsync = ref.watch(currentPublicKeyProvider);
     return currentPubkeyAsync.when(
       data: (currentPubkey) => currentPubkey != null && lockbox.isOwned(currentPubkey),
       loading: () => false,
