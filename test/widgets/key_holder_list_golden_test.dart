@@ -87,7 +87,7 @@ void main() {
       // Manually capture the golden without pumpAndSettle
       await expectLater(
         find.byType(KeyHolderList),
-        matchesGoldenFile('key_holder_list_loading'),
+        matchesGoldenFile('goldens/key_holder_list_loading.png'),
       );
 
       container.dispose();
@@ -359,7 +359,7 @@ void main() {
       // Manually capture the golden without pumpAndSettle
       await expectLater(
         find.byType(KeyHolderList),
-        matchesGoldenFile('key_holder_list_user_loading'),
+        matchesGoldenFile('goldens/key_holder_list_user_loading.png'),
       );
 
       container.dispose();

@@ -85,7 +85,7 @@ void main() {
       // Manually capture the golden without pumpAndSettle
       await expectLater(
         find.byType(LockboxMetadataSection),
-        matchesGoldenFile('lockbox_metadata_section_loading'),
+        matchesGoldenFile('goldens/lockbox_metadata_section_loading.png'),
       );
 
       container.dispose();
