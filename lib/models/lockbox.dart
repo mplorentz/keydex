@@ -51,14 +51,14 @@ class Lockbox {
     if (hasActiveRecovery) {
       return LockboxState.recovery;
     }
-    if (isOwned) {
+    if (content != null) {
       return LockboxState.owned;
     }
     return LockboxState.keyHolder;
   }
 
-  /// Check if this lockbox has decrypted content (owned)
-  bool get isOwned => content != null;
+  /// Check if the given hex key is the owner of this lockbox
+  bool isOwned(String hexKey) => ownerPubkey == hexKey;
 
   /// Check if we are a key holder for this lockbox (have shards)
   bool get isKeyHolder => shards.isNotEmpty;

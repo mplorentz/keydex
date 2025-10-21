@@ -23,7 +23,8 @@ import 'package:ndk/ndk.dart' as _i2;
 // ignore_for_file: camel_case_types
 // ignore_for_file: subtype_of_sealed_class
 
-class _FakeNdkBroadcastResponse_0 extends _i1.SmartFake implements _i2.NdkBroadcastResponse {
+class _FakeNdkBroadcastResponse_0 extends _i1.SmartFake
+    implements _i2.NdkBroadcastResponse {
   _FakeNdkBroadcastResponse_0(
     Object parent,
     Invocation parentInvocation,
@@ -288,7 +289,8 @@ class MockRequests extends _i1.Mock implements _i2.Requests {
       ) as _i3.Future<void>);
 
   @override
-  _i2.NdkResponse requestNostrEvent(_i2.NdkRequest? request) => (super.noSuchMethod(
+  _i2.NdkResponse requestNostrEvent(_i2.NdkRequest? request) =>
+      (super.noSuchMethod(
         Invocation.method(
           #requestNostrEvent,
           [request],
@@ -591,7 +593,8 @@ class MockNip01Event extends _i1.Mock implements _i2.Nip01Event {
 /// A class which mocks [NdkBroadcastResponse].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockNdkBroadcastResponse extends _i1.Mock implements _i2.NdkBroadcastResponse {
+class MockNdkBroadcastResponse extends _i1.Mock
+    implements _i2.NdkBroadcastResponse {
   MockNdkBroadcastResponse() {
     _i1.throwOnMissingStub(this);
   }
@@ -606,14 +609,16 @@ class MockNdkBroadcastResponse extends _i1.Mock implements _i2.NdkBroadcastRespo
       ) as _i2.Nip01Event);
 
   @override
-  _i3.Future<List<_i5.RelayBroadcastResponse>> get broadcastDoneFuture => (super.noSuchMethod(
+  _i3.Future<List<_i5.RelayBroadcastResponse>> get broadcastDoneFuture =>
+      (super.noSuchMethod(
         Invocation.getter(#broadcastDoneFuture),
-        returnValue:
-            _i3.Future<List<_i5.RelayBroadcastResponse>>.value(<_i5.RelayBroadcastResponse>[]),
+        returnValue: _i3.Future<List<_i5.RelayBroadcastResponse>>.value(
+            <_i5.RelayBroadcastResponse>[]),
       ) as _i3.Future<List<_i5.RelayBroadcastResponse>>);
 
   @override
-  _i3.Stream<List<_i5.RelayBroadcastResponse>> get broadcastDone => (super.noSuchMethod(
+  _i3.Stream<List<_i5.RelayBroadcastResponse>> get broadcastDone =>
+      (super.noSuchMethod(
         Invocation.getter(#broadcastDone),
         returnValue: _i3.Stream<List<_i5.RelayBroadcastResponse>>.empty(),
       ) as _i3.Stream<List<_i5.RelayBroadcastResponse>>);
