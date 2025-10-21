@@ -227,7 +227,6 @@ class KeyHolderList extends ConsumerWidget {
 
     final shard = lockbox.shards.first;
     final keyHolders = <KeyHolderInfo>[];
-    final isCurrentUserOwner = currentPubkey == lockbox.ownerPubkey;
 
     // Add peers (key holders)
     if (shard.peers != null) {
@@ -235,18 +234,9 @@ class KeyHolderList extends ConsumerWidget {
         keyHolders.add(KeyHolderInfo(
           pubkey: peerPubkey,
           displayName: Helpers.encodeBech32(peerPubkey, 'npub'),
-          isOwner: false,
+          isOwner: peerPubkey == lockbox.ownerPubkey,
         ));
       }
-    }
-
-    // Add owner if current user is NOT the owner and owner is in peers list
-    if (!isCurrentUserOwner && shard.peers != null && shard.peers!.contains(lockbox.ownerPubkey)) {
-      keyHolders.add(KeyHolderInfo(
-        pubkey: lockbox.ownerPubkey,
-        displayName: Helpers.encodeBech32(lockbox.ownerPubkey, 'npub'),
-        isOwner: true,
-      ));
     }
 
     // Sort: owner first, then others
