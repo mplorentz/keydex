@@ -81,7 +81,7 @@ class LockboxMetadataSection extends ConsumerWidget {
 
   Widget _buildMetadataContent(BuildContext context, Lockbox lockbox, String? currentPubkey) {
     final isOwner = currentPubkey == lockbox.ownerPubkey;
-    final threshold = lockbox.shards.isNotEmpty ? lockbox.shards.first.threshold : 0;
+    final threshold = lockbox.shards.firstOrNull?.threshold;
 
     return Card(
       child: Padding(
@@ -120,24 +120,15 @@ class LockboxMetadataSection extends ConsumerWidget {
               const SizedBox(height: 8),
               Text('Owner: ${Helpers.encodeBech32(lockbox.ownerPubkey, 'npub')}',
                   style: Theme.of(context).textTheme.bodyMedium, overflow: TextOverflow.ellipsis),
-              const SizedBox(height: 8),
-              Text('A minimum of $threshold keys are needed to recover and unlock the vault.',
-                  style: Theme.of(context).textTheme.bodyMedium),
+              if (threshold != null) ...[
+                const SizedBox(height: 8),
+                Text('A minimum of $threshold keys are needed to recover and unlock the vault.',
+                    style: Theme.of(context).textTheme.bodyMedium),
+              ],
             ],
           ],
         ),
       ),
     );
-  }
-
-  /// Abbreviate npub address for display
-  String _abbreviateNpub(String hexPubkey) {
-    try {
-      final npub = Helpers.encodeBech32(hexPubkey, 'npub');
-      return '${npub.substring(0, 8)}...${npub.substring(npub.length - 8)}';
-    } catch (e) {
-      // Fallback to hex abbreviation if bech32 conversion fails
-      return '${hexPubkey.substring(0, 8)}...${hexPubkey.substring(hexPubkey.length - 8)}';
-    }
   }
 }
