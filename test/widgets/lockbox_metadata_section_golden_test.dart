@@ -61,6 +61,7 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           lockboxProvider('test-lockbox').overrideWith((ref) => const AsyncValue.loading()),
+          currentPublicKeyProvider.overrideWith((ref) => Future.value('test-pubkey')),
         ],
       );
 
@@ -96,6 +97,7 @@ void main() {
           lockboxProvider('test-lockbox').overrideWith(
             (ref) => AsyncValue.error('Failed to load lockbox', StackTrace.current),
           ),
+          currentPublicKeyProvider.overrideWith((ref) => Future.value('test-pubkey')),
         ],
       );
 
