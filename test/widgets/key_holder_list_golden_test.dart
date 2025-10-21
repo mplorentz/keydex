@@ -8,6 +8,7 @@ import 'package:keydex/providers/lockbox_provider.dart';
 import 'package:keydex/providers/key_provider.dart';
 import 'package:keydex/widgets/key_holder_list.dart';
 import 'package:keydex/widgets/theme.dart';
+import 'dart:async';
 
 void main() {
   // Sample test data
@@ -79,7 +80,14 @@ void main() {
 
       await tester.pump();
 
-      await screenMatchesGolden(tester, 'key_holder_list_loading');
+      // Use pump instead of pumpAndSettle to avoid timeout
+      await tester.pump();
+
+      // Manually capture the golden without pumpAndSettle
+      await expectLater(
+        find.byType(KeyHolderList),
+        matchesGoldenFile('key_holder_list_loading'),
+      );
 
       container.dispose();
     });
@@ -155,6 +163,7 @@ void main() {
             recipientPubkey: otherPubkey,
             lockboxId: 'test-lockbox',
             peers: [otherPubkey], // Only one peer
+            threshold: 1, // Fix: threshold must be <= totalShards
           ),
         ],
       );
@@ -318,13 +327,13 @@ void main() {
         ],
       );
 
+      // Create a completer that never completes to simulate loading
+      final completer = Completer<String?>();
+
       final container = ProviderContainer(
         overrides: [
           lockboxProvider('test-lockbox').overrideWith((ref) => AsyncValue.data(lockbox)),
-          currentPublicKeyProvider.overrideWith((ref) => Future<String?>.delayed(
-                const Duration(seconds: 10),
-                () => testPubkey,
-              )),
+          currentPublicKeyProvider.overrideWith((ref) => completer.future),
         ],
       );
 
@@ -342,7 +351,14 @@ void main() {
 
       await tester.pump();
 
-      await screenMatchesGolden(tester, 'key_holder_list_user_loading');
+      // Use pump instead of pumpAndSettle to avoid timeout
+      await tester.pump();
+
+      // Manually capture the golden without pumpAndSettle
+      await expectLater(
+        find.byType(KeyHolderList),
+        matchesGoldenFile('key_holder_list_user_loading'),
+      );
 
       container.dispose();
     });

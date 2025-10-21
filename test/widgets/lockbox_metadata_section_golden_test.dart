@@ -78,7 +78,14 @@ void main() {
 
       await tester.pump();
 
-      await screenMatchesGolden(tester, 'lockbox_metadata_section_loading');
+      // Use pump instead of pumpAndSettle to avoid timeout
+      await tester.pump();
+
+      // Manually capture the golden without pumpAndSettle
+      await expectLater(
+        find.byType(LockboxMetadataSection),
+        matchesGoldenFile('lockbox_metadata_section_loading'),
+      );
 
       container.dispose();
     });
