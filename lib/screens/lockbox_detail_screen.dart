@@ -100,7 +100,12 @@ class LockboxDetailScreen extends ConsumerWidget {
           LockboxMetadataSection(lockboxId: lockbox.id),
           // Key Holder List (extends to edges)
           KeyHolderList(lockboxId: lockbox.id),
-          const Spacer(),
+          // Fill remaining space with same color as KeyHolderList
+          Expanded(
+            child: Container(
+              color: const Color(0xFF666f62),
+            ),
+          ),
           // Edit Lockbox Button (only show if user owns the lockbox)
           if (_isOwned(context, ref, lockbox)) ...[
             RowButton(
