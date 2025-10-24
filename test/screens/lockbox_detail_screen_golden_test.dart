@@ -82,12 +82,13 @@ void main() {
     testGoldens('loading state', (tester) async {
       final container = ProviderContainer(
         overrides: [
-          // Mock the lockbox list provider to return loading state
-          lockboxListProvider.overrideWith((ref) => Stream.value([]).asyncMap((_) async {
-                await Future.delayed(
-                    const Duration(seconds: 10)); // Never completes to simulate loading
-                return <Lockbox>[];
-              })),
+          // Mock the lockbox provider to return loading state
+          lockboxProvider('test-lockbox')
+              .overrideWith((ref) => Stream.value(null).asyncMap((_) async {
+                    await Future.delayed(
+                        const Duration(seconds: 10)); // Never completes to simulate loading
+                    return null;
+                  })),
         ],
       );
 
@@ -116,8 +117,8 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           // Mock provider to throw an error
-          lockboxListProvider.overrideWith(
-            (ref) => Stream.error('Failed to load lockboxes'),
+          lockboxProvider('test-lockbox').overrideWith(
+            (ref) => Stream.error('Failed to load lockbox'),
           ),
         ],
       );
@@ -144,9 +145,9 @@ void main() {
     testGoldens('lockbox not found', (tester) async {
       final container = ProviderContainer(
         overrides: [
-          // Mock provider to return empty list (lockbox not found)
-          lockboxListProvider.overrideWith(
-            (ref) => Stream.value(<Lockbox>[]),
+          // Mock provider to return null (lockbox not found)
+          lockboxProvider('test-lockbox').overrideWith(
+            (ref) => Stream.value(null),
           ),
         ],
       );
@@ -183,8 +184,8 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          lockboxListProvider.overrideWith(
-            (ref) => Stream.value([ownedLockbox]),
+          lockboxProvider('test-lockbox').overrideWith(
+            (ref) => Stream.value(ownedLockbox),
           ),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
         ],
@@ -225,8 +226,8 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          lockboxListProvider.overrideWith(
-            (ref) => Stream.value([ownedLockbox]),
+          lockboxProvider('test-lockbox').overrideWith(
+            (ref) => Stream.value(ownedLockbox),
           ),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
           // Mock recovery status to show no active recovery
@@ -285,8 +286,8 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          lockboxListProvider.overrideWith(
-            (ref) => Stream.value([ownedLockbox]),
+          lockboxProvider('test-lockbox').overrideWith(
+            (ref) => Stream.value(ownedLockbox),
           ),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
           // Mock recovery status to show active recovery
@@ -334,8 +335,8 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          lockboxListProvider.overrideWith(
-            (ref) => Stream.value([shardHolderLockbox]),
+          lockboxProvider('test-lockbox').overrideWith(
+            (ref) => Stream.value(shardHolderLockbox),
           ),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
           // Mock recovery status to show no active recovery
@@ -393,8 +394,8 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          lockboxListProvider.overrideWith(
-            (ref) => Stream.value([shardHolderLockbox]),
+          lockboxProvider('test-lockbox').overrideWith(
+            (ref) => Stream.value(shardHolderLockbox),
           ),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
           // Mock recovery status to show active recovery
@@ -443,8 +444,8 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          lockboxListProvider.overrideWith(
-            (ref) => Stream.value([ownedLockbox]),
+          lockboxProvider('test-lockbox').overrideWith(
+            (ref) => Stream.value(ownedLockbox),
           ),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
           // Mock recovery status to show no active recovery

@@ -62,7 +62,7 @@ void main() {
     testGoldens('loading state', (tester) async {
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider('test-lockbox').overrideWith((ref) => const AsyncValue.loading()),
+          lockboxProvider('test-lockbox').overrideWith((ref) => Stream.value(null)),
           currentPublicKeyProvider.overrideWith((ref) => Future.value('test-pubkey')),
         ],
       );
@@ -97,7 +97,7 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           lockboxProvider('test-lockbox').overrideWith(
-            (ref) => AsyncValue.error('Failed to load lockbox', StackTrace.current),
+            (ref) => Stream.error('Failed to load lockbox'),
           ),
           currentPublicKeyProvider.overrideWith((ref) => Future.value('test-pubkey')),
         ],
@@ -131,7 +131,7 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider('test-lockbox').overrideWith((ref) => AsyncValue.data(lockbox)),
+          lockboxProvider('test-lockbox').overrideWith((ref) => Stream.value(lockbox)),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
         ],
       );
@@ -172,7 +172,7 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider('test-lockbox').overrideWith((ref) => AsyncValue.data(lockbox)),
+          lockboxProvider('test-lockbox').overrideWith((ref) => Stream.value(lockbox)),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
         ],
       );
@@ -212,7 +212,7 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider('test-lockbox').overrideWith((ref) => AsyncValue.data(lockbox)),
+          lockboxProvider('test-lockbox').overrideWith((ref) => Stream.value(lockbox)),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
         ],
       );
@@ -252,7 +252,7 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider('test-lockbox').overrideWith((ref) => AsyncValue.data(lockbox)),
+          lockboxProvider('test-lockbox').overrideWith((ref) => Stream.value(lockbox)),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
         ],
       );
@@ -292,7 +292,7 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider('test-lockbox').overrideWith((ref) => AsyncValue.data(lockbox)),
+          lockboxProvider('test-lockbox').overrideWith((ref) => Stream.value(lockbox)),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
         ],
       );
@@ -334,7 +334,7 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider('test-lockbox').overrideWith((ref) => AsyncValue.data(lockbox)),
+          lockboxProvider('test-lockbox').overrideWith((ref) => Stream.value(lockbox)),
           currentPublicKeyProvider.overrideWith((ref) => completer.future),
         ],
       );
