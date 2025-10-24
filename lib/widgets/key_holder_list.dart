@@ -193,7 +193,7 @@ class KeyHolderList extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  keyHolder.displayName,
+                  keyHolder.displayName ?? Helpers.encodeBech32(keyHolder.pubkey, 'npub'),
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: const Color(0xFFd2d7bf),
@@ -228,7 +228,7 @@ class KeyHolderList extends ConsumerWidget {
           .map((kh) => KeyHolderInfo(
                 pubkey: kh.pubkey,
                 displayName: kh.displayName,
-                isOwner: kh.pubkey == currentPubkey,
+                isOwner: kh.pubkey == lockbox.ownerPubkey,
               ))
           .toList();
     }
@@ -266,12 +266,12 @@ class KeyHolderList extends ConsumerWidget {
 /// Data class for key holder information
 class KeyHolderInfo {
   final String pubkey;
-  final String displayName;
+  final String? displayName;
   final bool isOwner;
 
   KeyHolderInfo({
     required this.pubkey,
-    required this.displayName,
+    this.displayName,
     required this.isOwner,
   });
 }
