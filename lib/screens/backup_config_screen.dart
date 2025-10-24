@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import '../models/key_holder.dart';
 import '../models/lockbox.dart';
 import '../services/backup_service.dart';
+import '../providers/lockbox_provider.dart';
 
 /// Backup configuration screen for setting up distributed backup
 ///
@@ -12,16 +14,16 @@ import '../services/backup_service.dart';
 /// - Nostr relay selection
 ///
 /// Note: Requires a valid lockboxId to load the lockbox content for backup
-class BackupConfigScreen extends StatefulWidget {
+class BackupConfigScreen extends ConsumerStatefulWidget {
   final String lockboxId;
 
   const BackupConfigScreen({super.key, required this.lockboxId});
 
   @override
-  State<BackupConfigScreen> createState() => _BackupConfigScreenState();
+  ConsumerState<BackupConfigScreen> createState() => _BackupConfigScreenState();
 }
 
-class _BackupConfigScreenState extends State<BackupConfigScreen> {
+class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
   int _threshold = LockboxBackupConstraints.defaultThreshold;
   int _totalKeys = LockboxBackupConstraints.defaultTotalKeys;
   final List<KeyHolder> _keyHolders = [];
@@ -38,7 +40,8 @@ class _BackupConfigScreenState extends State<BackupConfigScreen> {
   /// Load existing backup configuration if one exists
   Future<void> _loadExistingConfig() async {
     try {
-      final existingConfig = await BackupService.getBackupConfig(widget.lockboxId);
+      final repository = ref.read(lockboxRepositoryProvider);
+      final existingConfig = await repository.getBackupConfig(widget.lockboxId);
 
       if (existingConfig != null && mounted) {
         setState(() {
@@ -400,6 +403,8 @@ class _BackupConfigScreenState extends State<BackupConfigScreen> {
     });
 
     try {
+      final repository = ref.read(lockboxRepositoryProvider);
+
       // Create/recreate the backup configuration and distribute shards
       // BackupService will handle overwriting existing config
       await BackupService.createAndDistributeBackup(
@@ -408,6 +413,7 @@ class _BackupConfigScreenState extends State<BackupConfigScreen> {
         totalKeys: _totalKeys,
         keyHolders: _keyHolders,
         relays: _relays,
+        repository: repository,
       );
 
       if (mounted) {

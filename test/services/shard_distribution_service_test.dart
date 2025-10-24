@@ -12,6 +12,7 @@ import 'package:keydex/models/shard_data.dart';
 import 'package:keydex/models/key_holder.dart';
 import 'package:keydex/models/event_status.dart';
 import 'package:keydex/services/shard_distribution_service.dart';
+import 'package:keydex/providers/lockbox_provider.dart';
 import '../fixtures/test_keys.dart';
 
 import 'shard_distribution_service_test.mocks.dart';
@@ -23,14 +24,19 @@ import 'shard_distribution_service_test.mocks.dart';
   NdkResponse,
   Nip01Event,
   NdkBroadcastResponse,
+  LockboxRepository,
 ])
 void main() {
   group('ShardDistributionService', () {
     late BackupConfig testConfig;
     late List<ShardData> testShards;
     late String testOwnerPubkey; // Alice will be the owner
+    late MockLockboxRepository mockRepository;
 
     setUp(() {
+      // Initialize mock repository
+      mockRepository = MockLockboxRepository();
+
       // Derive real public keys from the test nsec keys
       final alicePrivHex = Helpers.decodeBech32(TestNsecKeys.alice)[0];
       final alicePubHex = Bip340.getPublicKey(alicePrivHex);
@@ -98,6 +104,7 @@ void main() {
           config: testConfig,
           shards: mismatchedShards,
           ndk: mockNdk,
+          repository: mockRepository,
         ),
         throwsA(isA<Exception>()),
       );
@@ -124,6 +131,7 @@ void main() {
           config: testConfig,
           shards: testShards,
           ndk: testNdk,
+          repository: mockRepository,
         );
 
         // Assert - Verify result structure
@@ -184,6 +192,7 @@ void main() {
           config: emptyConfig,
           shards: [],
           ndk: mockNdk,
+          repository: mockRepository,
         ),
         throwsA(isA<Exception>()),
       );
@@ -242,6 +251,7 @@ void main() {
           config: configWithDifferentPubkeys,
           shards: shards,
           ndk: mockNdk,
+          repository: mockRepository,
         ),
         returnsNormally,
       );
@@ -288,6 +298,7 @@ void main() {
         config: testConfig,
         shards: testShards,
         ndk: testNdk,
+        repository: mockRepository,
       );
 
       // Verify broadcast was called twice with correct parameters

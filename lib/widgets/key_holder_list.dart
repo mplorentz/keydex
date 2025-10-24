@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import '../models/lockbox.dart';
+import '../models/key_holder.dart';
 import '../providers/lockbox_provider.dart';
 import '../providers/key_provider.dart';
 import '../screens/backup_config_screen.dart';
@@ -221,6 +222,18 @@ class KeyHolderList extends ConsumerWidget {
 
   /// Extract key holders from lockbox shard data
   List<KeyHolderInfo> _extractKeyHolders(Lockbox lockbox, String? currentPubkey) {
+    // NEW: Try backupConfig first (owner will have this)
+    if (lockbox.backupConfig != null) {
+      return lockbox.backupConfig!.keyHolders
+          .map((kh) => KeyHolderInfo(
+                pubkey: kh.pubkey,
+                displayName: kh.displayName,
+                isOwner: kh.pubkey == currentPubkey,
+              ))
+          .toList();
+    }
+
+    // FALLBACK: Use shard peers (key holder perspective)
     if (lockbox.shards.isEmpty) {
       return [];
     }

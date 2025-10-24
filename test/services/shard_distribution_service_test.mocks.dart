@@ -5,6 +5,11 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i3;
 
+import 'package:keydex/models/backup_status.dart' as _i9;
+import 'package:keydex/models/key_holder_status.dart' as _i8;
+import 'package:keydex/models/lockbox.dart' as _i7;
+import 'package:keydex/models/recovery_request.dart' as _i10;
+import 'package:keydex/providers/lockbox_provider.dart' as _i6;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i4;
 import 'package:ndk/domain_layer/entities/broadcast_state.dart' as _i5;
@@ -622,4 +627,444 @@ class MockNdkBroadcastResponse extends _i1.Mock
         Invocation.getter(#broadcastDone),
         returnValue: _i3.Stream<List<_i5.RelayBroadcastResponse>>.empty(),
       ) as _i3.Stream<List<_i5.RelayBroadcastResponse>>);
+}
+
+/// A class which mocks [LockboxRepository].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockLockboxRepository extends _i1.Mock implements _i6.LockboxRepository {
+  MockLockboxRepository() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i3.Stream<List<_i7.Lockbox>> get lockboxesStream => (super.noSuchMethod(
+        Invocation.getter(#lockboxesStream),
+        returnValue: _i3.Stream<List<_i7.Lockbox>>.empty(),
+      ) as _i3.Stream<List<_i7.Lockbox>>);
+
+  @override
+  _i3.Future<void> initialize() => (super.noSuchMethod(
+        Invocation.method(
+          #initialize,
+          [],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
+  _i3.Future<List<_i7.Lockbox>> getAllLockboxes() => (super.noSuchMethod(
+        Invocation.method(
+          #getAllLockboxes,
+          [],
+        ),
+        returnValue: _i3.Future<List<_i7.Lockbox>>.value(<_i7.Lockbox>[]),
+      ) as _i3.Future<List<_i7.Lockbox>>);
+
+  @override
+  _i3.Future<_i7.Lockbox?> getLockbox(String? id) => (super.noSuchMethod(
+        Invocation.method(
+          #getLockbox,
+          [id],
+        ),
+        returnValue: _i3.Future<_i7.Lockbox?>.value(),
+      ) as _i3.Future<_i7.Lockbox?>);
+
+  @override
+  _i3.Future<void> saveLockbox(_i7.Lockbox? lockbox) => (super.noSuchMethod(
+        Invocation.method(
+          #saveLockbox,
+          [lockbox],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
+  _i3.Future<void> addLockbox(_i7.Lockbox? lockbox) => (super.noSuchMethod(
+        Invocation.method(
+          #addLockbox,
+          [lockbox],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
+  _i3.Future<void> updateLockbox(
+    String? id,
+    String? name,
+    String? content,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #updateLockbox,
+          [
+            id,
+            name,
+            content,
+          ],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
+  _i3.Future<void> deleteLockbox(String? id) => (super.noSuchMethod(
+        Invocation.method(
+          #deleteLockbox,
+          [id],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
+  _i3.Future<void> clearAll() => (super.noSuchMethod(
+        Invocation.method(
+          #clearAll,
+          [],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
+  _i3.Future<void> refresh() => (super.noSuchMethod(
+        Invocation.method(
+          #refresh,
+          [],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
+  _i3.Future<void> updateBackupConfig(
+    String? lockboxId,
+    ({
+      String? contentHash,
+      DateTime createdAt,
+      List<
+          ({
+            DateTime? acknowledgedAt,
+            String? acknowledgmentEventId,
+            String? giftWrapEventId,
+            String? keyShare,
+            DateTime? lastSeen,
+            String? name,
+            String pubkey,
+            _i8.KeyHolderStatus status
+          })> keyHolders,
+      DateTime? lastContentChange,
+      DateTime? lastRedistribution,
+      DateTime lastUpdated,
+      String lockboxId,
+      List<String> relays,
+      String specVersion,
+      _i9.BackupStatus status,
+      int threshold,
+      int totalKeys
+    })? config,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #updateBackupConfig,
+          [
+            lockboxId,
+            config,
+          ],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
+  _i3.Future<
+      ({
+        String? contentHash,
+        DateTime createdAt,
+        List<
+            ({
+              DateTime? acknowledgedAt,
+              String? acknowledgmentEventId,
+              String? giftWrapEventId,
+              String? keyShare,
+              DateTime? lastSeen,
+              String? name,
+              String pubkey,
+              _i8.KeyHolderStatus status
+            })> keyHolders,
+        DateTime? lastContentChange,
+        DateTime? lastRedistribution,
+        DateTime lastUpdated,
+        String lockboxId,
+        List<String> relays,
+        String specVersion,
+        _i9.BackupStatus status,
+        int threshold,
+        int totalKeys
+      })?> getBackupConfig(String? lockboxId) => (super.noSuchMethod(
+        Invocation.method(
+          #getBackupConfig,
+          [lockboxId],
+        ),
+        returnValue: _i3.Future<
+            ({
+              String? contentHash,
+              DateTime createdAt,
+              List<
+                  ({
+                    DateTime? acknowledgedAt,
+                    String? acknowledgmentEventId,
+                    String? giftWrapEventId,
+                    String? keyShare,
+                    DateTime? lastSeen,
+                    String? name,
+                    String pubkey,
+                    _i8.KeyHolderStatus status
+                  })> keyHolders,
+              DateTime? lastContentChange,
+              DateTime? lastRedistribution,
+              DateTime lastUpdated,
+              String lockboxId,
+              List<String> relays,
+              String specVersion,
+              _i9.BackupStatus status,
+              int threshold,
+              int totalKeys
+            })?>.value(),
+      ) as _i3.Future<
+          ({
+            String? contentHash,
+            DateTime createdAt,
+            List<
+                ({
+                  DateTime? acknowledgedAt,
+                  String? acknowledgmentEventId,
+                  String? giftWrapEventId,
+                  String? keyShare,
+                  DateTime? lastSeen,
+                  String? name,
+                  String pubkey,
+                  _i8.KeyHolderStatus status
+                })> keyHolders,
+            DateTime? lastContentChange,
+            DateTime? lastRedistribution,
+            DateTime lastUpdated,
+            String lockboxId,
+            List<String> relays,
+            String specVersion,
+            _i9.BackupStatus status,
+            int threshold,
+            int totalKeys
+          })?>);
+
+  @override
+  _i3.Future<void> addShardToLockbox(
+    String? lockboxId,
+    ({
+      int createdAt,
+      String creatorPubkey,
+      bool? isReceived,
+      String? lockboxId,
+      String? lockboxName,
+      String? nostrEventId,
+      List<String>? peers,
+      String primeMod,
+      DateTime? receivedAt,
+      String? recipientPubkey,
+      String shard,
+      int shardIndex,
+      int threshold,
+      int totalShards
+    })? shard,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #addShardToLockbox,
+          [
+            lockboxId,
+            shard,
+          ],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
+  _i3.Future<
+      List<
+          ({
+            int createdAt,
+            String creatorPubkey,
+            bool? isReceived,
+            String? lockboxId,
+            String? lockboxName,
+            String? nostrEventId,
+            List<String>? peers,
+            String primeMod,
+            DateTime? receivedAt,
+            String? recipientPubkey,
+            String shard,
+            int shardIndex,
+            int threshold,
+            int totalShards
+          })>> getShardsForLockbox(String? lockboxId) => (super.noSuchMethod(
+        Invocation.method(
+          #getShardsForLockbox,
+          [lockboxId],
+        ),
+        returnValue: _i3.Future<
+            List<
+                ({
+                  int createdAt,
+                  String creatorPubkey,
+                  bool? isReceived,
+                  String? lockboxId,
+                  String? lockboxName,
+                  String? nostrEventId,
+                  List<String>? peers,
+                  String primeMod,
+                  DateTime? receivedAt,
+                  String? recipientPubkey,
+                  String shard,
+                  int shardIndex,
+                  int threshold,
+                  int totalShards
+                })>>.value(<({
+          int createdAt,
+          String creatorPubkey,
+          bool? isReceived,
+          String? lockboxId,
+          String? lockboxName,
+          String? nostrEventId,
+          List<String>? peers,
+          String primeMod,
+          DateTime? receivedAt,
+          String? recipientPubkey,
+          String shard,
+          int shardIndex,
+          int threshold,
+          int totalShards
+        })>[]),
+      ) as _i3.Future<
+          List<
+              ({
+                int createdAt,
+                String creatorPubkey,
+                bool? isReceived,
+                String? lockboxId,
+                String? lockboxName,
+                String? nostrEventId,
+                List<String>? peers,
+                String primeMod,
+                DateTime? receivedAt,
+                String? recipientPubkey,
+                String shard,
+                int shardIndex,
+                int threshold,
+                int totalShards
+              })>>);
+
+  @override
+  _i3.Future<void> clearShardsForLockbox(String? lockboxId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #clearShardsForLockbox,
+          [lockboxId],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
+  _i3.Future<bool> isKeyHolderForLockbox(String? lockboxId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #isKeyHolderForLockbox,
+          [lockboxId],
+        ),
+        returnValue: _i3.Future<bool>.value(false),
+      ) as _i3.Future<bool>);
+
+  @override
+  _i3.Future<void> addRecoveryRequestToLockbox(
+    String? lockboxId,
+    _i10.RecoveryRequest? request,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #addRecoveryRequestToLockbox,
+          [
+            lockboxId,
+            request,
+          ],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
+  _i3.Future<void> updateRecoveryRequestInLockbox(
+    String? lockboxId,
+    String? requestId,
+    _i10.RecoveryRequest? updatedRequest,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #updateRecoveryRequestInLockbox,
+          [
+            lockboxId,
+            requestId,
+            updatedRequest,
+          ],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
+  _i3.Future<List<_i10.RecoveryRequest>> getRecoveryRequestsForLockbox(
+          String? lockboxId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getRecoveryRequestsForLockbox,
+          [lockboxId],
+        ),
+        returnValue: _i3.Future<List<_i10.RecoveryRequest>>.value(
+            <_i10.RecoveryRequest>[]),
+      ) as _i3.Future<List<_i10.RecoveryRequest>>);
+
+  @override
+  _i3.Future<_i10.RecoveryRequest?> getActiveRecoveryRequest(
+          String? lockboxId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getActiveRecoveryRequest,
+          [lockboxId],
+        ),
+        returnValue: _i3.Future<_i10.RecoveryRequest?>.value(),
+      ) as _i3.Future<_i10.RecoveryRequest?>);
+
+  @override
+  _i3.Future<List<_i10.RecoveryRequest>> getAllRecoveryRequests() =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getAllRecoveryRequests,
+          [],
+        ),
+        returnValue: _i3.Future<List<_i10.RecoveryRequest>>.value(
+            <_i10.RecoveryRequest>[]),
+      ) as _i3.Future<List<_i10.RecoveryRequest>>);
+
+  @override
+  void dispose() => super.noSuchMethod(
+        Invocation.method(
+          #dispose,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
 }

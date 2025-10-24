@@ -11,5 +11,6 @@
         100
     ],
     "editor.wordWrap": "wordWrapColumn",
-    "editor.wordWrapColumn": 100
+    "editor.wordWrapColumn": 100,
+    "cmake.sourceDirectory": "/Users/matt/work/keydex/keydex/linux"
 }
