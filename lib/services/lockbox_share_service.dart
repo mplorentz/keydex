@@ -1,9 +1,17 @@
 import 'dart:convert';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/shard_data.dart';
 import '../models/lockbox.dart';
 import '../providers/lockbox_provider.dart';
 import 'logger.dart';
+
+/// Provider for LockboxShareService
+/// This service depends on LockboxRepository for shard management
+final lockboxShareServiceProvider = Provider<LockboxShareService>((ref) {
+  final repository = ref.watch(lockboxRepositoryProvider);
+  return LockboxShareService(repository);
+});
 
 /// Service for managing lockbox shares and recovery operations
 ///
@@ -11,6 +19,9 @@ import 'logger.dart';
 /// 1. Key holder shards: Shards we hold as a key holder for others (one per lockbox)
 /// 2. Recovery shards: Shards we collect during recovery (multiple per recovery request)
 class LockboxShareService {
+  final LockboxRepository repository;
+
+  LockboxShareService(this.repository);
   static const String _shardDataKey = 'lockbox_shard_data';
   static const String _recoveryShardDataKey = 'recovery_shard_data';
 
@@ -24,7 +35,7 @@ class LockboxShareService {
   static bool _isInitialized = false;
 
   /// Initialize the service
-  static Future<void> initialize() async {
+  Future<void> initialize() async {
     if (_isInitialized) return;
 
     try {
@@ -42,7 +53,7 @@ class LockboxShareService {
   }
 
   /// Load shard data from storage
-  static Future<void> _loadShardData() async {
+  Future<void> _loadShardData() async {
     final prefs = await SharedPreferences.getInstance();
     final jsonData = prefs.getString(_shardDataKey);
 
@@ -65,7 +76,7 @@ class LockboxShareService {
   }
 
   /// Save shard data to storage
-  static Future<void> _saveShardData() async {
+  Future<void> _saveShardData() async {
     if (_cachedShardData == null) return;
 
     try {
@@ -85,7 +96,7 @@ class LockboxShareService {
   }
 
   /// Load recovery shard data from storage
-  static Future<void> _loadRecoveryShardData() async {
+  Future<void> _loadRecoveryShardData() async {
     final prefs = await SharedPreferences.getInstance();
     final jsonData = prefs.getString(_recoveryShardDataKey);
 
@@ -111,7 +122,7 @@ class LockboxShareService {
   }
 
   /// Save recovery shard data to storage
-  static Future<void> _saveRecoveryShardData() async {
+  Future<void> _saveRecoveryShardData() async {
     if (_cachedRecoveryShards == null) return;
 
     try {
@@ -133,19 +144,19 @@ class LockboxShareService {
 
   /// Get all shares for a lockbox
   /// Now delegates to LockboxService
-  static Future<List<ShardData>> getLockboxShares(String lockboxId) async {
-    return await LockboxRepository.instance.getShardsForLockbox(lockboxId);
+  Future<List<ShardData>> getLockboxShares(String lockboxId) async {
+    return await repository.getShardsForLockbox(lockboxId);
   }
 
   /// Get the share for a lockbox (returns first shard if multiple exist)
-  /// Now delegates to LockboxService
-  static Future<ShardData?> getLockboxShare(String lockboxId) async {
-    final shards = await LockboxRepository.instance.getShardsForLockbox(lockboxId);
+  /// Now delegates to LockboxRepository
+  Future<ShardData?> getLockboxShare(String lockboxId) async {
+    final shards = await repository.getShardsForLockbox(lockboxId);
     return shards.isNotEmpty ? shards.first : null;
   }
 
   /// Get a specific share by nostr event ID
-  static Future<ShardData?> getShareByEventId(String nostrEventId) async {
+  Future<ShardData?> getShareByEventId(String nostrEventId) async {
     await initialize();
 
     for (final shard in _cachedShardData!.values) {
@@ -159,7 +170,7 @@ class LockboxShareService {
 
   /// Add or update shard data for a lockbox
   /// Now delegates to LockboxService
-  static Future<void> addLockboxShare(String lockboxId, ShardData shardData) async {
+  Future<void> addLockboxShare(String lockboxId, ShardData shardData) async {
     // Validate shard data
     if (!shardData.isValid) {
       throw ArgumentError('Invalid shard data');
@@ -169,15 +180,15 @@ class LockboxShareService {
     await _ensureLockboxExists(lockboxId, shardData);
 
     // Add shard to lockbox via LockboxService
-    await LockboxRepository.instance.addShardToLockbox(lockboxId, shardData);
+    await repository.addShardToLockbox(lockboxId, shardData);
     Log.info('Added shard for lockbox $lockboxId (event: ${shardData.nostrEventId})');
   }
 
   /// Ensure a lockbox record exists for received shares
-  static Future<void> _ensureLockboxExists(String lockboxId, ShardData shardData) async {
+  Future<void> _ensureLockboxExists(String lockboxId, ShardData shardData) async {
     try {
       // Check if lockbox already exists
-      final existingLockbox = await LockboxRepository.instance.getLockbox(lockboxId);
+      final existingLockbox = await repository.getLockbox(lockboxId);
       if (existingLockbox != null) {
         Log.info('Lockbox $lockboxId already exists');
         return;
@@ -194,7 +205,7 @@ class LockboxShareService {
         ownerPubkey: shardData.creatorPubkey, // Owner is the creator of the shard
       );
 
-      await LockboxRepository.instance.addLockbox(lockbox);
+      await repository.addLockbox(lockbox);
       Log.info('Created lockbox record for shared key: $lockboxId ($lockboxName)');
     } catch (e) {
       Log.error('Error creating lockbox record for $lockboxId', e);
@@ -203,7 +214,7 @@ class LockboxShareService {
   }
 
   /// Mark a share as received
-  static Future<void> markShareAsReceived(String lockboxId) async {
+  Future<void> markShareAsReceived(String lockboxId) async {
     await initialize();
 
     final shard = _cachedShardData![lockboxId];
@@ -224,7 +235,7 @@ class LockboxShareService {
   }
 
   /// Mark a share as received by event ID
-  static Future<void> markShareAsReceivedByEventId(String nostrEventId) async {
+  Future<void> markShareAsReceivedByEventId(String nostrEventId) async {
     await initialize();
 
     for (final entry in _cachedShardData!.entries) {
@@ -240,7 +251,7 @@ class LockboxShareService {
   /// Reassemble lockbox content from collected shares
   /// Note: This service now only stores a single shard per lockbox.
   /// For full recovery, you need to collect shards from multiple key holders.
-  static Future<String?> reassembleLockboxContent(String lockboxId) async {
+  Future<String?> reassembleLockboxContent(String lockboxId) async {
     await initialize();
 
     final shard = _cachedShardData![lockboxId];
@@ -256,45 +267,45 @@ class LockboxShareService {
 
   /// Check if we have a shard for this lockbox
   /// Note: This returns true if we have ANY shard, but doesn't indicate if we have sufficient shards for recovery
-  static Future<bool> hasShard(String lockboxId) async {
+  Future<bool> hasShard(String lockboxId) async {
     await initialize();
     return _cachedShardData!.containsKey(lockboxId);
   }
 
   /// Get all collected shard data (returns all shards we hold as a key holder)
-  static Future<List<ShardData>> getAllCollectedShards() async {
+  Future<List<ShardData>> getAllCollectedShards() async {
     await initialize();
     return _cachedShardData!.values.toList();
   }
 
   /// Get all lockboxes that have shares (indicating key holder status)
-  static Future<List<String>> getLockboxesWithShares() async {
+  Future<List<String>> getLockboxesWithShares() async {
     await initialize();
     return _cachedShardData!.keys.toList();
   }
 
   /// Check if user is a key holder for a lockbox
   /// Now delegates to LockboxService
-  static Future<bool> isKeyHolderForLockbox(String lockboxId) async {
-    return await LockboxRepository.instance.isKeyHolderForLockbox(lockboxId);
+  Future<bool> isKeyHolderForLockbox(String lockboxId) async {
+    return await repository.isKeyHolderForLockbox(lockboxId);
   }
 
   /// Get shard count for a lockbox
   /// Now delegates to LockboxService
-  static Future<int> getShardCount(String lockboxId) async {
-    final shards = await LockboxRepository.instance.getShardsForLockbox(lockboxId);
+  Future<int> getShardCount(String lockboxId) async {
+    final shards = await repository.getShardsForLockbox(lockboxId);
     return shards.length;
   }
 
   /// Remove shard for a lockbox
   /// Now delegates to LockboxService
-  static Future<void> removeLockboxShare(String lockboxId) async {
-    await LockboxRepository.instance.clearShardsForLockbox(lockboxId);
+  Future<void> removeLockboxShare(String lockboxId) async {
+    await repository.clearShardsForLockbox(lockboxId);
     Log.info('Removed all shards for lockbox $lockboxId');
   }
 
   /// Remove a specific shard by nostr event ID
-  static Future<void> removeShareByEventId(String nostrEventId) async {
+  Future<void> removeShareByEventId(String nostrEventId) async {
     await initialize();
 
     for (final entry in _cachedShardData!.entries) {
@@ -308,7 +319,7 @@ class LockboxShareService {
   }
 
   /// Get total shard count across all lockboxes (equals number of lockboxes we're a key holder for)
-  static Future<int> getTotalShardCount() async {
+  Future<int> getTotalShardCount() async {
     await initialize();
     return _cachedShardData!.length;
   }
@@ -317,7 +328,7 @@ class LockboxShareService {
   // These methods manage shards collected during recovery
 
   /// Add a recovery shard (for recovery initiator collecting shards from key holders)
-  static Future<void> addRecoveryShard(String recoveryRequestId, ShardData shardData) async {
+  Future<void> addRecoveryShard(String recoveryRequestId, ShardData shardData) async {
     await initialize();
 
     // Validate shard data
@@ -350,7 +361,7 @@ class LockboxShareService {
   }
 
   /// Get all recovery shards for a recovery request
-  static Future<List<ShardData>> getRecoveryShards(String recoveryRequestId) async {
+  Future<List<ShardData>> getRecoveryShards(String recoveryRequestId) async {
     await initialize();
 
     final shards = _cachedRecoveryShards![recoveryRequestId];
@@ -360,7 +371,7 @@ class LockboxShareService {
   }
 
   /// Get recovery shard count for a recovery request
-  static Future<int> getRecoveryShardCount(String recoveryRequestId) async {
+  Future<int> getRecoveryShardCount(String recoveryRequestId) async {
     await initialize();
 
     final shards = _cachedRecoveryShards![recoveryRequestId];
@@ -368,7 +379,7 @@ class LockboxShareService {
   }
 
   /// Check if we have sufficient recovery shards for a recovery request
-  static Future<bool> hasSufficientRecoveryShards(String recoveryRequestId, int threshold) async {
+  Future<bool> hasSufficientRecoveryShards(String recoveryRequestId, int threshold) async {
     await initialize();
 
     final shards = _cachedRecoveryShards![recoveryRequestId];
@@ -376,7 +387,7 @@ class LockboxShareService {
   }
 
   /// Remove all recovery shards for a recovery request
-  static Future<void> removeRecoveryShards(String recoveryRequestId) async {
+  Future<void> removeRecoveryShards(String recoveryRequestId) async {
     await initialize();
 
     if (_cachedRecoveryShards!.containsKey(recoveryRequestId)) {
@@ -388,7 +399,7 @@ class LockboxShareService {
   }
 
   /// Clear all shard data (for testing)
-  static Future<void> clearAll() async {
+  Future<void> clearAll() async {
     _cachedShardData = {};
     _cachedRecoveryShards = {};
     final prefs = await SharedPreferences.getInstance();
@@ -399,7 +410,7 @@ class LockboxShareService {
   }
 
   /// Refresh the cached data from storage
-  static Future<void> refresh() async {
+  Future<void> refresh() async {
     _isInitialized = false;
     _cachedShardData = null;
     _cachedRecoveryShards = null;

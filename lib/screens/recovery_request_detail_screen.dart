@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/recovery_request.dart';
 import '../models/shard_data.dart';
 import '../services/recovery_service.dart';
@@ -8,7 +9,7 @@ import '../services/lockbox_share_service.dart';
 import '../services/logger.dart';
 
 /// Screen for viewing and responding to a recovery request
-class RecoveryRequestDetailScreen extends StatefulWidget {
+class RecoveryRequestDetailScreen extends ConsumerStatefulWidget {
   final RecoveryRequest recoveryRequest;
 
   const RecoveryRequestDetailScreen({
@@ -17,10 +18,10 @@ class RecoveryRequestDetailScreen extends StatefulWidget {
   });
 
   @override
-  State<RecoveryRequestDetailScreen> createState() => _RecoveryRequestDetailScreenState();
+  ConsumerState<RecoveryRequestDetailScreen> createState() => _RecoveryRequestDetailScreenState();
 }
 
-class _RecoveryRequestDetailScreenState extends State<RecoveryRequestDetailScreen> {
+class _RecoveryRequestDetailScreenState extends ConsumerState<RecoveryRequestDetailScreen> {
   bool _isLoading = false;
   String? _currentPubkey;
 
@@ -61,9 +62,9 @@ class _RecoveryRequestDetailScreenState extends State<RecoveryRequestDetailScree
 
       // If approving, get the shard data for this lockbox
       if (approved) {
-        final shares = await LockboxShareService.getLockboxShares(
-          widget.recoveryRequest.lockboxId,
-        );
+        final shares = await ref.read(lockboxShareServiceProvider).getLockboxShares(
+              widget.recoveryRequest.lockboxId,
+            );
 
         if (shares.isEmpty) {
           if (mounted) {
@@ -83,13 +84,14 @@ class _RecoveryRequestDetailScreenState extends State<RecoveryRequestDetailScree
       }
 
       // Submit response locally
-      await RecoveryService.respondToRecoveryRequest(
+      await ref.read(recoveryServiceProvider).respondToRecoveryRequest(
           widget.recoveryRequest.id, _currentPubkey!, approved,
           shardData: shardData);
 
       // Send response via Nostr
       try {
-        final relays = await RelayScanService.getRelayConfigurations(enabledOnly: true);
+        final relays =
+            await ref.read(relayScanServiceProvider).getRelayConfigurations(enabledOnly: true);
         final relayUrls = relays.map((r) => r.url).toList();
 
         if (relayUrls.isEmpty) {
@@ -97,12 +99,12 @@ class _RecoveryRequestDetailScreenState extends State<RecoveryRequestDetailScree
         } else if (shardData == null) {
           Log.error('No shard data found, recovery response not sent via Nostr');
         } else {
-          await RecoveryService.sendRecoveryResponseViaNostr(
-            widget.recoveryRequest,
-            shardData,
-            approved,
-            relays: relayUrls,
-          );
+          await ref.read(recoveryServiceProvider).sendRecoveryResponseViaNostr(
+                widget.recoveryRequest,
+                shardData,
+                approved,
+                relays: relayUrls,
+              );
         }
       } catch (e) {
         Log.error('Failed to send recovery response via Nostr', e);
