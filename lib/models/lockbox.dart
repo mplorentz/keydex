@@ -1,5 +1,6 @@
 import 'shard_data.dart';
 import 'recovery_request.dart';
+import 'backup_config.dart';
 
 /// Backup configuration constraints
 class LockboxBackupConstraints {
@@ -32,6 +33,7 @@ class Lockbox {
   final String ownerPubkey; // Hex format, 64 characters
   final List<ShardData> shards; // List of shards (single as key holder, multiple during recovery)
   final List<RecoveryRequest> recoveryRequests; // Embedded recovery requests
+  final BackupConfig? backupConfig; // Optional backup configuration
 
   Lockbox({
     required this.id,
@@ -41,6 +43,7 @@ class Lockbox {
     required this.ownerPubkey,
     this.shards = const [],
     this.recoveryRequests = const [],
+    this.backupConfig,
   });
 
   /// Get the state of this lockbox based on priority:
@@ -87,6 +90,7 @@ class Lockbox {
       'ownerPubkey': ownerPubkey,
       'shards': shards.map((shard) => shardDataToJson(shard)).toList(),
       'recoveryRequests': recoveryRequests.map((request) => request.toJson()).toList(),
+      'backupConfig': backupConfig != null ? backupConfigToJson(backupConfig!) : null,
     };
   }
 
@@ -108,6 +112,9 @@ class Lockbox {
               .map((reqJson) => RecoveryRequest.fromJson(reqJson as Map<String, dynamic>))
               .toList()
           : [],
+      backupConfig: json['backupConfig'] != null
+          ? backupConfigFromJson(json['backupConfig'] as Map<String, dynamic>)
+          : null,
     );
   }
 
@@ -120,6 +127,7 @@ class Lockbox {
     String? ownerPubkey,
     List<ShardData>? shards,
     List<RecoveryRequest>? recoveryRequests,
+    BackupConfig? backupConfig,
   }) {
     return Lockbox(
       id: id ?? this.id,
@@ -129,6 +137,7 @@ class Lockbox {
       ownerPubkey: ownerPubkey ?? this.ownerPubkey,
       shards: shards ?? this.shards,
       recoveryRequests: recoveryRequests ?? this.recoveryRequests,
+      backupConfig: backupConfig ?? this.backupConfig,
     );
   }
 

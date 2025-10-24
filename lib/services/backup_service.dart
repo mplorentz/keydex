@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:ntcdcrypto/ntcdcrypto.dart';
 import 'package:ndk/ndk.dart';
 import '../models/backup_config.dart';
@@ -8,83 +7,13 @@ import '../models/shard_data.dart';
 import '../models/backup_status.dart';
 import '../models/key_holder_status.dart';
 import '../models/lockbox.dart';
+import '../providers/lockbox_provider.dart';
 import 'key_service.dart';
-import 'lockbox_service.dart';
 import 'shard_distribution_service.dart';
 import '../services/logger.dart';
 
 /// Service for managing distributed backup using Shamir's Secret Sharing
 class BackupService {
-  static const _storage = FlutterSecureStorage();
-  static const String _backupConfigsKey = 'backup_configs';
-  static Map<String, BackupConfig>? _cachedConfigs;
-  static bool _isInitialized = false;
-
-  /// Initialize the backup service
-  static Future<void> initialize() async {
-    if (_isInitialized) return;
-
-    try {
-      await _loadBackupConfigs();
-      _isInitialized = true;
-    } catch (e) {
-      Log.error('Error initializing BackupService', e);
-      _cachedConfigs = {};
-      _isInitialized = true;
-    }
-  }
-
-  /// Load backup configurations from secure storage
-  static Future<void> _loadBackupConfigs() async {
-    try {
-      final encryptedData = await _storage.read(key: _backupConfigsKey);
-
-      if (encryptedData == null || encryptedData.isEmpty) {
-        _cachedConfigs = {};
-        Log.info('No backup configurations found');
-        return;
-      }
-
-      // Decrypt the data using our Nostr key
-      final decryptedJson = await KeyService.decryptText(encryptedData);
-      final Map<String, dynamic> jsonMap = json.decode(decryptedJson);
-
-      _cachedConfigs = {};
-      for (final entry in jsonMap.entries) {
-        _cachedConfigs![entry.key] = backupConfigFromJson(entry.value as Map<String, dynamic>);
-      }
-
-      Log.info('Loaded ${_cachedConfigs!.length} backup configurations');
-    } catch (e) {
-      Log.error('Error loading backup configurations', e);
-      _cachedConfigs = {};
-    }
-  }
-
-  /// Save backup configurations to secure storage
-  static Future<void> _saveBackupConfigs() async {
-    if (_cachedConfigs == null) return;
-
-    try {
-      // Convert to JSON
-      final jsonMap = <String, dynamic>{};
-      for (final entry in _cachedConfigs!.entries) {
-        jsonMap[entry.key] = backupConfigToJson(entry.value);
-      }
-      final jsonString = json.encode(jsonMap);
-
-      // Encrypt the JSON data using our Nostr key
-      final encryptedData = await KeyService.encryptText(jsonString);
-
-      // Save to secure storage
-      await _storage.write(key: _backupConfigsKey, value: encryptedData);
-      Log.info('Saved ${_cachedConfigs!.length} backup configurations');
-    } catch (e) {
-      Log.error('Error saving backup configurations', e);
-      throw Exception('Failed to save backup configurations: $e');
-    }
-  }
-
   /// Create a new backup configuration
   static Future<BackupConfig> createBackupConfiguration({
     required String lockboxId,
@@ -92,10 +21,9 @@ class BackupService {
     required int totalKeys,
     required List<KeyHolder> keyHolders,
     required List<String> relays,
+    required LockboxRepository repository,
     String? contentHash,
   }) async {
-    await initialize();
-
     // Validate inputs
     if (threshold < LockboxBackupConstraints.minThreshold || threshold > totalKeys) {
       throw ArgumentError(
@@ -122,49 +50,42 @@ class BackupService {
       contentHash: contentHash,
     );
 
-    // Store the configuration
-    _cachedConfigs![lockboxId] = config;
-    await _saveBackupConfigs();
+    // Store the configuration in the lockbox via repository
+    await repository.updateBackupConfig(lockboxId, config);
 
     Log.info('Created backup configuration for lockbox $lockboxId');
     return config;
   }
 
   /// Get backup configuration for a lockbox
-  static Future<BackupConfig?> getBackupConfig(String lockboxId) async {
-    await initialize();
-    return _cachedConfigs![lockboxId];
+  static Future<BackupConfig?> getBackupConfig(
+      String lockboxId, LockboxRepository repository) async {
+    return await repository.getBackupConfig(lockboxId);
   }
 
   /// Get all backup configurations
-  static Future<List<BackupConfig>> getAllBackupConfigs() async {
-    await initialize();
-    return List.unmodifiable(_cachedConfigs!.values);
+  static Future<List<BackupConfig>> getAllBackupConfigs(LockboxRepository repository) async {
+    final lockboxes = await repository.getAllLockboxes();
+    return lockboxes
+        .where((lockbox) => lockbox.backupConfig != null)
+        .map((lockbox) => lockbox.backupConfig!)
+        .toList();
   }
 
   /// Update backup configuration
-  static Future<void> updateBackupConfig(BackupConfig config) async {
-    await initialize();
-
-    if (!_cachedConfigs!.containsKey(config.lockboxId)) {
-      throw ArgumentError('Backup configuration not found for lockbox ${config.lockboxId}');
-    }
-
-    _cachedConfigs![config.lockboxId] = config;
-    await _saveBackupConfigs();
-
+  static Future<void> updateBackupConfig(BackupConfig config, LockboxRepository repository) async {
+    await repository.updateBackupConfig(config.lockboxId, config);
     Log.info('Updated backup configuration for lockbox ${config.lockboxId}');
   }
 
   /// Delete backup configuration
-  static Future<void> deleteBackupConfig(String lockboxId) async {
-    await initialize();
-
-    if (_cachedConfigs!.containsKey(lockboxId)) {
-      _cachedConfigs!.remove(lockboxId);
-      await _saveBackupConfigs();
-      Log.info('Deleted backup configuration for lockbox $lockboxId');
+  static Future<void> deleteBackupConfig(String lockboxId, LockboxRepository repository) async {
+    // Set backup config to null in the lockbox
+    final lockbox = await repository.getLockbox(lockboxId);
+    if (lockbox != null) {
+      await repository.saveLockbox(lockbox.copyWith(backupConfig: null));
     }
+    Log.info('Deleted backup configuration for lockbox $lockboxId');
   }
 
   /// Generate Shamir shares for lockbox content
@@ -286,18 +207,15 @@ class BackupService {
   }
 
   /// Update backup status
-  static Future<void> updateBackupStatus(String lockboxId, BackupStatus status) async {
-    await initialize();
-
-    final config = _cachedConfigs![lockboxId];
+  static Future<void> updateBackupStatus(
+      String lockboxId, BackupStatus status, LockboxRepository repository) async {
+    final config = await repository.getBackupConfig(lockboxId);
     if (config == null) {
       throw ArgumentError('Backup configuration not found for lockbox $lockboxId');
     }
 
     final updatedConfig = copyBackupConfig(config, status: status, lastUpdated: DateTime.now());
-
-    _cachedConfigs![lockboxId] = updatedConfig;
-    await _saveBackupConfigs();
+    await repository.updateBackupConfig(lockboxId, updatedConfig);
 
     Log.info('Updated backup status for lockbox $lockboxId to $status');
   }
@@ -307,12 +225,11 @@ class BackupService {
     required String lockboxId,
     required String pubkey, // Hex format
     required KeyHolderStatus status,
+    required LockboxRepository repository,
     DateTime? acknowledgedAt,
     String? acknowledgmentEventId,
   }) async {
-    await initialize();
-
-    final config = _cachedConfigs![lockboxId];
+    final config = await repository.getBackupConfig(lockboxId);
     if (config == null) {
       throw ArgumentError('Backup configuration not found for lockbox $lockboxId');
     }
@@ -336,27 +253,17 @@ class BackupService {
       lastUpdated: DateTime.now(),
     );
 
-    _cachedConfigs![lockboxId] = updatedConfig;
-    await _saveBackupConfigs();
+    await repository.updateBackupConfig(lockboxId, updatedConfig);
 
     Log.info('Updated key holder $pubkey status to $status');
   }
 
   /// Check if backup is ready (all required key holders have acknowledged)
-  static Future<bool> isBackupReady(String lockboxId) async {
-    await initialize();
-
-    final config = _cachedConfigs![lockboxId];
+  static Future<bool> isBackupReady(String lockboxId, LockboxRepository repository) async {
+    final config = await repository.getBackupConfig(lockboxId);
     if (config == null) return false;
 
     return config.acknowledgedKeyHoldersCount >= config.threshold;
-  }
-
-  /// Clear all backup configurations (for testing)
-  static Future<void> clearAll() async {
-    _cachedConfigs = {};
-    await _storage.delete(key: _backupConfigsKey);
-    _isInitialized = false;
   }
 
   /// High-level method to create and distribute a backup
@@ -375,10 +282,11 @@ class BackupService {
     required int totalKeys,
     required List<KeyHolder> keyHolders,
     required List<String> relays,
+    required LockboxRepository repository,
   }) async {
     try {
       // Step 1: Load lockbox content
-      final lockbox = await LockboxService.getLockbox(lockboxId);
+      final lockbox = await repository.getLockbox(lockboxId);
       if (lockbox == null) {
         throw Exception('Lockbox not found: $lockboxId');
       }
@@ -398,9 +306,9 @@ class BackupService {
       Log.info('Retrieved creator key pair');
 
       // Step 3: Delete existing config if present (allows overwrite)
-      await initialize();
-      if (_cachedConfigs!.containsKey(lockboxId)) {
-        await deleteBackupConfig(lockboxId);
+      final existingConfig = await repository.getBackupConfig(lockboxId);
+      if (existingConfig != null) {
+        await deleteBackupConfig(lockboxId, repository);
         Log.info('Deleted existing backup configuration for overwrite');
       }
 
@@ -411,6 +319,7 @@ class BackupService {
         totalKeys: totalKeys,
         keyHolders: keyHolders,
         relays: relays,
+        repository: repository,
       );
       Log.info('Created backup configuration');
 
@@ -439,6 +348,7 @@ class BackupService {
         config: config,
         shards: shards,
         ndk: ndk,
+        repository: repository,
       );
       Log.info('Successfully distributed all shards');
 

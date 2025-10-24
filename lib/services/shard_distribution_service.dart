@@ -7,6 +7,7 @@ import '../models/shard_data.dart';
 import '../models/key_holder.dart';
 import '../models/key_holder_status.dart';
 import '../models/event_status.dart';
+import '../providers/lockbox_provider.dart';
 import 'backup_service.dart';
 import 'logger.dart';
 
@@ -18,6 +19,7 @@ class ShardDistributionService {
     required BackupConfig config,
     required List<ShardData> shards,
     required Ndk ndk,
+    required LockboxRepository repository,
   }) async {
     try {
       if (shards.length != config.totalKeys) {
@@ -95,6 +97,7 @@ class ShardDistributionService {
     required String lockboxId,
     required List<ShardEvent> shardEvents,
     required Ndk ndk,
+    required LockboxRepository repository,
   }) async {
     try {
       for (final shardEvent in shardEvents) {
@@ -135,6 +138,7 @@ class ShardDistributionService {
               lockboxId: lockboxId,
               pubkey: shardEvent.recipientPubkey, // Hex format
               status: KeyHolderStatus.acknowledged,
+              repository: repository,
               acknowledgedAt: DateTime.now(),
               acknowledgmentEventId: acknowledgmentEventId,
             );
@@ -144,6 +148,7 @@ class ShardDistributionService {
               lockboxId: lockboxId,
               pubkey: shardEvent.recipientPubkey, // Hex format
               status: KeyHolderStatus.active,
+              repository: repository,
             );
           }
         } catch (e) {

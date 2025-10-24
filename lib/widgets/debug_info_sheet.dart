@@ -6,7 +6,6 @@ import '../providers/lockbox_provider.dart';
 import '../services/lockbox_share_service.dart';
 import '../services/recovery_service.dart';
 import '../services/relay_scan_service.dart';
-import '../services/backup_service.dart';
 import '../services/logger.dart';
 
 /// Debug information sheet widget
@@ -58,7 +57,6 @@ class DebugInfoSheet extends ConsumerWidget {
       await LockboxShareService.clearAll();
       await RecoveryService.clearAll();
       await RelayScanService.clearAll();
-      await BackupService.clearAll();
       await ref.read(keyRepositoryProvider).clearKeys();
 
       Log.info('All app data cleared successfully');
