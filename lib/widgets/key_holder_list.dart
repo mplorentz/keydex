@@ -228,7 +228,7 @@ class KeyHolderList extends ConsumerWidget {
           .map((kh) => KeyHolderInfo(
                 pubkey: kh.pubkey,
                 displayName: kh.displayName,
-                isOwner: kh.pubkey == currentPubkey,
+                isOwner: kh.pubkey == lockbox.ownerPubkey,
               ))
           .toList();
     }
