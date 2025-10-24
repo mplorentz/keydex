@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/lockbox.dart';
 import '../providers/lockbox_provider.dart';
 import '../providers/key_provider.dart';
-import '../services/lockbox_service.dart';
 import '../widgets/recovery_section.dart';
 import '../widgets/row_button.dart';
 import '../widgets/lockbox_metadata_section.dart';
@@ -87,7 +86,7 @@ class LockboxDetailScreen extends ConsumerWidget {
             ],
             onSelected: (value) {
               if (value == 'delete') {
-                _showDeleteDialog(context, lockbox);
+                _showDeleteDialog(context, ref, lockbox);
               }
             },
           ),
@@ -153,7 +152,7 @@ class LockboxDetailScreen extends ConsumerWidget {
     );
   }
 
-  void _showDeleteDialog(BuildContext context, Lockbox lockbox) {
+  void _showDeleteDialog(BuildContext context, WidgetRef ref, Lockbox lockbox) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -167,7 +166,9 @@ class LockboxDetailScreen extends ConsumerWidget {
           ),
           TextButton(
             onPressed: () async {
-              await LockboxService.deleteLockbox(lockbox.id);
+              // Use Riverpod to get the repository - much better for testing!
+              final repository = ref.read(lockboxRepositoryProvider);
+              await repository.deleteLockbox(lockbox.id);
               if (context.mounted) {
                 Navigator.pop(context); // Close dialog
                 Navigator.pop(context); // Go back to list

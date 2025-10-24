@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/shard_data.dart';
 import '../models/lockbox.dart';
-import 'lockbox_service.dart';
+import '../providers/lockbox_provider.dart';
 import 'logger.dart';
 
 /// Service for managing lockbox shares and recovery operations
@@ -134,13 +134,13 @@ class LockboxShareService {
   /// Get all shares for a lockbox
   /// Now delegates to LockboxService
   static Future<List<ShardData>> getLockboxShares(String lockboxId) async {
-    return await LockboxService.getShardsForLockbox(lockboxId);
+    return await LockboxRepository.instance.getShardsForLockbox(lockboxId);
   }
 
   /// Get the share for a lockbox (returns first shard if multiple exist)
   /// Now delegates to LockboxService
   static Future<ShardData?> getLockboxShare(String lockboxId) async {
-    final shards = await LockboxService.getShardsForLockbox(lockboxId);
+    final shards = await LockboxRepository.instance.getShardsForLockbox(lockboxId);
     return shards.isNotEmpty ? shards.first : null;
   }
 
@@ -169,7 +169,7 @@ class LockboxShareService {
     await _ensureLockboxExists(lockboxId, shardData);
 
     // Add shard to lockbox via LockboxService
-    await LockboxService.addShardToLockbox(lockboxId, shardData);
+    await LockboxRepository.instance.addShardToLockbox(lockboxId, shardData);
     Log.info('Added shard for lockbox $lockboxId (event: ${shardData.nostrEventId})');
   }
 
@@ -177,7 +177,7 @@ class LockboxShareService {
   static Future<void> _ensureLockboxExists(String lockboxId, ShardData shardData) async {
     try {
       // Check if lockbox already exists
-      final existingLockbox = await LockboxService.getLockbox(lockboxId);
+      final existingLockbox = await LockboxRepository.instance.getLockbox(lockboxId);
       if (existingLockbox != null) {
         Log.info('Lockbox $lockboxId already exists');
         return;
@@ -194,7 +194,7 @@ class LockboxShareService {
         ownerPubkey: shardData.creatorPubkey, // Owner is the creator of the shard
       );
 
-      await LockboxService.addLockbox(lockbox);
+      await LockboxRepository.instance.addLockbox(lockbox);
       Log.info('Created lockbox record for shared key: $lockboxId ($lockboxName)');
     } catch (e) {
       Log.error('Error creating lockbox record for $lockboxId', e);
@@ -276,20 +276,20 @@ class LockboxShareService {
   /// Check if user is a key holder for a lockbox
   /// Now delegates to LockboxService
   static Future<bool> isKeyHolderForLockbox(String lockboxId) async {
-    return await LockboxService.isKeyHolderForLockbox(lockboxId);
+    return await LockboxRepository.instance.isKeyHolderForLockbox(lockboxId);
   }
 
   /// Get shard count for a lockbox
   /// Now delegates to LockboxService
   static Future<int> getShardCount(String lockboxId) async {
-    final shards = await LockboxService.getShardsForLockbox(lockboxId);
+    final shards = await LockboxRepository.instance.getShardsForLockbox(lockboxId);
     return shards.length;
   }
 
   /// Remove shard for a lockbox
   /// Now delegates to LockboxService
   static Future<void> removeLockboxShare(String lockboxId) async {
-    await LockboxService.clearShardsForLockbox(lockboxId);
+    await LockboxRepository.instance.clearShardsForLockbox(lockboxId);
     Log.info('Removed all shards for lockbox $lockboxId');
   }
 

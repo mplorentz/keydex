@@ -6,8 +6,8 @@ import '../models/nostr_kinds.dart';
 import '../models/recovery_request.dart';
 import '../models/recovery_status.dart';
 import '../models/shard_data.dart';
+import '../providers/lockbox_provider.dart';
 import 'key_service.dart';
-import 'lockbox_service.dart';
 import 'backup_service.dart';
 import 'logger.dart';
 
@@ -176,7 +176,7 @@ class RecoveryService {
     }
 
     // Add to lockbox via LockboxService
-    await LockboxService.addRecoveryRequestToLockbox(lockboxId, recoveryRequest);
+    await LockboxRepository.instance.addRecoveryRequestToLockbox(lockboxId, recoveryRequest);
 
     // Also add to local cache for notifications
     _cachedRequests!.add(recoveryRequest);
@@ -206,17 +206,17 @@ class RecoveryService {
     // Also add to lockbox
     try {
       final existingRequests =
-          await LockboxService.getRecoveryRequestsForLockbox(request.lockboxId);
+          await LockboxRepository.instance.getRecoveryRequestsForLockbox(request.lockboxId);
       final existingInLockbox = existingRequests.any((r) => r.id == request.id);
 
       if (existingInLockbox) {
-        await LockboxService.updateRecoveryRequestInLockbox(
+        await LockboxRepository.instance.updateRecoveryRequestInLockbox(
           request.lockboxId,
           request.id,
           request,
         );
       } else {
-        await LockboxService.addRecoveryRequestToLockbox(request.lockboxId, request);
+        await LockboxRepository.instance.addRecoveryRequestToLockbox(request.lockboxId, request);
       }
     } catch (e) {
       Log.error('Error saving recovery request to lockbox', e);
@@ -343,7 +343,7 @@ class RecoveryService {
 
     // Also update in lockbox
     try {
-      await LockboxService.updateRecoveryRequestInLockbox(
+      await LockboxRepository.instance.updateRecoveryRequestInLockbox(
         request.lockboxId,
         recoveryRequestId,
         updatedRequest,
@@ -379,7 +379,7 @@ class RecoveryService {
 
     // Also update in lockbox
     try {
-      await LockboxService.updateRecoveryRequestInLockbox(
+      await LockboxRepository.instance.updateRecoveryRequestInLockbox(
         request.lockboxId,
         recoveryRequestId,
         updatedRequest,
@@ -444,9 +444,9 @@ class RecoveryService {
     final content = await BackupService.reconstructFromShares(shares: shards);
 
     // Update the lockbox with recovered content
-    final lockbox = await LockboxService.getLockbox(request.lockboxId);
+    final lockbox = await LockboxRepository.instance.getLockbox(request.lockboxId);
     if (lockbox != null) {
-      await LockboxService.updateLockbox(
+      await LockboxRepository.instance.updateLockbox(
         request.lockboxId,
         lockbox.name,
         content,
@@ -465,7 +465,7 @@ class RecoveryService {
 
     // Also update in lockbox
     try {
-      await LockboxService.updateRecoveryRequestInLockbox(
+      await LockboxRepository.instance.updateRecoveryRequestInLockbox(
         request.lockboxId,
         recoveryRequestId,
         updatedRequest,
@@ -512,7 +512,7 @@ class RecoveryService {
 
     // Also update in lockbox
     try {
-      await LockboxService.updateRecoveryRequestInLockbox(
+      await LockboxRepository.instance.updateRecoveryRequestInLockbox(
         request.lockboxId,
         recoveryRequestId,
         updatedRequest,
