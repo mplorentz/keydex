@@ -5,7 +5,7 @@ import 'package:keydex/models/lockbox.dart';
 import 'package:keydex/models/recovery_request.dart';
 import 'package:keydex/models/shard_data.dart';
 import 'package:keydex/services/key_service.dart';
-import 'package:keydex/services/lockbox_service.dart';
+import 'package:keydex/providers/lockbox_provider.dart';
 import 'package:keydex/services/recovery_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -69,8 +69,10 @@ void main() {
       testCreatorPubkey = keyPair.publicKey;
 
       // Clear any existing recovery requests and lockboxes
-      await RecoveryService.clearAll();
-      await LockboxService.clearAll();
+      final repository = LockboxRepository();
+      final recoveryService = RecoveryService(repository);
+      await recoveryService.clearAll();
+      await repository.clearAll();
 
       // Create a test lockbox for recovery tests
       final testLockbox = Lockbox(
@@ -80,19 +82,20 @@ void main() {
         createdAt: DateTime.now(),
         ownerPubkey: testCreatorPubkey,
       );
-      await LockboxService.addLockbox(testLockbox);
+      await repository.addLockbox(testLockbox);
     });
 
     tearDown(() async {
-      await RecoveryService.clearAll();
-      await LockboxService.clearAll();
+      final repository = LockboxRepository();
+      await repository.clearAll();
       await KeyService.clearStoredKeys();
       KeyService.resetCacheForTest();
     });
 
     test('recovery request creation succeeds with valid data', () async {
       // Create a recovery request
-      final recoveryRequest = await RecoveryService.initiateRecovery(
+      final recoveryService = RecoveryService(LockboxRepository());
+      final recoveryRequest = await recoveryService.initiateRecovery(
         testLockboxId,
         initiatorPubkey: testCreatorPubkey,
         keyHolderPubkeys: [testKeyHolder1, testKeyHolder2],
@@ -109,7 +112,8 @@ void main() {
 
     test('recovery request JSON payload has correct structure', () async {
       // Arrange
-      final recoveryRequest = await RecoveryService.initiateRecovery(
+      final recoveryService = RecoveryService(LockboxRepository());
+      final recoveryRequest = await recoveryService.initiateRecovery(
         testLockboxId,
         initiatorPubkey: testCreatorPubkey,
         keyHolderPubkeys: [testKeyHolder1, testKeyHolder2],
@@ -143,7 +147,8 @@ void main() {
 
     test('recovery response JSON payload has correct structure with shard data', () async {
       // Arrange
-      final recoveryRequest = await RecoveryService.initiateRecovery(
+      final recoveryService = RecoveryService(LockboxRepository());
+      final recoveryRequest = await recoveryService.initiateRecovery(
         testLockboxId,
         initiatorPubkey: testCreatorPubkey,
         keyHolderPubkeys: [testKeyHolder1],
@@ -198,7 +203,8 @@ void main() {
 
     test('recovery response JSON payload for denial omits shard data', () async {
       // Arrange
-      final recoveryRequest = await RecoveryService.initiateRecovery(
+      final recoveryService = RecoveryService(LockboxRepository());
+      final recoveryRequest = await recoveryService.initiateRecovery(
         testLockboxId,
         initiatorPubkey: testCreatorPubkey,
         keyHolderPubkeys: [testKeyHolder1],
@@ -228,7 +234,8 @@ void main() {
 
     test('recovery request is sent to all key holders', () async {
       // Create a recovery request with multiple key holders
-      final recoveryRequest = await RecoveryService.initiateRecovery(
+      final recoveryService = RecoveryService(LockboxRepository());
+      final recoveryRequest = await recoveryService.initiateRecovery(
         testLockboxId,
         initiatorPubkey: testCreatorPubkey,
         keyHolderPubkeys: [testKeyHolder1, testKeyHolder2],
@@ -248,7 +255,8 @@ void main() {
 
     test('recovery response includes threshold information', () async {
       // Arrange
-      final recoveryRequest = await RecoveryService.initiateRecovery(
+      final recoveryService = RecoveryService(LockboxRepository());
+      final recoveryRequest = await recoveryService.initiateRecovery(
         testLockboxId,
         initiatorPubkey: testCreatorPubkey,
         keyHolderPubkeys: [testKeyHolder1, testKeyHolder2],
@@ -260,7 +268,8 @@ void main() {
 
     test('recovery request contains proper expiration', () async {
       // Create request with default expiration
-      final recoveryRequest = await RecoveryService.initiateRecovery(
+      final recoveryService = RecoveryService(LockboxRepository());
+      final recoveryRequest = await recoveryService.initiateRecovery(
         testLockboxId,
         initiatorPubkey: testCreatorPubkey,
         keyHolderPubkeys: [testKeyHolder1],
@@ -279,7 +288,8 @@ void main() {
 
     test('recovery request respects custom expiration duration', () async {
       // Create request with custom 2-hour expiration
-      final recoveryRequest = await RecoveryService.initiateRecovery(
+      final recoveryService = RecoveryService(LockboxRepository());
+      final recoveryRequest = await recoveryService.initiateRecovery(
         testLockboxId,
         initiatorPubkey: testCreatorPubkey,
         keyHolderPubkeys: [testKeyHolder1],
@@ -296,7 +306,8 @@ void main() {
 
     test('recovery response shard data is stored and can be retrieved', () async {
       // Create initial recovery request
-      final recoveryRequest = await RecoveryService.initiateRecovery(
+      final recoveryService = RecoveryService(LockboxRepository());
+      final recoveryRequest = await recoveryService.initiateRecovery(
         testLockboxId,
         initiatorPubkey: testCreatorPubkey,
         keyHolderPubkeys: [testKeyHolder1],
@@ -318,7 +329,7 @@ void main() {
       );
 
       // Respond to the recovery request (simulating what _handleRecoveryResponseData does)
-      await RecoveryService.respondToRecoveryRequest(
+      await recoveryService.respondToRecoveryRequest(
         recoveryRequest.id,
         testKeyHolder1,
         true, // approved
@@ -326,7 +337,7 @@ void main() {
       );
 
       // Verify the response was recorded
-      final updatedRequest = await RecoveryService.getRecoveryRequest(recoveryRequest.id);
+      final updatedRequest = await recoveryService.getRecoveryRequest(recoveryRequest.id);
       expect(updatedRequest, isNotNull);
       expect(updatedRequest!.keyHolderResponses[testKeyHolder1]?.status,
           RecoveryResponseStatus.approved);
@@ -337,7 +348,8 @@ void main() {
 
     test('recovery response denial does not include shard data', () async {
       // Create initial recovery request
-      final recoveryRequest = await RecoveryService.initiateRecovery(
+      final recoveryService = RecoveryService(LockboxRepository());
+      final recoveryRequest = await recoveryService.initiateRecovery(
         testLockboxId,
         initiatorPubkey: testCreatorPubkey,
         keyHolderPubkeys: [testKeyHolder1],
@@ -345,14 +357,14 @@ void main() {
       );
 
       // Simulate receiving a denial response (no shard data)
-      await RecoveryService.respondToRecoveryRequest(
+      await recoveryService.respondToRecoveryRequest(
         recoveryRequest.id,
         testKeyHolder1,
         false, // denied
       );
 
       // Verify the response was recorded without shard data
-      final updatedRequest = await RecoveryService.getRecoveryRequest(recoveryRequest.id);
+      final updatedRequest = await recoveryService.getRecoveryRequest(recoveryRequest.id);
       expect(updatedRequest, isNotNull);
       expect(updatedRequest!.keyHolderResponses[testKeyHolder1]?.status,
           RecoveryResponseStatus.denied);
@@ -361,7 +373,8 @@ void main() {
 
     test('multiple recovery responses accumulate correctly', () async {
       // Create recovery request with multiple key holders
-      final recoveryRequest = await RecoveryService.initiateRecovery(
+      final recoveryService = RecoveryService(LockboxRepository());
+      final recoveryRequest = await recoveryService.initiateRecovery(
         testLockboxId,
         initiatorPubkey: testCreatorPubkey,
         keyHolderPubkeys: [testKeyHolder1, testKeyHolder2],
@@ -391,7 +404,7 @@ void main() {
       );
 
       // First key holder approves
-      await RecoveryService.respondToRecoveryRequest(
+      await recoveryService.respondToRecoveryRequest(
         recoveryRequest.id,
         testKeyHolder1,
         true, // approved
@@ -399,7 +412,7 @@ void main() {
       );
 
       // Second key holder approves
-      await RecoveryService.respondToRecoveryRequest(
+      await recoveryService.respondToRecoveryRequest(
         recoveryRequest.id,
         testKeyHolder2,
         true, // approved
@@ -407,7 +420,7 @@ void main() {
       );
 
       // Verify both responses were recorded
-      final updatedRequest = await RecoveryService.getRecoveryRequest(recoveryRequest.id);
+      final updatedRequest = await recoveryService.getRecoveryRequest(recoveryRequest.id);
       expect(updatedRequest, isNotNull);
       expect(updatedRequest!.approvedCount, 2);
       expect(updatedRequest.keyHolderResponses[testKeyHolder1]?.status,

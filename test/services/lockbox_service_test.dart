@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:keydex/models/lockbox.dart';
 import 'package:keydex/services/key_service.dart';
-import 'package:keydex/services/lockbox_service.dart' as app_lockbox_service;
+import 'package:keydex/providers/lockbox_provider.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -53,11 +53,13 @@ void main() {
     await KeyService.clearStoredKeys();
     KeyService.resetCacheForTest();
 
-    await app_lockbox_service.LockboxService.clearAll();
+    final repository = LockboxRepository();
+    await repository.clearAll();
   });
 
   tearDown(() async {
-    await app_lockbox_service.LockboxService.clearAll();
+    final repository = LockboxRepository();
+    await repository.clearAll();
     await KeyService.clearStoredKeys();
     KeyService.resetCacheForTest();
   });
@@ -67,8 +69,11 @@ void main() {
     final keyPair = await KeyService.generateAndStoreNostrKey();
     final ownerPubkey = keyPair.publicKey;
 
+    // Create repository instance
+    final repository = LockboxRepository();
+
     // Start with empty list
-    final startList = await app_lockbox_service.LockboxService.getAllLockboxes();
+    final startList = await repository.getAllLockboxes();
     expect(startList, isEmpty);
 
     final lockbox = Lockbox(
@@ -79,7 +84,7 @@ void main() {
       ownerPubkey: ownerPubkey,
     );
 
-    await app_lockbox_service.LockboxService.addLockbox(lockbox);
+    await repository.addLockbox(lockbox);
 
     // Verify ciphertext stored, not plaintext
     final prefs = await SharedPreferences.getInstance();
@@ -90,17 +95,17 @@ void main() {
     expect(encrypted.contains('Secret'), isFalse); // name is inside JSON
 
     // Now load and ensure we can read back decrypted content via service
-    final listAfterAdd = await app_lockbox_service.LockboxService.getAllLockboxes();
+    final listAfterAdd = await repository.getAllLockboxes();
     expect(listAfterAdd.length, 1);
-    final fetched = await app_lockbox_service.LockboxService.getLockbox('abc');
+    final fetched = await repository.getLockbox('abc');
     expect(fetched, isNotNull);
     expect(fetched!.name, 'Secret');
     expect(fetched.content, 'Top secret content');
 
     // Update
-    await app_lockbox_service.LockboxService.updateLockbox('abc', 'Renamed', 'Still hidden');
+    await repository.updateLockbox('abc', 'Renamed', 'Still hidden');
 
-    final fetched2 = await app_lockbox_service.LockboxService.getLockbox('abc');
+    final fetched2 = await repository.getLockbox('abc');
     expect(fetched2, isNotNull);
     expect(fetched2!.name, 'Renamed');
     expect(fetched2.content, 'Still hidden');
@@ -112,8 +117,8 @@ void main() {
     expect(encrypted2.contains('Renamed'), isFalse);
 
     // Delete
-    await app_lockbox_service.LockboxService.deleteLockbox('abc');
-    final afterDelete = await app_lockbox_service.LockboxService.getLockbox('abc');
+    await repository.deleteLockbox('abc');
+    final afterDelete = await repository.getLockbox('abc');
     expect(afterDelete, isNull);
   });
 }
