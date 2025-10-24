@@ -92,10 +92,17 @@ final lockboxProvider = StreamProvider.family<Lockbox?, String>((ref, lockboxId)
 });
 
 /// Provider for lockbox repository operations
-/// This provides a singleton repository instance to ensure all parts of the app
-/// use the same repository with shared state and streams
+/// Riverpod automatically ensures this is a singleton - only one instance exists
+/// per ProviderScope. The instance is kept alive for the lifetime of the app.
 final lockboxRepositoryProvider = Provider<LockboxRepository>((ref) {
-  return LockboxRepository._singleton;
+  final repository = LockboxRepository();
+
+  // Properly clean up when the app is disposed
+  ref.onDispose(() {
+    repository.dispose();
+  });
+
+  return repository;
 });
 
 /// Repository class to handle lockbox operations
@@ -109,11 +116,8 @@ class LockboxRepository {
   final StreamController<List<Lockbox>> _lockboxesController =
       StreamController<List<Lockbox>>.broadcast();
 
-  // Singleton instance
-  static final LockboxRepository _singleton = LockboxRepository._internal();
-
-  // Private constructor for singleton
-  LockboxRepository._internal();
+  // Regular constructor - Riverpod manages the singleton behavior
+  LockboxRepository();
 
   /// Stream that emits the updated list of lockboxes whenever they change
   Stream<List<Lockbox>> get lockboxesStream => _lockboxesController.stream;
