@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/recovery_request.dart';
 import '../services/recovery_service.dart';
 import '../services/logger.dart';
 import 'recovery_request_detail_screen.dart';
 
 /// Overlay widget for displaying recovery request notifications
-class RecoveryNotificationOverlay extends StatefulWidget {
+class RecoveryNotificationOverlay extends ConsumerStatefulWidget {
   const RecoveryNotificationOverlay({super.key});
 
   @override
-  State<RecoveryNotificationOverlay> createState() => _RecoveryNotificationOverlayState();
+  ConsumerState<RecoveryNotificationOverlay> createState() => _RecoveryNotificationOverlayState();
 }
 
-class _RecoveryNotificationOverlayState extends State<RecoveryNotificationOverlay> {
+class _RecoveryNotificationOverlayState extends ConsumerState<RecoveryNotificationOverlay> {
   List<RecoveryRequest> _pendingNotifications = [];
   bool _isExpanded = false;
 
@@ -25,7 +26,7 @@ class _RecoveryNotificationOverlayState extends State<RecoveryNotificationOverla
 
   Future<void> _loadNotifications() async {
     try {
-      final notifications = await RecoveryService.getPendingNotifications();
+      final notifications = await ref.read(recoveryServiceProvider).getPendingNotifications();
       if (mounted) {
         setState(() {
           _pendingNotifications = notifications;
@@ -37,7 +38,7 @@ class _RecoveryNotificationOverlayState extends State<RecoveryNotificationOverla
   }
 
   void _listenToNotifications() {
-    RecoveryService.notificationStream.listen((notifications) {
+    ref.read(recoveryServiceProvider).notificationStream.listen((notifications) {
       if (mounted) {
         setState(() {
           _pendingNotifications = notifications;
@@ -48,7 +49,7 @@ class _RecoveryNotificationOverlayState extends State<RecoveryNotificationOverla
 
   Future<void> _viewNotification(RecoveryRequest request) async {
     try {
-      await RecoveryService.markNotificationAsViewed(request.id);
+      await ref.read(recoveryServiceProvider).markNotificationAsViewed(request.id);
 
       if (mounted) {
         Navigator.push(
@@ -67,7 +68,7 @@ class _RecoveryNotificationOverlayState extends State<RecoveryNotificationOverla
 
   Future<void> _dismissNotification(RecoveryRequest request) async {
     try {
-      await RecoveryService.markNotificationAsViewed(request.id);
+      await ref.read(recoveryServiceProvider).markNotificationAsViewed(request.id);
     } catch (e) {
       Log.error('Error dismissing notification', e);
     }

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ndk/ndk.dart';
 import 'key_service.dart';
 import 'recovery_service.dart';
@@ -9,17 +10,35 @@ import '../models/nostr_kinds.dart';
 import '../models/shard_data.dart';
 import '../models/recovery_request.dart';
 
+// Provider for NdkService
+final ndkServiceProvider = Provider<NdkService>((ref) {
+  final recoveryService = ref.watch(recoveryServiceProvider);
+  final lockboxShareService = ref.watch(lockboxShareServiceProvider);
+  return NdkService(
+    recoveryService: recoveryService,
+    lockboxShareService: lockboxShareService,
+  );
+});
+
 /// Service for managing NDK (Nostr Development Kit) connections and subscriptions
 /// Handles real-time listening for recovery requests and key share events
 class NdkService {
-  static Ndk? _ndk;
-  static bool _isInitialized = false;
-  static NdkResponse? _giftWrapSubscription;
-  static final List<String> _activeRelays = [];
-  static StreamSubscription<Nip01Event>? _giftWrapStreamSub;
+  final RecoveryService recoveryService;
+  final LockboxShareService lockboxShareService;
+
+  Ndk? _ndk;
+  bool _isInitialized = false;
+  NdkResponse? _giftWrapSubscription;
+  final List<String> _activeRelays = [];
+  StreamSubscription<Nip01Event>? _giftWrapStreamSub;
+
+  NdkService({
+    required this.recoveryService,
+    required this.lockboxShareService,
+  });
 
   /// Initialize NDK with current user's key and set up subscriptions
-  static Future<void> initialize() async {
+  Future<void> initialize() async {
     if (_isInitialized) {
       Log.info('NDK already initialized');
       return;
@@ -55,7 +74,7 @@ class NdkService {
   }
 
   /// Add a relay and start listening to it immediately
-  static Future<void> addRelay(String relayUrl) async {
+  Future<void> addRelay(String relayUrl) async {
     if (!_isInitialized) {
       await initialize();
     }
@@ -78,7 +97,7 @@ class NdkService {
   }
 
   /// Remove a relay from active listening
-  static Future<void> removeRelay(String relayUrl) async {
+  Future<void> removeRelay(String relayUrl) async {
     _activeRelays.remove(relayUrl);
     Log.info('Removed relay: $relayUrl (remaining active: ${_activeRelays.length})');
 
@@ -91,7 +110,7 @@ class NdkService {
   }
 
   /// Set up subscriptions for recovery requests and key shares
-  static Future<void> _setupSubscriptions() async {
+  Future<void> _setupSubscriptions() async {
     if (!_isInitialized || _ndk == null) {
       Log.warning('Cannot setup subscriptions: NDK not initialized');
       return;
@@ -135,7 +154,7 @@ class NdkService {
 
   /// Handle incoming gift wrap event (kind 1059)
   /// Routes to appropriate handler based on the inner kind
-  static Future<void> _handleGiftWrap(Nip01Event event) async {
+  Future<void> _handleGiftWrap(Nip01Event event) async {
     try {
       Log.info('Received gift wrap event: ${event.id}');
 
@@ -160,7 +179,7 @@ class NdkService {
   }
 
   /// Handle incoming shard data (kind 1337)
-  static Future<void> _handleShardData(Nip01Event event) async {
+  Future<void> _handleShardData(Nip01Event event) async {
     try {
       Log.info('Processing shard data event: ${event.id}');
 
@@ -171,14 +190,14 @@ class NdkService {
 
       // Store the shard data
       final lockboxId = shardData.lockboxId ?? 'unknown';
-      await LockboxShareService.addLockboxShare(lockboxId, shardData);
+      await lockboxShareService.addLockboxShare(lockboxId, shardData);
     } catch (e) {
       Log.error('Error handling shard data event ${event.id}', e);
     }
   }
 
   /// Handle incoming recovery request data (kind 1338)
-  static Future<void> _handleRecoveryRequestData(Nip01Event event) async {
+  Future<void> _handleRecoveryRequestData(Nip01Event event) async {
     try {
       // Parse the recovery request from the unwrapped content
       final requestData = json.decode(event.content) as Map<String, dynamic>;
@@ -200,7 +219,7 @@ class NdkService {
       );
 
       // Add to recovery service (will automatically show as notification)
-      await RecoveryService.addIncomingRecoveryRequest(recoveryRequest);
+      await recoveryService.addIncomingRecoveryRequest(recoveryRequest);
 
       Log.info('Added incoming recovery request: ${event.id}');
     } catch (e) {
@@ -209,7 +228,7 @@ class NdkService {
   }
 
   /// Handle incoming recovery response data (kind 1339)
-  static Future<void> _handleRecoveryResponseData(Nip01Event event) async {
+  Future<void> _handleRecoveryResponseData(Nip01Event event) async {
     try {
       // Parse the recovery response from the unwrapped content
       final responseData = json.decode(event.content) as Map<String, dynamic>;
@@ -230,14 +249,14 @@ class NdkService {
         shardData = shardDataFromJson(shardDataJson);
 
         // Store as a recovery shard (not a key holder shard)
-        await LockboxShareService.addRecoveryShard(recoveryRequestId, shardData);
+        await lockboxShareService.addRecoveryShard(recoveryRequestId, shardData);
 
         Log.info(
             'Stored recovery shard from $senderPubkey for recovery request $recoveryRequestId');
       }
 
       // Update the recovery service with this response
-      await RecoveryService.respondToRecoveryRequest(
+      await recoveryService.respondToRecoveryRequest(
         recoveryRequestId,
         senderPubkey,
         approved,
@@ -251,7 +270,7 @@ class NdkService {
   }
 
   /// Publish a recovery request to key holders
-  static Future<String?> publishRecoveryRequest({
+  Future<String?> publishRecoveryRequest({
     required String lockboxId,
     required List<String> keyHolderPubkeys,
     DateTime? expiresAt,
@@ -316,7 +335,7 @@ class NdkService {
   }
 
   /// Publish a recovery response
-  static Future<String?> publishRecoveryResponse({
+  Future<String?> publishRecoveryResponse({
     required String initiatorPubkey,
     required String recoveryRequestId,
     required bool approved,
@@ -376,28 +395,28 @@ class NdkService {
   }
 
   /// Stop listening to all subscriptions
-  static Future<void> stopListening() async {
+  Future<void> stopListening() async {
     await _closeSubscriptions();
     Log.info('Stopped all NDK subscriptions');
   }
 
   /// Close all active subscriptions
-  static Future<void> _closeSubscriptions() async {
+  Future<void> _closeSubscriptions() async {
     await _giftWrapStreamSub?.cancel();
     _giftWrapStreamSub = null;
     _giftWrapSubscription = null;
   }
 
   /// Get the list of active relays
-  static List<String> getActiveRelays() {
+  List<String> getActiveRelays() {
     return List.unmodifiable(_activeRelays);
   }
 
   /// Check if NDK is initialized
-  static bool get isInitialized => _isInitialized;
+  bool get isInitialized => _isInitialized;
 
   /// Dispose of NDK resources
-  static Future<void> dispose() async {
+  Future<void> dispose() async {
     await _closeSubscriptions();
     _activeRelays.clear();
     _ndk = null;

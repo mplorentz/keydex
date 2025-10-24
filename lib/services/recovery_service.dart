@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ndk/ndk.dart';
 import '../models/nostr_kinds.dart';
@@ -11,26 +12,50 @@ import 'key_service.dart';
 import 'backup_service.dart';
 import 'logger.dart';
 
+/// Provider for RecoveryService
+/// This service depends on LockboxRepository for recovery operations
+final recoveryServiceProvider = Provider<RecoveryService>((ref) {
+  final repository = ref.watch(lockboxRepositoryProvider);
+  final service = RecoveryService(repository);
+
+  // Clean up streams when disposed
+  ref.onDispose(() {
+    service.dispose();
+  });
+
+  return service;
+});
+
 /// Service for managing lockbox recovery operations
 /// Includes notification tracking for incoming recovery requests
 class RecoveryService {
+  final LockboxRepository repository;
+
   static const String _recoveryRequestsKey = 'recovery_requests';
   static const String _viewedNotificationIdsKey = 'viewed_recovery_notification_ids';
 
-  static List<RecoveryRequest>? _cachedRequests;
-  static Set<String>? _viewedNotificationIds;
-  static bool _isInitialized = false;
+  List<RecoveryRequest>? _cachedRequests;
+  Set<String>? _viewedNotificationIds;
+  bool _isInitialized = false;
 
   // Stream for real-time notification updates
-  static final _notificationController = StreamController<List<RecoveryRequest>>.broadcast();
-  static Stream<List<RecoveryRequest>> get notificationStream => _notificationController.stream;
+  final _notificationController = StreamController<List<RecoveryRequest>>.broadcast();
+  Stream<List<RecoveryRequest>> get notificationStream => _notificationController.stream;
 
   // Stream for recovery request updates (for status screen)
-  static final _recoveryRequestController = StreamController<RecoveryRequest>.broadcast();
-  static Stream<RecoveryRequest> get recoveryRequestStream => _recoveryRequestController.stream;
+  final _recoveryRequestController = StreamController<RecoveryRequest>.broadcast();
+  Stream<RecoveryRequest> get recoveryRequestStream => _recoveryRequestController.stream;
+
+  RecoveryService(this.repository);
+
+  /// Dispose resources
+  void dispose() {
+    _notificationController.close();
+    _recoveryRequestController.close();
+  }
 
   /// Initialize the service
-  static Future<void> initialize() async {
+  Future<void> initialize() async {
     if (_isInitialized) return;
 
     try {
@@ -47,7 +72,7 @@ class RecoveryService {
   }
 
   /// Load recovery requests from storage
-  static Future<void> _loadRecoveryRequests() async {
+  Future<void> _loadRecoveryRequests() async {
     final prefs = await SharedPreferences.getInstance();
     final jsonData = prefs.getString(_recoveryRequestsKey);
 
@@ -68,7 +93,7 @@ class RecoveryService {
   }
 
   /// Save recovery requests to storage
-  static Future<void> _saveRecoveryRequests() async {
+  Future<void> _saveRecoveryRequests() async {
     if (_cachedRequests == null) return;
 
     try {
@@ -88,7 +113,7 @@ class RecoveryService {
   }
 
   /// Load viewed notification IDs from storage
-  static Future<void> _loadViewedNotificationIds() async {
+  Future<void> _loadViewedNotificationIds() async {
     final prefs = await SharedPreferences.getInstance();
     final jsonData = prefs.getString(_viewedNotificationIdsKey);
 
@@ -108,7 +133,7 @@ class RecoveryService {
   }
 
   /// Save viewed notification IDs to storage
-  static Future<void> _saveViewedNotificationIds() async {
+  Future<void> _saveViewedNotificationIds() async {
     if (_viewedNotificationIds == null) return;
 
     try {
@@ -125,7 +150,7 @@ class RecoveryService {
   }
 
   /// Emit notification update to stream
-  static void _emitNotificationUpdate() {
+  void _emitNotificationUpdate() {
     if (_cachedRequests != null && _viewedNotificationIds != null) {
       final unviewed =
           _cachedRequests!.where((req) => !_viewedNotificationIds!.contains(req.id)).toList();
@@ -135,7 +160,7 @@ class RecoveryService {
 
   /// Initiate recovery for a lockbox
   /// Returns the created recovery request
-  static Future<RecoveryRequest> initiateRecovery(
+  Future<RecoveryRequest> initiateRecovery(
     String lockboxId, {
     required String initiatorPubkey,
     required List<String> keyHolderPubkeys,
@@ -176,7 +201,7 @@ class RecoveryService {
     }
 
     // Add to lockbox via LockboxService
-    await LockboxRepository.instance.addRecoveryRequestToLockbox(lockboxId, recoveryRequest);
+    await repository.addRecoveryRequestToLockbox(lockboxId, recoveryRequest);
 
     // Also add to local cache for notifications
     _cachedRequests!.add(recoveryRequest);
@@ -188,7 +213,7 @@ class RecoveryService {
 
   /// Add an incoming recovery request (received via Nostr)
   /// This is different from initiateRecovery which creates a new request
-  static Future<void> addIncomingRecoveryRequest(RecoveryRequest request) async {
+  Future<void> addIncomingRecoveryRequest(RecoveryRequest request) async {
     await initialize();
 
     // Check if request already exists in local cache
@@ -205,18 +230,17 @@ class RecoveryService {
 
     // Also add to lockbox
     try {
-      final existingRequests =
-          await LockboxRepository.instance.getRecoveryRequestsForLockbox(request.lockboxId);
+      final existingRequests = await repository.getRecoveryRequestsForLockbox(request.lockboxId);
       final existingInLockbox = existingRequests.any((r) => r.id == request.id);
 
       if (existingInLockbox) {
-        await LockboxRepository.instance.updateRecoveryRequestInLockbox(
+        await repository.updateRecoveryRequestInLockbox(
           request.lockboxId,
           request.id,
           request,
         );
       } else {
-        await LockboxRepository.instance.addRecoveryRequestToLockbox(request.lockboxId, request);
+        await repository.addRecoveryRequestToLockbox(request.lockboxId, request);
       }
     } catch (e) {
       Log.error('Error saving recovery request to lockbox', e);
@@ -227,7 +251,7 @@ class RecoveryService {
   }
 
   /// Get all recovery requests for the current user
-  static Future<List<RecoveryRequest>> getRecoveryRequests({
+  Future<List<RecoveryRequest>> getRecoveryRequests({
     String? lockboxId,
     RecoveryRequestStatus? status,
   }) async {
@@ -249,7 +273,7 @@ class RecoveryService {
   }
 
   /// Get a specific recovery request by ID
-  static Future<RecoveryRequest?> getRecoveryRequest(String recoveryRequestId) async {
+  Future<RecoveryRequest?> getRecoveryRequest(String recoveryRequestId) async {
     await initialize();
 
     try {
@@ -260,7 +284,7 @@ class RecoveryService {
   }
 
   /// Get recovery status for a specific request
-  static Future<RecoveryStatus?> getRecoveryStatus(String recoveryRequestId) async {
+  Future<RecoveryStatus?> getRecoveryStatus(String recoveryRequestId) async {
     await initialize();
 
     final request = await getRecoveryRequest(recoveryRequestId);
@@ -289,7 +313,7 @@ class RecoveryService {
   }
 
   /// Respond to a recovery request (from a key holder)
-  static Future<void> respondToRecoveryRequest(
+  Future<void> respondToRecoveryRequest(
     String recoveryRequestId,
     String responderPubkey,
     bool approved, {
@@ -343,7 +367,7 @@ class RecoveryService {
 
     // Also update in lockbox
     try {
-      await LockboxRepository.instance.updateRecoveryRequestInLockbox(
+      await repository.updateRecoveryRequestInLockbox(
         request.lockboxId,
         recoveryRequestId,
         updatedRequest,
@@ -361,7 +385,7 @@ class RecoveryService {
   }
 
   /// Cancel a recovery request
-  static Future<void> cancelRecoveryRequest(String recoveryRequestId) async {
+  Future<void> cancelRecoveryRequest(String recoveryRequestId) async {
     await initialize();
 
     final requestIndex = _cachedRequests!.indexWhere((r) => r.id == recoveryRequestId);
@@ -379,7 +403,7 @@ class RecoveryService {
 
     // Also update in lockbox
     try {
-      await LockboxRepository.instance.updateRecoveryRequestInLockbox(
+      await repository.updateRecoveryRequestInLockbox(
         request.lockboxId,
         recoveryRequestId,
         updatedRequest,
@@ -392,7 +416,7 @@ class RecoveryService {
   }
 
   /// Check if recovery is possible for a lockbox
-  static Future<bool> canRecoverLockbox(String lockboxId) async {
+  Future<bool> canRecoverLockbox(String lockboxId) async {
     await initialize();
 
     // Check if there are any active recovery requests for this lockbox
@@ -412,7 +436,7 @@ class RecoveryService {
 
   /// Perform lockbox recovery using collected shards
   /// Returns the recovered lockbox content
-  static Future<String> performRecovery(String recoveryRequestId) async {
+  Future<String> performRecovery(String recoveryRequestId) async {
     await initialize();
 
     final request = await getRecoveryRequest(recoveryRequestId);
@@ -444,9 +468,9 @@ class RecoveryService {
     final content = await BackupService.reconstructFromShares(shares: shards);
 
     // Update the lockbox with recovered content
-    final lockbox = await LockboxRepository.instance.getLockbox(request.lockboxId);
+    final lockbox = await repository.getLockbox(request.lockboxId);
     if (lockbox != null) {
-      await LockboxRepository.instance.updateLockbox(
+      await repository.updateLockbox(
         request.lockboxId,
         lockbox.name,
         content,
@@ -465,7 +489,7 @@ class RecoveryService {
 
     // Also update in lockbox
     try {
-      await LockboxRepository.instance.updateRecoveryRequestInLockbox(
+      await repository.updateRecoveryRequestInLockbox(
         request.lockboxId,
         recoveryRequestId,
         updatedRequest,
@@ -479,7 +503,7 @@ class RecoveryService {
   }
 
   /// Get key holder responses for a recovery request
-  static Future<List<RecoveryResponse>> getKeyHolderResponses(String recoveryRequestId) async {
+  Future<List<RecoveryResponse>> getKeyHolderResponses(String recoveryRequestId) async {
     await initialize();
 
     final request = await getRecoveryRequest(recoveryRequestId);
@@ -489,7 +513,7 @@ class RecoveryService {
   }
 
   /// Update recovery request status (for Nostr event tracking)
-  static Future<void> updateRecoveryRequestStatus(
+  Future<void> updateRecoveryRequestStatus(
     String recoveryRequestId,
     RecoveryRequestStatus status, {
     String? nostrEventId,
@@ -512,7 +536,7 @@ class RecoveryService {
 
     // Also update in lockbox
     try {
-      await LockboxRepository.instance.updateRecoveryRequestInLockbox(
+      await repository.updateRecoveryRequestInLockbox(
         request.lockboxId,
         recoveryRequestId,
         updatedRequest,
@@ -526,7 +550,7 @@ class RecoveryService {
 
   /// Send recovery request to key holders via Nostr gift wraps
   /// Returns the list of gift wrap event IDs
-  static Future<List<String>> sendRecoveryRequestViaNostr(
+  Future<List<String>> sendRecoveryRequestViaNostr(
     RecoveryRequest request, {
     required List<String> relays,
   }) async {
@@ -614,7 +638,7 @@ class RecoveryService {
 
   /// Send recovery response (shard data) back to initiator via Nostr gift wrap
   /// Returns the gift wrap event ID
-  static Future<String> sendRecoveryResponseViaNostr(
+  Future<String> sendRecoveryResponseViaNostr(
     RecoveryRequest request,
     ShardData shardData,
     bool approved, {
@@ -692,7 +716,7 @@ class RecoveryService {
   // ========== Notification Methods ==========
 
   /// Get pending (unviewed) recovery request notifications
-  static Future<List<RecoveryRequest>> getPendingNotifications() async {
+  Future<List<RecoveryRequest>> getPendingNotifications() async {
     await initialize();
 
     return _cachedRequests!
@@ -701,13 +725,13 @@ class RecoveryService {
   }
 
   /// Get all recovery request notifications (including viewed)
-  static Future<List<RecoveryRequest>> getAllNotifications() async {
+  Future<List<RecoveryRequest>> getAllNotifications() async {
     await initialize();
     return List.unmodifiable(_cachedRequests!);
   }
 
   /// Mark a recovery request notification as viewed
-  static Future<void> markNotificationAsViewed(String recoveryRequestId) async {
+  Future<void> markNotificationAsViewed(String recoveryRequestId) async {
     await initialize();
 
     if (!_viewedNotificationIds!.contains(recoveryRequestId)) {
@@ -719,7 +743,7 @@ class RecoveryService {
   }
 
   /// Mark a recovery request notification as unviewed
-  static Future<void> markNotificationAsUnviewed(String recoveryRequestId) async {
+  Future<void> markNotificationAsUnviewed(String recoveryRequestId) async {
     await initialize();
 
     if (_viewedNotificationIds!.contains(recoveryRequestId)) {
@@ -731,7 +755,7 @@ class RecoveryService {
   }
 
   /// Get notification count
-  static Future<int> getNotificationCount({bool unviewedOnly = true}) async {
+  Future<int> getNotificationCount({bool unviewedOnly = true}) async {
     await initialize();
 
     if (unviewedOnly) {
@@ -744,13 +768,13 @@ class RecoveryService {
   }
 
   /// Check if a notification has been viewed
-  static Future<bool> isNotificationViewed(String recoveryRequestId) async {
+  Future<bool> isNotificationViewed(String recoveryRequestId) async {
     await initialize();
     return _viewedNotificationIds!.contains(recoveryRequestId);
   }
 
   /// Clear all viewed notification markers (doesn't delete requests)
-  static Future<void> clearViewedNotifications() async {
+  Future<void> clearViewedNotifications() async {
     await initialize();
 
     _viewedNotificationIds!.clear();
@@ -760,7 +784,7 @@ class RecoveryService {
   }
 
   /// Clear all recovery requests (for testing)
-  static Future<void> clearAll() async {
+  Future<void> clearAll() async {
     _cachedRequests = [];
     _viewedNotificationIds = {};
     final prefs = await SharedPreferences.getInstance();
@@ -772,7 +796,7 @@ class RecoveryService {
   }
 
   /// Refresh the cached data from storage
-  static Future<void> refresh() async {
+  Future<void> refresh() async {
     _isInitialized = false;
     _cachedRequests = null;
     _viewedNotificationIds = null;

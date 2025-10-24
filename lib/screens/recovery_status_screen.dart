@@ -1,12 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/recovery_request.dart';
 import '../models/recovery_status.dart';
 import '../services/recovery_service.dart';
 import '../services/logger.dart';
 
 /// Screen for displaying recovery request status and key holder responses
-class RecoveryStatusScreen extends StatefulWidget {
+class RecoveryStatusScreen extends ConsumerStatefulWidget {
   final String recoveryRequestId;
 
   const RecoveryStatusScreen({
@@ -15,10 +16,10 @@ class RecoveryStatusScreen extends StatefulWidget {
   });
 
   @override
-  State<RecoveryStatusScreen> createState() => _RecoveryStatusScreenState();
+  ConsumerState<RecoveryStatusScreen> createState() => _RecoveryStatusScreenState();
 }
 
-class _RecoveryStatusScreenState extends State<RecoveryStatusScreen> {
+class _RecoveryStatusScreenState extends ConsumerState<RecoveryStatusScreen> {
   RecoveryRequest? _request;
   RecoveryStatus? _status;
   bool _isLoading = true;
@@ -39,7 +40,8 @@ class _RecoveryStatusScreenState extends State<RecoveryStatusScreen> {
 
   /// Listen for real-time updates to the recovery request
   void _setupRecoveryListener() {
-    _recoveryRequestSubscription = RecoveryService.recoveryRequestStream.listen((updatedRequest) {
+    _recoveryRequestSubscription =
+        ref.read(recoveryServiceProvider).recoveryRequestStream.listen((updatedRequest) {
       // Only update if it's for this specific recovery request
       if (updatedRequest.id == widget.recoveryRequestId && mounted) {
         _loadData(); // Reload all data to get updated status
@@ -50,8 +52,10 @@ class _RecoveryStatusScreenState extends State<RecoveryStatusScreen> {
 
   Future<void> _loadData() async {
     try {
-      final request = await RecoveryService.getRecoveryRequest(widget.recoveryRequestId);
-      final status = await RecoveryService.getRecoveryStatus(widget.recoveryRequestId);
+      final request =
+          await ref.read(recoveryServiceProvider).getRecoveryRequest(widget.recoveryRequestId);
+      final status =
+          await ref.read(recoveryServiceProvider).getRecoveryStatus(widget.recoveryRequestId);
 
       if (mounted) {
         setState(() {
@@ -91,7 +95,7 @@ class _RecoveryStatusScreenState extends State<RecoveryStatusScreen> {
 
     if (confirmed == true) {
       try {
-        await RecoveryService.cancelRecoveryRequest(widget.recoveryRequestId);
+        await ref.read(recoveryServiceProvider).cancelRecoveryRequest(widget.recoveryRequestId);
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -140,7 +144,8 @@ class _RecoveryStatusScreenState extends State<RecoveryStatusScreen> {
       });
 
       // Perform the recovery
-      final content = await RecoveryService.performRecovery(widget.recoveryRequestId);
+      final content =
+          await ref.read(recoveryServiceProvider).performRecovery(widget.recoveryRequestId);
 
       if (mounted) {
         // Show the recovered content in a dialog

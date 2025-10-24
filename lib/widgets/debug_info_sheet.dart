@@ -54,9 +54,9 @@ class DebugInfoSheet extends ConsumerWidget {
 
       // Clear all services using providers
       await ref.read(lockboxRepositoryProvider).clearAll();
-      await LockboxShareService.clearAll();
-      await RecoveryService.clearAll();
-      await RelayScanService.clearAll();
+      await ref.read(lockboxShareServiceProvider).clearAll();
+      await ref.read(recoveryServiceProvider).clearAll();
+      await ref.read(relayScanServiceProvider).clearAll();
       await ref.read(keyRepositoryProvider).clearKeys();
 
       Log.info('All app data cleared successfully');

@@ -1,9 +1,16 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/relay_configuration.dart';
 import 'ndk_service.dart';
 import 'logger.dart';
+
+// Provider for RelayScanService
+final relayScanServiceProvider = Provider<RelayScanService>((ref) {
+  final ndkService = ref.watch(ndkServiceProvider);
+  return RelayScanService(ndkService: ndkService);
+});
 
 /// Scanning status data class
 class ScanningStatus {
@@ -52,16 +59,20 @@ class ScanningStatus {
 
 /// Service for managing Nostr relay scanning and configuration
 class RelayScanService {
+  final NdkService ndkService;
+
   static const String _relayConfigsKey = 'relay_configurations';
   static const String _scanningStatusKey = 'scanning_status';
-  static List<RelayConfiguration>? _cachedRelays;
-  static bool _isInitialized = false;
-  static bool _isScanning = false;
-  static Timer? _scanTimer;
-  static ScanningStatus? _scanningStatus;
+  List<RelayConfiguration>? _cachedRelays;
+  bool _isInitialized = false;
+  bool _isScanning = false;
+  Timer? _scanTimer;
+  ScanningStatus? _scanningStatus;
+
+  RelayScanService({required this.ndkService});
 
   /// Initialize the service
-  static Future<void> initialize() async {
+  Future<void> initialize() async {
     if (_isInitialized) return;
 
     try {
@@ -77,7 +88,7 @@ class RelayScanService {
   }
 
   /// Load relay configurations from storage
-  static Future<void> _loadRelayConfigurations() async {
+  Future<void> _loadRelayConfigurations() async {
     final prefs = await SharedPreferences.getInstance();
     final jsonData = prefs.getString(_relayConfigsKey);
 
@@ -99,7 +110,7 @@ class RelayScanService {
   }
 
   /// Save relay configurations to storage
-  static Future<void> _saveRelayConfigurations() async {
+  Future<void> _saveRelayConfigurations() async {
     if (_cachedRelays == null) return;
 
     try {
@@ -116,7 +127,7 @@ class RelayScanService {
   }
 
   /// Load scanning status from storage
-  static Future<void> _loadScanningStatus() async {
+  Future<void> _loadScanningStatus() async {
     final prefs = await SharedPreferences.getInstance();
     final jsonData = prefs.getString(_scanningStatusKey);
 
@@ -148,7 +159,7 @@ class RelayScanService {
   }
 
   /// Save scanning status to storage
-  static Future<void> _saveScanningStatus() async {
+  Future<void> _saveScanningStatus() async {
     if (_scanningStatus == null) return;
 
     try {
@@ -162,7 +173,7 @@ class RelayScanService {
   }
 
   /// Get all configured relays
-  static Future<List<RelayConfiguration>> getRelayConfigurations({
+  Future<List<RelayConfiguration>> getRelayConfigurations({
     bool? enabledOnly,
   }) async {
     await initialize();
@@ -178,7 +189,7 @@ class RelayScanService {
   }
 
   /// Get a specific relay configuration by ID
-  static Future<RelayConfiguration?> getRelayConfiguration(String relayId) async {
+  Future<RelayConfiguration?> getRelayConfiguration(String relayId) async {
     await initialize();
 
     try {
@@ -189,7 +200,7 @@ class RelayScanService {
   }
 
   /// Add a new relay configuration
-  static Future<void> addRelayConfiguration(RelayConfiguration relay) async {
+  Future<void> addRelayConfiguration(RelayConfiguration relay) async {
     await initialize();
 
     // Validate the relay configuration
@@ -211,7 +222,7 @@ class RelayScanService {
     // If the relay is enabled and we're scanning, add it to NDK immediately
     if (relay.isEnabled && _isScanning) {
       try {
-        await NdkService.addRelay(relay.url);
+        await ndkService.addRelay(relay.url);
         Log.info('Added relay to NDK real-time listening: ${relay.url}');
       } catch (e) {
         Log.error('Error adding relay to NDK', e);
@@ -220,7 +231,7 @@ class RelayScanService {
   }
 
   /// Update an existing relay configuration
-  static Future<void> updateRelayConfiguration(RelayConfiguration relay) async {
+  Future<void> updateRelayConfiguration(RelayConfiguration relay) async {
     await initialize();
 
     // Validate the relay configuration
@@ -244,12 +255,12 @@ class RelayScanService {
       try {
         // If relay was disabled, remove from NDK
         if (!relay.isEnabled && oldRelay.isEnabled) {
-          await NdkService.removeRelay(relay.url);
+          await ndkService.removeRelay(relay.url);
           Log.info('Removed disabled relay from NDK: ${relay.url}');
         }
         // If relay was enabled, add to NDK
         else if (relay.isEnabled && !oldRelay.isEnabled) {
-          await NdkService.addRelay(relay.url);
+          await ndkService.addRelay(relay.url);
           Log.info('Added enabled relay to NDK: ${relay.url}');
         }
       } catch (e) {
@@ -259,7 +270,7 @@ class RelayScanService {
   }
 
   /// Remove a relay configuration
-  static Future<void> removeRelayConfiguration(String relayId) async {
+  Future<void> removeRelayConfiguration(String relayId) async {
     await initialize();
 
     final relay = _cachedRelays!.firstWhere(
@@ -275,7 +286,7 @@ class RelayScanService {
     // Remove from NDK if we're scanning
     if (_isScanning && relay.isEnabled) {
       try {
-        await NdkService.removeRelay(relay.url);
+        await ndkService.removeRelay(relay.url);
         Log.info('Removed relay from NDK: ${relay.url}');
       } catch (e) {
         Log.error('Error removing relay from NDK', e);
@@ -284,7 +295,7 @@ class RelayScanService {
   }
 
   /// Start scanning relays for new shares and recovery requests
-  static Future<void> startRelayScanning({Duration? scanInterval}) async {
+  Future<void> startRelayScanning({Duration? scanInterval}) async {
     await initialize();
 
     if (_isScanning) {
@@ -297,13 +308,13 @@ class RelayScanService {
 
     // Initialize NDK for real-time listening
     try {
-      await NdkService.initialize();
+      await ndkService.initialize();
       Log.info('NDK initialized for relay scanning');
 
       // Add all enabled relays to NDK for real-time listening
       final enabledRelays = _cachedRelays!.where((r) => r.isEnabled).toList();
       for (final relay in enabledRelays) {
-        await NdkService.addRelay(relay.url);
+        await ndkService.addRelay(relay.url);
       }
       Log.info('Added ${enabledRelays.length} enabled relays to NDK');
     } catch (e) {
@@ -332,7 +343,7 @@ class RelayScanService {
   }
 
   /// Stop scanning relays
-  static Future<void> stopRelayScanning() async {
+  Future<void> stopRelayScanning() async {
     await initialize();
 
     if (!_isScanning) {
@@ -346,7 +357,7 @@ class RelayScanService {
 
     // Stop NDK listening
     try {
-      await NdkService.stopListening();
+      await ndkService.stopListening();
       Log.info('Stopped NDK listening');
     } catch (e) {
       Log.error('Error stopping NDK', e);
@@ -367,13 +378,13 @@ class RelayScanService {
   }
 
   /// Check if scanning is currently active
-  static Future<bool> isScanningActive() async {
+  Future<bool> isScanningActive() async {
     await initialize();
     return _isScanning;
   }
 
   /// Get scanning status and statistics
-  static Future<ScanningStatus> getScanningStatus() async {
+  Future<ScanningStatus> getScanningStatus() async {
     await initialize();
 
     return _scanningStatus ??
@@ -387,7 +398,7 @@ class RelayScanService {
   }
 
   /// Perform a scan of all enabled relays
-  static Future<void> _performScan() async {
+  Future<void> _performScan() async {
     Log.info('Performing relay scan (NDK handles real-time listening)...');
 
     final enabledRelays = _cachedRelays!.where((r) => r.isEnabled).toList();
@@ -422,7 +433,7 @@ class RelayScanService {
 
       // NDK handles real-time event listening via subscriptions
       // This periodic scan just updates timestamps and maintains status
-      final ndkRelays = NdkService.getActiveRelays();
+      final ndkRelays = ndkService.getActiveRelays();
 
       // Update scanning status
       _scanningStatus = ScanningStatus(
@@ -454,13 +465,13 @@ class RelayScanService {
   }
 
   /// Manually trigger a scan of all enabled relays
-  static Future<void> scanNow() async {
+  Future<void> scanNow() async {
     await initialize();
     await _performScan();
   }
 
   /// Clear all relay configurations (for testing)
-  static Future<void> clearAll() async {
+  Future<void> clearAll() async {
     _cachedRelays = [];
     _scanningStatus = null;
     _isScanning = false;
@@ -476,7 +487,7 @@ class RelayScanService {
   }
 
   /// Refresh the cached data from storage
-  static Future<void> refresh() async {
+  Future<void> refresh() async {
     _isInitialized = false;
     _cachedRelays = null;
     _scanningStatus = null;

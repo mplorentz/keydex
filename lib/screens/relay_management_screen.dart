@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/relay_configuration.dart';
 import '../services/relay_scan_service.dart';
 import '../services/logger.dart';
 
 /// Screen for managing Nostr relay configurations
-class RelayManagementScreen extends StatefulWidget {
+class RelayManagementScreen extends ConsumerStatefulWidget {
   const RelayManagementScreen({super.key});
 
   @override
-  State<RelayManagementScreen> createState() => _RelayManagementScreenState();
+  ConsumerState<RelayManagementScreen> createState() => _RelayManagementScreenState();
 }
 
-class _RelayManagementScreenState extends State<RelayManagementScreen> {
+class _RelayManagementScreenState extends ConsumerState<RelayManagementScreen> {
   List<RelayConfiguration> _relays = [];
   ScanningStatus? _scanningStatus;
   bool _isLoading = true;
@@ -25,9 +26,9 @@ class _RelayManagementScreenState extends State<RelayManagementScreen> {
 
   Future<void> _loadData() async {
     try {
-      final relays = await RelayScanService.getRelayConfigurations();
-      final scanningStatus = await RelayScanService.getScanningStatus();
-      final isScanning = await RelayScanService.isScanningActive();
+      final relays = await ref.read(relayScanServiceProvider).getRelayConfigurations();
+      final scanningStatus = await ref.read(relayScanServiceProvider).getScanningStatus();
+      final isScanning = await ref.read(relayScanServiceProvider).isScanningActive();
 
       if (mounted) {
         setState(() {
@@ -63,7 +64,7 @@ class _RelayManagementScreenState extends State<RelayManagementScreen> {
           isTrusted: result['isTrusted'] as bool? ?? false,
         );
 
-        await RelayScanService.addRelayConfiguration(relay);
+        await ref.read(relayScanServiceProvider).addRelayConfiguration(relay);
         await _loadData();
 
         if (mounted) {
@@ -85,7 +86,7 @@ class _RelayManagementScreenState extends State<RelayManagementScreen> {
   Future<void> _toggleRelay(RelayConfiguration relay) async {
     try {
       final updatedRelay = relay.copyWith(isEnabled: !relay.isEnabled);
-      await RelayScanService.updateRelayConfiguration(updatedRelay);
+      await ref.read(relayScanServiceProvider).updateRelayConfiguration(updatedRelay);
       await _loadData();
     } catch (e) {
       Log.error('Error toggling relay', e);
@@ -113,7 +114,7 @@ class _RelayManagementScreenState extends State<RelayManagementScreen> {
 
     if (confirmed == true) {
       try {
-        await RelayScanService.removeRelayConfiguration(relay.id);
+        await ref.read(relayScanServiceProvider).removeRelayConfiguration(relay.id);
         await _loadData();
 
         if (mounted) {
@@ -135,9 +136,9 @@ class _RelayManagementScreenState extends State<RelayManagementScreen> {
   Future<void> _toggleScanning() async {
     try {
       if (_isScanning) {
-        await RelayScanService.stopRelayScanning();
+        await ref.read(relayScanServiceProvider).stopRelayScanning();
       } else {
-        await RelayScanService.startRelayScanning();
+        await ref.read(relayScanServiceProvider).startRelayScanning();
       }
       await _loadData();
 
@@ -160,7 +161,7 @@ class _RelayManagementScreenState extends State<RelayManagementScreen> {
 
   Future<void> _scanNow() async {
     try {
-      await RelayScanService.scanNow();
+      await ref.read(relayScanServiceProvider).scanNow();
       await _loadData();
 
       if (mounted) {

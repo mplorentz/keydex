@@ -53,11 +53,11 @@ class RecoverySection extends ConsumerWidget {
           ),
         ),
       ),
-      data: (recoveryStatus) => _buildRecoveryContent(context, recoveryStatus),
+      data: (recoveryStatus) => _buildRecoveryContent(context, ref, recoveryStatus),
     );
   }
 
-  Widget _buildRecoveryContent(BuildContext context, RecoveryStatus recoveryStatus) {
+  Widget _buildRecoveryContent(BuildContext context, WidgetRef ref, RecoveryStatus recoveryStatus) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -81,7 +81,7 @@ class RecoverySection extends ConsumerWidget {
           ),
         ] else ...[
           RowButton(
-            onPressed: () => _initiateRecovery(context),
+            onPressed: () => _initiateRecovery(context, ref),
             icon: Icons.restore,
             text: 'Initiate Recovery',
             backgroundColor: Theme.of(context).primaryColor,
@@ -92,7 +92,7 @@ class RecoverySection extends ConsumerWidget {
     );
   }
 
-  Future<void> _initiateRecovery(BuildContext context) async {
+  Future<void> _initiateRecovery(BuildContext context, WidgetRef ref) async {
     try {
       final currentPubkey = await KeyService.getCurrentPublicKey();
 
@@ -106,7 +106,8 @@ class RecoverySection extends ConsumerWidget {
       }
 
       // Get shard data to extract peers and creator information
-      final shards = await LockboxShareService.getLockboxShares(lockboxId);
+      final shareService = ref.read(lockboxShareServiceProvider);
+      final shards = await shareService.getLockboxShares(lockboxId);
 
       if (shards.isEmpty) {
         if (context.mounted) {
@@ -136,7 +137,8 @@ class RecoverySection extends ConsumerWidget {
       Log.info(
           'Initiating recovery with ${keyHolderPubkeys.length} key holders: ${keyHolderPubkeys.map((k) => k.substring(0, 8)).join(", ")}...');
 
-      final recoveryRequest = await RecoveryService.initiateRecovery(
+      final recoveryService = ref.read(recoveryServiceProvider);
+      final recoveryRequest = await recoveryService.initiateRecovery(
         lockboxId,
         initiatorPubkey: currentPubkey,
         keyHolderPubkeys: keyHolderPubkeys,
@@ -145,13 +147,14 @@ class RecoverySection extends ConsumerWidget {
 
       // Get relays and send recovery request via Nostr
       try {
-        final relays = await RelayScanService.getRelayConfigurations(enabledOnly: true);
+        final relays =
+            await ref.read(relayScanServiceProvider).getRelayConfigurations(enabledOnly: true);
         final relayUrls = relays.map((r) => r.url).toList();
 
         if (relayUrls.isEmpty) {
           Log.warning('No relays configured, recovery request not sent via Nostr');
         } else {
-          await RecoveryService.sendRecoveryRequestViaNostr(
+          await recoveryService.sendRecoveryRequestViaNostr(
             recoveryRequest,
             relays: relayUrls,
           );
