@@ -2,17 +2,51 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_toolkit/golden_toolkit.dart';
-import 'package:keydex/models/recovery_status.dart' as models;
+import 'package:keydex/models/recovery_request.dart';
+import 'package:keydex/models/lockbox.dart';
+import 'package:keydex/models/backup_config.dart';
+import 'package:keydex/models/key_holder.dart';
 import 'package:keydex/providers/recovery_provider.dart';
+import 'package:keydex/providers/lockbox_provider.dart';
 import 'package:keydex/widgets/recovery_progress_widget.dart';
 import 'package:keydex/widgets/theme.dart';
 
 void main() {
+  // Sample test data
+  final testPubkey1 = 'a' * 64;
+  final testPubkey2 = 'b' * 64;
+  final testPubkey3 = 'c' * 64;
+
+  // Helper to create lockbox
+  Lockbox createTestLockbox({
+    required String id,
+    required List<String> keyHolderPubkeys,
+  }) {
+    return Lockbox(
+      id: id,
+      name: 'Test Lockbox',
+      content: 'test content',
+      createdAt: DateTime.now().subtract(const Duration(days: 1)),
+      ownerPubkey: testPubkey1,
+      backupConfig: createBackupConfig(
+        lockboxId: id,
+        threshold: 2,
+        totalKeys: keyHolderPubkeys.length,
+        keyHolders: keyHolderPubkeys
+            .map((pubkey) => createKeyHolder(
+                  pubkey: pubkey,
+                ))
+            .toList(),
+        relays: ['wss://relay.example.com'],
+      ),
+    );
+  }
+
   group('RecoveryProgressWidget Golden Tests', () {
     testGoldens('loading state', (tester) async {
       final container = ProviderContainer(
         overrides: [
-          recoveryStatusByIdProvider('test-request').overrideWith(
+          recoveryRequestByIdProvider('test-request').overrideWith(
             (ref) => Future.delayed(const Duration(seconds: 10), () => null),
           ),
         ],
@@ -40,8 +74,8 @@ void main() {
     testGoldens('error state', (tester) async {
       final container = ProviderContainer(
         overrides: [
-          recoveryStatusByIdProvider('test-request').overrideWith(
-            (ref) => Future.error('Failed to load recovery status'),
+          recoveryRequestByIdProvider('test-request').overrideWith(
+            (ref) => Future.error('Failed to load recovery request'),
           ),
         ],
       );
@@ -66,21 +100,31 @@ void main() {
     });
 
     testGoldens('low progress without button', (tester) async {
-      final status = models.RecoveryStatus(
-        recoveryRequestId: 'test-request',
-        totalKeyHolders: 3,
-        respondedCount: 1,
-        approvedCount: 1,
-        deniedCount: 0,
-        collectedShardIds: ['pubkey1'],
+      final request = RecoveryRequest(
+        id: 'test-request',
+        lockboxId: 'test-lockbox',
+        initiatorPubkey: testPubkey1,
+        requestedAt: DateTime.now().subtract(const Duration(hours: 1)),
+        status: RecoveryRequestStatus.inProgress,
         threshold: 2,
-        canRecover: false,
-        lastUpdated: DateTime.now(),
+        keyHolderResponses: {
+          testPubkey2: RecoveryResponse(
+            pubkey: testPubkey2,
+            approved: true,
+            respondedAt: DateTime.now().subtract(const Duration(minutes: 30)),
+          ),
+        },
+      );
+
+      final lockbox = createTestLockbox(
+        id: 'test-lockbox',
+        keyHolderPubkeys: [testPubkey2, testPubkey3, testPubkey1],
       );
 
       final container = ProviderContainer(
         overrides: [
-          recoveryStatusByIdProvider('test-request').overrideWith((ref) => Future.value(status)),
+          recoveryRequestByIdProvider('test-request').overrideWith((ref) => Future.value(request)),
+          lockboxProvider('test-lockbox').overrideWith((ref) => Stream.value(lockbox)),
         ],
       );
 
@@ -104,21 +148,36 @@ void main() {
     });
 
     testGoldens('threshold met with button', (tester) async {
-      final status = models.RecoveryStatus(
-        recoveryRequestId: 'test-request',
-        totalKeyHolders: 3,
-        respondedCount: 2,
-        approvedCount: 2,
-        deniedCount: 0,
-        collectedShardIds: ['pubkey1', 'pubkey2'],
+      final request = RecoveryRequest(
+        id: 'test-request',
+        lockboxId: 'test-lockbox',
+        initiatorPubkey: testPubkey1,
+        requestedAt: DateTime.now().subtract(const Duration(hours: 1)),
+        status: RecoveryRequestStatus.inProgress,
         threshold: 2,
-        canRecover: true,
-        lastUpdated: DateTime.now(),
+        keyHolderResponses: {
+          testPubkey2: RecoveryResponse(
+            pubkey: testPubkey2,
+            approved: true,
+            respondedAt: DateTime.now().subtract(const Duration(minutes: 30)),
+          ),
+          testPubkey3: RecoveryResponse(
+            pubkey: testPubkey3,
+            approved: true,
+            respondedAt: DateTime.now().subtract(const Duration(minutes: 15)),
+          ),
+        },
+      );
+
+      final lockbox = createTestLockbox(
+        id: 'test-lockbox',
+        keyHolderPubkeys: [testPubkey2, testPubkey3, testPubkey1],
       );
 
       final container = ProviderContainer(
         overrides: [
-          recoveryStatusByIdProvider('test-request').overrideWith((ref) => Future.value(status)),
+          recoveryRequestByIdProvider('test-request').overrideWith((ref) => Future.value(request)),
+          lockboxProvider('test-lockbox').overrideWith((ref) => Stream.value(lockbox)),
         ],
       );
 
@@ -142,21 +201,36 @@ void main() {
     });
 
     testGoldens('completed state', (tester) async {
-      final status = models.RecoveryStatus(
-        recoveryRequestId: 'test-request',
-        totalKeyHolders: 3,
-        respondedCount: 3,
-        approvedCount: 3,
-        deniedCount: 0,
-        collectedShardIds: ['pubkey1', 'pubkey2', 'pubkey3'],
+      final request = RecoveryRequest(
+        id: 'test-request',
+        lockboxId: 'test-lockbox',
+        initiatorPubkey: testPubkey1,
+        requestedAt: DateTime.now().subtract(const Duration(hours: 1)),
+        status: RecoveryRequestStatus.inProgress,
         threshold: 2,
-        canRecover: true,
-        lastUpdated: DateTime.now(),
+        keyHolderResponses: {
+          testPubkey2: RecoveryResponse(
+            pubkey: testPubkey2,
+            approved: true,
+            respondedAt: DateTime.now().subtract(const Duration(hours: 2)),
+          ),
+          testPubkey3: RecoveryResponse(
+            pubkey: testPubkey3,
+            approved: true,
+            respondedAt: DateTime.now().subtract(const Duration(minutes: 30)),
+          ),
+        },
+      );
+
+      final lockbox = createTestLockbox(
+        id: 'test-lockbox',
+        keyHolderPubkeys: [testPubkey2, testPubkey3, testPubkey1],
       );
 
       final container = ProviderContainer(
         overrides: [
-          recoveryStatusByIdProvider('test-request').overrideWith((ref) => Future.value(status)),
+          recoveryRequestByIdProvider('test-request').overrideWith((ref) => Future.value(request)),
+          lockboxProvider('test-lockbox').overrideWith((ref) => Stream.value(lockbox)),
         ],
       );
 
