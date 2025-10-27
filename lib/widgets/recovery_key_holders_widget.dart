@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/recovery_request.dart';
+import '../models/lockbox.dart';
 import '../providers/recovery_provider.dart';
+import '../providers/lockbox_provider.dart';
 
 /// Widget displaying key holder responses
 class RecoveryKeyHoldersWidget extends ConsumerWidget {
@@ -39,29 +41,94 @@ class RecoveryKeyHoldersWidget extends ConsumerWidget {
           );
         }
 
-        return Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Key Holders',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 16),
-                ...request.keyHolderResponses.values.map((response) {
-                  return _buildKeyHolderItem(response);
-                }),
-              ],
+        // Now we have the request, get the lockbox
+        final lockboxAsync = ref.watch(lockboxProvider(request.lockboxId));
+
+        return lockboxAsync.when(
+          loading: () => const Card(
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Center(child: CircularProgressIndicator()),
             ),
           ),
+          error: (error, stack) => Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text('Error loading lockbox: $error'),
+            ),
+          ),
+          data: (lockbox) {
+            // Get all key holders for this lockbox
+            final keyHolders = _extractKeyHolders(lockbox, request);
+
+            if (keyHolders.isEmpty) {
+              return Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text(
+                    'No key holders configured',
+                    style: TextStyle(color: Colors.grey[600]),
+                  ),
+                ),
+              );
+            }
+
+            return Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Key Holders',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 16),
+                    ...keyHolders.map((info) {
+                      return _buildKeyHolderItem(info);
+                    }),
+                  ],
+                ),
+              ),
+            );
+          },
         );
       },
     );
   }
 
-  Widget _buildKeyHolderItem(RecoveryResponse response) {
+  /// Extract all key holders from lockbox, merge with responses
+  List<_KeyHolderInfo> _extractKeyHolders(Lockbox? lockbox, RecoveryRequest request) {
+    if (lockbox == null) return [];
+
+    // Get pubkeys from backupConfig if available
+    List<String> keyHolderPubkeys = [];
+    if (lockbox.backupConfig?.keyHolders.isNotEmpty == true) {
+      keyHolderPubkeys = lockbox.backupConfig!.keyHolders.map((kh) => kh.pubkey).toList();
+    } else if (lockbox.shards.isNotEmpty) {
+      // Fallback: use peers from shards
+      final firstShard = lockbox.shards.first;
+      if (firstShard.peers != null) {
+        keyHolderPubkeys = List.from(firstShard.peers!);
+      }
+    }
+
+    if (keyHolderPubkeys.isEmpty) return [];
+
+    // Create info for each key holder
+    return keyHolderPubkeys.map((pubkey) {
+      final response = request.keyHolderResponses[pubkey];
+      return _KeyHolderInfo(
+        pubkey: pubkey,
+        response: response,
+      );
+    }).toList();
+  }
+
+  Widget _buildKeyHolderItem(_KeyHolderInfo info) {
+    final response = info.response;
+    final status = response?.status ?? RecoveryResponseStatus.pending;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
@@ -72,10 +139,10 @@ class RecoveryKeyHoldersWidget extends ConsumerWidget {
       child: Row(
         children: [
           CircleAvatar(
-            backgroundColor: _getResponseColor(response.status).withValues(alpha: 0.1),
+            backgroundColor: _getResponseColor(status).withValues(alpha: 0.1),
             child: Icon(
-              _getResponseIcon(response.status),
-              color: _getResponseColor(response.status),
+              _getResponseIcon(status),
+              color: _getResponseColor(status),
               size: 20,
             ),
           ),
@@ -85,7 +152,7 @@ class RecoveryKeyHoldersWidget extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '${response.pubkey.substring(0, 16)}...',
+                  '${info.pubkey.substring(0, 16)}...',
                   style: const TextStyle(
                     fontFamily: 'monospace',
                     fontSize: 12,
@@ -97,23 +164,23 @@ class RecoveryKeyHoldersWidget extends ConsumerWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: _getResponseColor(response.status).withValues(alpha: 0.1),
+                        color: _getResponseColor(status).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
-                        response.status.displayName,
+                        status.displayName,
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
-                          color: _getResponseColor(response.status),
+                          color: _getResponseColor(status),
                         ),
                       ),
                     ),
-                    if (response.respondedAt != null)
+                    if (response?.respondedAt != null)
                       Padding(
                         padding: const EdgeInsets.only(left: 8),
                         child: Text(
-                          _formatDateTime(response.respondedAt!),
+                          _formatDateTime(response!.respondedAt!),
                           style: TextStyle(
                             fontSize: 11,
                             color: Colors.grey[500],
@@ -170,4 +237,15 @@ class RecoveryKeyHoldersWidget extends ConsumerWidget {
       return 'Just now';
     }
   }
+}
+
+/// Internal data class for key holder info
+class _KeyHolderInfo {
+  final String pubkey;
+  final RecoveryResponse? response;
+
+  _KeyHolderInfo({
+    required this.pubkey,
+    this.response,
+  });
 }

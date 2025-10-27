@@ -3,7 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_toolkit/golden_toolkit.dart';
 import 'package:keydex/models/recovery_request.dart';
+import 'package:keydex/models/lockbox.dart';
+import 'package:keydex/models/backup_config.dart';
+import 'package:keydex/models/key_holder.dart';
 import 'package:keydex/providers/recovery_provider.dart';
+import 'package:keydex/providers/lockbox_provider.dart';
 import 'package:keydex/widgets/recovery_key_holders_widget.dart';
 import 'package:keydex/widgets/theme.dart';
 
@@ -39,6 +43,31 @@ void main() {
       pubkey: pubkey,
       approved: status == RecoveryResponseStatus.approved,
       respondedAt: respondedAt ?? DateTime.now().subtract(const Duration(minutes: 30)),
+    );
+  }
+
+  // Helper to create lockbox
+  Lockbox createTestLockbox({
+    required String id,
+    required List<String> keyHolderPubkeys,
+  }) {
+    return Lockbox(
+      id: id,
+      name: 'Test Lockbox',
+      content: 'test content',
+      createdAt: DateTime.now().subtract(const Duration(days: 1)),
+      ownerPubkey: testPubkey1,
+      backupConfig: createBackupConfig(
+        lockboxId: id,
+        threshold: 2,
+        totalKeys: keyHolderPubkeys.length,
+        keyHolders: keyHolderPubkeys
+            .map((pubkey) => createKeyHolder(
+                  pubkey: pubkey,
+                ))
+            .toList(),
+        relays: ['wss://relay.example.com'],
+      ),
     );
   }
 
@@ -102,15 +131,18 @@ void main() {
     testGoldens('all pending responses', (tester) async {
       final request = createTestRecoveryRequest(
         id: 'test-request',
-        responses: {
-          testPubkey2: createResponse(pubkey: testPubkey2, status: RecoveryResponseStatus.pending),
-          testPubkey3: createResponse(pubkey: testPubkey3, status: RecoveryResponseStatus.pending),
-        },
+        responses: {}, // Empty responses - all should show as pending
+      );
+
+      final lockbox = createTestLockbox(
+        id: 'test-lockbox',
+        keyHolderPubkeys: [testPubkey2, testPubkey3],
       );
 
       final container = ProviderContainer(
         overrides: [
           recoveryRequestByIdProvider('test-request').overrideWith((ref) => Future.value(request)),
+          lockboxProvider('test-lockbox').overrideWith((ref) => Stream.value(lockbox)),
         ],
       );
 
@@ -150,9 +182,15 @@ void main() {
         },
       );
 
+      final lockbox = createTestLockbox(
+        id: 'test-lockbox',
+        keyHolderPubkeys: [testPubkey2, testPubkey3],
+      );
+
       final container = ProviderContainer(
         overrides: [
           recoveryRequestByIdProvider('test-request').overrideWith((ref) => Future.value(request)),
+          lockboxProvider('test-lockbox').overrideWith((ref) => Stream.value(lockbox)),
         ],
       );
 
@@ -192,9 +230,15 @@ void main() {
         },
       );
 
+      final lockbox = createTestLockbox(
+        id: 'test-lockbox',
+        keyHolderPubkeys: [testPubkey2, testPubkey3],
+      );
+
       final container = ProviderContainer(
         overrides: [
           recoveryRequestByIdProvider('test-request').overrideWith((ref) => Future.value(request)),
+          lockboxProvider('test-lockbox').overrideWith((ref) => Stream.value(lockbox)),
         ],
       );
 
