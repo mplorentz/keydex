@@ -200,9 +200,8 @@ class _RecoveryStatusScreenState extends ConsumerState<RecoveryStatusScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Recovery Status'),
-        backgroundColor: Theme.of(context).primaryColor,
-        foregroundColor: Colors.white,
+        title: const Text('Recovery'),
+        centerTitle: false,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
