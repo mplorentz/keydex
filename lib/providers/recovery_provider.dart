@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/recovery_request.dart';
+import '../models/recovery_status.dart' as recovery_status;
 import 'lockbox_provider.dart';
+import '../services/recovery_service.dart';
 
 /// Provider for recovery status of a specific lockbox
 /// This provides information about whether recovery is available and active recovery requests
@@ -49,3 +51,18 @@ class RecoveryStatus {
     required this.activeRecoveryRequest,
   });
 }
+
+/// StreamProvider for a specific recovery request by ID
+/// This will automatically update when the recovery request changes
+final recoveryRequestByIdProvider =
+    FutureProvider.family<RecoveryRequest?, String>((ref, recoveryRequestId) async {
+  final service = ref.watch(recoveryServiceProvider);
+  return await service.getRecoveryRequest(recoveryRequestId);
+});
+
+/// FutureProvider for recovery status by recovery request ID
+final recoveryStatusByIdProvider =
+    FutureProvider.family<recovery_status.RecoveryStatus?, String>((ref, recoveryRequestId) async {
+  final service = ref.watch(recoveryServiceProvider);
+  return await service.getRecoveryStatus(recoveryRequestId);
+});
