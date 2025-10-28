@@ -62,7 +62,8 @@ class RecoveryStatus {
 
 /// Provider for a specific recovery request by ID
 /// This watches the lockbox stream and extracts the recovery request, so it updates automatically
-/// TODO: This should probably be a StreamProvider
+// TODO: This should probably be a StreamProvider? I don't really understand the point of
+// providers that don't live update.
 final recoveryRequestByIdProvider =
     Provider.family<AsyncValue<RecoveryRequest?>, String>((ref, recoveryRequestId) {
   // We need to find which lockbox contains this recovery request
