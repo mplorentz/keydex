@@ -7,6 +7,7 @@ import '../services/relay_scan_service.dart';
 import '../services/key_service.dart';
 import '../services/lockbox_share_service.dart';
 import '../services/logger.dart';
+import '../providers/recovery_provider.dart';
 
 /// Screen for viewing and responding to a recovery request
 class RecoveryRequestDetailScreen extends ConsumerStatefulWidget {
@@ -112,6 +113,9 @@ class _RecoveryRequestDetailScreenState extends ConsumerState<RecoveryRequestDet
       }
 
       if (mounted) {
+        // Invalidate the recovery status provider to force a refresh when navigating back
+        ref.invalidate(recoveryStatusProvider(widget.recoveryRequest.lockboxId));
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(

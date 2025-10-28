@@ -167,9 +167,67 @@ class LockboxRepository {
     if (_cachedLockboxes == null) return;
 
     try {
-      // Convert to JSON
-      final jsonList = _cachedLockboxes!.map((lockbox) => lockbox.toJson()).toList();
+      Log.debug('Starting to save ${_cachedLockboxes!.length} lockboxes');
+
+      // Convert to JSON with detailed error tracking
+      final jsonList = <Map<String, dynamic>>[];
+      for (var i = 0; i < _cachedLockboxes!.length; i++) {
+        final lockbox = _cachedLockboxes![i];
+        Log.debug('Converting lockbox $i (id: ${lockbox.id}) to JSON');
+        Log.debug('  - Name: ${lockbox.name}');
+        Log.debug('  - Owner: ${lockbox.ownerPubkey}');
+        Log.debug('  - Shards count: ${lockbox.shards.length}');
+        Log.debug('  - Recovery requests count: ${lockbox.recoveryRequests.length}');
+
+        try {
+          final lockboxJson = lockbox.toJson();
+          jsonList.add(lockboxJson);
+          Log.debug('  ✓ Lockbox $i converted successfully');
+        } catch (e) {
+          Log.error('  ✗ Error converting lockbox $i to JSON', e);
+
+          // Try to identify which recovery request is causing the issue
+          for (var j = 0; j < lockbox.recoveryRequests.length; j++) {
+            final request = lockbox.recoveryRequests[j];
+            Log.debug('    - Recovery request $j: id=${request.id}, status=${request.status.name}');
+            Log.debug('      keyHolderResponses count: ${request.keyHolderResponses.length}');
+
+            // Check each response
+            for (var entry in request.keyHolderResponses.entries) {
+              final pubkey = entry.key;
+              final response = entry.value;
+              Log.debug(
+                  '        Response from ${pubkey.substring(0, 8)}: approved=${response.approved}, shardData=${response.shardData != null ? "present" : "null"}');
+
+              if (response.shardData != null) {
+                final shard = response.shardData!;
+                Log.debug('          ShardData details:');
+                Log.debug('            shard type: ${shard.shard.runtimeType}');
+                Log.debug('            threshold type: ${shard.threshold.runtimeType}');
+                Log.debug('            shardIndex type: ${shard.shardIndex.runtimeType}');
+                Log.debug('            totalShards type: ${shard.totalShards.runtimeType}');
+                Log.debug('            primeMod type: ${shard.primeMod.runtimeType}');
+                Log.debug('            creatorPubkey type: ${shard.creatorPubkey.runtimeType}');
+                Log.debug('            createdAt type: ${shard.createdAt.runtimeType}');
+                Log.debug(
+                    '            lockboxId: ${shard.lockboxId} (type: ${shard.lockboxId?.runtimeType})');
+                Log.debug(
+                    '            lockboxName: ${shard.lockboxName} (type: ${shard.lockboxName?.runtimeType})');
+                Log.debug('            peers: ${shard.peers} (type: ${shard.peers?.runtimeType})');
+                Log.debug(
+                    '            recipientPubkey: ${shard.recipientPubkey} (type: ${shard.recipientPubkey?.runtimeType})');
+                Log.debug(
+                    '            nostrEventId: ${shard.nostrEventId} (type: ${shard.nostrEventId?.runtimeType})');
+              }
+            }
+          }
+          rethrow;
+        }
+      }
+
+      Log.debug('All lockboxes converted to JSON, encoding...');
       final jsonString = json.encode(jsonList);
+      Log.debug('JSON encoded successfully (${jsonString.length} characters)');
 
       // Encrypt the JSON data using our Nostr key
       final encryptedData = await KeyService.encryptText(jsonString);
@@ -180,7 +238,8 @@ class LockboxRepository {
       Log.info('Saved ${jsonList.length} encrypted lockboxes to SharedPreferences');
 
       // Notify listeners that lockboxes have changed
-      _lockboxesController.add(List.unmodifiable(_cachedLockboxes!));
+      final lockboxesList = List<Lockbox>.unmodifiable(_cachedLockboxes!);
+      _lockboxesController.add(lockboxesList);
     } catch (e) {
       Log.error('Error encrypting and saving lockboxes', e);
       throw Exception('Failed to save lockboxes: $e');

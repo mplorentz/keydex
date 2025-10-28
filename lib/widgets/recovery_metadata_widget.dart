@@ -17,9 +17,17 @@ class RecoveryMetadataWidget extends ConsumerWidget {
     final requestAsync = ref.watch(recoveryRequestByIdProvider(recoveryRequestId));
 
     return requestAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stack) => Center(
-        child: Text('Error: $error'),
+      loading: () => const Card(
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Center(child: CircularProgressIndicator()),
+        ),
+      ),
+      error: (error, stack) => Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Text('Error: $error'),
+        ),
       ),
       data: (request) {
         if (request == null) {
