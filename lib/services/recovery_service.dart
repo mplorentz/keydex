@@ -31,10 +31,8 @@ final recoveryServiceProvider = Provider<RecoveryService>((ref) {
 class RecoveryService {
   final LockboxRepository repository;
 
-  static const String _recoveryRequestsKey = 'recovery_requests';
   static const String _viewedNotificationIdsKey = 'viewed_recovery_notification_ids';
 
-  List<RecoveryRequest>? _cachedRequests;
   Set<String>? _viewedNotificationIds;
   bool _isInitialized = false;
 
@@ -59,56 +57,13 @@ class RecoveryService {
     if (_isInitialized) return;
 
     try {
-      await _loadRecoveryRequests();
       await _loadViewedNotificationIds();
       _isInitialized = true;
-      Log.info('RecoveryService initialized with ${_cachedRequests?.length ?? 0} requests');
+      Log.info('RecoveryService initialized');
     } catch (e) {
       Log.error('Error initializing RecoveryService', e);
-      _cachedRequests = [];
       _viewedNotificationIds = {};
       _isInitialized = true;
-    }
-  }
-
-  /// Load recovery requests from storage
-  Future<void> _loadRecoveryRequests() async {
-    final prefs = await SharedPreferences.getInstance();
-    final jsonData = prefs.getString(_recoveryRequestsKey);
-
-    if (jsonData == null || jsonData.isEmpty) {
-      _cachedRequests = [];
-      return;
-    }
-
-    try {
-      final List<dynamic> jsonList = json.decode(jsonData);
-      _cachedRequests =
-          jsonList.map((json) => RecoveryRequest.fromJson(json as Map<String, dynamic>)).toList();
-      Log.info('Loaded ${_cachedRequests!.length} recovery requests from storage');
-    } catch (e) {
-      Log.error('Error loading recovery requests', e);
-      _cachedRequests = [];
-    }
-  }
-
-  /// Save recovery requests to storage
-  Future<void> _saveRecoveryRequests() async {
-    if (_cachedRequests == null) return;
-
-    try {
-      final jsonList = _cachedRequests!.map((request) => request.toJson()).toList();
-      final jsonString = json.encode(jsonList);
-
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_recoveryRequestsKey, jsonString);
-      Log.info('Saved ${jsonList.length} recovery requests to storage');
-
-      // Emit notification update
-      _emitNotificationUpdate();
-    } catch (e) {
-      Log.error('Error saving recovery requests', e);
-      throw Exception('Failed to save recovery requests: $e');
     }
   }
 
@@ -150,12 +105,13 @@ class RecoveryService {
   }
 
   /// Emit notification update to stream
-  void _emitNotificationUpdate() {
-    if (_cachedRequests != null && _viewedNotificationIds != null) {
-      final unviewed =
-          _cachedRequests!.where((req) => !_viewedNotificationIds!.contains(req.id)).toList();
-      _notificationController.add(unviewed);
-    }
+  Future<void> _emitNotificationUpdate() async {
+    if (_viewedNotificationIds == null) return;
+
+    // Get all recovery requests from lockbox repository
+    final allRequests = await repository.getAllRecoveryRequests();
+    final unviewed = allRequests.where((req) => !_viewedNotificationIds!.contains(req.id)).toList();
+    _notificationController.add(unviewed);
   }
 
   /// Initiate recovery for a lockbox
@@ -200,12 +156,11 @@ class RecoveryService {
       throw ArgumentError('Invalid recovery request');
     }
 
-    // Add to lockbox via LockboxService
+    // Add to lockbox (single source of truth)
     await repository.addRecoveryRequestToLockbox(lockboxId, recoveryRequest);
 
-    // Also add to local cache for notifications
-    _cachedRequests!.add(recoveryRequest);
-    await _saveRecoveryRequests();
+    // Emit notification update
+    await _emitNotificationUpdate();
 
     Log.info('Created recovery request $requestId for lockbox $lockboxId');
     return recoveryRequest;
@@ -216,38 +171,33 @@ class RecoveryService {
   Future<void> addIncomingRecoveryRequest(RecoveryRequest request) async {
     await initialize();
 
-    // Check if request already exists in local cache
-    final existingIndex = _cachedRequests!.indexWhere((r) => r.id == request.id);
-    if (existingIndex != -1) {
-      // Update existing request in local cache
-      _cachedRequests![existingIndex] = request;
+    // Check if request already exists in lockbox (source of truth)
+    final existingRequests = await repository.getRecoveryRequestsForLockbox(request.lockboxId);
+    final existingRequest = existingRequests.where((r) => r.id == request.id).firstOrNull;
+
+    if (existingRequest != null) {
+      // Don't overwrite requests in terminal states (cancelled, completed, failed)
+      if (existingRequest.status.isTerminal) {
+        Log.info(
+            'Ignoring incoming recovery request ${request.id} - already in terminal state: ${existingRequest.status.name}');
+        return;
+      }
+
+      // Update existing request in lockbox
+      await repository.updateRecoveryRequestInLockbox(
+        request.lockboxId,
+        request.id,
+        request,
+      );
       Log.info('Updated existing recovery request ${request.id}');
     } else {
-      // Add new request to local cache
-      _cachedRequests!.add(request);
+      // Add new request to lockbox
+      await repository.addRecoveryRequestToLockbox(request.lockboxId, request);
       Log.info('Added incoming recovery request ${request.id}');
     }
 
-    // Also add to lockbox
-    try {
-      final existingRequests = await repository.getRecoveryRequestsForLockbox(request.lockboxId);
-      final existingInLockbox = existingRequests.any((r) => r.id == request.id);
-
-      if (existingInLockbox) {
-        await repository.updateRecoveryRequestInLockbox(
-          request.lockboxId,
-          request.id,
-          request,
-        );
-      } else {
-        await repository.addRecoveryRequestToLockbox(request.lockboxId, request);
-      }
-    } catch (e) {
-      Log.error('Error saving recovery request to lockbox', e);
-      // Continue anyway - request is saved in local cache
-    }
-
-    await _saveRecoveryRequests();
+    // Emit notification update
+    _emitNotificationUpdate();
   }
 
   /// Get all recovery requests for the current user
@@ -257,11 +207,14 @@ class RecoveryService {
   }) async {
     await initialize();
 
-    var requests = List<RecoveryRequest>.from(_cachedRequests ?? []);
-
-    // Filter by lockbox ID if provided
+    // Get requests from lockbox repository (source of truth)
+    List<RecoveryRequest> requests;
     if (lockboxId != null) {
-      requests = requests.where((r) => r.lockboxId == lockboxId).toList();
+      // Get requests for a specific lockbox
+      requests = await repository.getRecoveryRequestsForLockbox(lockboxId);
+    } else {
+      // Get all requests across all lockboxes
+      requests = await repository.getAllRecoveryRequests();
     }
 
     // Filter by status if provided
@@ -276,8 +229,10 @@ class RecoveryService {
   Future<RecoveryRequest?> getRecoveryRequest(String recoveryRequestId) async {
     await initialize();
 
+    // Get all requests from lockbox repository and find the matching one
+    final allRequests = await repository.getAllRecoveryRequests();
     try {
-      return _cachedRequests!.firstWhere((r) => r.id == recoveryRequestId);
+      return allRequests.firstWhere((r) => r.id == recoveryRequestId);
     } catch (e) {
       return null;
     }
@@ -321,17 +276,11 @@ class RecoveryService {
   }) async {
     await initialize();
 
-    if (_cachedRequests == null) {
-      throw StateError('Recovery service not properly initialized: _cachedRequests is null.');
-    }
-
-    Log.debug('cachedRequests: $_cachedRequests');
-    final requestIndex = _cachedRequests!.indexWhere((r) => r.id == recoveryRequestId);
-    if (requestIndex == -1) {
+    // Get the request from lockbox repository (source of truth)
+    final request = await getRecoveryRequest(recoveryRequestId);
+    if (request == null) {
       throw ArgumentError('Recovery request not found: $recoveryRequestId');
     }
-
-    final request = _cachedRequests![requestIndex];
 
     // Update the response
     final updatedResponses = Map<String, RecoveryResponse>.from(request.keyHolderResponses);
@@ -362,10 +311,7 @@ class RecoveryService {
       keyHolderResponses: updatedResponses,
     );
 
-    _cachedRequests![requestIndex] = updatedRequest;
-    await _saveRecoveryRequests();
-
-    // Also update in lockbox
+    // Update in lockbox (single source of truth)
     try {
       await repository.updateRecoveryRequestInLockbox(
         request.lockboxId,
@@ -374,7 +320,7 @@ class RecoveryService {
       );
     } catch (e) {
       Log.error('Error updating recovery request in lockbox', e);
-      // Continue anyway - request is updated in local cache
+      rethrow;
     }
 
     // Emit update to stream for real-time UI updates
@@ -388,29 +334,22 @@ class RecoveryService {
   Future<void> cancelRecoveryRequest(String recoveryRequestId) async {
     await initialize();
 
-    final requestIndex = _cachedRequests!.indexWhere((r) => r.id == recoveryRequestId);
-    if (requestIndex == -1) {
+    // Get the request from lockbox repository (source of truth)
+    final request = await getRecoveryRequest(recoveryRequestId);
+    if (request == null) {
       throw ArgumentError('Recovery request not found: $recoveryRequestId');
     }
 
-    final request = _cachedRequests![requestIndex];
     final updatedRequest = request.copyWith(
       status: RecoveryRequestStatus.cancelled,
     );
 
-    _cachedRequests![requestIndex] = updatedRequest;
-    await _saveRecoveryRequests();
-
-    // Also update in lockbox
-    try {
-      await repository.updateRecoveryRequestInLockbox(
-        request.lockboxId,
-        recoveryRequestId,
-        updatedRequest,
-      );
-    } catch (e) {
-      Log.error('Error updating cancelled recovery request in lockbox', e);
-    }
+    // Update in lockbox (single source of truth)
+    await repository.updateRecoveryRequestInLockbox(
+      request.lockboxId,
+      recoveryRequestId,
+      updatedRequest,
+    );
 
     Log.info('Cancelled recovery request $recoveryRequestId');
   }
@@ -481,13 +420,8 @@ class RecoveryService {
     final updatedRequest = request.copyWith(
       status: RecoveryRequestStatus.completed,
     );
-    final requestIndex = _cachedRequests!.indexWhere((r) => r.id == recoveryRequestId);
-    if (requestIndex != -1) {
-      _cachedRequests![requestIndex] = updatedRequest;
-      await _saveRecoveryRequests();
-    }
 
-    // Also update in lockbox
+    // Update in lockbox (single source of truth)
     try {
       await repository.updateRecoveryRequestInLockbox(
         request.lockboxId,
@@ -496,6 +430,7 @@ class RecoveryService {
       );
     } catch (e) {
       Log.error('Error updating completed recovery request in lockbox', e);
+      rethrow;
     }
 
     Log.info('Successfully recovered lockbox ${request.lockboxId} from $recoveryRequestId');
@@ -520,21 +455,17 @@ class RecoveryService {
   }) async {
     await initialize();
 
-    final requestIndex = _cachedRequests!.indexWhere((r) => r.id == recoveryRequestId);
-    if (requestIndex == -1) {
+    final request = await getRecoveryRequest(recoveryRequestId);
+    if (request == null) {
       throw ArgumentError('Recovery request not found: $recoveryRequestId');
     }
 
-    final request = _cachedRequests![requestIndex];
     final updatedRequest = request.copyWith(
       status: status,
       nostrEventId: nostrEventId ?? request.nostrEventId,
     );
 
-    _cachedRequests![requestIndex] = updatedRequest;
-    await _saveRecoveryRequests();
-
-    // Also update in lockbox
+    // Update in lockbox (single source of truth)
     try {
       await repository.updateRecoveryRequestInLockbox(
         request.lockboxId,
@@ -543,6 +474,7 @@ class RecoveryService {
       );
     } catch (e) {
       Log.error('Error updating recovery request status in lockbox', e);
+      rethrow;
     }
 
     Log.info('Updated recovery request $recoveryRequestId status to ${status.displayName}');
@@ -719,15 +651,14 @@ class RecoveryService {
   Future<List<RecoveryRequest>> getPendingNotifications() async {
     await initialize();
 
-    return _cachedRequests!
-        .where((request) => !_viewedNotificationIds!.contains(request.id))
-        .toList();
+    final allRequests = await repository.getAllRecoveryRequests();
+    return allRequests.where((request) => !_viewedNotificationIds!.contains(request.id)).toList();
   }
 
   /// Get all recovery request notifications (including viewed)
   Future<List<RecoveryRequest>> getAllNotifications() async {
     await initialize();
-    return List.unmodifiable(_cachedRequests!);
+    return await repository.getAllRecoveryRequests();
   }
 
   /// Mark a recovery request notification as viewed
@@ -737,7 +668,7 @@ class RecoveryService {
     if (!_viewedNotificationIds!.contains(recoveryRequestId)) {
       _viewedNotificationIds!.add(recoveryRequestId);
       await _saveViewedNotificationIds();
-      _emitNotificationUpdate();
+      await _emitNotificationUpdate();
       Log.info('Marked recovery request $recoveryRequestId as viewed');
     }
   }
@@ -749,7 +680,7 @@ class RecoveryService {
     if (_viewedNotificationIds!.contains(recoveryRequestId)) {
       _viewedNotificationIds!.remove(recoveryRequestId);
       await _saveViewedNotificationIds();
-      _emitNotificationUpdate();
+      await _emitNotificationUpdate();
       Log.info('Marked recovery request $recoveryRequestId as unviewed');
     }
   }
@@ -758,12 +689,11 @@ class RecoveryService {
   Future<int> getNotificationCount({bool unviewedOnly = true}) async {
     await initialize();
 
+    final allRequests = await repository.getAllRecoveryRequests();
     if (unviewedOnly) {
-      return _cachedRequests!
-          .where((request) => !_viewedNotificationIds!.contains(request.id))
-          .length;
+      return allRequests.where((request) => !_viewedNotificationIds!.contains(request.id)).length;
     } else {
-      return _cachedRequests!.length;
+      return allRequests.length;
     }
   }
 
@@ -779,26 +709,23 @@ class RecoveryService {
 
     _viewedNotificationIds!.clear();
     await _saveViewedNotificationIds();
-    _emitNotificationUpdate();
+    await _emitNotificationUpdate();
     Log.info('Cleared all viewed notification markers');
   }
 
   /// Clear all recovery requests (for testing)
   Future<void> clearAll() async {
-    _cachedRequests = [];
     _viewedNotificationIds = {};
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_recoveryRequestsKey);
     await prefs.remove(_viewedNotificationIdsKey);
     _isInitialized = false;
     _notificationController.add([]);
-    Log.info('Cleared all recovery requests and notifications');
+    Log.info('Cleared all recovery request notifications');
   }
 
   /// Refresh the cached data from storage
   Future<void> refresh() async {
     _isInitialized = false;
-    _cachedRequests = null;
     _viewedNotificationIds = null;
     await initialize();
   }
