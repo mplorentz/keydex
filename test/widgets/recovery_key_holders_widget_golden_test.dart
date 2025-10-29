@@ -95,7 +95,14 @@ void main() {
 
       await tester.pump();
 
-      await screenMatchesGolden(tester, 'recovery_key_holders_widget_loading');
+      // Use pump instead of pumpAndSettle to avoid timeout
+      await tester.pump();
+
+      // Manually capture the golden without pumpAndSettle
+      await expectLater(
+        find.byType(RecoveryKeyHoldersWidget),
+        matchesGoldenFile('goldens/recovery_key_holders_widget_loading.png'),
+      );
 
       container.dispose();
     });
