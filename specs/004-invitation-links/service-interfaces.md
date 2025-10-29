@@ -17,8 +17,8 @@ Primary service for managing invitation links and processing invitation-related 
 ### Dependencies
 - `LockboxRepository` - For accessing lockbox and backup config data
 - `SharedPreferences` - For storing invitation codes and tracking
-- `NdkService` - For publishing Nostr events
-- `KeyService` - For encryption/decryption operations
+- `InvitationSendingService` - For publishing outgoing Nostr events
+- `KeyService` - For encryption/decryption operations (for incoming events)
 
 ### Methods
 
@@ -96,7 +96,7 @@ Future<void> redeemInvitation({
   // Checks if already redeemed
   // Updates invitation status to redeemed
   // Adds invitee to backup config as key holder
-  // Publishes RSVP event to lockbox owner
+  // Sends RSVP event via InvitationSendingService
   // Updates invitation tracking
 }
 ```
@@ -109,7 +109,7 @@ Future<void> redeemInvitation({
 **Postconditions**:
 - Invitation status updated to redeemed
 - Invitee added to backup config key holders
-- RSVP event published to Nostr relays
+- RSVP event sent via InvitationSendingService
 - Key holder status set to "awaiting key"
 
 **Error Cases**:
@@ -129,7 +129,7 @@ Future<void> denyInvitation({
 }) async {
   // Validates invite code exists and is pending
   // Updates invitation status to denied
-  // Publishes denial event to lockbox owner
+  // Sends denial event via InvitationSendingService
   // Invalidates invitation code
 }
 ```
@@ -140,7 +140,7 @@ Future<void> denyInvitation({
 
 **Postconditions**:
 - Invitation status updated to denied
-- Denial event published to Nostr relays
+- Denial event sent via InvitationSendingService
 - Invitation code invalidated
 
 #### invalidateInvitation
@@ -153,7 +153,7 @@ Future<void> invalidateInvitation({
   required String reason,
 }) async {
   // Updates invitation status to invalidated
-  // Publishes invalid event to invitee if already redeemed
+  // Sends invalid event via InvitationSendingService if invitee already accepted
   // Removes invitation from tracking
 }
 ```
@@ -164,7 +164,7 @@ Future<void> invalidateInvitation({
 
 **Postconditions**:
 - Invitation status updated to invalidated
-- Invalid event published if invitee already accepted
+- Invalid event sent via InvitationSendingService if invitee already accepted
 - Invitation removed from active tracking
 
 #### processRsvpEvent
@@ -349,25 +349,30 @@ InvitationLinkData? parseInvitationLink(Uri uri) {
 - Returns null if missing required parameters
 - Returns null if scheme not supported
 
-## InvitationEventService
+## InvitationSendingService
 
-Service for creating and publishing invitation-related Nostr events.
+Stateless utility service for creating and publishing outgoing invitation-related Nostr events. This service handles only outgoing event creation and publishing, with no local state or storage.
 
 ### Location
-`lib/services/invitation_event_service.dart`
+`lib/services/invitation_sending_service.dart`
 
 ### Dependencies
 - `NdkService` - For Nostr event publishing
 - `KeyService` - For encryption/decryption
 
+### Notes
+- Stateless utility class (no storage, no state)
+- All methods are pure functions that create and publish events
+- Suitable for use as a singleton or stateless service instance
+
 ### Methods
 
-#### publishRsvpEvent
+#### sendRsvpEvent
 
 Creates and publishes RSVP event to accept invitation.
 
 ```dart
-Future<String?> publishRsvpEvent({
+Future<String?> sendRsvpEvent({
   required String inviteCode,
   required String ownerPubkey, // Hex format
   required List<String> relayUrls,
@@ -383,12 +388,12 @@ Future<String?> publishRsvpEvent({
 
 **Returns**: Event ID if successful, null otherwise
 
-#### publishDenialEvent
+#### sendDenialEvent
 
 Creates and publishes denial event to decline invitation.
 
 ```dart
-Future<String?> publishDenialEvent({
+Future<String?> sendDenialEvent({
   required String inviteCode,
   required String ownerPubkey, // Hex format
   required List<String> relayUrls,
@@ -405,12 +410,12 @@ Future<String?> publishDenialEvent({
 
 **Returns**: Event ID if successful, null otherwise
 
-#### publishShardConfirmationEvent
+#### sendShardConfirmationEvent
 
 Creates and publishes shard confirmation event.
 
 ```dart
-Future<String?> publishShardConfirmationEvent({
+Future<String?> sendShardConfirmationEvent({
   required String lockboxId,
   required int shardIndex,
   required String ownerPubkey, // Hex format
@@ -427,12 +432,12 @@ Future<String?> publishShardConfirmationEvent({
 
 **Returns**: Event ID if successful, null otherwise
 
-#### publishShardErrorEvent
+#### sendShardErrorEvent
 
 Creates and publishes shard error event.
 
 ```dart
-Future<String?> publishShardErrorEvent({
+Future<String?> sendShardErrorEvent({
   required String lockboxId,
   required int shardIndex,
   required String ownerPubkey, // Hex format
@@ -450,12 +455,12 @@ Future<String?> publishShardErrorEvent({
 
 **Returns**: Event ID if successful, null otherwise
 
-#### publishInvitationInvalidEvent
+#### sendInvitationInvalidEvent
 
 Creates and publishes invitation invalid event.
 
 ```dart
-Future<String?> publishInvitationInvalidEvent({
+Future<String?> sendInvitationInvalidEvent({
   required String inviteCode,
   required String inviteePubkey, // Hex format
   required List<String> relayUrls,
@@ -480,7 +485,7 @@ Future<String?> publishInvitationInvalidEvent({
 final invitationServiceProvider = Provider<InvitationService>((ref) {
   return InvitationService(
     ref.read(lockboxRepositoryProvider),
-    ref.read(ndkServiceProvider),
+    ref.read(invitationSendingServiceProvider),
     ref.read(keyServiceProvider),
   );
 });
@@ -492,6 +497,17 @@ final invitationServiceProvider = Provider<InvitationService>((ref) {
 final deepLinkServiceProvider = Provider<DeepLinkService>((ref) {
   return DeepLinkService(
     ref.read(invitationServiceProvider),
+  );
+});
+```
+
+### Invitation Sending Service Provider
+
+```dart
+final invitationSendingServiceProvider = Provider<InvitationSendingService>((ref) {
+  return InvitationSendingService(
+    ref.read(ndkServiceProvider),
+    ref.read(keyServiceProvider),
   );
 });
 ```
@@ -573,7 +589,7 @@ class InvalidInvitationLinkException implements Exception {
 - Test invitation code generation (cryptographic randomness)
 - Test invitation link URL generation and parsing
 - Test invitation status transitions
-- Test event encryption/decryption
+- Test event encryption/decryption in InvitationSendingService
 - Test error handling for invalid codes
 
 ### Integration Tests
@@ -581,9 +597,9 @@ class InvalidInvitationLinkException implements Exception {
 - Test complete invitation flow (generate → share → redeem)
 - Test invitation denial flow
 - Test deep link handling (cold start and warm start)
-- Test RSVP event processing
-- Test shard confirmation event processing
-- Test error event handling
+- Test RSVP event sending and processing
+- Test shard confirmation event sending and processing
+- Test error event sending and handling
 
 ### Widget Tests
 

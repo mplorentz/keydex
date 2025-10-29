@@ -211,7 +211,7 @@ ios/ or android/
 - Outside-In order: UI stubs first (invitation generation screen, acceptance screen), then implementation behind components
 - Dependency order: 
   1. Data models (InvitationLink, InvitationCode, event types)
-  2. Service interfaces (InvitationService, DeepLinkService, InvitationEventService)
+  2. Service interfaces (InvitationService, DeepLinkService, InvitationSendingService)
   3. UI stubs (backup config screen updates, invitation acceptance screen, key holder status updates)
   4. Service implementations (make tests pass)
   5. UI implementations (connect to services)
@@ -248,7 +248,7 @@ ios/ or android/
 - [x] Phase 0: Research complete (/plan command)
 - [x] Phase 1: Design complete (/plan command)
 - [x] Phase 2: Task planning complete (/plan command - describe approach only)
-- [ ] Phase 3: Tasks generated (/tasks command)
+- [x] Phase 3: Tasks generated (/tasks command)
 - [ ] Phase 4: Implementation complete
 - [ ] Phase 5: Validation passed
 
