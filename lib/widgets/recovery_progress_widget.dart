@@ -17,9 +17,6 @@ class RecoveryProgressWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final requestAsync = ref.watch(recoveryRequestByIdProvider(recoveryRequestId));
-    final lockboxAsync = ref.watch(
-      lockboxProvider(requestAsync.valueOrNull?.lockboxId ?? ''),
-    );
 
     // We need both request and lockbox to calculate proper progress
     return requestAsync.when(
@@ -44,6 +41,19 @@ class RecoveryProgressWidget extends ConsumerWidget {
             ),
           );
         }
+
+        // Only watch lockbox provider when we have a valid lockboxId
+        final lockboxId = request.lockboxId;
+        if (lockboxId.isEmpty) {
+          return const Card(
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Text('Recovery request has no lockbox ID'),
+            ),
+          );
+        }
+
+        final lockboxAsync = ref.watch(lockboxProvider(lockboxId));
 
         // Now get the lockbox to calculate proper totals
         return lockboxAsync.when(

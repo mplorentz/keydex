@@ -197,7 +197,7 @@ class RecoveryService {
     }
 
     // Emit notification update
-    _emitNotificationUpdate();
+    await _emitNotificationUpdate();
   }
 
   /// Get all recovery requests for the current user
