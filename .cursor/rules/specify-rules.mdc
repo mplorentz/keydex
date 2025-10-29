@@ -9,6 +9,8 @@ Auto-generated from all feature plans. Last updated: 2025-09-22
 - Dart 3.0+ / Flutter 3.16+ + Flutter, ndk (Nostr protocol), ntcdcrypto (Shamir's Secret Sharing) (002-distributed-backup-of)
 - Dart 3.0+ with Flutter 3.16+ + Flutter, NDK (Nostr), flutter_secure_storage, crypto (003-lockbox-recovery)
 - FlutterSecureStorage for local data, Nostr relays for distributed shares (003-lockbox-recovery)
+- Dart 3.5.3, Flutter 3.35.0 (004-invitation-links)
+- SharedPreferences for invitation code tracking, FlutterSecureStorage for sensitive data (004-invitation-links)
 
 ## Project Structure
 ```
@@ -23,9 +25,9 @@ tests/
 Dart 3.0+ with Flutter 3.16+: Follow standard conventions
 
 ## Recent Changes
+- 004-invitation-links: Added Dart 3.5.3, Flutter 3.35.0
 - 003-lockbox-recovery: Added Dart 3.0+ with Flutter 3.16+ + Flutter, NDK (Nostr), flutter_secure_storage, crypto
 - 002-distributed-backup-of: Added Dart 3.0+ / Flutter 3.16+ + Flutter, ndk (Nostr protocol), ntcdcrypto (Shamir's Secret Sharing)
-- 002-distributed-backup-of: Added Dart 3.0+ / Flutter 3.16+ + Flutter, nostr_dart (Nostr protocol), shamir_secret_sharing (cryptographic library)
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->
