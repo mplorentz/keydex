@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/relay_configuration.dart';
@@ -77,8 +78,39 @@ class RelayScanService {
 
     try {
       await _loadRelayConfigurations();
+
+      // In debug mode, if no relays are configured, add localhost relay
+      if (kDebugMode && (_cachedRelays == null || _cachedRelays!.isEmpty)) {
+        const localhostRelay = RelayConfiguration(
+          id: 'localhost-debug',
+          url: 'ws://localhost:10547',
+          name: 'Localhost (Debug)',
+          isEnabled: true,
+          isTrusted: false,
+        );
+
+        try {
+          // Directly add to cache and save without calling initialize recursively
+          _cachedRelays!.add(localhostRelay);
+          await _saveRelayConfigurations();
+          Log.info('Auto-added localhost relay in debug mode: ws://localhost:10547');
+        } catch (e) {
+          Log.error('Error auto-adding localhost relay', e);
+        }
+      }
+
       await _loadScanningStatus();
       _isInitialized = true;
+
+      // In debug mode with newly added localhost relay, start scanning automatically
+      if (kDebugMode && _cachedRelays!.length == 1 && _cachedRelays![0].id == 'localhost-debug') {
+        try {
+          await startRelayScanning();
+          Log.info('Auto-started scanning with localhost relay');
+        } catch (e) {
+          Log.error('Error auto-starting scanning with localhost relay', e);
+        }
+      }
       Log.info('RelayScanService initialized with ${_cachedRelays?.length ?? 0} relays');
     } catch (e) {
       Log.error('Error initializing RelayScanService', e);

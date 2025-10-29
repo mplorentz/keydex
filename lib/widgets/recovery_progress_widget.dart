@@ -1,190 +1,298 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../models/lockbox.dart';
+import '../providers/recovery_provider.dart';
+import '../providers/lockbox_provider.dart';
+import '../services/recovery_service.dart';
 
-/// Widget for displaying recovery progress and key holder status
-///
-/// This widget shows the current progress of a recovery request,
-/// including how many key holders have responded and their decisions.
-class RecoveryProgressWidget extends StatelessWidget {
-  final int totalKeyHolders;
-  final int respondedCount;
-  final int approvedCount;
-  final int deniedCount;
-  final int threshold;
-  final bool isCompleted;
-  final VoidCallback? onTap;
+/// Widget for displaying recovery progress and status
+class RecoveryProgressWidget extends ConsumerWidget {
+  final String recoveryRequestId;
 
   const RecoveryProgressWidget({
     super.key,
-    required this.totalKeyHolders,
-    required this.respondedCount,
-    required this.approvedCount,
-    required this.deniedCount,
-    required this.threshold,
-    this.isCompleted = false,
-    this.onTap,
+    required this.recoveryRequestId,
   });
 
   @override
-  Widget build(BuildContext context) {
-    final progress = totalKeyHolders > 0 ? approvedCount / totalKeyHolders : 0.0;
-    final canRecover = approvedCount >= threshold;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final requestAsync = ref.watch(recoveryRequestByIdProvider(recoveryRequestId));
 
-    return Card(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
+    // We need both request and lockbox to calculate proper progress
+    return requestAsync.when(
+      loading: () => const Card(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header
-              Row(
-                children: [
-                  Icon(
-                    isCompleted
-                        ? Icons.check_circle
-                        : canRecover
-                            ? Icons.warning
-                            : Icons.schedule,
-                    color: isCompleted
-                        ? Colors.green
-                        : canRecover
-                            ? Colors.orange
-                            : Colors.blue,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      isCompleted
-                          ? 'Recovery Completed'
-                          : canRecover
-                              ? 'Ready to Recover'
-                              : 'Recovery in Progress',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  if (onTap != null)
-                    Icon(
-                      Icons.arrow_forward_ios,
-                      size: 16,
-                      color: Colors.grey[600],
-                    ),
-                ],
-              ),
-              const SizedBox(height: 12),
-
-              // Progress bar
-              LinearProgressIndicator(
-                value: progress,
-                backgroundColor: Colors.grey[300],
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  isCompleted
-                      ? Colors.green
-                      : canRecover
-                          ? Colors.orange
-                          : Theme.of(context).primaryColor,
-                ),
-              ),
-              const SizedBox(height: 8),
-
-              // Progress text
-              Text(
-                _getProgressText(),
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              // Status chips
-              Wrap(
-                spacing: 8,
-                runSpacing: 4,
-                children: [
-                  _buildStatusChip(
-                    'Approved',
-                    approvedCount,
-                    Colors.green,
-                  ),
-                  _buildStatusChip(
-                    'Pending',
-                    totalKeyHolders - respondedCount,
-                    Colors.orange,
-                  ),
-                  if (deniedCount > 0)
-                    _buildStatusChip(
-                      'Denied',
-                      deniedCount,
-                      Colors.red,
-                    ),
-                ],
-              ),
-            ],
-          ),
+          padding: EdgeInsets.all(16),
+          child: Center(child: CircularProgressIndicator()),
         ),
       ),
+      error: (error, stack) => Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Text('Error: $error'),
+        ),
+      ),
+      data: (request) {
+        if (request == null) {
+          return const Card(
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Text('Recovery request not found'),
+            ),
+          );
+        }
+
+        // Only watch lockbox provider when we have a valid lockboxId
+        final lockboxId = request.lockboxId;
+        if (lockboxId.isEmpty) {
+          return const Card(
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Text('Recovery request has no lockbox ID'),
+            ),
+          );
+        }
+
+        final lockboxAsync = ref.watch(lockboxProvider(lockboxId));
+
+        // Now get the lockbox to calculate proper totals
+        return lockboxAsync.when(
+          loading: () => const Card(
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Center(child: CircularProgressIndicator()),
+            ),
+          ),
+          error: (error, stack) => Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text('Error loading lockbox: $error'),
+            ),
+          ),
+          data: (lockbox) {
+            // Get actual totals from lockbox
+            final totalKeyHolders = _getTotalKeyHolders(lockbox);
+            final approvedCount = request.approvedCount;
+            final deniedCount = request.deniedCount;
+            final threshold = request.threshold;
+            final pendingCount = totalKeyHolders - (approvedCount + deniedCount);
+            final canRecover = approvedCount >= threshold;
+
+            // Calculate progress based on threshold
+            final progress = threshold > 0 ? (approvedCount / threshold * 100).clamp(0, 100) : 0.0;
+
+            return Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Recovery Progress',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 16),
+                    LinearProgressIndicator(
+                      value: progress / 100,
+                      backgroundColor: Colors.grey[300],
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        canRecover ? Colors.green : Theme.of(context).primaryColor,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '${progress.toStringAsFixed(0)}% complete',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildProgressRow(
+                      'Threshold',
+                      '$threshold',
+                      'Minimum shares needed',
+                    ),
+                    _buildProgressRow(
+                      'Approved',
+                      '$approvedCount',
+                      'Key holders approved',
+                    ),
+                    _buildProgressRow(
+                      'Denied',
+                      '$deniedCount',
+                      'Key holders denied',
+                    ),
+                    _buildProgressRow(
+                      'Pending',
+                      '$pendingCount',
+                      'Awaiting response',
+                    ),
+                    const SizedBox(height: 16),
+                    if (canRecover) ...[
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.green[100],
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.check_circle, color: Colors.green),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                'Sufficient shares collected! Recovery is possible.',
+                                style: TextStyle(
+                                  color: Colors.green[900],
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () => _performRecovery(context, ref),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.all(16),
+                          ),
+                          icon: const Icon(Icons.lock_open),
+                          label: const Text(
+                            'Recover Lockbox',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
-  Widget _buildStatusChip(String label, int count, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
+  /// Extract total number of key holders from lockbox
+  int _getTotalKeyHolders(Lockbox? lockbox) {
+    if (lockbox == null) return 0;
+
+    // Get from backupConfig if available
+    if (lockbox.backupConfig?.keyHolders.isNotEmpty == true) {
+      return lockbox.backupConfig!.keyHolders.length;
+    }
+
+    // Fallback: use shards
+    if (lockbox.shards.isNotEmpty) {
+      final firstShard = lockbox.shards.first;
+      if (firstShard.peers != null) {
+        return firstShard.peers!.length;
+      }
+    }
+
+    return 0;
+  }
+
+  Widget _buildProgressRow(String label, String value, String subtitle) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Icon(
-            Icons.circle,
-            size: 8,
-            color: color,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text(
+                subtitle,
+                style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+              ),
+            ],
           ),
-          const SizedBox(width: 4),
           Text(
-            '$count $label',
-            style: TextStyle(
-              fontSize: 12,
-              color: color,
-              fontWeight: FontWeight.bold,
-            ),
+            value,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ],
       ),
     );
   }
 
-  String _getProgressText() {
-    if (isCompleted) {
-      return 'Recovery completed successfully';
-    } else if (approvedCount >= threshold) {
-      return 'Threshold met ($approvedCount/$threshold). Ready to recover.';
-    } else {
-      return '$approvedCount of $threshold shares collected';
-    }
-  }
-}
-
-/// Extension for creating sample data
-extension RecoveryProgressWidgetSample on RecoveryProgressWidget {
-  static RecoveryProgressWidget createSample({
-    bool isCompleted = false,
-    bool canRecover = false,
-  }) {
-    return RecoveryProgressWidget(
-      totalKeyHolders: 3,
-      respondedCount: isCompleted ? 3 : 2,
-      approvedCount: isCompleted ? 3 : (canRecover ? 2 : 1),
-      deniedCount: 0,
-      threshold: 2,
-      isCompleted: isCompleted,
+  Future<void> _performRecovery(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Recover Lockbox'),
+        content: const Text(
+          'This will recover and unlock your lockbox using the collected key shares. '
+          'The recovered content will be displayed. Continue?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Recover'),
+          ),
+        ],
+      ),
     );
+
+    if (confirmed != true) return;
+
+    try {
+      // Perform the recovery
+      final service = ref.read(recoveryServiceProvider);
+      final content = await service.performRecovery(recoveryRequestId);
+
+      if (context.mounted) {
+        // Show the recovered content in a dialog
+        await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Lockbox Recovered!'),
+            content: SingleChildScrollView(
+              child: SelectableText(
+                content,
+                style: const TextStyle(fontFamily: 'monospace'),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Close'),
+              ),
+            ],
+          ),
+        );
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Lockbox successfully recovered!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }

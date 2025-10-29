@@ -9,6 +9,7 @@ import 'package:keydex/providers/key_provider.dart';
 import 'package:keydex/widgets/key_holder_list.dart';
 import 'package:keydex/widgets/theme.dart';
 import 'dart:async';
+import '../helpers/golden_test_helpers.dart';
 
 void main() {
   // Sample test data
@@ -81,13 +82,9 @@ void main() {
 
       await tester.pump();
 
-      // Use pump instead of pumpAndSettle to avoid timeout
-      await tester.pump();
-
-      // Manually capture the golden without pumpAndSettle
-      await expectLater(
-        find.byType(KeyHolderList),
-        matchesGoldenFile('goldens/key_holder_list_loading.png'),
+      await screenMatchesGoldenWithoutSettle<KeyHolderList>(
+        tester,
+        'key_holder_list_loading',
       );
 
       container.dispose();
@@ -353,13 +350,9 @@ void main() {
 
       await tester.pump();
 
-      // Use pump instead of pumpAndSettle to avoid timeout
-      await tester.pump();
-
-      // Manually capture the golden without pumpAndSettle
-      await expectLater(
-        find.byType(KeyHolderList),
-        matchesGoldenFile('goldens/key_holder_list_user_loading.png'),
+      await screenMatchesGoldenWithoutSettle<KeyHolderList>(
+        tester,
+        'key_holder_list_user_loading',
       );
 
       container.dispose();
