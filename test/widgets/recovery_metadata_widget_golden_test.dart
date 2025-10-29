@@ -35,7 +35,7 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           recoveryRequestByIdProvider('test-request').overrideWith(
-            (ref) => Future.delayed(const Duration(seconds: 10), () => null),
+            (ref) => const AsyncValue.loading(),
           ),
         ],
       );
@@ -63,7 +63,7 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           recoveryRequestByIdProvider('test-request').overrideWith(
-            (ref) => Future.error('Failed to load recovery request'),
+            (ref) => const AsyncValue.error('Failed to load recovery request', StackTrace.empty),
           ),
         ],
       );
@@ -95,7 +95,8 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          recoveryRequestByIdProvider('test-request').overrideWith((ref) => Future.value(request)),
+          recoveryRequestByIdProvider('test-request')
+              .overrideWith((ref) => AsyncValue.data(request)),
         ],
       );
 
@@ -126,7 +127,8 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          recoveryRequestByIdProvider('test-request').overrideWith((ref) => Future.value(request)),
+          recoveryRequestByIdProvider('test-request')
+              .overrideWith((ref) => AsyncValue.data(request)),
         ],
       );
 
@@ -157,7 +159,8 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          recoveryRequestByIdProvider('test-request').overrideWith((ref) => Future.value(request)),
+          recoveryRequestByIdProvider('test-request')
+              .overrideWith((ref) => AsyncValue.data(request)),
         ],
       );
 
@@ -189,7 +192,8 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          recoveryRequestByIdProvider('test-request').overrideWith((ref) => Future.value(request)),
+          recoveryRequestByIdProvider('test-request')
+              .overrideWith((ref) => AsyncValue.data(request)),
         ],
       );
 
