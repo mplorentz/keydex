@@ -70,6 +70,17 @@
 - [ ] NIP documentation planned for backup/restore processes
 - [ ] Relay selection and failover mechanisms designed
 
+### Riverpod State Management Architecture
+- [ ] App wrapped with ProviderScope at root level
+- [ ] Provider types used correctly (Provider, FutureProvider, StreamProvider, StateProvider)
+- [ ] Widgets consuming providers use ConsumerWidget or ConsumerStatefulWidget
+- [ ] Repository pattern used to abstract service layer behind providers
+- [ ] Resources properly disposed using ref.onDispose()
+- [ ] Provider composition uses ref.watch() for reactive dependencies
+- [ ] Cache invalidation uses ref.invalidate() or ref.refresh() when data changes
+- [ ] Auto-dispose providers preferred for temporary or screen-scoped data
+- [ ] Provider families used for parameterized providers
+
 ### Non-Technical User Focus
 - [ ] UI designed for non-technical users
 - [ ] Complex concepts abstracted behind simple language
@@ -240,4 +251,4 @@ ios/ or android/
 - [ ] Complexity deviations documented
 
 ---
-*Based on Constitution v1.1.0 - See `/memory/constitution.md`*
+*Based on Constitution v1.2.0 - See `/memory/constitution.md`*

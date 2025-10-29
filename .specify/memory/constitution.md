@@ -1,21 +1,13 @@
 <!--
 Sync Impact Report:
-Version change: 1.0.0 → 1.1.0
-Modified principles: Behavior-Driven Development → Outside-In Development
-Added sections: N/A
+Version change: 1.1.0 → 1.2.0
+Modified principles: N/A
+Added sections: Riverpod State Management Architecture (new principle VIII)
 Removed sections: N/A
 Templates requiring updates:
-  ✅ .specify/templates/plan-template.md (constitution check alignment)
-    - Added Outside-In Development checklist section
-    - Updated constitution version reference to v1.1.0
-  ✅ .specify/templates/spec-template.md (constitution compliance)
-    - No changes needed - already focuses on user scenarios
-  ✅ .specify/templates/tasks-template.md (testing approach)
-    - Updated Phase 3.2 from "Tests First (TDD)" to "UI Stubs & Manual Verification"
-    - Reorganized phases: Setup → UI Stubs → Implementation → Refactoring Pass 1 → Edge Cases → Refactoring Pass 2 → Unit Tests → Integration Tests
-    - Added two refactoring phases: after implementation and after edge cases
-    - Updated dependencies, parallel examples, and task numbering
-    - Updated validation checklist and task generation rules
+  ✅ .specify/memory/constitution.md (new Riverpod principle added)
+  ✅ .specify/templates/plan-template.md (Riverpod architecture checklist added)
+  ✅ .specify/templates/tasks-template.md (no changes needed - architecture patterns handled in plan phase)
 Follow-up TODOs: None - all templates updated
 -->
 
@@ -43,6 +35,9 @@ The project prioritizes simplicity and easy extensibility for contributors. Code
 
 ### VII. Interoperability & Standards
 The app uses the Nostr protocol for all data transmission, ensuring decentralized and censorship-resistant communication. Backup and restore processes are documented in a Nostr Implementation Possibility (NIP) to enable interoperability with competing applications. All protocol implementations must follow established Nostr standards and be compatible with the broader Nostr ecosystem.
+
+### VIII. Riverpod State Management Architecture
+All state management MUST use Riverpod following established best practices. The app MUST be wrapped with ProviderScope at the root to enable provider access throughout the widget tree. State providers MUST be categorized correctly: Provider for immutable dependencies, FutureProvider for async data loading, StreamProvider for reactive streams, and StateProvider only for simple mutable state. Widgets that consume providers MUST use ConsumerWidget or ConsumerStatefulWidget instead of accessing providers directly. Repository pattern MUST be used to abstract service layer interactions behind providers. All providers MUST properly dispose resources using ref.onDispose(). Provider composition MUST use ref.watch() for reactive dependencies and ref.read() for one-time access. Cache invalidation MUST use ref.invalidate() or ref.refresh() when data changes. Auto-dispose providers MUST be preferred for data that should be cleaned up when not in use. Provider families MUST be used for parameterized providers (e.g., by ID). These patterns ensure predictable state management, automatic cleanup, and testability.
 
 ## Security Standards
 
@@ -76,6 +71,19 @@ The app uses the Nostr protocol for all data transmission, ensuring decentralize
 - Desktop platforms maintain native look and feel
 - Performance is optimized for each platform's capabilities
 
+### Riverpod State Management
+- ProviderScope wraps the entire app at the root level
+- Provider types are used correctly: Provider for dependencies, FutureProvider for async data, StreamProvider for reactive streams, StateProvider only for simple mutable state
+- All widgets that consume providers use ConsumerWidget or ConsumerStatefulWidget
+- Repository pattern abstracts service layer behind providers
+- Resources are properly disposed using ref.onDispose()
+- Provider composition uses ref.watch() for reactive dependencies and ref.read() for one-time access
+- Cache invalidation uses ref.invalidate() or ref.refresh() when data changes
+- Auto-dispose providers are preferred for temporary or screen-scoped data
+- Provider families (Provider.family) are used for parameterized providers
+- Provider dependencies are managed through ref.watch() to maintain reactive updates
+- StreamProvider uses Stream.multi() for proper subscription management and cleanup
+
 ### Testing Strategy
 - Manual verification of stubbed UI components comes first for rapid feedback
 - Unit tests are added after implementation of isolated classes to verify behavior
@@ -108,9 +116,12 @@ The app uses the Nostr protocol for all data transmission, ensuring decentralize
 - Performance is measured and optimized
 - Nostr protocol implementations are tested against multiple relay providers
 - NIP documentation is maintained and updated with protocol changes
+- Riverpod providers follow naming conventions: providers end with `Provider`, repositories end with `Repository`
+- Provider files are organized in `lib/providers/` directory
+- Provider tests mock dependencies using OverrideProvider for testability
 
 ## Governance
 
 This constitution supersedes all other development practices and guidelines. Amendments require documentation of rationale, security review if security-related, and approval through the /constitution command. All PRs and reviews must verify compliance with constitutional principles. Security-related changes require additional review by cryptography experts. The project maintains its open-source nature and community-driven development approach.
 
-**Version**: 1.1.0 | **Ratified**: 2025-01-27 | **Last Amended**: 2025-09-24
+**Version**: 1.2.0 | **Ratified**: 2025-01-27 | **Last Amended**: 2025-01-27
