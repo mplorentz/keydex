@@ -6,6 +6,7 @@ import 'package:keydex/models/recovery_request.dart';
 import 'package:keydex/providers/recovery_provider.dart';
 import 'package:keydex/widgets/recovery_metadata_widget.dart';
 import 'package:keydex/widgets/theme.dart';
+import '../helpers/golden_test_helpers.dart';
 
 void main() {
   // Sample test data
@@ -54,13 +55,9 @@ void main() {
 
       await tester.pump();
 
-      // Use pump instead of pumpAndSettle to avoid timeout
-      await tester.pump();
-
-      // Manually capture the golden without pumpAndSettle
-      await expectLater(
-        find.byType(RecoveryMetadataWidget),
-        matchesGoldenFile('goldens/recovery_metadata_widget_loading.png'),
+      await screenMatchesGoldenWithoutSettle<RecoveryMetadataWidget>(
+        tester,
+        'recovery_metadata_widget_loading',
       );
 
       container.dispose();

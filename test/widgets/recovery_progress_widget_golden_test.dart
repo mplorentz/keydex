@@ -10,6 +10,7 @@ import 'package:keydex/providers/recovery_provider.dart';
 import 'package:keydex/providers/lockbox_provider.dart';
 import 'package:keydex/widgets/recovery_progress_widget.dart';
 import 'package:keydex/widgets/theme.dart';
+import '../helpers/golden_test_helpers.dart';
 
 void main() {
   // Sample test data
@@ -66,13 +67,9 @@ void main() {
 
       await tester.pump();
 
-      // Use pump instead of pumpAndSettle to avoid timeout
-      await tester.pump();
-
-      // Manually capture the golden without pumpAndSettle
-      await expectLater(
-        find.byType(RecoveryProgressWidget),
-        matchesGoldenFile('goldens/recovery_progress_widget_loading.png'),
+      await screenMatchesGoldenWithoutSettle<RecoveryProgressWidget>(
+        tester,
+        'recovery_progress_widget_loading',
       );
 
       container.dispose();

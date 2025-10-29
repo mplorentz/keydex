@@ -8,6 +8,7 @@ import 'package:keydex/providers/lockbox_provider.dart';
 import 'package:keydex/providers/key_provider.dart';
 import 'package:keydex/widgets/lockbox_metadata_section.dart';
 import 'package:keydex/widgets/theme.dart';
+import '../helpers/golden_test_helpers.dart';
 
 void main() {
   // Sample test data
@@ -79,13 +80,9 @@ void main() {
 
       await tester.pump();
 
-      // Use pump instead of pumpAndSettle to avoid timeout
-      await tester.pump();
-
-      // Manually capture the golden without pumpAndSettle
-      await expectLater(
-        find.byType(LockboxMetadataSection),
-        matchesGoldenFile('goldens/lockbox_metadata_section_loading.png'),
+      await screenMatchesGoldenWithoutSettle<LockboxMetadataSection>(
+        tester,
+        'lockbox_metadata_section_loading',
       );
 
       container.dispose();
