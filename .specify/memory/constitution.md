@@ -1,14 +1,14 @@
 <!--
 Sync Impact Report:
-Version change: 1.1.0 → 1.2.0
+Version change: 1.2.0 → 1.2.1
 Modified principles: N/A
-Added sections: Riverpod State Management Architecture (new principle VIII)
+Added sections: Golden Testing Conventions (expanded Testing Strategy section)
 Removed sections: N/A
 Templates requiring updates:
-  ✅ .specify/memory/constitution.md (new Riverpod principle added)
-  ✅ .specify/templates/plan-template.md (Riverpod architecture checklist added)
-  ✅ .specify/templates/tasks-template.md (no changes needed - architecture patterns handled in plan phase)
-Follow-up TODOs: None - all templates updated
+  ✅ .specify/memory/constitution.md (golden testing conventions added)
+  ✅ .specify/templates/plan-template.md (no changes needed - testing strategy already covered)
+  ✅ .specify/templates/tasks-template.md (no changes needed - testing tasks already include screenshot tests)
+Follow-up TODOs: None - all templates aligned
 -->
 
 # Keydex Constitution
@@ -92,7 +92,19 @@ All state management MUST use Riverpod following established best practices. The
 - Nostr protocol tests ensure proper event handling and relay communication
 - Platform-specific tests ensure native functionality
 - Integration tests are written last to validate complete user workflows
-- Screenshot tests validate UI changes across all platforms
+- Golden tests (screenshot tests) validate UI changes across all platforms and detect layout regressions
+
+### Golden Testing Conventions
+- Golden test files MUST use the `*_golden_test.dart` naming convention
+- Golden images are stored in `test/goldens/` directory
+- Tests use `testGoldens()` from `golden_toolkit` package for consistent rendering
+- Widget rendering uses `pumpWidgetBuilder()` with proper surface size constraints
+- Helper functions handle edge cases (e.g., widgets with infinite animations using `screenMatchesGoldenWithoutSettle`)
+- Global test configuration in `flutter_test_config.dart` loads app fonts and configures golden validation
+- Golden validation runs on macOS only to ensure consistent font rendering across test runs
+- Golden tests cover all UI states: loading, error, empty, and data-filled states
+- Provider overrides use `ProviderContainer` with `UncontrolledProviderScope` for golden tests
+- Golden tests serve as visual regression tests to quickly detect layout bugs and understand code changes
 
 ## Quality Gates
 
@@ -119,9 +131,11 @@ All state management MUST use Riverpod following established best practices. The
 - Riverpod providers follow naming conventions: providers end with `Provider`, repositories end with `Repository`
 - Provider files are organized in `lib/providers/` directory
 - Provider tests mock dependencies using OverrideProvider for testability
+- Golden test files follow `*_golden_test.dart` naming convention
+- Golden images are stored in `test/goldens/` directory
 
 ## Governance
 
 This constitution supersedes all other development practices and guidelines. Amendments require documentation of rationale, security review if security-related, and approval through the /constitution command. All PRs and reviews must verify compliance with constitutional principles. Security-related changes require additional review by cryptography experts. The project maintains its open-source nature and community-driven development approach.
 
-**Version**: 1.2.0 | **Ratified**: 2025-01-27 | **Last Amended**: 2025-01-27
+**Version**: 1.2.1 | **Ratified**: 2025-01-27 | **Last Amended**: 2025-01-27
