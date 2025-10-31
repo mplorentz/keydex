@@ -227,10 +227,19 @@ Service for distributing shards to key holders and processing shard-related even
 `lib/services/shard_distribution_service.dart`
 
 ### Dependencies
-- `LockboxRepository` - For accessing lockbox and backup config data
-- `BackupService` - For updating key holder status
+- `LockboxRepository` - Injected via constructor for accessing lockbox and backup config data
+- `BackupService` - For updating key holder status (static utility class)
 - `KeyService` - For encryption/decryption operations
 - `Ndk` - For Nostr event handling
+
+### Provider
+```dart
+final shardDistributionServiceProvider = Provider<ShardDistributionService>((ref) {
+  return ShardDistributionService(
+    ref.read(lockboxRepositoryProvider),
+  );
+});
+```
 
 ### Methods
 
@@ -239,9 +248,8 @@ Service for distributing shards to key holders and processing shard-related even
 Processes shard confirmation event received from key holder.
 
 ```dart
-static Future<void> processShardConfirmationEvent({
+Future<void> processShardConfirmationEvent({
   required Nip01Event event,
-  required LockboxRepository repository,
 }) async {
   // Decrypts event content using NIP-44
   // Validates lockbox ID and shard index
@@ -264,9 +272,8 @@ static Future<void> processShardConfirmationEvent({
 Processes shard error event received from key holder.
 
 ```dart
-static Future<void> processShardErrorEvent({
+Future<void> processShardErrorEvent({
   required Nip01Event event,
-  required LockboxRepository repository,
 }) async {
   // Decrypts event content using NIP-44
   // Validates lockbox ID and shard index
@@ -283,6 +290,8 @@ static Future<void> processShardErrorEvent({
 **Postconditions**:
 - Key holder status updated to "error"
 - Error details logged
+
+**Note**: This service is now an instance class with dependency injection via Riverpod for better testability. The `LockboxRepository` is injected via constructor, allowing for easy mocking in tests.
 
 ## DeepLinkService
 

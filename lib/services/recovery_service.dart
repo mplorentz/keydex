@@ -16,7 +16,8 @@ import 'logger.dart';
 /// This service depends on LockboxRepository for recovery operations
 final recoveryServiceProvider = Provider<RecoveryService>((ref) {
   final repository = ref.watch(lockboxRepositoryProvider);
-  final service = RecoveryService(repository);
+  final backupService = ref.read(backupServiceProvider);
+  final service = RecoveryService(repository, backupService);
 
   // Clean up streams when disposed
   ref.onDispose(() {
@@ -30,6 +31,7 @@ final recoveryServiceProvider = Provider<RecoveryService>((ref) {
 /// Includes notification tracking for incoming recovery requests
 class RecoveryService {
   final LockboxRepository repository;
+  final BackupService backupService;
 
   static const String _viewedNotificationIdsKey = 'viewed_recovery_notification_ids';
 
@@ -44,7 +46,7 @@ class RecoveryService {
   final _recoveryRequestController = StreamController<RecoveryRequest>.broadcast();
   Stream<RecoveryRequest> get recoveryRequestStream => _recoveryRequestController.stream;
 
-  RecoveryService(this.repository);
+  RecoveryService(this.repository, this.backupService);
 
   /// Dispose resources
   void dispose() {
@@ -404,7 +406,7 @@ class RecoveryService {
     }
 
     // Reconstruct the lockbox content from the shards
-    final content = await BackupService.reconstructFromShares(shares: shards);
+    final content = await backupService.reconstructFromShares(shares: shards);
 
     // Update the lockbox with recovered content
     final lockbox = await repository.getLockbox(request.lockboxId);

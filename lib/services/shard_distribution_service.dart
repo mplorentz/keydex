@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ndk/ndk.dart';
 import '../models/backup_config.dart';
 import '../models/nostr_kinds.dart';
@@ -12,15 +13,30 @@ import 'backup_service.dart';
 import 'key_service.dart';
 import 'logger.dart';
 
+/// Provider for ShardDistributionService
+/// Note: Uses ref.read() for backupServiceProvider to break circular dependency
+final Provider<ShardDistributionService> shardDistributionServiceProvider =
+    Provider<ShardDistributionService>((ref) {
+  // Use ref.read() to break circular dependency with BackupService
+  final BackupService backupService = ref.read(backupServiceProvider);
+  return ShardDistributionService(
+    ref.read(lockboxRepositoryProvider),
+    backupService,
+  );
+});
+
 /// Service for distributing shards to key holders via Nostr
 class ShardDistributionService {
+  final BackupService _backupService;
+
+  ShardDistributionService(LockboxRepository repository, this._backupService);
+
   /// Distribute shards to all key holders
-  static Future<List<ShardEvent>> distributeShards({
+  Future<List<ShardEvent>> distributeShards({
     required String ownerPubkey, // Hex format - lockbox owner's pubkey for signing
     required BackupConfig config,
     required List<ShardData> shards,
     required Ndk ndk,
-    required LockboxRepository repository,
   }) async {
     try {
       if (shards.length != config.totalKeys) {
@@ -94,11 +110,10 @@ class ShardDistributionService {
   }
 
   /// Check distribution status and update key holder statuses
-  static Future<void> updateDistributionStatus({
+  Future<void> updateDistributionStatus({
     required String lockboxId,
     required List<ShardEvent> shardEvents,
     required Ndk ndk,
-    required LockboxRepository repository,
   }) async {
     try {
       for (final shardEvent in shardEvents) {
@@ -135,21 +150,19 @@ class ShardDistributionService {
 
           if (isAcknowledged) {
             // Update key holder status to holdingKey (confirmed receipt)
-            await BackupService.updateKeyHolderStatus(
+            await _backupService.updateKeyHolderStatus(
               lockboxId: lockboxId,
               pubkey: shardEvent.recipientPubkey, // Hex format
               status: KeyHolderStatus.holdingKey,
-              repository: repository,
               acknowledgedAt: DateTime.now(),
               acknowledgmentEventId: acknowledgmentEventId,
             );
           } else {
             // Update key holder status to awaitingKey (published but not acknowledged)
-            await BackupService.updateKeyHolderStatus(
+            await _backupService.updateKeyHolderStatus(
               lockboxId: lockboxId,
               pubkey: shardEvent.recipientPubkey, // Hex format
               status: KeyHolderStatus.awaitingKey,
-              repository: repository,
             );
           }
         } catch (e) {
@@ -169,9 +182,8 @@ class ShardDistributionService {
   /// Validates lockbox ID and shard index.
   /// Updates key holder status to "holding key".
   /// Updates last acknowledgment timestamp.
-  static Future<void> processShardConfirmationEvent({
+  Future<void> processShardConfirmationEvent({
     required Nip01Event event,
-    required LockboxRepository repository,
   }) async {
     // Validate event kind
     if (event.kind != NostrKind.shardConfirmation.value) {
@@ -243,11 +255,10 @@ class ShardDistributionService {
 
     // Update key holder status
     final keyHolderPubkey = event.pubKey;
-    await BackupService.updateKeyHolderStatus(
+    await _backupService.updateKeyHolderStatus(
       lockboxId: lockboxId,
       pubkey: keyHolderPubkey,
       status: KeyHolderStatus.holdingKey,
-      repository: repository,
       acknowledgedAt: DateTime.now(),
       acknowledgmentEventId: event.id,
     );
@@ -262,9 +273,8 @@ class ShardDistributionService {
   /// Validates lockbox ID and shard index.
   /// Updates key holder status to "error".
   /// Logs error details.
-  static Future<void> processShardErrorEvent({
+  Future<void> processShardErrorEvent({
     required Nip01Event event,
-    required LockboxRepository repository,
   }) async {
     // Validate event kind
     if (event.kind != NostrKind.shardError.value) {
@@ -337,11 +347,10 @@ class ShardDistributionService {
 
     // Update key holder status to error
     final keyHolderPubkey = event.pubKey;
-    await BackupService.updateKeyHolderStatus(
+    await _backupService.updateKeyHolderStatus(
       lockboxId: lockboxId,
       pubkey: keyHolderPubkey,
       status: KeyHolderStatus.error,
-      repository: repository,
     );
 
     Log.error(
@@ -349,7 +358,7 @@ class ShardDistributionService {
   }
 
   /// Helper method to extract a tag value from event tags
-  static String? _extractTagValue(List<List<String>> tags, String tagName) {
+  String? _extractTagValue(List<List<String>> tags, String tagName) {
     for (final tag in tags) {
       if (tag.isNotEmpty && tag[0] == tagName && tag.length > 1) {
         return tag[1];

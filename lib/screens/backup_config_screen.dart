@@ -450,17 +450,16 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
     });
 
     try {
-      final repository = ref.read(lockboxRepositoryProvider);
+      final backupService = ref.read(backupServiceProvider);
 
       // Create/recreate the backup configuration and distribute shards
       // BackupService will handle overwriting existing config
-      await BackupService.createAndDistributeBackup(
+      await backupService.createAndDistributeBackup(
         lockboxId: widget.lockboxId,
         threshold: _threshold,
         totalKeys: _totalKeys,
         keyHolders: _keyHolders,
         relays: _relays,
-        repository: repository,
       );
 
       if (mounted) {

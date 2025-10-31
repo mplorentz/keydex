@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ntcdcrypto/ntcdcrypto.dart';
 import 'package:ndk/ndk.dart';
 import '../models/backup_config.dart';
@@ -12,16 +13,31 @@ import 'key_service.dart';
 import 'shard_distribution_service.dart';
 import '../services/logger.dart';
 
+/// Provider for BackupService
+/// Note: Uses ref.read() for shardDistributionServiceProvider to break circular dependency
+final Provider<BackupService> backupServiceProvider = Provider<BackupService>((ref) {
+  // Use ref.read() to break circular dependency with ShardDistributionService
+  final ShardDistributionService shardService = ref.read(shardDistributionServiceProvider);
+  return BackupService(
+    ref.read(lockboxRepositoryProvider),
+    shardService,
+  );
+});
+
 /// Service for managing distributed backup using Shamir's Secret Sharing
 class BackupService {
+  final LockboxRepository _repository;
+  final ShardDistributionService _shardDistributionService;
+
+  BackupService(this._repository, this._shardDistributionService);
+
   /// Create a new backup configuration
-  static Future<BackupConfig> createBackupConfiguration({
+  Future<BackupConfig> createBackupConfiguration({
     required String lockboxId,
     required int threshold,
     required int totalKeys,
     required List<KeyHolder> keyHolders,
     required List<String> relays,
-    required LockboxRepository repository,
     String? contentHash,
   }) async {
     // Validate inputs
@@ -51,21 +67,20 @@ class BackupService {
     );
 
     // Store the configuration in the lockbox via repository
-    await repository.updateBackupConfig(lockboxId, config);
+    await _repository.updateBackupConfig(lockboxId, config);
 
     Log.info('Created backup configuration for lockbox $lockboxId');
     return config;
   }
 
   /// Get backup configuration for a lockbox
-  static Future<BackupConfig?> getBackupConfig(
-      String lockboxId, LockboxRepository repository) async {
-    return await repository.getBackupConfig(lockboxId);
+  Future<BackupConfig?> getBackupConfig(String lockboxId) async {
+    return await _repository.getBackupConfig(lockboxId);
   }
 
   /// Get all backup configurations
-  static Future<List<BackupConfig>> getAllBackupConfigs(LockboxRepository repository) async {
-    final lockboxes = await repository.getAllLockboxes();
+  Future<List<BackupConfig>> getAllBackupConfigs() async {
+    final lockboxes = await _repository.getAllLockboxes();
     return lockboxes
         .where((lockbox) => lockbox.backupConfig != null)
         .map((lockbox) => lockbox.backupConfig!)
@@ -73,23 +88,23 @@ class BackupService {
   }
 
   /// Update backup configuration
-  static Future<void> updateBackupConfig(BackupConfig config, LockboxRepository repository) async {
-    await repository.updateBackupConfig(config.lockboxId, config);
+  Future<void> updateBackupConfig(BackupConfig config) async {
+    await _repository.updateBackupConfig(config.lockboxId, config);
     Log.info('Updated backup configuration for lockbox ${config.lockboxId}');
   }
 
   /// Delete backup configuration
-  static Future<void> deleteBackupConfig(String lockboxId, LockboxRepository repository) async {
+  Future<void> deleteBackupConfig(String lockboxId) async {
     // Set backup config to null in the lockbox
-    final lockbox = await repository.getLockbox(lockboxId);
+    final lockbox = await _repository.getLockbox(lockboxId);
     if (lockbox != null) {
-      await repository.saveLockbox(lockbox.copyWith(backupConfig: null));
+      await _repository.saveLockbox(lockbox.copyWith(backupConfig: null));
     }
     Log.info('Deleted backup configuration for lockbox $lockboxId');
   }
 
   /// Generate Shamir shares for lockbox content
-  static Future<List<ShardData>> generateShamirShares({
+  Future<List<ShardData>> generateShamirShares({
     required String content,
     required int threshold,
     required int totalShards,
@@ -150,7 +165,7 @@ class BackupService {
   }
 
   /// Reconstruct content from Shamir shares
-  static Future<String> reconstructFromShares({required List<ShardData> shares}) async {
+  Future<String> reconstructFromShares({required List<ShardData> shares}) async {
     try {
       if (shares.isEmpty) {
         throw ArgumentError('At least one share is required');
@@ -207,29 +222,27 @@ class BackupService {
   }
 
   /// Update backup status
-  static Future<void> updateBackupStatus(
-      String lockboxId, BackupStatus status, LockboxRepository repository) async {
-    final config = await repository.getBackupConfig(lockboxId);
+  Future<void> updateBackupStatus(String lockboxId, BackupStatus status) async {
+    final config = await _repository.getBackupConfig(lockboxId);
     if (config == null) {
       throw ArgumentError('Backup configuration not found for lockbox $lockboxId');
     }
 
     final updatedConfig = copyBackupConfig(config, status: status, lastUpdated: DateTime.now());
-    await repository.updateBackupConfig(lockboxId, updatedConfig);
+    await _repository.updateBackupConfig(lockboxId, updatedConfig);
 
     Log.info('Updated backup status for lockbox $lockboxId to $status');
   }
 
   /// Update key holder status
-  static Future<void> updateKeyHolderStatus({
+  Future<void> updateKeyHolderStatus({
     required String lockboxId,
     required String pubkey, // Hex format
     required KeyHolderStatus status,
-    required LockboxRepository repository,
     DateTime? acknowledgedAt,
     String? acknowledgmentEventId,
   }) async {
-    final config = await repository.getBackupConfig(lockboxId);
+    final config = await _repository.getBackupConfig(lockboxId);
     if (config == null) {
       throw ArgumentError('Backup configuration not found for lockbox $lockboxId');
     }
@@ -253,14 +266,14 @@ class BackupService {
       lastUpdated: DateTime.now(),
     );
 
-    await repository.updateBackupConfig(lockboxId, updatedConfig);
+    await _repository.updateBackupConfig(lockboxId, updatedConfig);
 
     Log.info('Updated key holder $pubkey status to $status');
   }
 
   /// Check if backup is ready (all required key holders have acknowledged)
-  static Future<bool> isBackupReady(String lockboxId, LockboxRepository repository) async {
-    final config = await repository.getBackupConfig(lockboxId);
+  Future<bool> isBackupReady(String lockboxId) async {
+    final config = await _repository.getBackupConfig(lockboxId);
     if (config == null) return false;
 
     return config.acknowledgedKeyHoldersCount >= config.threshold;
@@ -276,17 +289,16 @@ class BackupService {
   /// 5. Distributes shares to key holders via Nostr
   ///
   /// Throws exception if any step fails
-  static Future<BackupConfig> createAndDistributeBackup({
+  Future<BackupConfig> createAndDistributeBackup({
     required String lockboxId,
     required int threshold,
     required int totalKeys,
     required List<KeyHolder> keyHolders,
     required List<String> relays,
-    required LockboxRepository repository,
   }) async {
     try {
       // Step 1: Load lockbox content
-      final lockbox = await repository.getLockbox(lockboxId);
+      final lockbox = await _repository.getLockbox(lockboxId);
       if (lockbox == null) {
         throw Exception('Lockbox not found: $lockboxId');
       }
@@ -306,9 +318,9 @@ class BackupService {
       Log.info('Retrieved creator key pair');
 
       // Step 3: Delete existing config if present (allows overwrite)
-      final existingConfig = await repository.getBackupConfig(lockboxId);
+      final existingConfig = await _repository.getBackupConfig(lockboxId);
       if (existingConfig != null) {
-        await deleteBackupConfig(lockboxId, repository);
+        await deleteBackupConfig(lockboxId);
         Log.info('Deleted existing backup configuration for overwrite');
       }
 
@@ -319,7 +331,6 @@ class BackupService {
         totalKeys: totalKeys,
         keyHolders: keyHolders,
         relays: relays,
-        repository: repository,
       );
       Log.info('Created backup configuration');
 
@@ -343,12 +354,12 @@ class BackupService {
       ndk.accounts.loginPrivateKey(pubkey: creatorPubkey, privkey: creatorPrivkey);
       Log.info('Initialized NDK for shard distribution');
 
-      await ShardDistributionService.distributeShards(
+      // Distribute shards using injected service
+      await _shardDistributionService.distributeShards(
         ownerPubkey: creatorPubkey,
         config: config,
         shards: shards,
         ndk: ndk,
-        repository: repository,
       );
       Log.info('Successfully distributed all shards');
 
