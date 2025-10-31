@@ -60,10 +60,10 @@
 - [X] T015 [P] Add invitation status extension to `KeyHolderStatus` or create `InvitationKeyHolderStatus` enum in `lib/models/key_holder_status.dart` (invited, awaitingKey, holdingKey, error)
 
 ## Phase 3.4: Service Interfaces & Providers
-- [ ] T016 Create `InvitationService` class stub in `lib/services/invitation_service.dart` (empty methods matching service-interfaces.md)
-- [ ] T017 Create `DeepLinkService` class stub in `lib/services/deep_link_service.dart` (empty methods matching service-interfaces.md)
-- [ ] T018 Create `InvitationSendingService` class stub in `lib/services/invitation_sending_service.dart` (stateless utility class with empty methods matching service-interfaces.md)
-- [ ] T019 [P] Create providers in `lib/providers/invitation_provider.dart` (invitationServiceProvider, pendingInvitationsProvider, invitationByCodeProvider)
+- [X] T016 Create `InvitationService` class stub in `lib/services/invitation_service.dart` (empty methods matching service-interfaces.md)
+- [X] T017 Create `DeepLinkService` class stub in `lib/services/deep_link_service.dart` (empty methods matching service-interfaces.md)
+- [X] T018 Create `InvitationSendingService` class stub in `lib/services/invitation_sending_service.dart` (stateless utility class with empty methods matching service-interfaces.md)
+- [X] T019 [P] Create providers in `lib/providers/invitation_provider.dart` (invitationServiceProvider, pendingInvitationsProvider, invitationByCodeProvider)
 
 ## Phase 3.5: Refactoring Pass 1 (Model Validation & Helpers)
 **Clean up models before service implementation**
