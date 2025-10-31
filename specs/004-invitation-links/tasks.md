@@ -97,11 +97,11 @@
 - [X] T036 Implement `parseInvitationLink` in `lib/services/deep_link_service.dart` (parses both https://keydex.app/invite/{code} and keydex://keydex.app/invite/{code} formats)
 
 ## Phase 3.8: Service Implementation - InvitationSendingService
-- [ ] T037 Implement `sendRsvpEvent` in `lib/services/invitation_sending_service.dart` (creates kind 1340 event, encrypts with NIP-44, publishes to relays)
-- [ ] T038 Implement `sendDenialEvent` in `lib/services/invitation_sending_service.dart` (creates kind 1341 event, encrypts with NIP-44, publishes to relays)
-- [ ] T039 Implement `sendShardConfirmationEvent` in `lib/services/invitation_sending_service.dart` (creates kind 1342 event, encrypts with NIP-44, publishes to relays)
-- [ ] T040 Implement `sendShardErrorEvent` in `lib/services/invitation_sending_service.dart` (creates kind 1343 event, encrypts with NIP-44, publishes to relays)
-- [ ] T041 Implement `sendInvitationInvalidEvent` in `lib/services/invitation_sending_service.dart` (creates kind 1344 event, encrypts with NIP-44, publishes to relays)
+- [X] T037 Implement `sendRsvpEvent` in `lib/services/invitation_sending_service.dart` (creates kind 1340 event, encrypts with NIP-44, publishes to relays)
+- [X] T038 Implement `sendDenialEvent` in `lib/services/invitation_sending_service.dart` (creates kind 1341 event, encrypts with NIP-44, publishes to relays)
+- [X] T039 Implement `sendShardConfirmationEvent` in `lib/services/invitation_sending_service.dart` (creates kind 1342 event, encrypts with NIP-44, publishes to relays)
+- [X] T040 Implement `sendShardErrorEvent` in `lib/services/invitation_sending_service.dart` (creates kind 1343 event, encrypts with NIP-44, publishes to relays)
+- [X] T041 Implement `sendInvitationInvalidEvent` in `lib/services/invitation_sending_service.dart` (creates kind 1344 event, encrypts with NIP-44, publishes to relays)
 
 ## Phase 3.9: UI Implementation - Connect Stubs to Services
 - [ ] T042 Implement invitation link generation UI in `lib/screens/backup_config_screen.dart` (connect to InvitationService.generateInvitationLink, display link, copy functionality)
