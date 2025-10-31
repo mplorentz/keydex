@@ -1,9 +1,6 @@
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ndk/ndk.dart';
 import '../services/ndk_service.dart';
-import '../services/login_service.dart';
-import '../providers/key_provider.dart';
 import '../services/logger.dart';
 import '../models/nostr_kinds.dart';
 
@@ -11,7 +8,6 @@ import '../models/nostr_kinds.dart';
 final invitationSendingServiceProvider = Provider<InvitationSendingService>((ref) {
   return InvitationSendingService(
     ref.read(ndkServiceProvider),
-    ref.read(loginServiceProvider),
   );
 });
 
@@ -21,9 +17,8 @@ final invitationSendingServiceProvider = Provider<InvitationSendingService>((ref
 /// All methods are pure functions that create and publish events.
 class InvitationSendingService {
   final NdkService ndkService;
-  final LoginService loginService;
 
-  InvitationSendingService(this.ndkService, this.loginService);
+  InvitationSendingService(this.ndkService);
 
   /// Creates and publishes RSVP event to accept invitation
   ///
@@ -39,19 +34,11 @@ class InvitationSendingService {
     required List<String> relayUrls,
   }) async {
     try {
-      // Get current user's keys
-      final keyPair = await loginService.getStoredNostrKey();
-      final currentPubkey = keyPair?.publicKey;
-      final currentPrivkey = keyPair?.privateKey;
-
-      if (currentPubkey == null || currentPrivkey == null) {
+      final currentPubkey = await ndkService.getCurrentPubkey();
+      if (currentPubkey == null) {
         Log.error('No key pair available for sending RSVP event');
         return null;
       }
-
-      // Initialize NDK
-      final ndk = Ndk.defaultConfig();
-      ndk.accounts.loginPrivateKey(pubkey: currentPubkey, privkey: currentPrivkey);
 
       // Create RSVP event payload
       final rsvpData = {
@@ -65,31 +52,17 @@ class InvitationSendingService {
 
       Log.info('Sending RSVP event for invite code: ${inviteCode.substring(0, 8)}...');
 
-      // Create rumor event with RSVP data
-      final rumor = await ndk.giftWrap.createRumor(
-        customPubkey: currentPubkey,
+      // Publish using NdkService
+      return await ndkService.publishGiftWrapEvent(
         content: rsvpJson,
         kind: NostrKind.invitationRsvp.value,
+        recipientPubkey: ownerPubkey,
+        relays: relayUrls,
         tags: [
           ['d', 'invitation_rsvp_$inviteCode'],
           ['invite_code', inviteCode],
         ],
       );
-
-      // Wrap the rumor in a gift wrap for the owner
-      final giftWrap = await ndk.giftWrap.toGiftWrap(
-        rumor: rumor,
-        recipientPubkey: ownerPubkey,
-      );
-
-      // Broadcast the gift wrap event
-      ndk.broadcast.broadcast(
-        nostrEvent: giftWrap,
-        specificRelays: relayUrls,
-      );
-
-      Log.info('Sent RSVP event (event: ${giftWrap.id.substring(0, 8)}...)');
-      return giftWrap.id;
     } catch (e) {
       Log.error('Error sending RSVP event', e);
       return null;
@@ -111,19 +84,11 @@ class InvitationSendingService {
     String? reason,
   }) async {
     try {
-      // Get current user's keys
-      final keyPair = await loginService.getStoredNostrKey();
-      final currentPubkey = keyPair?.publicKey;
-      final currentPrivkey = keyPair?.privateKey;
-
-      if (currentPubkey == null || currentPrivkey == null) {
+      final currentPubkey = await ndkService.getCurrentPubkey();
+      if (currentPubkey == null) {
         Log.error('No key pair available for sending denial event');
         return null;
       }
-
-      // Initialize NDK
-      final ndk = Ndk.defaultConfig();
-      ndk.accounts.loginPrivateKey(pubkey: currentPubkey, privkey: currentPrivkey);
 
       // Create denial event payload
       final denialData = {
@@ -141,31 +106,17 @@ class InvitationSendingService {
 
       Log.info('Sending denial event for invite code: ${inviteCode.substring(0, 8)}...');
 
-      // Create rumor event with denial data
-      final rumor = await ndk.giftWrap.createRumor(
-        customPubkey: currentPubkey,
+      // Publish using NdkService
+      return await ndkService.publishGiftWrapEvent(
         content: denialJson,
         kind: NostrKind.invitationDenial.value,
+        recipientPubkey: ownerPubkey,
+        relays: relayUrls,
         tags: [
           ['d', 'invitation_denial_$inviteCode'],
           ['invite_code', inviteCode],
         ],
       );
-
-      // Wrap the rumor in a gift wrap for the owner
-      final giftWrap = await ndk.giftWrap.toGiftWrap(
-        rumor: rumor,
-        recipientPubkey: ownerPubkey,
-      );
-
-      // Broadcast the gift wrap event
-      ndk.broadcast.broadcast(
-        nostrEvent: giftWrap,
-        specificRelays: relayUrls,
-      );
-
-      Log.info('Sent denial event (event: ${giftWrap.id.substring(0, 8)}...)');
-      return giftWrap.id;
     } catch (e) {
       Log.error('Error sending denial event', e);
       return null;
@@ -187,19 +138,11 @@ class InvitationSendingService {
     required List<String> relayUrls,
   }) async {
     try {
-      // Get current user's keys
-      final keyPair = await loginService.getStoredNostrKey();
-      final currentPubkey = keyPair?.publicKey;
-      final currentPrivkey = keyPair?.privateKey;
-
-      if (currentPubkey == null || currentPrivkey == null) {
+      final currentPubkey = await ndkService.getCurrentPubkey();
+      if (currentPubkey == null) {
         Log.error('No key pair available for sending shard confirmation event');
         return null;
       }
-
-      // Initialize NDK
-      final ndk = Ndk.defaultConfig();
-      ndk.accounts.loginPrivateKey(pubkey: currentPubkey, privkey: currentPrivkey);
 
       // Create shard confirmation event payload
       final confirmationData = {
@@ -215,32 +158,18 @@ class InvitationSendingService {
       Log.info(
           'Sending shard confirmation event for lockbox: ${lockboxId.substring(0, 8)}..., shard: $shardIndex');
 
-      // Create rumor event with confirmation data
-      final rumor = await ndk.giftWrap.createRumor(
-        customPubkey: currentPubkey,
+      // Publish using NdkService
+      return await ndkService.publishGiftWrapEvent(
         content: confirmationJson,
         kind: NostrKind.shardConfirmation.value,
+        recipientPubkey: ownerPubkey,
+        relays: relayUrls,
         tags: [
           ['d', 'shard_confirmation_${lockboxId}_$shardIndex'],
           ['lockbox_id', lockboxId],
           ['shard_index', shardIndex.toString()],
         ],
       );
-
-      // Wrap the rumor in a gift wrap for the owner
-      final giftWrap = await ndk.giftWrap.toGiftWrap(
-        rumor: rumor,
-        recipientPubkey: ownerPubkey,
-      );
-
-      // Broadcast the gift wrap event
-      ndk.broadcast.broadcast(
-        nostrEvent: giftWrap,
-        specificRelays: relayUrls,
-      );
-
-      Log.info('Sent shard confirmation event (event: ${giftWrap.id.substring(0, 8)}...)');
-      return giftWrap.id;
     } catch (e) {
       Log.error('Error sending shard confirmation event', e);
       return null;
@@ -263,19 +192,11 @@ class InvitationSendingService {
     required String error,
   }) async {
     try {
-      // Get current user's keys
-      final keyPair = await loginService.getStoredNostrKey();
-      final currentPubkey = keyPair?.publicKey;
-      final currentPrivkey = keyPair?.privateKey;
-
-      if (currentPubkey == null || currentPrivkey == null) {
+      final currentPubkey = await ndkService.getCurrentPubkey();
+      if (currentPubkey == null) {
         Log.error('No key pair available for sending shard error event');
         return null;
       }
-
-      // Initialize NDK
-      final ndk = Ndk.defaultConfig();
-      ndk.accounts.loginPrivateKey(pubkey: currentPubkey, privkey: currentPrivkey);
 
       // Create shard error event payload
       final errorData = {
@@ -292,32 +213,18 @@ class InvitationSendingService {
       Log.warning(
           'Sending shard error event for lockbox: ${lockboxId.substring(0, 8)}..., shard: $shardIndex');
 
-      // Create rumor event with error data
-      final rumor = await ndk.giftWrap.createRumor(
-        customPubkey: currentPubkey,
+      // Publish using NdkService
+      return await ndkService.publishGiftWrapEvent(
         content: errorJson,
         kind: NostrKind.shardError.value,
+        recipientPubkey: ownerPubkey,
+        relays: relayUrls,
         tags: [
           ['d', 'shard_error_${lockboxId}_$shardIndex'],
           ['lockbox_id', lockboxId],
           ['shard_index', shardIndex.toString()],
         ],
       );
-
-      // Wrap the rumor in a gift wrap for the owner
-      final giftWrap = await ndk.giftWrap.toGiftWrap(
-        rumor: rumor,
-        recipientPubkey: ownerPubkey,
-      );
-
-      // Broadcast the gift wrap event
-      ndk.broadcast.broadcast(
-        nostrEvent: giftWrap,
-        specificRelays: relayUrls,
-      );
-
-      Log.info('Sent shard error event (event: ${giftWrap.id.substring(0, 8)}...)');
-      return giftWrap.id;
     } catch (e) {
       Log.error('Error sending shard error event', e);
       return null;
@@ -339,19 +246,11 @@ class InvitationSendingService {
     required String reason,
   }) async {
     try {
-      // Get current user's keys (lockbox owner)
-      final keyPair = await loginService.getStoredNostrKey();
-      final currentPubkey = keyPair?.publicKey;
-      final currentPrivkey = keyPair?.privateKey;
-
-      if (currentPubkey == null || currentPrivkey == null) {
+      final currentPubkey = await ndkService.getCurrentPubkey();
+      if (currentPubkey == null) {
         Log.error('No key pair available for sending invitation invalid event');
         return null;
       }
-
-      // Initialize NDK
-      final ndk = Ndk.defaultConfig();
-      ndk.accounts.loginPrivateKey(pubkey: currentPubkey, privkey: currentPrivkey);
 
       // Create invitation invalid event payload
       final invalidData = {
@@ -367,31 +266,17 @@ class InvitationSendingService {
       Log.warning(
           'Sending invitation invalid event for invite code: ${inviteCode.substring(0, 8)}...');
 
-      // Create rumor event with invalid data
-      final rumor = await ndk.giftWrap.createRumor(
-        customPubkey: currentPubkey,
+      // Publish using NdkService
+      return await ndkService.publishGiftWrapEvent(
         content: invalidJson,
         kind: NostrKind.invitationInvalid.value,
+        recipientPubkey: inviteePubkey,
+        relays: relayUrls,
         tags: [
           ['d', 'invitation_invalid_$inviteCode'],
           ['invite_code', inviteCode],
         ],
       );
-
-      // Wrap the rumor in a gift wrap for the invitee
-      final giftWrap = await ndk.giftWrap.toGiftWrap(
-        rumor: rumor,
-        recipientPubkey: inviteePubkey,
-      );
-
-      // Broadcast the gift wrap event
-      ndk.broadcast.broadcast(
-        nostrEvent: giftWrap,
-        specificRelays: relayUrls,
-      );
-
-      Log.info('Sent invitation invalid event (event: ${giftWrap.id.substring(0, 8)}...)');
-      return giftWrap.id;
     } catch (e) {
       Log.error('Error sending invitation invalid event', e);
       return null;

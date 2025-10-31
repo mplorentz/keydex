@@ -12,8 +12,9 @@ import '../models/shard_data.dart';
 import '../models/recovery_request.dart';
 
 // Provider for NdkService
-final ndkServiceProvider = Provider<NdkService>((ref) {
-  final recoveryService = ref.watch(recoveryServiceProvider);
+final Provider<NdkService> ndkServiceProvider = Provider<NdkService>((ref) {
+  // Use ref.read() to break circular dependency with RecoveryService
+  final RecoveryService recoveryService = ref.read(recoveryServiceProvider);
   final lockboxShareService = ref.watch(lockboxShareServiceProvider);
   final loginService = ref.read(loginServiceProvider);
   return NdkService(
@@ -57,7 +58,11 @@ class NdkService {
       }
 
       // Initialize NDK with default config
-      _ndk = Ndk.defaultConfig();
+      _ndk = Ndk(NdkConfig(
+        cache: MemCacheManager(),
+        eventVerifier: Bip340EventVerifier(),
+        engine: NdkEngine.JIT,
+      ));
 
       // Login with user's private key
       _ndk!.accounts.loginPrivateKey(
@@ -415,6 +420,122 @@ class NdkService {
   /// Get the list of active relays
   List<String> getActiveRelays() {
     return List.unmodifiable(_activeRelays);
+  }
+
+  /// Ensure NDK is initialized before use
+  Future<void> _ensureInitialized() async {
+    if (!_isInitialized || _ndk == null) {
+      await initialize();
+    }
+  }
+
+  /// Get current user's public key
+  Future<String?> getCurrentPubkey() async {
+    final keyPair = await _loginService.getStoredNostrKey();
+    return keyPair?.publicKey;
+  }
+
+  /// Publish a gift wrap event (rumor + gift wrap)
+  ///
+  /// Creates a rumor event with the given content and kind,
+  /// wraps it in a gift wrap for the recipient,
+  /// and broadcasts it to the specified relays.
+  ///
+  /// Returns the gift wrap event ID.
+  Future<String?> publishGiftWrapEvent({
+    required String content,
+    required int kind,
+    required String recipientPubkey, // Hex format
+    required List<String> relays,
+    List<List<String>>? tags,
+    String? customPubkey, // Hex format - if null, uses current user's pubkey
+  }) async {
+    await _ensureInitialized();
+
+    try {
+      final keyPair = await _loginService.getStoredNostrKey();
+      if (keyPair == null) {
+        throw Exception('No key pair available');
+      }
+
+      final senderPubkey = customPubkey ?? keyPair.publicKey;
+
+      // Create rumor event
+      final rumor = await _ndk!.giftWrap.createRumor(
+        customPubkey: senderPubkey,
+        content: content,
+        kind: kind,
+        tags: tags ?? [],
+      );
+
+      // Wrap the rumor in a gift wrap for the recipient
+      final giftWrap = await _ndk!.giftWrap.toGiftWrap(
+        rumor: rumor,
+        recipientPubkey: recipientPubkey,
+      );
+
+      // Broadcast the gift wrap event
+      _ndk!.broadcast.broadcast(
+        nostrEvent: giftWrap,
+        specificRelays: relays,
+      );
+
+      Log.info(
+          'Published gift wrap event (kind $kind) to ${recipientPubkey.substring(0, 8)}... (event: ${giftWrap.id.substring(0, 8)}...)');
+      return giftWrap.id;
+    } catch (e) {
+      Log.error('Error publishing gift wrap event', e);
+      return null;
+    }
+  }
+
+  /// Publish a gift wrap event to multiple recipients
+  ///
+  /// Creates a rumor event with the given content and kind,
+  /// wraps it in gift wraps for each recipient,
+  /// and broadcasts them to the specified relays.
+  ///
+  /// Returns list of gift wrap event IDs.
+  Future<List<String>> publishGiftWrapEventToMultiple({
+    required String content,
+    required int kind,
+    required List<String> recipientPubkeys, // Hex format
+    required List<String> relays,
+    List<List<String>>? tags,
+    String? customPubkey, // Hex format - if null, uses current user's pubkey
+  }) async {
+    await _ensureInitialized();
+
+    final eventIds = <String>[];
+
+    for (final recipientPubkey in recipientPubkeys) {
+      try {
+        final eventId = await publishGiftWrapEvent(
+          content: content,
+          kind: kind,
+          recipientPubkey: recipientPubkey,
+          relays: relays,
+          tags: tags,
+          customPubkey: customPubkey,
+        );
+        if (eventId != null) {
+          eventIds.add(eventId);
+        }
+      } catch (e) {
+        Log.error('Error publishing gift wrap to ${recipientPubkey.substring(0, 8)}...', e);
+      }
+    }
+
+    return eventIds;
+  }
+
+  /// Get the underlying NDK instance for advanced operations
+  ///
+  /// Note: This should be used sparingly. Prefer using the methods
+  /// provided by NdkService instead of accessing NDK directly.
+  Future<Ndk> getNdk() async {
+    await _ensureInitialized();
+    return _ndk!;
   }
 
   /// Check if NDK is initialized

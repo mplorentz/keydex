@@ -12,6 +12,7 @@ import '../providers/lockbox_provider.dart';
 import '../providers/key_provider.dart';
 import 'backup_service.dart';
 import 'login_service.dart';
+import 'ndk_service.dart';
 import 'logger.dart';
 
 /// Provider for ShardDistributionService
@@ -24,6 +25,7 @@ final Provider<ShardDistributionService> shardDistributionServiceProvider =
     ref.read(lockboxRepositoryProvider),
     backupService,
     ref.read(loginServiceProvider),
+    ref.read(ndkServiceProvider),
   );
 });
 
@@ -31,15 +33,16 @@ final Provider<ShardDistributionService> shardDistributionServiceProvider =
 class ShardDistributionService {
   final BackupService _backupService;
   final LoginService _loginService;
+  final NdkService _ndkService;
 
-  ShardDistributionService(LockboxRepository repository, this._backupService, this._loginService);
+  ShardDistributionService(
+      LockboxRepository repository, this._backupService, this._loginService, this._ndkService);
 
   /// Distribute shards to all key holders
   Future<List<ShardEvent>> distributeShards({
     required String ownerPubkey, // Hex format - lockbox owner's pubkey for signing
     required BackupConfig config,
     required List<ShardData> shards,
-    required Ndk ndk,
   }) async {
     try {
       if (shards.length != config.totalKeys) {
@@ -53,37 +56,33 @@ class ShardDistributionService {
         final keyHolder = config.keyHolders[i];
 
         try {
-          // Create rumor event with shard data
+          // Create shard data JSON
           final shardJson = shardDataToJson(shard);
           final shardString = json.encode(shardJson);
 
-          final rumor = await ndk.giftWrap.createRumor(
-            customPubkey: ownerPubkey, // Lockbox owner signs the rumor
+          Log.debug('recipient pubkey: ${keyHolder.pubkey}');
+
+          // Publish using NdkService
+          final eventId = await _ndkService.publishGiftWrapEvent(
             content: shardString,
-            kind: NostrKind.shardData.value, // Keydex custom kind for shard data
+            kind: NostrKind.shardData.value,
+            recipientPubkey: keyHolder.pubkey, // Hex format
+            relays: config.relays,
             tags: [
               ['d', 'shard_${config.lockboxId}_$i'], // Distinguisher tag
               ['backup_config_id', config.lockboxId],
               ['shard_index', i.toString()],
             ],
+            customPubkey: ownerPubkey, // Lockbox owner signs the rumor
           );
 
-          Log.debug('recipient pubkey: ${keyHolder.pubkey}');
-          // Wrap the rumor in a gift wrap for the recipient
-          final giftWrap = await ndk.giftWrap.toGiftWrap(
-            rumor: rumor,
-            recipientPubkey: keyHolder.pubkey, // Hex format
-          );
-
-          // Broadcast the gift wrap event
-          ndk.broadcast.broadcast(
-            nostrEvent: giftWrap,
-            specificRelays: config.relays,
-          );
+          if (eventId == null) {
+            throw Exception('Failed to publish shard event');
+          }
 
           // Create ShardEvent record
           final shardEvent = createShardEvent(
-            eventId: giftWrap.id,
+            eventId: eventId,
             recipientPubkey: keyHolder.pubkey, // Hex format
             encryptedContent: shardString, // Store original content for reference
             backupConfigId: config.lockboxId,
@@ -116,9 +115,10 @@ class ShardDistributionService {
   Future<void> updateDistributionStatus({
     required String lockboxId,
     required List<ShardEvent> shardEvents,
-    required Ndk ndk,
   }) async {
     try {
+      final ndk = await _ndkService.getNdk();
+
       for (final shardEvent in shardEvents) {
         try {
           // Query for acknowledgment events (kind 1059) from the recipient

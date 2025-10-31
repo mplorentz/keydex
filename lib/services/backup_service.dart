@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ntcdcrypto/ntcdcrypto.dart';
-import 'package:ndk/ndk.dart';
 import '../models/backup_config.dart';
 import '../models/key_holder.dart';
 import '../models/shard_data.dart';
@@ -352,17 +351,11 @@ class BackupService {
       );
       Log.info('Generated ${shards.length} Shamir shares');
 
-      // Step 6: Initialize NDK and distribute shards
-      final ndk = Ndk.defaultConfig();
-      ndk.accounts.loginPrivateKey(pubkey: creatorPubkey, privkey: creatorPrivkey);
-      Log.info('Initialized NDK for shard distribution');
-
-      // Distribute shards using injected service
+      // Step 6: Distribute shards using injected service
       await _shardDistributionService.distributeShards(
         ownerPubkey: creatorPubkey,
         config: config,
         shards: shards,
-        ndk: ndk,
       );
       Log.info('Successfully distributed all shards');
 
