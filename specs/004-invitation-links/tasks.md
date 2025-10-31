@@ -72,16 +72,23 @@
 - [X] T022 Add Base64URL encoding/decoding utilities for invite codes in `lib/utils/invite_code_utils.dart` (generate secure invite code, validate invite code format)
 
 ## Phase 3.6: Service Implementation - InvitationService
-- [ ] T023 Implement `generateInvitationLink` in `lib/services/invitation_service.dart` (validates lockbox ownership, generates secure invite code, creates InvitationLink, stores in SharedPreferences)
-- [ ] T024 Implement `getPendingInvitations` in `lib/services/invitation_service.dart` (loads from SharedPreferences using lockbox_invitations index, filters by status)
-- [ ] T025 Implement `lookupInvitationByCode` in `lib/services/invitation_service.dart` (looks up InvitationLink by invite code from SharedPreferences)
-- [ ] T026 Implement `redeemInvitation` in `lib/services/invitation_service.dart` (validates code, updates status, adds to backup config, publishes RSVP event)
-- [ ] T027 Implement `denyInvitation` in `lib/services/invitation_service.dart` (validates code, updates status, publishes denial event, invalidates code)
-- [ ] T028 Implement `invalidateInvitation` in `lib/services/invitation_service.dart` (updates status, publishes invalid event if needed, removes from tracking)
-- [ ] T029 Implement `processRsvpEvent` in `lib/services/invitation_service.dart` (decrypts event, validates, updates invitation, adds to backup config)
-- [ ] T030 Implement `processDenialEvent` in `lib/services/invitation_service.dart` (decrypts event, validates, updates invitation status)
-- [ ] T031 Implement `processShardConfirmationEvent` in `lib/services/invitation_service.dart` (decrypts event, validates, updates key holder status)
-- [ ] T032 Implement `processShardErrorEvent` in `lib/services/invitation_service.dart` (decrypts event, validates, updates key holder status to error)
+- [X] T023 Implement `generateInvitationLink` in `lib/services/invitation_service.dart` (validates lockbox ownership, generates secure invite code, creates InvitationLink, stores in SharedPreferences)
+- [X] T024 Implement `getPendingInvitations` in `lib/services/invitation_service.dart` (loads from SharedPreferences using lockbox_invitations index, filters by status)
+- [X] T025 Implement `lookupInvitationByCode` in `lib/services/invitation_service.dart` (looks up InvitationLink by invite code from SharedPreferences)
+- [X] T026 Implement `redeemInvitation` in `lib/services/invitation_service.dart` (validates code, updates status, adds to backup config, publishes RSVP event)
+- [X] T027 Implement `denyInvitation` in `lib/services/invitation_service.dart` (validates code, updates status, publishes denial event, invalidates code)
+- [X] T028 Implement `invalidateInvitation` in `lib/services/invitation_service.dart` (updates status, publishes invalid event if needed, removes from tracking)
+- [X] T029 Implement `processRsvpEvent` in `lib/services/invitation_service.dart` (decrypts event, validates, updates invitation, adds to backup config)
+- [X] T030 Implement `processDenialEvent` in `lib/services/invitation_service.dart` (decrypts event, validates, updates invitation status)
+- [~] T031 ~~Implement `processShardConfirmationEvent` in `lib/services/invitation_service.dart`~~ **MOVED to ShardDistributionService (see Phase 3.6.1)**
+- [~] T032 ~~Implement `processShardErrorEvent` in `lib/services/invitation_service.dart`~~ **MOVED to ShardDistributionService (see Phase 3.6.1)**
+
+## Phase 3.6.1: Architectural Refactoring - Separate Invitation and Shard Lifecycles
+**Rationale**: Shard confirmation/error events are part of the shard distribution lifecycle (after invitation acceptance), not the invitation lifecycle. Moving them to ShardDistributionService provides better separation of concerns.
+
+- [X] T031a Move `processShardConfirmationEvent` from `lib/services/invitation_service.dart` to `lib/services/shard_distribution_service.dart` (decrypts event, validates, updates key holder status to holdingKey)
+- [X] T032a Move `processShardErrorEvent` from `lib/services/invitation_service.dart` to `lib/services/shard_distribution_service.dart` (decrypts event, validates, updates key holder status to error)
+- [X] T083 Update any references to these methods (if called from other services or screens) - No references found
 
 ## Phase 3.7: Service Implementation - DeepLinkService
 - [ ] T033 Implement `initializeDeepLinking` in `lib/services/deep_link_service.dart` (sets up app_links listeners for Universal Links and custom scheme)
@@ -152,7 +159,8 @@
 - Models (T012-T015) before services (T016-T041)
 - Service interfaces (T016-T019) before service implementations (T023-T041)
 - Refactoring pass 1 (T020-T022) before service implementations
-- Service implementations (T023-T041) before UI implementation (T042-T046)
+- Service implementations (T023-T030, T031a-T032a, T033-T041) before UI implementation (T042-T046)
+- Phase 3.6.1 refactoring (T031a-T032a, T083) can happen anytime after T023-T030 complete
 - UI implementation (T042-T046) before edge cases (T047-T052)
 - Edge cases (T047-T052) before refactoring pass 2 (T053-T056)
 - Refactoring pass 2 (T053-T056) before unit tests (T057-T062)
@@ -160,11 +168,12 @@
 - Widget tests (T063-T065) before golden tests (T066-T068)
 - Golden tests (T066-T068) before integration tests (T069-T076)
 - T012 blocks T013 (InvitationStatus needed for InvitationLink)
-- T013 blocks T023-T032 (InvitationLink needed for InvitationService)
+- T013 blocks T023-T030 (InvitationLink needed for InvitationService)
 - T016-T018 block T023-T041 (service stubs needed before implementation)
 - T037-T041 are stateless utility methods (can be parallel if no shared state)
 - T033 blocks T042-T046 (DeepLinkService needed for UI)
-- T023-T032 block T042-T045 (InvitationService needed for UI)
+- T023-T030 block T042-T045 (InvitationService needed for UI)
+- T031a-T032a are shard distribution methods (part of ShardDistributionService)
 
 ## Parallel Execution Examples
 ```
@@ -220,6 +229,7 @@ Task: "Integration test: Duplicate invitation handling"
 - Commit after each task
 - Golden tests run on macOS only (as per constitution)
 - Custom URL scheme (`keydex://`) supports local testing before Universal Links setup
+- **Architectural Decision**: Shard confirmation/error events moved to ShardDistributionService (Phase 3.6.1) to separate invitation lifecycle from shard distribution lifecycle
 
 ## Task Generation Rules Applied
 1. **From Data Model**:

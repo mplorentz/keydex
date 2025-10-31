@@ -217,13 +217,31 @@ Future<void> processDenialEvent({
 - Invitation marked as denied
 - Invitation code invalidated
 
+## ShardDistributionService
+
+Service for distributing shards to key holders and processing shard-related events.
+
+**Note**: This service handles the shard distribution lifecycle, which begins after invitation acceptance. Methods `processShardConfirmationEvent` and `processShardErrorEvent` were moved here from `InvitationService` in Phase 3.6.1 to better separate invitation and shard distribution concerns.
+
+### Location
+`lib/services/shard_distribution_service.dart`
+
+### Dependencies
+- `LockboxRepository` - For accessing lockbox and backup config data
+- `BackupService` - For updating key holder status
+- `KeyService` - For encryption/decryption operations
+- `Ndk` - For Nostr event handling
+
+### Methods
+
 #### processShardConfirmationEvent
 
 Processes shard confirmation event received from key holder.
 
 ```dart
-Future<void> processShardConfirmationEvent({
+static Future<void> processShardConfirmationEvent({
   required Nip01Event event,
+  required LockboxRepository repository,
 }) async {
   // Decrypts event content using NIP-44
   // Validates lockbox ID and shard index
@@ -246,8 +264,9 @@ Future<void> processShardConfirmationEvent({
 Processes shard error event received from key holder.
 
 ```dart
-Future<void> processShardErrorEvent({
+static Future<void> processShardErrorEvent({
   required Nip01Event event,
+  required LockboxRepository repository,
 }) async {
   // Decrypts event content using NIP-44
   // Validates lockbox ID and shard index

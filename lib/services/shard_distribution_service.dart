@@ -9,6 +9,7 @@ import '../models/key_holder_status.dart';
 import '../models/event_status.dart';
 import '../providers/lockbox_provider.dart';
 import 'backup_service.dart';
+import 'key_service.dart';
 import 'logger.dart';
 
 /// Service for distributing shards to key holders via Nostr
@@ -160,5 +161,200 @@ class ShardDistributionService {
       Log.error('Error updating distribution status', e);
       throw Exception('Failed to update distribution status: $e');
     }
+  }
+
+  /// Processes shard confirmation event received from key holder
+  ///
+  /// Decrypts event content using NIP-44.
+  /// Validates lockbox ID and shard index.
+  /// Updates key holder status to "holding key".
+  /// Updates last acknowledgment timestamp.
+  static Future<void> processShardConfirmationEvent({
+    required Nip01Event event,
+    required LockboxRepository repository,
+  }) async {
+    // Validate event kind
+    if (event.kind != NostrKind.shardConfirmation.value) {
+      throw ArgumentError(
+          'Invalid event kind: expected ${NostrKind.shardConfirmation.value}, got ${event.kind}');
+    }
+
+    // Get current user's pubkey to verify we're the owner
+    final ownerPubkey = await KeyService.getCurrentPublicKey();
+    if (ownerPubkey == null) {
+      throw Exception('No key pair available. Cannot process shard confirmation event.');
+    }
+
+    // Extract lockbox ID and shard index from tags
+    final lockboxId = _extractTagValue(event.tags, 'lockbox');
+    final shardIndexStr = _extractTagValue(event.tags, 'shard');
+
+    if (lockboxId == null) {
+      throw ArgumentError('Missing lockbox tag in shard confirmation event');
+    }
+
+    if (shardIndexStr == null) {
+      throw ArgumentError('Missing shard tag in shard confirmation event');
+    }
+
+    final shardIndex = int.tryParse(shardIndexStr);
+    if (shardIndex == null) {
+      throw ArgumentError('Invalid shard index in shard confirmation event: $shardIndexStr');
+    }
+
+    // Verify we're the recipient (p tag should be owner)
+    final recipientPubkey = _extractTagValue(event.tags, 'p');
+    if (recipientPubkey != ownerPubkey) {
+      throw ArgumentError('Shard confirmation event not addressed to current user');
+    }
+
+    // Decrypt event content
+    String decryptedContent;
+    try {
+      decryptedContent = await KeyService.decryptFromSender(
+        encryptedText: event.content,
+        senderPubkey: event.pubKey,
+      );
+    } catch (e) {
+      Log.error('Error decrypting shard confirmation event content', e);
+      throw Exception('Failed to decrypt shard confirmation event content: $e');
+    }
+
+    // Parse decrypted JSON
+    Map<String, dynamic> payload;
+    try {
+      payload = jsonDecode(decryptedContent) as Map<String, dynamic>;
+    } catch (e) {
+      Log.error('Error parsing shard confirmation event JSON', e);
+      throw Exception('Invalid JSON in shard confirmation event content: $e');
+    }
+
+    // Validate payload
+    final payloadLockboxId = payload['lockboxId'] as String?;
+    final payloadShardIndex = payload['shardIndex'] as int?;
+
+    if (payloadLockboxId != lockboxId) {
+      throw ArgumentError('Lockbox ID mismatch in shard confirmation event payload');
+    }
+
+    if (payloadShardIndex != shardIndex) {
+      throw ArgumentError('Shard index mismatch in shard confirmation event payload');
+    }
+
+    // Update key holder status
+    final keyHolderPubkey = event.pubKey;
+    await BackupService.updateKeyHolderStatus(
+      lockboxId: lockboxId,
+      pubkey: keyHolderPubkey,
+      status: KeyHolderStatus.holdingKey,
+      repository: repository,
+      acknowledgedAt: DateTime.now(),
+      acknowledgmentEventId: event.id,
+    );
+
+    Log.info(
+        'Processed shard confirmation event for lockbox $lockboxId, shard $shardIndex from key holder $keyHolderPubkey');
+  }
+
+  /// Processes shard error event received from key holder
+  ///
+  /// Decrypts event content using NIP-44.
+  /// Validates lockbox ID and shard index.
+  /// Updates key holder status to "error".
+  /// Logs error details.
+  static Future<void> processShardErrorEvent({
+    required Nip01Event event,
+    required LockboxRepository repository,
+  }) async {
+    // Validate event kind
+    if (event.kind != NostrKind.shardError.value) {
+      throw ArgumentError(
+          'Invalid event kind: expected ${NostrKind.shardError.value}, got ${event.kind}');
+    }
+
+    // Get current user's pubkey to verify we're the owner
+    final ownerPubkey = await KeyService.getCurrentPublicKey();
+    if (ownerPubkey == null) {
+      throw Exception('No key pair available. Cannot process shard error event.');
+    }
+
+    // Extract lockbox ID and shard index from tags
+    final lockboxId = _extractTagValue(event.tags, 'lockbox');
+    final shardIndexStr = _extractTagValue(event.tags, 'shard');
+
+    if (lockboxId == null) {
+      throw ArgumentError('Missing lockbox tag in shard error event');
+    }
+
+    if (shardIndexStr == null) {
+      throw ArgumentError('Missing shard tag in shard error event');
+    }
+
+    final shardIndex = int.tryParse(shardIndexStr);
+    if (shardIndex == null) {
+      throw ArgumentError('Invalid shard index in shard error event: $shardIndexStr');
+    }
+
+    // Verify we're the recipient (p tag should be owner)
+    final recipientPubkey = _extractTagValue(event.tags, 'p');
+    if (recipientPubkey != ownerPubkey) {
+      throw ArgumentError('Shard error event not addressed to current user');
+    }
+
+    // Decrypt event content
+    String decryptedContent;
+    try {
+      decryptedContent = await KeyService.decryptFromSender(
+        encryptedText: event.content,
+        senderPubkey: event.pubKey,
+      );
+    } catch (e) {
+      Log.error('Error decrypting shard error event content', e);
+      throw Exception('Failed to decrypt shard error event content: $e');
+    }
+
+    // Parse decrypted JSON
+    Map<String, dynamic> payload;
+    try {
+      payload = jsonDecode(decryptedContent) as Map<String, dynamic>;
+    } catch (e) {
+      Log.error('Error parsing shard error event JSON', e);
+      throw Exception('Invalid JSON in shard error event content: $e');
+    }
+
+    // Validate payload
+    final payloadLockboxId = payload['lockboxId'] as String?;
+    final payloadShardIndex = payload['shardIndex'] as int?;
+    final error = payload['error'] as String? ?? 'Unknown error';
+
+    if (payloadLockboxId != lockboxId) {
+      throw ArgumentError('Lockbox ID mismatch in shard error event payload');
+    }
+
+    if (payloadShardIndex != shardIndex) {
+      throw ArgumentError('Shard index mismatch in shard error event payload');
+    }
+
+    // Update key holder status to error
+    final keyHolderPubkey = event.pubKey;
+    await BackupService.updateKeyHolderStatus(
+      lockboxId: lockboxId,
+      pubkey: keyHolderPubkey,
+      status: KeyHolderStatus.error,
+      repository: repository,
+    );
+
+    Log.error(
+        'Processed shard error event for lockbox $lockboxId, shard $shardIndex from key holder $keyHolderPubkey: $error');
+  }
+
+  /// Helper method to extract a tag value from event tags
+  static String? _extractTagValue(List<List<String>> tags, String tagName) {
+    for (final tag in tags) {
+      if (tag.isNotEmpty && tag[0] == tagName && tag.length > 1) {
+        return tag[1];
+      }
+    }
+    return null;
   }
 }
