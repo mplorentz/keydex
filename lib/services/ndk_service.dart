@@ -4,30 +4,49 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ndk/ndk.dart';
 import '../providers/key_provider.dart';
 import 'login_service.dart';
-import 'recovery_service.dart';
 import 'lockbox_share_service.dart';
 import 'logger.dart';
 import '../models/nostr_kinds.dart';
 import '../models/shard_data.dart';
 import '../models/recovery_request.dart';
 
+/// Event emitted when a recovery response is received
+class RecoveryResponseEvent {
+  final String recoveryRequestId;
+  final String lockboxId;
+  final String senderPubkey;
+  final bool approved;
+  final ShardData? shardData;
+
+  RecoveryResponseEvent({
+    required this.recoveryRequestId,
+    required this.lockboxId,
+    required this.senderPubkey,
+    required this.approved,
+    this.shardData,
+  });
+}
+
 // Provider for NdkService
 final Provider<NdkService> ndkServiceProvider = Provider<NdkService>((ref) {
-  // Use ref.read() to break circular dependency with RecoveryService
-  final RecoveryService recoveryService = ref.read(recoveryServiceProvider);
   final lockboxShareService = ref.watch(lockboxShareServiceProvider);
   final loginService = ref.read(loginServiceProvider);
-  return NdkService(
-    recoveryService: recoveryService,
+  final service = NdkService(
     lockboxShareService: lockboxShareService,
     loginService: loginService,
   );
+
+  // Clean up when disposed
+  ref.onDispose(() async {
+    await service.dispose();
+  });
+
+  return service;
 });
 
 /// Service for managing NDK (Nostr Development Kit) connections and subscriptions
 /// Handles real-time listening for recovery requests and key share events
 class NdkService {
-  final RecoveryService recoveryService;
   final LockboxShareService lockboxShareService;
   final LoginService _loginService;
 
@@ -37,8 +56,19 @@ class NdkService {
   final List<String> _activeRelays = [];
   StreamSubscription<Nip01Event>? _giftWrapStreamSub;
 
+  // Event streams for recovery-related events (breaking circular dependency)
+  final StreamController<RecoveryRequest> _recoveryRequestController =
+      StreamController<RecoveryRequest>.broadcast();
+  final StreamController<RecoveryResponseEvent> _recoveryResponseController =
+      StreamController<RecoveryResponseEvent>.broadcast();
+
+  /// Stream of incoming recovery requests
+  Stream<RecoveryRequest> get recoveryRequestStream => _recoveryRequestController.stream;
+
+  /// Stream of incoming recovery responses
+  Stream<RecoveryResponseEvent> get recoveryResponseStream => _recoveryResponseController.stream;
+
   NdkService({
-    required this.recoveryService,
     required this.lockboxShareService,
     required LoginService loginService,
   }) : _loginService = loginService;
@@ -228,10 +258,10 @@ class NdkService {
         keyHolderResponses: {}, // Will be populated later
       );
 
-      // Add to recovery service (will automatically show as notification)
-      await recoveryService.addIncomingRecoveryRequest(recoveryRequest);
+      // Emit recovery request to stream (RecoveryService will listen)
+      _recoveryRequestController.add(recoveryRequest);
 
-      Log.info('Added incoming recovery request: ${event.id}');
+      Log.info('Emitted incoming recovery request to stream: ${event.id}');
     } catch (e) {
       Log.error('Error handling recovery request data', e);
     }
@@ -265,15 +295,17 @@ class NdkService {
             'Stored recovery shard from $senderPubkey for recovery request $recoveryRequestId');
       }
 
-      // Update the recovery service with this response
-      await recoveryService.respondToRecoveryRequest(
-        recoveryRequestId,
-        senderPubkey,
-        approved,
+      // Emit recovery response to stream (RecoveryService will listen)
+      final responseEvent = RecoveryResponseEvent(
+        recoveryRequestId: recoveryRequestId,
+        lockboxId: lockboxId,
+        senderPubkey: senderPubkey,
+        approved: approved,
         shardData: shardData,
       );
+      _recoveryResponseController.add(responseEvent);
 
-      Log.info('Updated recovery request $recoveryRequestId with response from $senderPubkey');
+      Log.info('Emitted recovery response to stream: $recoveryRequestId from $senderPubkey');
     } catch (e) {
       Log.error('Error handling recovery response data', e);
     }
@@ -544,6 +576,8 @@ class NdkService {
   /// Dispose of NDK resources
   Future<void> dispose() async {
     await _closeSubscriptions();
+    await _recoveryRequestController.close();
+    await _recoveryResponseController.close();
     _activeRelays.clear();
     _ndk = null;
     _isInitialized = false;

@@ -14,13 +14,10 @@ import 'shard_distribution_service.dart';
 import '../services/logger.dart';
 
 /// Provider for BackupService
-/// Note: Uses ref.read() for shardDistributionServiceProvider to break circular dependency
 final Provider<BackupService> backupServiceProvider = Provider<BackupService>((ref) {
-  // Use ref.read() to break circular dependency with ShardDistributionService
-  final ShardDistributionService shardService = ref.read(shardDistributionServiceProvider);
   return BackupService(
     ref.read(lockboxRepositoryProvider),
-    shardService,
+    ref.read(shardDistributionServiceProvider),
     ref.read(loginServiceProvider),
   );
 });

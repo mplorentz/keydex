@@ -6,6 +6,8 @@ import '../models/lockbox.dart';
 import '../models/shard_data.dart';
 import '../models/recovery_request.dart';
 import '../models/backup_config.dart';
+import '../models/key_holder.dart';
+import '../models/key_holder_status.dart';
 import '../services/login_service.dart';
 import '../services/logger.dart';
 import 'key_provider.dart';
@@ -350,6 +352,47 @@ class LockboxRepository {
     );
 
     return lockbox.backupConfig;
+  }
+
+  /// Update key holder status in backup configuration
+  /// This is the single source of truth for key holder status updates
+  Future<void> updateKeyHolderStatus({
+    required String lockboxId,
+    required String pubkey, // Hex format
+    required KeyHolderStatus status,
+    DateTime? acknowledgedAt,
+    String? acknowledgmentEventId,
+  }) async {
+    await initialize();
+
+    final lockbox = _cachedLockboxes!.firstWhere(
+      (lb) => lb.id == lockboxId,
+      orElse: () => throw ArgumentError('Lockbox not found: $lockboxId'),
+    );
+
+    final backupConfig = lockbox.backupConfig;
+    if (backupConfig == null) {
+      throw ArgumentError('Lockbox $lockboxId has no backup configuration');
+    }
+
+    // Find and update the key holder
+    final holderIndex = backupConfig.keyHolders.indexWhere((h) => h.pubkey == pubkey);
+    if (holderIndex == -1) {
+      throw ArgumentError('Key holder $pubkey not found in lockbox $lockboxId');
+    }
+
+    final updatedHolders = List<KeyHolder>.from(backupConfig.keyHolders);
+    updatedHolders[holderIndex] = copyKeyHolder(
+      updatedHolders[holderIndex],
+      status: status,
+      acknowledgedAt: acknowledgedAt,
+      acknowledgmentEventId: acknowledgmentEventId,
+    );
+
+    final updatedConfig = copyBackupConfig(backupConfig, keyHolders: updatedHolders);
+    await updateBackupConfig(lockboxId, updatedConfig);
+
+    Log.info('Updated key holder $pubkey status to $status in lockbox $lockboxId');
   }
 
   // ========== Shard Management Methods ==========

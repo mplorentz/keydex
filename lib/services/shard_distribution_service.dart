@@ -10,20 +10,15 @@ import '../models/key_holder_status.dart';
 import '../models/event_status.dart';
 import '../providers/lockbox_provider.dart';
 import '../providers/key_provider.dart';
-import 'backup_service.dart';
 import 'login_service.dart';
 import 'ndk_service.dart';
 import 'logger.dart';
 
 /// Provider for ShardDistributionService
-/// Note: Uses ref.read() for backupServiceProvider to break circular dependency
 final Provider<ShardDistributionService> shardDistributionServiceProvider =
     Provider<ShardDistributionService>((ref) {
-  // Use ref.read() to break circular dependency with BackupService
-  final BackupService backupService = ref.read(backupServiceProvider);
   return ShardDistributionService(
     ref.read(lockboxRepositoryProvider),
-    backupService,
     ref.read(loginServiceProvider),
     ref.read(ndkServiceProvider),
   );
@@ -31,12 +26,11 @@ final Provider<ShardDistributionService> shardDistributionServiceProvider =
 
 /// Service for distributing shards to key holders via Nostr
 class ShardDistributionService {
-  final BackupService _backupService;
+  final LockboxRepository _repository;
   final LoginService _loginService;
   final NdkService _ndkService;
 
-  ShardDistributionService(
-      LockboxRepository repository, this._backupService, this._loginService, this._ndkService);
+  ShardDistributionService(this._repository, this._loginService, this._ndkService);
 
   /// Distribute shards to all key holders
   Future<List<ShardEvent>> distributeShards({
@@ -153,7 +147,7 @@ class ShardDistributionService {
 
           if (isAcknowledged) {
             // Update key holder status to holdingKey (confirmed receipt)
-            await _backupService.updateKeyHolderStatus(
+            await _repository.updateKeyHolderStatus(
               lockboxId: lockboxId,
               pubkey: shardEvent.recipientPubkey, // Hex format
               status: KeyHolderStatus.holdingKey,
@@ -162,7 +156,7 @@ class ShardDistributionService {
             );
           } else {
             // Update key holder status to awaitingKey (published but not acknowledged)
-            await _backupService.updateKeyHolderStatus(
+            await _repository.updateKeyHolderStatus(
               lockboxId: lockboxId,
               pubkey: shardEvent.recipientPubkey, // Hex format
               status: KeyHolderStatus.awaitingKey,
@@ -258,7 +252,7 @@ class ShardDistributionService {
 
     // Update key holder status
     final keyHolderPubkey = event.pubKey;
-    await _backupService.updateKeyHolderStatus(
+    await _repository.updateKeyHolderStatus(
       lockboxId: lockboxId,
       pubkey: keyHolderPubkey,
       status: KeyHolderStatus.holdingKey,
@@ -350,7 +344,7 @@ class ShardDistributionService {
 
     // Update key holder status to error
     final keyHolderPubkey = event.pubKey;
-    await _backupService.updateKeyHolderStatus(
+    await _repository.updateKeyHolderStatus(
       lockboxId: lockboxId,
       pubkey: keyHolderPubkey,
       status: KeyHolderStatus.error,

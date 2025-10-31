@@ -48,7 +48,48 @@ class RecoveryService {
   final _recoveryRequestController = StreamController<RecoveryRequest>.broadcast();
   Stream<RecoveryRequest> get recoveryRequestStream => _recoveryRequestController.stream;
 
-  RecoveryService(this.repository, this.backupService, this._ndkService);
+  RecoveryService(this.repository, this.backupService, this._ndkService) {
+    _loadViewedNotificationIds();
+    _setupNdkStreamListeners();
+  }
+
+  /// Set up listeners for incoming NDK events
+  void _setupNdkStreamListeners() {
+    // Listen for incoming recovery requests
+    _ndkService.recoveryRequestStream.listen(
+      (recoveryRequest) async {
+        try {
+          await addIncomingRecoveryRequest(recoveryRequest);
+        } catch (e) {
+          Log.error('Error processing incoming recovery request from stream', e);
+        }
+      },
+      onError: (error) {
+        Log.error('Error in recovery request stream', error);
+      },
+    );
+
+    // Listen for incoming recovery responses
+    _ndkService.recoveryResponseStream.listen(
+      (responseEvent) async {
+        try {
+          await respondToRecoveryRequest(
+            responseEvent.recoveryRequestId,
+            responseEvent.senderPubkey,
+            responseEvent.approved,
+            shardData: responseEvent.shardData,
+          );
+        } catch (e) {
+          Log.error('Error processing recovery response from stream', e);
+        }
+      },
+      onError: (error) {
+        Log.error('Error in recovery response stream', error);
+      },
+    );
+
+    Log.info('RecoveryService listening to NdkService event streams');
+  }
 
   /// Dispose resources
   void dispose() {
