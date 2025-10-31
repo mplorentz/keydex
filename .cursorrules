@@ -1,5 +1,129 @@
 # Keydex Cursor Rules
 
+## Service and Repository Architecture
+
+### When to Use Repositories
+Create a **Repository** class when data access meets ANY of these criteria:
+- Complex caching logic (in-memory + persistence)
+- Stream management for reactive updates
+- Multiple specialized queries (e.g., by ID, by status, filtered lists)
+- Multiple services need the same data access
+- Might swap storage implementations (SharedPreferences → SQLite)
+- Would be 100+ lines of data access code
+
+**Example: LockboxRepository**
+```dart
+final lockboxRepositoryProvider = Provider<LockboxRepository>((ref) {
+  final repository = LockboxRepository();
+  ref.onDispose(() => repository.dispose());
+  return repository;
+});
+
+class LockboxRepository {
+  final StreamController<List<Lockbox>> _controller = StreamController.broadcast();
+  List<Lockbox>? _cache;
+  
+  Stream<List<Lockbox>> get stream => _controller.stream;
+  Future<List<Lockbox>> getAll() async { /* load + cache */ }
+  Future<Lockbox?> getById(String id) async { /* query cache */ }
+  Future<void> save(Lockbox lockbox) async { /* persist + notify */ }
+}
+```
+
+### When to Use Services Only
+Use **Service-only** architecture (no repository) when:
+- Simple CRUD operations (read/write SharedPreferences)
+- Only one service needs this data
+- Minimal or no caching logic
+- No complex stream management
+- Under 100 lines of data access
+
+**Example: Service-Only Pattern**
+```dart
+final myServiceProvider = Provider<MyService>((ref) {
+  return MyService(ref.read(otherServiceProvider));
+});
+
+class MyService {
+  final OtherService _otherService;
+  MyService(this._otherService);
+  
+  Future<void> doSomething() async {
+    final prefs = await SharedPreferences.getInstance();
+    // Simple data access inline
+  }
+}
+```
+
+### Service Pattern (Business Logic)
+All services MUST:
+- Be instance classes (not static)
+- Use dependency injection via Riverpod
+- Have a corresponding Provider
+- Accept dependencies via constructor
+
+**Example: Service with Dependencies**
+```dart
+final myServiceProvider = Provider<MyService>((ref) {
+  return MyService(
+    ref.read(repositoryProvider),
+    ref.read(otherServiceProvider),
+  );
+});
+
+class MyService {
+  final MyRepository _repository;
+  final OtherService _otherService;
+  
+  MyService(this._repository, this._otherService);
+  
+  Future<Result> doBusinessLogic() async {
+    // Validation, orchestration, business rules
+    final data = await _repository.getData();
+    return _otherService.process(data);
+  }
+}
+```
+
+### Breaking Circular Dependencies
+When services depend on each other, add explicit types:
+
+```dart
+// Both providers need explicit types to break inference cycle
+final Provider<ServiceA> serviceAProvider = Provider<ServiceA>((ref) {
+  final ServiceB serviceB = ref.read(serviceBProvider);
+  return ServiceA(serviceB);
+});
+
+final Provider<ServiceB> serviceBProvider = Provider<ServiceB>((ref) {
+  final ServiceA serviceA = ref.read(serviceAProvider);
+  return ServiceB(serviceA);
+});
+```
+
+### Don't Create Thin Wrappers
+❌ **Bad: Thin repository that just delegates**
+```dart
+class KeyRepository {
+  final Ref _ref;
+  Future<String?> getKey() => KeyService.getKey();
+  Future<void> clearKey() {
+    await KeyService.clearKey();
+    _ref.invalidate(keyProvider);
+  }
+}
+```
+
+✅ **Good: Use service directly with providers**
+```dart
+final keyServiceProvider = Provider<KeyService>((ref) => KeyService());
+
+final currentKeyProvider = FutureProvider<String?>((ref) async {
+  final keyService = ref.watch(keyServiceProvider);
+  return await keyService.getCurrentKey();
+});
+```
+
 ## Nostr Key Format Conventions
 
 ### Hex Format (Internal)

@@ -1,14 +1,21 @@
 <!--
 Sync Impact Report:
-Version change: 1.2.0 → 1.2.1
-Modified principles: N/A
-Added sections: Golden Testing Conventions (expanded Testing Strategy section)
+Version change: 1.2.1 → 1.3.0
+Modified principles: 
+  - Principle VIII: Riverpod State Management Architecture (expanded with service/repository guidance)
+Added sections: 
+  - Principle IX: Service and Repository Architecture (new architectural guidance)
+  - Cross-Platform Development → Service and Repository Architecture subsection
+  - Code Quality → Service and repository naming and organization conventions
 Removed sections: N/A
 Templates requiring updates:
-  ✅ .specify/memory/constitution.md (golden testing conventions added)
-  ✅ .specify/templates/plan-template.md (no changes needed - testing strategy already covered)
-  ✅ .specify/templates/tasks-template.md (no changes needed - testing tasks already include screenshot tests)
-Follow-up TODOs: None - all templates aligned
+  ✅ .specify/memory/constitution.md (service/repository architecture principles added)
+  ✅ .cursorrules (service/repository patterns and examples added)
+  ⚠ .specify/templates/plan-template.md (constitution check updated to include IX)
+  ⚠ .specify/templates/tasks-template.md (may benefit from service/repository task examples)
+Follow-up TODOs: 
+  - Consider adding service/repository architecture examples to plan template
+  - Update task template with service implementation patterns
 -->
 
 # Keydex Constitution
@@ -37,7 +44,10 @@ The project prioritizes simplicity and easy extensibility for contributors. Code
 The app uses the Nostr protocol for all data transmission, ensuring decentralized and censorship-resistant communication. Backup and restore processes are documented in a Nostr Implementation Possibility (NIP) to enable interoperability with competing applications. All protocol implementations must follow established Nostr standards and be compatible with the broader Nostr ecosystem.
 
 ### VIII. Riverpod State Management Architecture
-All state management MUST use Riverpod following established best practices. The app MUST be wrapped with ProviderScope at the root to enable provider access throughout the widget tree. State providers MUST be categorized correctly: Provider for immutable dependencies, FutureProvider for async data loading, StreamProvider for reactive streams, and StateProvider only for simple mutable state. Widgets that consume providers MUST use ConsumerWidget or ConsumerStatefulWidget instead of accessing providers directly. Repository pattern MUST be used to abstract service layer interactions behind providers. All providers MUST properly dispose resources using ref.onDispose(). Provider composition MUST use ref.watch() for reactive dependencies and ref.read() for one-time access. Cache invalidation MUST use ref.invalidate() or ref.refresh() when data changes. Auto-dispose providers MUST be preferred for data that should be cleaned up when not in use. Provider families MUST be used for parameterized providers (e.g., by ID). These patterns ensure predictable state management, automatic cleanup, and testability.
+All state management MUST use Riverpod following established best practices. The app MUST be wrapped with ProviderScope at the root to enable provider access throughout the widget tree. State providers MUST be categorized correctly: Provider for immutable dependencies, FutureProvider for async data loading, StreamProvider for reactive streams, and StateProvider only for simple mutable state. Widgets that consume providers MUST use ConsumerWidget or ConsumerStatefulWidget instead of accessing providers directly. All providers MUST properly dispose resources using ref.onDispose(). Provider composition MUST use ref.watch() for reactive dependencies and ref.read() for one-time access. Cache invalidation MUST use ref.invalidate() or ref.refresh() when data changes. Auto-dispose providers MUST be preferred for data that should be cleaned up when not in use. Provider families MUST be used for parameterized providers (e.g., by ID). These patterns ensure predictable state management, automatic cleanup, and testability.
+
+### IX. Service and Repository Architecture
+Services MUST be instance classes with dependencies injected via Riverpod providers, not static utility classes. Each service MUST have a corresponding Provider that injects its dependencies. Repositories are separate from services and follow the Repository Pattern for data access abstraction. Repositories MUST be used when data access is complex (caching, multiple sources, streams, 100+ lines) or when multiple services need the same data access logic. Services MUST be used for business logic, validation, and workflows. Services depend on repositories for data access. Repositories handle persistence (SharedPreferences, databases), in-memory caching, stream management for reactive updates, and specialized queries. Services handle business rules, cross-cutting workflows (e.g., Shamir's Secret Sharing), validation logic, and orchestration of multiple repositories or external services. Do NOT create thin repository wrappers (under 100 lines that just delegate to services); instead use services directly with providers. Service-only architecture (no repository layer) is acceptable for simple data access with minimal caching. Circular dependencies between services MUST be broken by adding explicit types to Provider declarations. This architecture ensures testability through dependency injection, clear separation of concerns, and maintainable code as the system grows.
 
 ## Security Standards
 
@@ -75,7 +85,6 @@ All state management MUST use Riverpod following established best practices. The
 - ProviderScope wraps the entire app at the root level
 - Provider types are used correctly: Provider for dependencies, FutureProvider for async data, StreamProvider for reactive streams, StateProvider only for simple mutable state
 - All widgets that consume providers use ConsumerWidget or ConsumerStatefulWidget
-- Repository pattern abstracts service layer behind providers
 - Resources are properly disposed using ref.onDispose()
 - Provider composition uses ref.watch() for reactive dependencies and ref.read() for one-time access
 - Cache invalidation uses ref.invalidate() or ref.refresh() when data changes
@@ -83,6 +92,16 @@ All state management MUST use Riverpod following established best practices. The
 - Provider families (Provider.family) are used for parameterized providers
 - Provider dependencies are managed through ref.watch() to maintain reactive updates
 - StreamProvider uses Stream.multi() for proper subscription management and cleanup
+
+### Service and Repository Architecture
+- Services are instance classes with Riverpod dependency injection, not static utility classes
+- Each service has a Provider that injects its dependencies
+- Repositories handle data access (persistence, caching, streams, queries)
+- Services handle business logic (validation, workflows, orchestration)
+- Use repositories when: data access is complex (100+ lines), multiple services need same data, or might swap storage
+- Use service-only when: simple CRUD, single consumer, minimal caching
+- No thin repository wrappers (under 100 lines that just delegate)
+- Circular dependencies broken with explicit Provider type declarations
 
 ### Testing Strategy
 - Manual verification of stubbed UI components comes first for rapid feedback
@@ -128,8 +147,10 @@ All state management MUST use Riverpod following established best practices. The
 - Performance is measured and optimized
 - Nostr protocol implementations are tested against multiple relay providers
 - NIP documentation is maintained and updated with protocol changes
-- Riverpod providers follow naming conventions: providers end with `Provider`, repositories end with `Repository`
-- Provider files are organized in `lib/providers/` directory
+- Riverpod providers follow naming conventions: providers end with `Provider`, repositories end with `Repository`, services end with `Service`
+- Provider files are organized in `lib/providers/` directory, service files in `lib/services/`
+- Services are instance classes with dependency injection, not static utility classes
+- Repository classes are used only for complex data access (caching, streams, multiple sources)
 - Provider tests mock dependencies using OverrideProvider for testability
 - Golden test files follow `*_golden_test.dart` naming convention
 - Golden images are stored in `test/goldens/` directory
@@ -138,4 +159,4 @@ All state management MUST use Riverpod following established best practices. The
 
 This constitution supersedes all other development practices and guidelines. Amendments require documentation of rationale, security review if security-related, and approval through the /constitution command. All PRs and reviews must verify compliance with constitutional principles. Security-related changes require additional review by cryptography experts. The project maintains its open-source nature and community-driven development approach.
 
-**Version**: 1.2.1 | **Ratified**: 2025-01-27 | **Last Amended**: 2025-01-27
+**Version**: 1.3.0 | **Ratified**: 2025-01-27 | **Last Amended**: 2025-10-31

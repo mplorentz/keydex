@@ -74,12 +74,19 @@
 - [ ] App wrapped with ProviderScope at root level
 - [ ] Provider types used correctly (Provider, FutureProvider, StreamProvider, StateProvider)
 - [ ] Widgets consuming providers use ConsumerWidget or ConsumerStatefulWidget
-- [ ] Repository pattern used to abstract service layer behind providers
 - [ ] Resources properly disposed using ref.onDispose()
 - [ ] Provider composition uses ref.watch() for reactive dependencies
 - [ ] Cache invalidation uses ref.invalidate() or ref.refresh() when data changes
 - [ ] Auto-dispose providers preferred for temporary or screen-scoped data
 - [ ] Provider families used for parameterized providers
+
+### Service and Repository Architecture
+- [ ] Services are instance classes with Riverpod dependency injection
+- [ ] Each service has a Provider that injects dependencies
+- [ ] Repositories used for complex data access (caching, streams, 100+ lines)
+- [ ] Services used for business logic (validation, workflows, orchestration)
+- [ ] No thin repository wrappers (under 100 lines that just delegate)
+- [ ] Circular dependencies broken with explicit Provider types
 
 ### Non-Technical User Focus
 - [ ] UI designed for non-technical users
