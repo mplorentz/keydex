@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:keydex/models/lockbox.dart';
-import 'package:keydex/services/key_service.dart';
+import 'package:keydex/services/login_service.dart';
 import 'package:keydex/providers/lockbox_provider.dart';
 
 void main() {
@@ -50,27 +50,30 @@ void main() {
       }
     });
 
-    await KeyService.clearStoredKeys();
-    KeyService.resetCacheForTest();
+    final loginService = LoginService();
+    await loginService.clearStoredKeys();
+    loginService.resetCacheForTest();
 
-    final repository = LockboxRepository();
+    final repository = LockboxRepository(loginService);
     await repository.clearAll();
   });
 
   tearDown(() async {
-    final repository = LockboxRepository();
+    final loginService = LoginService();
+    final repository = LockboxRepository(loginService);
     await repository.clearAll();
-    await KeyService.clearStoredKeys();
-    KeyService.resetCacheForTest();
+    await loginService.clearStoredKeys();
+    loginService.resetCacheForTest();
   });
 
   test('add/get/update/delete lockbox persists via encrypted SharedPreferences', () async {
     // Initialize key so encrypt/decrypt works
-    final keyPair = await KeyService.generateAndStoreNostrKey();
+    final loginService = LoginService();
+    final keyPair = await loginService.generateAndStoreNostrKey();
     final ownerPubkey = keyPair.publicKey;
 
     // Create repository instance
-    final repository = LockboxRepository();
+    final repository = LockboxRepository(loginService);
 
     // Start with empty list
     final startList = await repository.getAllLockboxes();

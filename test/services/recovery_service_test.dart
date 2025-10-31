@@ -1,16 +1,21 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/mockito.dart';
+import 'package:mockito/annotations.dart';
 import 'package:keydex/models/lockbox.dart';
 import 'package:keydex/models/recovery_request.dart';
 import 'package:keydex/models/shard_data.dart';
-import 'package:keydex/services/key_service.dart';
+import 'package:keydex/services/login_service.dart';
 import 'package:keydex/providers/lockbox_provider.dart';
 import 'package:keydex/services/recovery_service.dart';
+import 'package:keydex/services/backup_service.dart';
+import 'package:keydex/services/shard_distribution_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Tests for RecoveryService - focusing on Nostr event payload validation
-/// These tests verify the JSON structure that would be sent via Nostr gift wraps
+import 'recovery_service_test.mocks.dart';
+
+@GenerateMocks([BackupService, ShardDistributionService])
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -20,6 +25,10 @@ void main() {
 
   group('RecoveryService - Nostr Event Payload Validation', () {
     late String testCreatorPubkey;
+    late LoginService loginService;
+    late LockboxRepository repository;
+    late BackupService backupService;
+    late RecoveryService recoveryService;
     const testKeyHolder1 = 'fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321';
     const testKeyHolder2 = 'abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdef1234';
     const testLockboxId = 'lockbox-test-123';
@@ -61,16 +70,21 @@ void main() {
         }
       });
 
-      await KeyService.clearStoredKeys();
-      KeyService.resetCacheForTest();
+      loginService = LoginService();
+      await loginService.clearStoredKeys();
+      loginService.resetCacheForTest();
 
       // Generate a key pair for the test
-      final keyPair = await KeyService.generateAndStoreNostrKey();
+      final keyPair = await loginService.generateAndStoreNostrKey();
       testCreatorPubkey = keyPair.publicKey;
 
       // Clear any existing recovery requests and lockboxes
-      final repository = LockboxRepository();
-      final recoveryService = RecoveryService(repository);
+      repository = LockboxRepository(loginService);
+      // Create mocks for circular dependency
+      final mockBackupService = MockBackupService();
+      final mockShardService = MockShardDistributionService();
+      backupService = mockBackupService;
+      recoveryService = RecoveryService(repository, backupService, loginService);
       await recoveryService.clearAll();
       await repository.clearAll();
 
@@ -86,15 +100,13 @@ void main() {
     });
 
     tearDown(() async {
-      final repository = LockboxRepository();
       await repository.clearAll();
-      await KeyService.clearStoredKeys();
-      KeyService.resetCacheForTest();
+      await loginService.clearStoredKeys();
+      loginService.resetCacheForTest();
     });
 
     test('recovery request creation succeeds with valid data', () async {
       // Create a recovery request
-      final recoveryService = RecoveryService(LockboxRepository());
       final recoveryRequest = await recoveryService.initiateRecovery(
         testLockboxId,
         initiatorPubkey: testCreatorPubkey,
@@ -112,7 +124,6 @@ void main() {
 
     test('recovery request JSON payload has correct structure', () async {
       // Arrange
-      final recoveryService = RecoveryService(LockboxRepository());
       final recoveryRequest = await recoveryService.initiateRecovery(
         testLockboxId,
         initiatorPubkey: testCreatorPubkey,
@@ -147,7 +158,6 @@ void main() {
 
     test('recovery response JSON payload has correct structure with shard data', () async {
       // Arrange
-      final recoveryService = RecoveryService(LockboxRepository());
       final recoveryRequest = await recoveryService.initiateRecovery(
         testLockboxId,
         initiatorPubkey: testCreatorPubkey,
@@ -203,7 +213,6 @@ void main() {
 
     test('recovery response JSON payload for denial omits shard data', () async {
       // Arrange
-      final recoveryService = RecoveryService(LockboxRepository());
       final recoveryRequest = await recoveryService.initiateRecovery(
         testLockboxId,
         initiatorPubkey: testCreatorPubkey,
@@ -234,7 +243,6 @@ void main() {
 
     test('recovery request is sent to all key holders', () async {
       // Create a recovery request with multiple key holders
-      final recoveryService = RecoveryService(LockboxRepository());
       final recoveryRequest = await recoveryService.initiateRecovery(
         testLockboxId,
         initiatorPubkey: testCreatorPubkey,
@@ -255,7 +263,6 @@ void main() {
 
     test('recovery response includes threshold information', () async {
       // Arrange
-      final recoveryService = RecoveryService(LockboxRepository());
       final recoveryRequest = await recoveryService.initiateRecovery(
         testLockboxId,
         initiatorPubkey: testCreatorPubkey,
@@ -268,7 +275,6 @@ void main() {
 
     test('recovery request contains proper expiration', () async {
       // Create request with default expiration
-      final recoveryService = RecoveryService(LockboxRepository());
       final recoveryRequest = await recoveryService.initiateRecovery(
         testLockboxId,
         initiatorPubkey: testCreatorPubkey,
@@ -288,7 +294,6 @@ void main() {
 
     test('recovery request respects custom expiration duration', () async {
       // Create request with custom 2-hour expiration
-      final recoveryService = RecoveryService(LockboxRepository());
       final recoveryRequest = await recoveryService.initiateRecovery(
         testLockboxId,
         initiatorPubkey: testCreatorPubkey,
@@ -306,7 +311,6 @@ void main() {
 
     test('recovery response shard data is stored and can be retrieved', () async {
       // Create initial recovery request
-      final recoveryService = RecoveryService(LockboxRepository());
       final recoveryRequest = await recoveryService.initiateRecovery(
         testLockboxId,
         initiatorPubkey: testCreatorPubkey,
@@ -348,7 +352,6 @@ void main() {
 
     test('recovery response denial does not include shard data', () async {
       // Create initial recovery request
-      final recoveryService = RecoveryService(LockboxRepository());
       final recoveryRequest = await recoveryService.initiateRecovery(
         testLockboxId,
         initiatorPubkey: testCreatorPubkey,
@@ -373,7 +376,6 @@ void main() {
 
     test('multiple recovery responses accumulate correctly', () async {
       // Create recovery request with multiple key holders
-      final recoveryService = RecoveryService(LockboxRepository());
       final recoveryRequest = await recoveryService.initiateRecovery(
         testLockboxId,
         initiatorPubkey: testCreatorPubkey,

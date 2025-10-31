@@ -57,7 +57,7 @@ class DebugInfoSheet extends ConsumerWidget {
       await ref.read(lockboxShareServiceProvider).clearAll();
       await ref.read(recoveryServiceProvider).clearAll();
       await ref.read(relayScanServiceProvider).clearAll();
-      await ref.read(keyServiceProvider).clearStoredKeys();
+      await ref.read(loginServiceProvider).clearStoredKeys();
 
       // Invalidate the cached key providers so they'll re-fetch
       ref.invalidate(currentPublicKeyProvider);

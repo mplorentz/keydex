@@ -34,8 +34,8 @@ class _RecoveryRequestDetailScreenState extends ConsumerState<RecoveryRequestDet
 
   Future<void> _loadCurrentPubkey() async {
     try {
-      final keyService = ref.read(keyServiceProvider);
-      final pubkey = await keyService.getCurrentPublicKey();
+      final loginService = ref.read(loginServiceProvider);
+      final pubkey = await loginService.getCurrentPublicKey();
       if (mounted) {
         setState(() {
           _currentPubkey = pubkey;

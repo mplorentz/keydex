@@ -6,16 +6,16 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:meta/meta.dart';
 import 'logger.dart';
 
-/// Key management service for storing Nostr keys securely
+/// Login service for managing user's Nostr authentication credentials
 /// Only stores the private key - public key is derived as needed
-class KeyService {
+class LoginService {
   static const _storage = FlutterSecureStorage();
   static const String _nostrPrivateKeyKey = 'nostr_private_key';
 
   static KeyPair? _cachedKeyPair;
 
   // Regular constructor - Riverpod manages the singleton behavior
-  KeyService();
+  LoginService();
 
   /// Generate a new Nostr key pair and store only the private key securely
   Future<KeyPair> generateAndStoreNostrKey() async {
@@ -175,3 +175,4 @@ class KeyService {
     );
   }
 }
+

@@ -94,8 +94,8 @@ class RecoverySection extends ConsumerWidget {
 
   Future<void> _initiateRecovery(BuildContext context, WidgetRef ref) async {
     try {
-      final keyService = ref.read(keyServiceProvider);
-      final currentPubkey = await keyService.getCurrentPublicKey();
+      final loginService = ref.read(loginServiceProvider);
+      final currentPubkey = await loginService.getCurrentPublicKey();
 
       if (currentPubkey == null) {
         if (context.mounted) {

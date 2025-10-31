@@ -11,7 +11,7 @@ import '../models/backup_config.dart';
 import '../models/nostr_kinds.dart';
 import '../providers/lockbox_provider.dart';
 import '../providers/key_provider.dart';
-import '../services/key_service.dart';
+import '../services/login_service.dart';
 import '../services/logger.dart';
 import '../utils/invite_code_utils.dart';
 import '../utils/validators.dart';
@@ -22,7 +22,7 @@ final invitationServiceProvider = Provider<InvitationService>((ref) {
   final service = InvitationService(
     ref.read(lockboxRepositoryProvider),
     ref.read(invitationSendingServiceProvider),
-    ref.read(keyServiceProvider),
+    ref.read(loginServiceProvider),
   );
 
   // Properly clean up when the provider is disposed
@@ -37,7 +37,7 @@ final invitationServiceProvider = Provider<InvitationService>((ref) {
 class InvitationService {
   final LockboxRepository repository;
   final InvitationSendingService invitationSendingService;
-  final KeyService _keyService;
+  final LoginService _loginService;
 
   // Stream controller for notifying listeners when invitations change
   final StreamController<void> _invitationsChangedController = StreamController<void>.broadcast();
@@ -49,7 +49,7 @@ class InvitationService {
   InvitationService(
     this.repository,
     this.invitationSendingService,
-    this._keyService,
+    this._loginService,
   );
 
   /// Stream that emits whenever invitations change
@@ -87,7 +87,7 @@ class InvitationService {
     }
 
     // Get current user's pubkey
-    final ownerPubkey = await _keyService.getCurrentPublicKey();
+    final ownerPubkey = await _loginService.getCurrentPublicKey();
     if (ownerPubkey == null) {
       throw Exception('No key pair available. Cannot generate invitation.');
     }
@@ -356,7 +356,7 @@ class InvitationService {
     }
 
     // Get current user's pubkey to verify we're the owner
-    final ownerPubkey = await _keyService.getCurrentPublicKey();
+    final ownerPubkey = await _loginService.getCurrentPublicKey();
     if (ownerPubkey == null) {
       throw Exception('No key pair available. Cannot process RSVP event.');
     }
@@ -376,7 +376,7 @@ class InvitationService {
     // Decrypt event content
     String decryptedContent;
     try {
-      decryptedContent = await _keyService.decryptFromSender(
+      decryptedContent = await _loginService.decryptFromSender(
         encryptedText: event.content,
         senderPubkey: event.pubKey,
       );
@@ -454,7 +454,7 @@ class InvitationService {
     }
 
     // Get current user's pubkey to verify we're the owner
-    final ownerPubkey = await _keyService.getCurrentPublicKey();
+    final ownerPubkey = await _loginService.getCurrentPublicKey();
     if (ownerPubkey == null) {
       throw Exception('No key pair available. Cannot process denial event.');
     }
@@ -474,7 +474,7 @@ class InvitationService {
     // Decrypt event content
     String decryptedContent;
     try {
-      decryptedContent = await _keyService.decryptFromSender(
+      decryptedContent = await _loginService.decryptFromSender(
         encryptedText: event.content,
         senderPubkey: event.pubKey,
       );

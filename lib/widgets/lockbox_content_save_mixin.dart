@@ -37,8 +37,8 @@ mixin LockboxContentSaveMixin<T extends ConsumerStatefulWidget> on ConsumerState
 
   /// Create a new lockbox with the current user's public key
   Future<Lockbox> _createNewLockbox(String name, String content) async {
-    final keyService = ref.read(keyServiceProvider);
-    final currentPubkey = await keyService.getCurrentPublicKey();
+    final loginService = ref.read(loginServiceProvider);
+    final currentPubkey = await loginService.getCurrentPublicKey();
     if (currentPubkey == null) {
       throw Exception('Unable to get current user public key');
     }

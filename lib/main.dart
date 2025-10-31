@@ -35,8 +35,8 @@ class _KeydexAppState extends ConsumerState<KeydexApp> {
   Future<void> _initializeApp() async {
     try {
       // Initialize the Nostr key on app launch
-      final keyService = ref.read(keyServiceProvider);
-      await keyService.initializeKey();
+      final loginService = ref.read(loginServiceProvider);
+      await loginService.initializeKey();
 
       if (mounted) {
         setState(() {

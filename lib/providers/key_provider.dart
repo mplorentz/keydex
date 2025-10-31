@@ -1,22 +1,22 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../services/key_service.dart';
+import '../services/login_service.dart';
 
-/// Provider for KeyService
+/// Provider for LoginService
 /// Riverpod automatically ensures this is a singleton - only one instance exists
-final keyServiceProvider = Provider<KeyService>((ref) {
-  return KeyService();
+final loginServiceProvider = Provider<LoginService>((ref) {
+  return LoginService();
 });
 
 /// FutureProvider for the current public key in hex format
 /// This will automatically cache the result and only re-fetch when invalidated
 final currentPublicKeyProvider = FutureProvider<String?>((ref) async {
-  final keyService = ref.watch(keyServiceProvider);
-  return await keyService.getCurrentPublicKey();
+  final loginService = ref.watch(loginServiceProvider);
+  return await loginService.getCurrentPublicKey();
 });
 
 /// FutureProvider for the current public key in bech32 format (npub)
 /// This will automatically cache the result and only re-fetch when invalidated
 final currentPublicKeyBech32Provider = FutureProvider<String?>((ref) async {
-  final keyService = ref.watch(keyServiceProvider);
-  return await keyService.getCurrentPublicKeyBech32();
+  final loginService = ref.watch(loginServiceProvider);
+  return await loginService.getCurrentPublicKeyBech32();
 });

@@ -6,7 +6,7 @@ import '../models/lockbox.dart';
 import '../models/shard_data.dart';
 import '../models/recovery_request.dart';
 import '../models/backup_config.dart';
-import '../services/key_service.dart';
+import '../services/login_service.dart';
 import '../services/logger.dart';
 import 'key_provider.dart';
 
@@ -96,7 +96,7 @@ final lockboxProvider = StreamProvider.family<Lockbox?, String>((ref, lockboxId)
 /// Riverpod automatically ensures this is a singleton - only one instance exists
 /// per ProviderScope. The instance is kept alive for the lifetime of the app.
 final lockboxRepositoryProvider = Provider<LockboxRepository>((ref) {
-  final repository = LockboxRepository(ref.read(keyServiceProvider));
+  final repository = LockboxRepository(ref.read(loginServiceProvider));
 
   // Properly clean up when the app is disposed
   ref.onDispose(() {
@@ -109,7 +109,7 @@ final lockboxRepositoryProvider = Provider<LockboxRepository>((ref) {
 /// Repository class to handle lockbox operations
 /// This provides a clean API layer between the UI and the service
 class LockboxRepository {
-  final KeyService _keyService;
+  final LoginService _loginService;
   static const String _lockboxesKey = 'encrypted_lockboxes';
   List<Lockbox>? _cachedLockboxes;
   bool _isInitialized = false;
@@ -119,7 +119,7 @@ class LockboxRepository {
       StreamController<List<Lockbox>>.broadcast();
 
   // Regular constructor - Riverpod manages the singleton behavior
-  LockboxRepository(this._keyService);
+  LockboxRepository(this._loginService);
 
   /// Stream that emits the updated list of lockboxes whenever they change
   Stream<List<Lockbox>> get lockboxesStream => _lockboxesController.stream;
@@ -152,7 +152,7 @@ class LockboxRepository {
 
     try {
       // Decrypt the data using our Nostr key
-      final decryptedJson = await _keyService.decryptText(encryptedData);
+      final decryptedJson = await _loginService.decryptText(encryptedData);
       final List<dynamic> jsonList = json.decode(decryptedJson);
       Log.info('Decrypted ${jsonList.length} lockboxes');
 
@@ -232,7 +232,7 @@ class LockboxRepository {
       Log.debug('JSON encoded successfully (${jsonString.length} characters)');
 
       // Encrypt the JSON data using our Nostr key
-      final encryptedData = await _keyService.encryptText(jsonString);
+      final encryptedData = await _loginService.encryptText(jsonString);
 
       // Save to SharedPreferences
       final prefs = await SharedPreferences.getInstance();

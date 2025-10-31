@@ -11,7 +11,7 @@ import '../models/event_status.dart';
 import '../providers/lockbox_provider.dart';
 import '../providers/key_provider.dart';
 import 'backup_service.dart';
-import 'key_service.dart';
+import 'login_service.dart';
 import 'logger.dart';
 
 /// Provider for ShardDistributionService
@@ -23,16 +23,16 @@ final Provider<ShardDistributionService> shardDistributionServiceProvider =
   return ShardDistributionService(
     ref.read(lockboxRepositoryProvider),
     backupService,
-    ref.read(keyServiceProvider),
+    ref.read(loginServiceProvider),
   );
 });
 
 /// Service for distributing shards to key holders via Nostr
 class ShardDistributionService {
   final BackupService _backupService;
-  final KeyService _keyService;
+  final LoginService _loginService;
 
-  ShardDistributionService(LockboxRepository repository, this._backupService, this._keyService);
+  ShardDistributionService(LockboxRepository repository, this._backupService, this._loginService);
 
   /// Distribute shards to all key holders
   Future<List<ShardEvent>> distributeShards({
@@ -195,7 +195,7 @@ class ShardDistributionService {
     }
 
     // Get current user's pubkey to verify we're the owner
-    final ownerPubkey = await _keyService.getCurrentPublicKey();
+    final ownerPubkey = await _loginService.getCurrentPublicKey();
     if (ownerPubkey == null) {
       throw Exception('No key pair available. Cannot process shard confirmation event.');
     }
@@ -226,7 +226,7 @@ class ShardDistributionService {
     // Decrypt event content
     String decryptedContent;
     try {
-      decryptedContent = await _keyService.decryptFromSender(
+      decryptedContent = await _loginService.decryptFromSender(
         encryptedText: event.content,
         senderPubkey: event.pubKey,
       );
@@ -286,7 +286,7 @@ class ShardDistributionService {
     }
 
     // Get current user's pubkey to verify we're the owner
-    final ownerPubkey = await _keyService.getCurrentPublicKey();
+    final ownerPubkey = await _loginService.getCurrentPublicKey();
     if (ownerPubkey == null) {
       throw Exception('No key pair available. Cannot process shard error event.');
     }
@@ -317,7 +317,7 @@ class ShardDistributionService {
     // Decrypt event content
     String decryptedContent;
     try {
-      decryptedContent = await _keyService.decryptFromSender(
+      decryptedContent = await _loginService.decryptFromSender(
         encryptedText: event.content,
         senderPubkey: event.pubKey,
       );

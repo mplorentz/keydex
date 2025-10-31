@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ndk/ndk.dart';
 import '../providers/key_provider.dart';
-import 'key_service.dart';
+import 'login_service.dart';
 import 'recovery_service.dart';
 import 'lockbox_share_service.dart';
 import 'logger.dart';
@@ -15,11 +15,11 @@ import '../models/recovery_request.dart';
 final ndkServiceProvider = Provider<NdkService>((ref) {
   final recoveryService = ref.watch(recoveryServiceProvider);
   final lockboxShareService = ref.watch(lockboxShareServiceProvider);
-  final keyService = ref.read(keyServiceProvider);
+  final loginService = ref.read(loginServiceProvider);
   return NdkService(
     recoveryService: recoveryService,
     lockboxShareService: lockboxShareService,
-    keyService: keyService,
+    loginService: loginService,
   );
 });
 
@@ -28,7 +28,7 @@ final ndkServiceProvider = Provider<NdkService>((ref) {
 class NdkService {
   final RecoveryService recoveryService;
   final LockboxShareService lockboxShareService;
-  final KeyService _keyService;
+  final LoginService _loginService;
 
   Ndk? _ndk;
   bool _isInitialized = false;
@@ -39,8 +39,8 @@ class NdkService {
   NdkService({
     required this.recoveryService,
     required this.lockboxShareService,
-    required KeyService keyService,
-  }) : _keyService = keyService;
+    required LoginService loginService,
+  }) : _loginService = loginService;
 
   /// Initialize NDK with current user's key and set up subscriptions
   Future<void> initialize() async {
@@ -51,7 +51,7 @@ class NdkService {
 
     try {
       // Get current user's key pair
-      final keyPair = await _keyService.getStoredNostrKey();
+      final keyPair = await _loginService.getStoredNostrKey();
       if (keyPair == null) {
         throw Exception('No key pair available. Cannot initialize NDK.');
       }
@@ -122,7 +122,7 @@ class NdkService {
     }
 
     // Get current user's pubkey
-    final keyPair = await _keyService.getStoredNostrKey();
+    final keyPair = await _loginService.getStoredNostrKey();
     if (keyPair == null) {
       Log.error('No key pair available for subscriptions');
       return;
@@ -285,7 +285,7 @@ class NdkService {
     }
 
     try {
-      final keyPair = await _keyService.getStoredNostrKey();
+      final keyPair = await _loginService.getStoredNostrKey();
       if (keyPair == null) {
         throw Exception('No key pair available');
       }
@@ -305,7 +305,7 @@ class NdkService {
 
       for (final keyHolderPubkey in keyHolderPubkeys) {
         // Encrypt the request for this key holder
-        final encryptedContent = await _keyService.encryptForRecipient(
+        final encryptedContent = await _loginService.encryptForRecipient(
           plaintext: requestJson,
           recipientPubkey: keyHolderPubkey,
         );
@@ -351,7 +351,7 @@ class NdkService {
     }
 
     try {
-      final keyPair = await _keyService.getStoredNostrKey();
+      final keyPair = await _loginService.getStoredNostrKey();
       if (keyPair == null) {
         throw Exception('No key pair available');
       }
@@ -367,7 +367,7 @@ class NdkService {
       final responseJson = json.encode(responsePayload);
 
       // Encrypt for initiator
-      final encryptedContent = await _keyService.encryptForRecipient(
+      final encryptedContent = await _loginService.encryptForRecipient(
         plaintext: responseJson,
         recipientPubkey: initiatorPubkey,
       );

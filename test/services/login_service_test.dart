@@ -2,7 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:keydex/services/key_service.dart';
+import 'package:keydex/services/login_service.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -51,18 +51,22 @@ void main() {
       }
     });
 
-    await KeyService.clearStoredKeys();
-    KeyService.resetCacheForTest();
+    final loginService = LoginService();
+    await loginService.clearStoredKeys();
+    loginService.resetCacheForTest();
   });
 
   tearDown(() async {
-    await KeyService.clearStoredKeys();
-    KeyService.resetCacheForTest();
+    final loginService = LoginService();
+    await loginService.clearStoredKeys();
+    loginService.resetCacheForTest();
   });
 
   test('generateAndStoreNostrKey persists private key and can reload it', () async {
+    final loginService = LoginService();
+    
     // Generate and store
-    final keyPair1 = await KeyService.generateAndStoreNostrKey();
+    final keyPair1 = await loginService.generateAndStoreNostrKey();
     expect(keyPair1.privateKey, isNotNull);
     expect(keyPair1.publicKey, isNotNull);
 
@@ -72,9 +76,9 @@ void main() {
     expect(secureStore['nostr_private_key']!.isNotEmpty, isTrue);
 
     // Reset cache to force a storage read path
-    KeyService.resetCacheForTest();
+    loginService.resetCacheForTest();
 
-    final keyPair2 = await KeyService.getStoredNostrKey();
+    final keyPair2 = await loginService.getStoredNostrKey();
     expect(keyPair2, isNotNull);
     expect(keyPair2!.publicKey, equals(keyPair1.publicKey));
     expect(keyPair2.privateKey, equals(keyPair1.privateKey));

@@ -10,7 +10,7 @@ import '../models/key_holder_status.dart';
 import '../models/lockbox.dart';
 import '../providers/lockbox_provider.dart';
 import '../providers/key_provider.dart';
-import 'key_service.dart';
+import 'login_service.dart';
 import 'shard_distribution_service.dart';
 import '../services/logger.dart';
 
@@ -22,7 +22,7 @@ final Provider<BackupService> backupServiceProvider = Provider<BackupService>((r
   return BackupService(
     ref.read(lockboxRepositoryProvider),
     shardService,
-    ref.read(keyServiceProvider),
+    ref.read(loginServiceProvider),
   );
 });
 
@@ -30,9 +30,9 @@ final Provider<BackupService> backupServiceProvider = Provider<BackupService>((r
 class BackupService {
   final LockboxRepository _repository;
   final ShardDistributionService _shardDistributionService;
-  final KeyService _keyService;
+  final LoginService _loginService;
 
-  BackupService(this._repository, this._shardDistributionService, this._keyService);
+  BackupService(this._repository, this._shardDistributionService, this._loginService);
 
   /// Create a new backup configuration
   Future<BackupConfig> createBackupConfiguration({
@@ -312,7 +312,7 @@ class BackupService {
       Log.info('Loaded lockbox content for backup: $lockboxId');
 
       // Step 2: Get creator's Nostr key pair
-      final creatorKeyPair = await _keyService.getStoredNostrKey();
+      final creatorKeyPair = await _loginService.getStoredNostrKey();
       final creatorPubkey = creatorKeyPair?.publicKey;
       final creatorPrivkey = creatorKeyPair?.privateKey;
       if (creatorPubkey == null || creatorPrivkey == null) {
