@@ -135,6 +135,21 @@ class LockboxDetailScreen extends ConsumerWidget {
                 icon: Icons.settings,
                 text: 'Backup Settings',
                 backgroundColor: const Color(0xFF6f7a69)),
+            // Generate and Distribute Keys Button (stub: shows when all invited key holders have accepted)
+            // Stub logic: Always show for now, will be connected to actual invitation status in later phases
+            RowButton(
+              onPressed: () {
+                // Stub: Non-functional for now
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Generate and Distribute Keys coming soon'),
+                  ),
+                );
+              },
+              icon: Icons.vpn_key,
+              text: 'Generate and Distribute Keys',
+              backgroundColor: const Color(0xFF5a6b55),
+            ),
           ],
           // Recovery Section
           RecoverySection(lockboxId: lockbox.id),

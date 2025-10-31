@@ -86,176 +86,223 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
         title: const Text('Backup Configuration'),
         centerTitle: false,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Threshold and Total Keys Configuration
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Backup Settings', style: Theme.of(context).textTheme.headlineSmall),
-                    const SizedBox(height: 16),
-                    Text('Threshold: $_threshold (minimum keys needed)'),
-                    Slider(
-                      value: _threshold.toDouble(),
-                      min: LockboxBackupConstraints.minThreshold.toDouble(),
-                      max: _totalKeys.toDouble(),
-                      divisions: (_totalKeys - LockboxBackupConstraints.minThreshold) > 0
-                          ? _totalKeys - LockboxBackupConstraints.minThreshold
-                          : null,
-                      onChanged: (value) {
-                        setState(() {
-                          _threshold = value.round();
-                        });
-                      },
-                    ),
-                    Text('Total Keys: $_totalKeys'),
-                    Slider(
-                      value: _totalKeys.toDouble(),
-                      min: _threshold.toDouble(),
-                      max: LockboxBackupConstraints.maxTotalKeys.toDouble(),
-                      divisions: (LockboxBackupConstraints.maxTotalKeys - _threshold) > 0
-                          ? LockboxBackupConstraints.maxTotalKeys - _threshold
-                          : null,
-                      onChanged: (value) {
-                        setState(() {
-                          _totalKeys = value.round();
-                          if (_threshold > _totalKeys) {
-                            _threshold = _totalKeys;
-                          }
-                        });
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Key Holders Section
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: ScrollConfiguration(
+        behavior: const ScrollBehavior().copyWith(scrollbars: false),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 0),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Threshold and Total Keys Configuration
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Key Holders (${_keyHolders.length}/$_totalKeys)',
-                          style: Theme.of(context).textTheme.headlineSmall,
+                        Text('Backup Settings', style: Theme.of(context).textTheme.headlineSmall),
+                        const SizedBox(height: 16),
+                        Text('Threshold: $_threshold (minimum keys needed)'),
+                        Slider(
+                          value: _threshold.toDouble(),
+                          min: LockboxBackupConstraints.minThreshold.toDouble(),
+                          max: _totalKeys.toDouble(),
+                          divisions: (_totalKeys - LockboxBackupConstraints.minThreshold) > 0
+                              ? _totalKeys - LockboxBackupConstraints.minThreshold
+                              : null,
+                          onChanged: (value) {
+                            setState(() {
+                              _threshold = value.round();
+                            });
+                          },
                         ),
-                        ElevatedButton.icon(
-                          onPressed: _addKeyHolder,
-                          icon: const Icon(Icons.add),
-                          label: const Text('Add Contact'),
+                        Text('Total Keys: $_totalKeys'),
+                        Slider(
+                          value: _totalKeys.toDouble(),
+                          min: _threshold.toDouble(),
+                          max: LockboxBackupConstraints.maxTotalKeys.toDouble(),
+                          divisions: (LockboxBackupConstraints.maxTotalKeys - _threshold) > 0
+                              ? LockboxBackupConstraints.maxTotalKeys - _threshold
+                              : null,
+                          onChanged: (value) {
+                            setState(() {
+                              _totalKeys = value.round();
+                              if (_threshold > _totalKeys) {
+                                _threshold = _totalKeys;
+                              }
+                            });
+                          },
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
-                    if (_keyHolders.isEmpty)
-                      const Text(
-                        'No key holders added yet. Add trusted contacts to distribute backup keys.',
-                      )
-                    else
-                      ..._keyHolders.map(
-                        (holder) => ListTile(
-                          leading: const Icon(Icons.person),
-                          title: Text(holder.displayName),
-                          subtitle: Text(holder.npub),
-                          trailing: IconButton(
-                            icon: const Icon(Icons.remove_circle),
-                            onPressed: () {
-                              setState(() {
-                                _keyHolders.remove(holder);
-                              });
-                            },
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Invite by Link Section
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Invite by Link',
+                          style: Theme.of(context).textTheme.headlineSmall,
+                        ),
+                        const SizedBox(height: 16),
+                        const TextField(
+                          decoration: InputDecoration(
+                            labelText: 'Invitee Name',
+                            hintText: 'Enter name for the invitee',
+                            border: OutlineInputBorder(),
                           ),
                         ),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Relay Configuration
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Nostr Relays', style: Theme.of(context).textTheme.headlineSmall),
-                    const SizedBox(height: 16),
-                    ..._relays.map(
-                      (relay) => ListTile(
-                        leading: const Icon(Icons.cloud),
-                        title: Text(relay),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.remove_circle),
-                          onPressed: () {
-                            if (_relays.length > 1) {
-                              setState(() {
-                                _relays.remove(relay);
-                              });
-                            }
-                          },
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              // Stub: Non-functional for now
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Invitation link generation coming soon'),
+                                ),
+                              );
+                            },
+                            icon: const Icon(Icons.link),
+                            label: const Text('Generate Invitation Link'),
+                          ),
                         ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Key Holders Section
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Key Holders (${_keyHolders.length}/$_totalKeys)',
+                              style: Theme.of(context).textTheme.headlineSmall,
+                            ),
+                            ElevatedButton.icon(
+                              onPressed: _addKeyHolder,
+                              icon: const Icon(Icons.add),
+                              label: const Text('Add Contact'),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        if (_keyHolders.isEmpty)
+                          const Text(
+                            'No key holders added yet. Add trusted contacts to distribute backup keys.',
+                          )
+                        else
+                          ..._keyHolders.map(
+                            (holder) => ListTile(
+                              leading: const Icon(Icons.person),
+                              title: Text(holder.displayName),
+                              subtitle: Text(holder.npub),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.remove_circle),
+                                onPressed: () {
+                                  setState(() {
+                                    _keyHolders.remove(holder);
+                                  });
+                                },
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Relay Configuration
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Nostr Relays', style: Theme.of(context).textTheme.headlineSmall),
+                        const SizedBox(height: 16),
+                        ..._relays.map(
+                          (relay) => ListTile(
+                            leading: const Icon(Icons.cloud),
+                            title: Text(relay),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.remove_circle),
+                              onPressed: () {
+                                if (_relays.length > 1) {
+                                  setState(() {
+                                    _relays.remove(relay);
+                                  });
+                                }
+                              },
+                            ),
+                          ),
+                        ),
+                        ElevatedButton.icon(
+                          onPressed: _addRelay,
+                          icon: const Icon(Icons.add),
+                          label: const Text('Add Relay'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Action Buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text('Cancel'),
                       ),
                     ),
-                    ElevatedButton.icon(
-                      onPressed: _addRelay,
-                      icon: const Icon(Icons.add),
-                      label: const Text('Add Relay'),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: _canCreateBackup() && !_isCreating ? _createBackup : null,
+                        child: _isCreating
+                            ? const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text('Creating...'),
+                                ],
+                              )
+                            : const Text('Create Backup'),
+                      ),
                     ),
                   ],
                 ),
-              ),
-            ),
-
-            const Spacer(),
-
-            // Action Buttons
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('Cancel'),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: _canCreateBackup() && !_isCreating ? _createBackup : null,
-                    child: _isCreating
-                        ? const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              ),
-                              SizedBox(width: 8),
-                              Text('Creating...'),
-                            ],
-                          )
-                        : const Text('Create Backup'),
-                  ),
-                ),
+                const SizedBox(height: 16), // Bottom padding inside scroll view
               ],
             ),
-          ],
+          ),
         ),
       ),
     );

@@ -47,11 +47,11 @@
 
 ## Phase 3.2: UI Stubs & Manual Verification (Outside-In Approach)
 **Start with user-facing components for rapid feedback**
-- [ ] T007 [P] Stub invitation link generation section in `lib/screens/backup_config_screen.dart` (add "Invite by Link" UI with name input and generate button, non-functional)
-- [ ] T008 [P] Stub invitation acceptance screen `lib/screens/invitation_acceptance_screen.dart` (placeholder UI showing invitation details and accept/deny buttons)
-- [ ] T009 [P] Stub key holder status badges in `lib/widgets/key_holder_list.dart` (add invitation status indicators: invited, awaiting key, holding key, error)
-- [ ] T010 [P] Stub "Generate and Distribute Keys" button in `lib/screens/lockbox_detail_screen.dart` (show button when all invited key holders have accepted)
-- [ ] T011 Manual verification: Navigate through stubbed UI flow and verify layout/look
+- [X] T007 [P] Stub invitation link generation section in `lib/screens/backup_config_screen.dart` (add "Invite by Link" UI with name input and generate button, non-functional)
+- [X] T008 [P] Stub invitation acceptance screen `lib/screens/invitation_acceptance_screen.dart` (placeholder UI showing invitation details and accept/deny buttons)
+- [X] T009 [P] Stub key holder status badges in `lib/widgets/key_holder_list.dart` (add invitation status indicators: invited, awaiting key, holding key, error)
+- [X] T010 [P] Stub "Generate and Distribute Keys" button in `lib/screens/lockbox_detail_screen.dart` (show button when all invited key holders have accepted)
+- [x] T011 Manual verification: Navigate through stubbed UI flow and verify layout/look
 
 ## Phase 3.3: Core Models (Foundation)
 - [ ] T012 [P] Create `InvitationStatus` enum in `lib/models/invitation_status.dart` (created, pending, redeemed, denied, invalidated, error)

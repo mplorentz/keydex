@@ -192,15 +192,26 @@ class KeyHolderList extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  keyHolder.displayName ?? Helpers.encodeBech32(keyHolder.pubkey, 'npub'),
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFFd2d7bf),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        keyHolder.displayName ?? Helpers.encodeBech32(keyHolder.pubkey, 'npub'),
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFFd2d7bf),
+                            ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        softWrap: false,
                       ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  softWrap: false,
+                    ),
+                    // Stub: Invitation status badge
+                    if (keyHolder.invitationStatus != null) ...[
+                      const SizedBox(width: 8),
+                      _buildInvitationStatusBadge(keyHolder.invitationStatus!),
+                    ],
+                  ],
                 ),
                 if (keyHolder.isOwner) ...[
                   Text(
@@ -213,6 +224,68 @@ class KeyHolderList extends ConsumerWidget {
                   ),
                 ]
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Stub: Build invitation status badge widget
+  /// Will be connected to actual invitation data in later phases
+  Widget _buildInvitationStatusBadge(InvitationStatus status) {
+    Color badgeColor;
+    IconData badgeIcon;
+    String badgeText;
+
+    switch (status) {
+      case InvitationStatus.invited:
+        badgeColor = Colors.orange;
+        badgeIcon = Icons.mail_outline;
+        badgeText = 'Invited';
+        break;
+      case InvitationStatus.awaitingKey:
+        badgeColor = Colors.blue;
+        badgeIcon = Icons.hourglass_empty;
+        badgeText = 'Awaiting Key';
+        break;
+      case InvitationStatus.holdingKey:
+        badgeColor = Colors.green;
+        badgeIcon = Icons.check_circle;
+        badgeText = 'Holding Key';
+        break;
+      case InvitationStatus.error:
+        badgeColor = Colors.red;
+        badgeIcon = Icons.error_outline;
+        badgeText = 'Error';
+        break;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: badgeColor.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: badgeColor.withValues(alpha: 0.5),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            badgeIcon,
+            size: 12,
+            color: badgeColor,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            badgeText,
+            style: TextStyle(
+              color: badgeColor,
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -268,10 +341,22 @@ class KeyHolderInfo {
   final String pubkey;
   final String? displayName;
   final bool isOwner;
+  // Stub: Invitation status for UI display
+  final InvitationStatus? invitationStatus;
 
   KeyHolderInfo({
     required this.pubkey,
     this.displayName,
     required this.isOwner,
+    this.invitationStatus,
   });
+}
+
+/// Stub enum for invitation status indicators
+/// Will be replaced with actual InvitationStatus enum in Phase 3.3
+enum InvitationStatus {
+  invited,
+  awaitingKey,
+  holdingKey,
+  error,
 }
