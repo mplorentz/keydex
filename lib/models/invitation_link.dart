@@ -1,4 +1,5 @@
 import 'invitation_status.dart';
+import '../utils/validators.dart';
 
 /// Represents a generated invitation link that can be shared with an invitee
 ///
@@ -107,4 +108,42 @@ InvitationLink invitationLinkFromJson(Map<String, dynamic> json) {
     redeemedBy: json['redeemedBy'] as String?,
     redeemedAt: json['redeemedAt'] != null ? DateTime.parse(json['redeemedAt'] as String) : null,
   );
+}
+
+/// Validation functions for InvitationLink fields
+
+/// Validates all relay URLs in a list
+///
+/// Returns true if all URLs are valid, false otherwise
+bool areValidRelayUrls(List<String> relayUrls) {
+  if (relayUrls.isEmpty) return false;
+  if (relayUrls.length > 3) return false; // Max 3 relay URLs
+
+  return relayUrls.every((url) => isValidRelayUrl(url));
+}
+
+/// Validates an InvitationLink's core fields
+///
+/// Checks invite code format, owner pubkey format, and relay URLs
+/// Throws ArgumentError with descriptive message if validation fails
+void validateInvitationLink(InvitationLink link) {
+  if (!isValidInviteCode(link.inviteCode)) {
+    throw ArgumentError('Invalid invite code format: must be Base64URL encoded');
+  }
+
+  if (!isValidHexPubkey(link.ownerPubkey)) {
+    throw ArgumentError('Invalid owner pubkey: must be 64 hex characters');
+  }
+
+  if (!areValidRelayUrls(link.relayUrls)) {
+    throw ArgumentError('Invalid relay URLs: must be 1-3 valid WebSocket URLs (wss:// or ws://)');
+  }
+
+  if (link.inviteeName.trim().isEmpty) {
+    throw ArgumentError('Invitee name cannot be empty');
+  }
+
+  if (link.redeemedBy != null && !isValidHexPubkey(link.redeemedBy!)) {
+    throw ArgumentError('Invalid redeemed-by pubkey: must be 64 hex characters');
+  }
 }

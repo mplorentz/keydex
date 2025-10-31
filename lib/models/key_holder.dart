@@ -1,3 +1,4 @@
+import '../utils/validators.dart';
 import 'key_holder_status.dart';
 
 /// Represents a trusted contact who holds a backup key
@@ -22,7 +23,7 @@ KeyHolder createKeyHolder({
   required String pubkey, // Takes hex format directly
   String? name,
 }) {
-  if (!_isValidHexPubkey(pubkey)) {
+  if (!isValidHexPubkey(pubkey)) {
     throw ArgumentError('Invalid hex pubkey format: $pubkey');
   }
 
@@ -133,20 +134,4 @@ KeyHolder keyHolderFromJson(Map<String, dynamic> json) {
 /// String representation of KeyHolder
 String keyHolderToString(KeyHolder holder) {
   return 'KeyHolder(pubkey: ${holder.pubkey.substring(0, 8)}..., name: ${holder.name}, status: ${holder.status})';
-}
-
-/// Validate hex pubkey format
-bool _isValidHexPubkey(String pubkey) {
-  if (pubkey.length != 64) return false;
-
-  // Check if all characters are valid hex
-  for (int i = 0; i < pubkey.length; i++) {
-    final char = pubkey[i];
-    if (!((char.codeUnitAt(0) >= 48 && char.codeUnitAt(0) <= 57) || // 0-9
-        (char.codeUnitAt(0) >= 97 && char.codeUnitAt(0) <= 102))) {
-      // a-f
-      return false;
-    }
-  }
-  return true;
 }

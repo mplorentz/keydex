@@ -67,9 +67,9 @@
 
 ## Phase 3.5: Refactoring Pass 1 (Model Validation & Helpers)
 **Clean up models before service implementation**
-- [ ] T020 Add validation functions to `lib/models/invitation_link.dart` (validate invite code format, validate hex pubkey, validate relay URLs)
-- [ ] T021 Add helper functions to `lib/models/invitation_link.dart` (createInvitationLink, updateInvitationStatus, invitationLinkToJson, invitationLinkFromJson, invitationLinkToUrl)
-- [ ] T022 Add Base64URL encoding/decoding utilities for invite codes in `lib/utils/invite_code_utils.dart` (generate secure invite code, validate invite code format)
+- [X] T020 Add validation functions to `lib/models/invitation_link.dart` (validate invite code format, validate hex pubkey, validate relay URLs)
+- [X] T021 Add helper functions to `lib/models/invitation_link.dart` (createInvitationLink, updateInvitationStatus, invitationLinkToJson, invitationLinkFromJson, invitationLinkToUrl)
+- [X] T022 Add Base64URL encoding/decoding utilities for invite codes in `lib/utils/invite_code_utils.dart` (generate secure invite code, validate invite code format)
 
 ## Phase 3.6: Service Implementation - InvitationService
 - [ ] T023 Implement `generateInvitationLink` in `lib/services/invitation_service.dart` (validates lockbox ownership, generates secure invite code, creates InvitationLink, stores in SharedPreferences)
