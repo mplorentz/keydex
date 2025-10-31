@@ -133,21 +133,21 @@ class ShardDistributionService {
           }
 
           if (isAcknowledged) {
-            // Update key holder status to acknowledged
+            // Update key holder status to holdingKey (confirmed receipt)
             await BackupService.updateKeyHolderStatus(
               lockboxId: lockboxId,
               pubkey: shardEvent.recipientPubkey, // Hex format
-              status: KeyHolderStatus.acknowledged,
+              status: KeyHolderStatus.holdingKey,
               repository: repository,
               acknowledgedAt: DateTime.now(),
               acknowledgmentEventId: acknowledgmentEventId,
             );
           } else {
-            // Update key holder status to active (published but not acknowledged)
+            // Update key holder status to awaitingKey (published but not acknowledged)
             await BackupService.updateKeyHolderStatus(
               lockboxId: lockboxId,
               pubkey: shardEvent.recipientPubkey, // Hex format
-              status: KeyHolderStatus.active,
+              status: KeyHolderStatus.awaitingKey,
               repository: repository,
             );
           }

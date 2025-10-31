@@ -29,7 +29,7 @@ KeyHolder createKeyHolder({
   return (
     pubkey: pubkey,
     name: name,
-    status: KeyHolderStatus.pending,
+    status: KeyHolderStatus.awaitingKey,
     lastSeen: null,
     keyShare: null,
     giftWrapEventId: null,
@@ -66,12 +66,12 @@ KeyHolder copyKeyHolder(
 extension KeyHolderExtension on KeyHolder {
   /// Check if this key holder is active
   bool get isActive {
-    return status == KeyHolderStatus.active || status == KeyHolderStatus.acknowledged;
+    return status == KeyHolderStatus.awaitingKey || status == KeyHolderStatus.holdingKey;
   }
 
   /// Check if this key holder has acknowledged receipt
   bool get hasAcknowledged {
-    return status == KeyHolderStatus.acknowledged && acknowledgedAt != null;
+    return status == KeyHolderStatus.holdingKey && acknowledgedAt != null;
   }
 
   /// Check if this key holder is responsive (seen recently)
@@ -119,7 +119,7 @@ KeyHolder keyHolderFromJson(Map<String, dynamic> json) {
     name: json['name'] as String?,
     status: KeyHolderStatus.values.firstWhere(
       (s) => s.name == json['status'],
-      orElse: () => KeyHolderStatus.pending,
+      orElse: () => KeyHolderStatus.awaitingKey,
     ),
     lastSeen: json['lastSeen'] != null ? DateTime.parse(json['lastSeen'] as String) : null,
     keyShare: json['keyShare'] as String?,

@@ -149,7 +149,7 @@ extension BackupConfigExtension on BackupConfig {
 
   /// Get the number of acknowledged key holders
   int get acknowledgedKeyHoldersCount {
-    return keyHolders.where((h) => h.status == KeyHolderStatus.acknowledged).length;
+    return keyHolders.where((h) => h.status == KeyHolderStatus.holdingKey).length;
   }
 
   /// Check if backup is ready (all key holders acknowledged)

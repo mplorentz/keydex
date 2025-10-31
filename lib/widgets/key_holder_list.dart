@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import '../models/lockbox.dart';
 import '../models/key_holder.dart';
+import '../models/key_holder_status.dart';
 import '../providers/lockbox_provider.dart';
 import '../providers/key_provider.dart';
 import '../screens/backup_config_screen.dart';
@@ -233,31 +234,38 @@ class KeyHolderList extends ConsumerWidget {
 
   /// Stub: Build invitation status badge widget
   /// Will be connected to actual invitation data in later phases
-  Widget _buildInvitationStatusBadge(InvitationStatus status) {
+  Widget _buildInvitationStatusBadge(KeyHolderStatus status) {
     Color badgeColor;
     IconData badgeIcon;
     String badgeText;
 
     switch (status) {
-      case InvitationStatus.invited:
+      case KeyHolderStatus.invited:
         badgeColor = Colors.orange;
         badgeIcon = Icons.mail_outline;
         badgeText = 'Invited';
         break;
-      case InvitationStatus.awaitingKey:
+      case KeyHolderStatus.awaitingKey:
         badgeColor = Colors.blue;
         badgeIcon = Icons.hourglass_empty;
         badgeText = 'Awaiting Key';
         break;
-      case InvitationStatus.holdingKey:
+      case KeyHolderStatus.holdingKey:
         badgeColor = Colors.green;
         badgeIcon = Icons.check_circle;
         badgeText = 'Holding Key';
         break;
-      case InvitationStatus.error:
+      case KeyHolderStatus.error:
         badgeColor = Colors.red;
         badgeIcon = Icons.error_outline;
         badgeText = 'Error';
+        break;
+      case KeyHolderStatus.inactive:
+      case KeyHolderStatus.revoked:
+        // These don't show invitation badges
+        badgeColor = Colors.grey;
+        badgeIcon = Icons.pause_circle;
+        badgeText = status.label;
         break;
     }
 
@@ -342,7 +350,7 @@ class KeyHolderInfo {
   final String? displayName;
   final bool isOwner;
   // Stub: Invitation status for UI display
-  final InvitationStatus? invitationStatus;
+  final KeyHolderStatus? invitationStatus;
 
   KeyHolderInfo({
     required this.pubkey,
@@ -350,13 +358,4 @@ class KeyHolderInfo {
     required this.isOwner,
     this.invitationStatus,
   });
-}
-
-/// Stub enum for invitation status indicators
-/// Will be replaced with actual InvitationStatus enum in Phase 3.3
-enum InvitationStatus {
-  invited,
-  awaitingKey,
-  holdingKey,
-  error,
 }
