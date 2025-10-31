@@ -21,7 +21,27 @@ enum NostrKind {
 
   /// Keydex custom: Recovery response
   /// Used when a key holder responds to a recovery request
-  recoveryResponse(1339);
+  recoveryResponse(1339),
+
+  /// Keydex custom: Invitation RSVP
+  /// Used when an invitee accepts an invitation link
+  invitationRsvp(1340),
+
+  /// Keydex custom: Invitation denial
+  /// Used when an invitee denies an invitation link
+  invitationDenial(1341),
+
+  /// Keydex custom: Shard confirmation
+  /// Used when a key holder confirms successful receipt of a shard
+  shardConfirmation(1342),
+
+  /// Keydex custom: Shard error
+  /// Used when a key holder reports an error processing a shard
+  shardError(1343),
+
+  /// Keydex custom: Invitation invalid
+  /// Used to notify invitee that an invitation code is invalid
+  invitationInvalid(1344);
 
   /// The numeric kind value
   final int value;
@@ -40,7 +60,7 @@ enum NostrKind {
 
   /// Check if this kind is a Keydex custom kind
   bool get isCustom {
-    return value >= 1337 && value <= 1339;
+    return value >= 1337 && value <= 1344;
   }
 
   /// Check if this kind is a standard NIP kind

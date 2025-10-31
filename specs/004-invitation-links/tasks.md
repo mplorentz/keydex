@@ -38,12 +38,12 @@
 - Include exact file paths in descriptions
 
 ## Phase 3.1: Setup & Dependencies
-- [ ] T001 Add `app_links: ^5.0.0` dependency to `pubspec.yaml`
-- [ ] T002 [P] Configure custom URL scheme `keydex://` in iOS Info.plist (`ios/Runner/Info.plist`)
-- [ ] T003 [P] Configure custom URL scheme `keydex://` in Android manifest (`android/app/src/main/AndroidManifest.xml`)
-- [ ] T004 [P] Configure custom URL scheme for macOS (`macos/Runner/Info.plist`)
-- [ ] T005 [P] Configure custom URL scheme for Windows (`windows/runner/main.cpp` if needed)
-- [ ] T006 Update `lib/models/nostr_kinds.dart` to add new event kinds: 1340 (invitationRsvp), 1341 (invitationDenial), 1342 (shardConfirmation), 1343 (shardError), 1344 (invitationInvalid)
+- [X] T001 Add `app_links: ^5.0.0` dependency to `pubspec.yaml`
+- [X] T002 [P] Configure custom URL scheme `keydex://` in iOS Info.plist (`ios/Runner/Info.plist`)
+- [X] T003 [P] Configure custom URL scheme `keydex://` in Android manifest (`android/app/src/main/AndroidManifest.xml`)
+- [X] T004 [P] Configure custom URL scheme for macOS (`macos/Runner/Info.plist`)
+- [X] T005 [P] Configure custom URL scheme for Windows (`windows/runner/main.cpp` if needed)
+- [X] T006 Update `lib/models/nostr_kinds.dart` to add new event kinds: 1340 (invitationRsvp), 1341 (invitationDenial), 1342 (shardConfirmation), 1343 (shardError), 1344 (invitationInvalid)
 
 ## Phase 3.2: UI Stubs & Manual Verification (Outside-In Approach)
 **Start with user-facing components for rapid feedback**
