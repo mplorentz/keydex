@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'services/key_service.dart';
+import 'providers/key_provider.dart';
 import 'services/logger.dart';
 import 'screens/lockbox_list_screen.dart';
 import 'widgets/theme.dart';
@@ -15,14 +15,14 @@ void main() {
   );
 }
 
-class KeydexApp extends StatefulWidget {
+class KeydexApp extends ConsumerStatefulWidget {
   const KeydexApp({super.key});
 
   @override
-  State<KeydexApp> createState() => _KeydexAppState();
+  ConsumerState<KeydexApp> createState() => _KeydexAppState();
 }
 
-class _KeydexAppState extends State<KeydexApp> {
+class _KeydexAppState extends ConsumerState<KeydexApp> {
   bool _isInitializing = true;
   String? _initError;
 
@@ -35,7 +35,8 @@ class _KeydexAppState extends State<KeydexApp> {
   Future<void> _initializeApp() async {
     try {
       // Initialize the Nostr key on app launch
-      await KeyService.initializeKey();
+      final keyService = ref.read(keyServiceProvider);
+      await keyService.initializeKey();
 
       if (mounted) {
         setState(() {

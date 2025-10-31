@@ -9,6 +9,7 @@ import '../models/key_holder.dart';
 import '../models/key_holder_status.dart';
 import '../models/event_status.dart';
 import '../providers/lockbox_provider.dart';
+import '../providers/key_provider.dart';
 import 'backup_service.dart';
 import 'key_service.dart';
 import 'logger.dart';
@@ -22,14 +23,16 @@ final Provider<ShardDistributionService> shardDistributionServiceProvider =
   return ShardDistributionService(
     ref.read(lockboxRepositoryProvider),
     backupService,
+    ref.read(keyServiceProvider),
   );
 });
 
 /// Service for distributing shards to key holders via Nostr
 class ShardDistributionService {
   final BackupService _backupService;
+  final KeyService _keyService;
 
-  ShardDistributionService(LockboxRepository repository, this._backupService);
+  ShardDistributionService(LockboxRepository repository, this._backupService, this._keyService);
 
   /// Distribute shards to all key holders
   Future<List<ShardEvent>> distributeShards({
@@ -192,7 +195,7 @@ class ShardDistributionService {
     }
 
     // Get current user's pubkey to verify we're the owner
-    final ownerPubkey = await KeyService.getCurrentPublicKey();
+    final ownerPubkey = await _keyService.getCurrentPublicKey();
     if (ownerPubkey == null) {
       throw Exception('No key pair available. Cannot process shard confirmation event.');
     }
@@ -223,7 +226,7 @@ class ShardDistributionService {
     // Decrypt event content
     String decryptedContent;
     try {
-      decryptedContent = await KeyService.decryptFromSender(
+      decryptedContent = await _keyService.decryptFromSender(
         encryptedText: event.content,
         senderPubkey: event.pubKey,
       );
@@ -283,7 +286,7 @@ class ShardDistributionService {
     }
 
     // Get current user's pubkey to verify we're the owner
-    final ownerPubkey = await KeyService.getCurrentPublicKey();
+    final ownerPubkey = await _keyService.getCurrentPublicKey();
     if (ownerPubkey == null) {
       throw Exception('No key pair available. Cannot process shard error event.');
     }
@@ -314,7 +317,7 @@ class ShardDistributionService {
     // Decrypt event content
     String decryptedContent;
     try {
-      decryptedContent = await KeyService.decryptFromSender(
+      decryptedContent = await _keyService.decryptFromSender(
         encryptedText: event.content,
         senderPubkey: event.pubKey,
       );

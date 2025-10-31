@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/recovery_provider.dart';
-import '../services/key_service.dart';
+import '../providers/key_provider.dart';
 import '../services/lockbox_share_service.dart';
 import '../services/recovery_service.dart';
 import '../services/relay_scan_service.dart';
@@ -94,7 +94,8 @@ class RecoverySection extends ConsumerWidget {
 
   Future<void> _initiateRecovery(BuildContext context, WidgetRef ref) async {
     try {
-      final currentPubkey = await KeyService.getCurrentPublicKey();
+      final keyService = ref.read(keyServiceProvider);
+      final currentPubkey = await keyService.getCurrentPublicKey();
 
       if (currentPubkey == null) {
         if (context.mounted) {

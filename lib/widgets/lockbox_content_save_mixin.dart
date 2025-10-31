@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/lockbox.dart';
 import '../providers/lockbox_provider.dart';
-import '../services/key_service.dart';
+import '../providers/key_provider.dart';
 
 /// Mixin for shared lockbox save logic between create and edit screens
 mixin LockboxContentSaveMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
@@ -37,7 +37,8 @@ mixin LockboxContentSaveMixin<T extends ConsumerStatefulWidget> on ConsumerState
 
   /// Create a new lockbox with the current user's public key
   Future<Lockbox> _createNewLockbox(String name, String content) async {
-    final currentPubkey = await KeyService.getCurrentPublicKey();
+    final keyService = ref.read(keyServiceProvider);
+    final currentPubkey = await keyService.getCurrentPublicKey();
     if (currentPubkey == null) {
       throw Exception('Unable to get current user public key');
     }

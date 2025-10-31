@@ -8,6 +8,7 @@ import '../models/recovery_request.dart';
 import '../models/recovery_status.dart';
 import '../models/shard_data.dart';
 import '../providers/lockbox_provider.dart';
+import '../providers/key_provider.dart';
 import 'key_service.dart';
 import 'backup_service.dart';
 import 'logger.dart';
@@ -17,7 +18,8 @@ import 'logger.dart';
 final recoveryServiceProvider = Provider<RecoveryService>((ref) {
   final repository = ref.watch(lockboxRepositoryProvider);
   final backupService = ref.read(backupServiceProvider);
-  final service = RecoveryService(repository, backupService);
+  final keyService = ref.read(keyServiceProvider);
+  final service = RecoveryService(repository, backupService, keyService);
 
   // Clean up streams when disposed
   ref.onDispose(() {
@@ -32,6 +34,7 @@ final recoveryServiceProvider = Provider<RecoveryService>((ref) {
 class RecoveryService {
   final LockboxRepository repository;
   final BackupService backupService;
+  final KeyService _keyService;
 
   static const String _viewedNotificationIdsKey = 'viewed_recovery_notification_ids';
 
@@ -46,7 +49,7 @@ class RecoveryService {
   final _recoveryRequestController = StreamController<RecoveryRequest>.broadcast();
   Stream<RecoveryRequest> get recoveryRequestStream => _recoveryRequestController.stream;
 
-  RecoveryService(this.repository, this.backupService);
+  RecoveryService(this.repository, this.backupService, this._keyService);
 
   /// Dispose resources
   void dispose() {
@@ -490,7 +493,7 @@ class RecoveryService {
   }) async {
     try {
       // Get current user's keys
-      final keyPair = await KeyService.getStoredNostrKey();
+      final keyPair = await _keyService.getStoredNostrKey();
       final currentPubkey = keyPair?.publicKey;
       final currentPrivkey = keyPair?.privateKey;
 
@@ -580,7 +583,7 @@ class RecoveryService {
   }) async {
     try {
       // Get current user's keys
-      final keyPair = await KeyService.getStoredNostrKey();
+      final keyPair = await _keyService.getStoredNostrKey();
       final currentPubkey = keyPair?.publicKey;
       final currentPrivkey = keyPair?.privateKey;
 

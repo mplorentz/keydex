@@ -4,7 +4,7 @@ import '../models/recovery_request.dart';
 import '../models/shard_data.dart';
 import '../services/recovery_service.dart';
 import '../services/relay_scan_service.dart';
-import '../services/key_service.dart';
+import '../providers/key_provider.dart';
 import '../services/lockbox_share_service.dart';
 import '../services/logger.dart';
 import '../providers/recovery_provider.dart';
@@ -34,7 +34,8 @@ class _RecoveryRequestDetailScreenState extends ConsumerState<RecoveryRequestDet
 
   Future<void> _loadCurrentPubkey() async {
     try {
-      final pubkey = await KeyService.getCurrentPublicKey();
+      final keyService = ref.read(keyServiceProvider);
+      final pubkey = await keyService.getCurrentPublicKey();
       if (mounted) {
         setState(() {
           _currentPubkey = pubkey;
