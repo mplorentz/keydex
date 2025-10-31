@@ -91,10 +91,10 @@
 - [X] T083 Update any references to these methods (if called from other services or screens) - No references found
 
 ## Phase 3.7: Service Implementation - DeepLinkService
-- [ ] T033 Implement `initializeDeepLinking` in `lib/services/deep_link_service.dart` (sets up app_links listeners for Universal Links and custom scheme)
-- [ ] T034 Implement `handleInitialLink` in `lib/services/deep_link_service.dart` (handles link that opened app on cold start)
-- [ ] T035 Implement `handleIncomingLink` in `lib/services/deep_link_service.dart` (handles link received while app running)
-- [ ] T036 Implement `parseInvitationLink` in `lib/services/deep_link_service.dart` (parses both https://keydex.app/invite/{code} and keydex://keydex.app/invite/{code} formats)
+- [X] T033 Implement `initializeDeepLinking` in `lib/services/deep_link_service.dart` (sets up app_links listeners for Universal Links and custom scheme)
+- [X] T034 Implement `handleInitialLink` in `lib/services/deep_link_service.dart` (handles link that opened app on cold start)
+- [X] T035 Implement `handleIncomingLink` in `lib/services/deep_link_service.dart` (handles link received while app running)
+- [X] T036 Implement `parseInvitationLink` in `lib/services/deep_link_service.dart` (parses both https://keydex.app/invite/{code} and keydex://keydex.app/invite/{code} formats)
 
 ## Phase 3.8: Service Implementation - InvitationSendingService
 - [ ] T037 Implement `sendRsvpEvent` in `lib/services/invitation_sending_service.dart` (creates kind 1340 event, encrypts with NIP-44, publishes to relays)
