@@ -54,9 +54,9 @@
 - [x] T011 Manual verification: Navigate through stubbed UI flow and verify layout/look
 
 ## Phase 3.3: Core Models (Foundation)
-- [ ] T012 [P] Create `InvitationStatus` enum in `lib/models/invitation_status.dart` (created, pending, redeemed, denied, invalidated, error)
-- [ ] T013 [P] Create `InvitationLink` model in `lib/models/invitation_link.dart` (typedef with inviteCode, lockboxId, ownerPubkey, relayUrls, inviteeName, createdAt, status, redeemedBy, redeemedAt)
-- [ ] T014 [P] Create error exception classes in `lib/models/invitation_exceptions.dart` (InvitationNotFoundException, InvitationAlreadyRedeemedException, InvitationInvalidatedException, InvalidInvitationLinkException)
+- [X] T012 [P] Create `InvitationStatus` enum in `lib/models/invitation_status.dart` (created, pending, redeemed, denied, invalidated, error)
+- [X] T013 [P] Create `InvitationLink` model in `lib/models/invitation_link.dart` (typedef with inviteCode, lockboxId, ownerPubkey, relayUrls, inviteeName, createdAt, status, redeemedBy, redeemedAt)
+- [X] T014 [P] Create error exception classes in `lib/models/invitation_exceptions.dart` (InvitationNotFoundException, InvitationAlreadyRedeemedException, InvitationInvalidatedException, InvalidInvitationLinkException)
 - [ ] T015 [P] Add invitation status extension to `KeyHolderStatus` or create `InvitationKeyHolderStatus` enum in `lib/models/key_holder_status.dart` (invited, awaitingKey, holdingKey, error)
 
 ## Phase 3.4: Service Interfaces & Providers

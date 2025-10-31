@@ -1,0 +1,110 @@
+import 'invitation_status.dart';
+
+/// Represents a generated invitation link that can be shared with an invitee
+///
+/// Public keys are stored in hex format (64 characters) internally.
+/// Relay URLs must be valid WebSocket URLs (wss:// or ws://).
+typedef InvitationLink = ({
+  String inviteCode, // Base64URL encoded 32-byte random string
+  String lockboxId, // ID of the lockbox being shared
+  String ownerPubkey, // Hex format (64 chars) - lockbox owner's public key
+  List<String> relayUrls, // Up to 3 relay URLs for communication
+  String inviteeName, // Name entered by lockbox owner
+  DateTime createdAt, // When invitation was generated
+  InvitationStatus status, // Current status of invitation
+  String? redeemedBy, // Hex pubkey of redeemer (null if not redeemed)
+  DateTime? redeemedAt, // When invitation was redeemed (null if not redeemed)
+});
+
+/// Creates a new invitation link with the given parameters
+InvitationLink createInvitationLink({
+  required String inviteCode,
+  required String lockboxId,
+  required String ownerPubkey,
+  required List<String> relayUrls,
+  required String inviteeName,
+}) {
+  return (
+    inviteCode: inviteCode,
+    lockboxId: lockboxId,
+    ownerPubkey: ownerPubkey,
+    relayUrls: relayUrls,
+    inviteeName: inviteeName,
+    createdAt: DateTime.now(),
+    status: InvitationStatus.created,
+    redeemedBy: null,
+    redeemedAt: null,
+  );
+}
+
+/// Extension methods for InvitationLink
+extension InvitationLinkExtension on InvitationLink {
+  /// Updates the invitation status and optional redemption information
+  InvitationLink updateStatus(
+    InvitationStatus status, {
+    String? redeemedBy,
+    DateTime? redeemedAt,
+  }) {
+    return (
+      inviteCode: inviteCode,
+      lockboxId: lockboxId,
+      ownerPubkey: ownerPubkey,
+      relayUrls: relayUrls,
+      inviteeName: inviteeName,
+      createdAt: createdAt,
+      status: status,
+      redeemedBy: redeemedBy,
+      redeemedAt: redeemedAt,
+    );
+  }
+
+  /// Generates an invitation URL from this InvitationLink
+  ///
+  /// Format: https://keydex.app/invite/{inviteCode}?owner={ownerPubkey}&relays={relayUrls}
+  /// Relay URLs are comma-separated and URL-encoded.
+  String toUrl() {
+    final baseUrl = 'https://keydex.app/invite/$inviteCode';
+    final params = <String>[];
+
+    params.add('owner=${Uri.encodeComponent(ownerPubkey)}');
+
+    if (relayUrls.isNotEmpty) {
+      final encodedRelays = relayUrls.map((url) => Uri.encodeComponent(url)).join(',');
+      params.add('relays=$encodedRelays');
+    }
+
+    return '$baseUrl?${params.join('&')}';
+  }
+}
+
+/// Converts an InvitationLink to JSON for storage
+Map<String, dynamic> invitationLinkToJson(InvitationLink link) {
+  return {
+    'inviteCode': link.inviteCode,
+    'lockboxId': link.lockboxId,
+    'ownerPubkey': link.ownerPubkey,
+    'relayUrls': link.relayUrls,
+    'inviteeName': link.inviteeName,
+    'createdAt': link.createdAt.toIso8601String(),
+    'status': link.status.name,
+    'redeemedBy': link.redeemedBy,
+    'redeemedAt': link.redeemedAt?.toIso8601String(),
+  };
+}
+
+/// Converts JSON to an InvitationLink
+InvitationLink invitationLinkFromJson(Map<String, dynamic> json) {
+  return (
+    inviteCode: json['inviteCode'] as String,
+    lockboxId: json['lockboxId'] as String,
+    ownerPubkey: json['ownerPubkey'] as String,
+    relayUrls: List<String>.from(json['relayUrls'] as List),
+    inviteeName: json['inviteeName'] as String,
+    createdAt: DateTime.parse(json['createdAt'] as String),
+    status: InvitationStatus.values.firstWhere(
+      (e) => e.name == json['status'] as String,
+    ),
+    redeemedBy: json['redeemedBy'] as String?,
+    redeemedAt: json['redeemedAt'] != null ? DateTime.parse(json['redeemedAt'] as String) : null,
+  );
+}
