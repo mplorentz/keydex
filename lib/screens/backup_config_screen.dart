@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import '../models/key_holder.dart';
 import '../models/lockbox.dart';
+import '../models/invitation_link.dart';
 import '../services/backup_service.dart';
+import '../services/invitation_service.dart';
 import '../providers/lockbox_provider.dart';
 
 /// Backup configuration screen for setting up distributed backup
@@ -31,10 +34,21 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
   bool _isCreating = false;
   bool _isLoading = true;
 
+  // Invitation link generation state
+  final TextEditingController _inviteeNameController = TextEditingController();
+  InvitationLink? _generatedInvitation;
+  bool _isGeneratingInvitation = false;
+
   @override
   void initState() {
     super.initState();
     _loadExistingConfig();
+  }
+
+  @override
+  void dispose() {
+    _inviteeNameController.dispose();
+    super.dispose();
   }
 
   /// Load existing backup configuration if one exists
@@ -152,8 +166,9 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                           style: Theme.of(context).textTheme.headlineSmall,
                         ),
                         const SizedBox(height: 16),
-                        const TextField(
-                          decoration: InputDecoration(
+                        TextField(
+                          controller: _inviteeNameController,
+                          decoration: const InputDecoration(
                             labelText: 'Invitee Name',
                             hintText: 'Enter name for the invitee',
                             border: OutlineInputBorder(),
@@ -163,18 +178,63 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton.icon(
-                            onPressed: () {
-                              // Stub: Non-functional for now
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Invitation link generation coming soon'),
-                                ),
-                              );
-                            },
-                            icon: const Icon(Icons.link),
-                            label: const Text('Generate Invitation Link'),
+                            onPressed: (_isGeneratingInvitation || _relays.isEmpty)
+                                ? null
+                                : _generateInvitationLink,
+                            icon: _isGeneratingInvitation
+                                ? const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                  )
+                                : const Icon(Icons.link),
+                            label: Text(_isGeneratingInvitation
+                                ? 'Generating...'
+                                : 'Generate Invitation Link'),
                           ),
                         ),
+                        if (_generatedInvitation != null) ...[
+                          const SizedBox(height: 16),
+                          Container(
+                            padding: const EdgeInsets.all(12.0),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                              borderRadius: BorderRadius.circular(8.0),
+                              border: Border.all(
+                                color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        _generatedInvitation!.toUrl(),
+                                        style: TextStyle(
+                                          fontFamily: 'monospace',
+                                          fontSize: 12,
+                                          color: Theme.of(context).colorScheme.onSurface,
+                                        ),
+                                      ),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.copy, size: 20),
+                                      onPressed: () => _copyInvitationLink(),
+                                      tooltip: 'Copy invitation link',
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Invitation for: ${_generatedInvitation!.inviteeName}',
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -440,6 +500,88 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
         }
       }
     }
+  }
+
+  Future<void> _generateInvitationLink() async {
+    final inviteeName = _inviteeNameController.text.trim();
+    if (inviteeName.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter an invitee name'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    if (_relays.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please add at least one relay before generating an invitation'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    // Limit to first 3 relays as per design
+    final relayUrls = _relays.take(3).toList();
+
+    setState(() {
+      _isGeneratingInvitation = true;
+    });
+
+    try {
+      final invitationService = ref.read(invitationServiceProvider);
+      final invitation = await invitationService.generateInvitationLink(
+        lockboxId: widget.lockboxId,
+        inviteeName: inviteeName,
+        relayUrls: relayUrls,
+      );
+
+      if (mounted) {
+        setState(() {
+          _generatedInvitation = invitation;
+          _inviteeNameController.clear();
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Invitation link generated successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to generate invitation link: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isGeneratingInvitation = false;
+        });
+      }
+    }
+  }
+
+  void _copyInvitationLink() {
+    if (_generatedInvitation == null) return;
+
+    final url = _generatedInvitation!.toUrl();
+    Clipboard.setData(ClipboardData(text: url));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Invitation link copied to clipboard'),
+        duration: Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   Future<void> _createBackup() async {

@@ -104,7 +104,7 @@
 - [X] T041 Implement `sendInvitationInvalidEvent` in `lib/services/invitation_sending_service.dart` (creates kind 1344 event, encrypts with NIP-44, publishes to relays)
 
 ## Phase 3.9: UI Implementation - Connect Stubs to Services
-- [ ] T042 Implement invitation link generation UI in `lib/screens/backup_config_screen.dart` (connect to InvitationService.generateInvitationLink, display link, copy functionality)
+- [X] T042 Implement invitation link generation UI in `lib/screens/backup_config_screen.dart` (connect to InvitationService.generateInvitationLink, display link, copy functionality)
 - [ ] T043 Implement invitation acceptance screen in `lib/screens/invitation_acceptance_screen.dart` (connect to DeepLinkService, InvitationService.redeemInvitation or denyInvitation)
 - [ ] T044 Implement key holder status display in `lib/widgets/key_holder_list.dart` (show invitation status badges, fetch from pendingInvitationsProvider)
 - [ ] T045 Implement "Generate and Distribute Keys" button in `lib/screens/lockbox_detail_screen.dart` (show when all invited key holders accepted, trigger backup service)
