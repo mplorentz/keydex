@@ -2,14 +2,17 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'providers/key_provider.dart';
+import 'services/deep_link_service.dart';
 import 'services/logger.dart';
 import 'screens/lockbox_list_screen.dart';
 import 'widgets/theme.dart';
 
+final navigatorKey = GlobalKey<NavigatorState>();
+
 void main() {
   runApp(
     // Wrap the entire app with ProviderScope to enable Riverpod
-    const ProviderScope(
+    ProviderScope(
       child: KeydexApp(),
     ),
   );
@@ -38,6 +41,11 @@ class _KeydexAppState extends ConsumerState<KeydexApp> {
       final loginService = ref.read(loginServiceProvider);
       await loginService.initializeKey();
 
+      // Initialize deep linking
+      final deepLinkService = ref.read(deepLinkServiceProvider);
+      deepLinkService.setNavigatorKey(navigatorKey);
+      await deepLinkService.initializeDeepLinking();
+
       if (mounted) {
         setState(() {
           _isInitializing = false;
@@ -48,7 +56,7 @@ class _KeydexAppState extends ConsumerState<KeydexApp> {
       if (mounted) {
         setState(() {
           _isInitializing = false;
-          _initError = 'Failed to initialize secure storage: ${e.toString()}';
+          _initError = 'Failed to initialize: ${e.toString()}';
         });
       }
     }
@@ -57,6 +65,7 @@ class _KeydexAppState extends ConsumerState<KeydexApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigatorKey,
       title: 'Keydex Lockbox',
       theme: keydexTheme,
       debugShowCheckedModeBanner: false,

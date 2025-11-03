@@ -190,7 +190,22 @@ class LockboxShareService {
       // Check if lockbox already exists
       final existingLockbox = await repository.getLockbox(lockboxId);
       if (existingLockbox != null) {
-        Log.info('Lockbox $lockboxId already exists');
+        // Lockbox exists - check if it's a stub (no shards, no content)
+        // If stub, update it with shard data
+        if (existingLockbox.shards.isEmpty && existingLockbox.content == null) {
+          // This is a stub lockbox created when invitation was accepted
+          // Update it with shard data and name from ShardData if available
+          final updatedLockbox = existingLockbox.copyWith(
+            name: shardData.lockboxName ?? existingLockbox.name,
+            // createdAt stays the same (from invitation)
+            // ownerPubkey stays the same (from invitation)
+            // shards will be added via addShardToLockbox below
+          );
+          await repository.saveLockbox(updatedLockbox);
+          Log.info('Updated stub lockbox $lockboxId with shard data');
+        } else {
+          Log.info('Lockbox $lockboxId already exists with shards/content');
+        }
         return;
       }
 

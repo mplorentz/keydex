@@ -7,6 +7,7 @@ import '../models/recovery_request.dart';
 import '../models/recovery_status.dart';
 import '../models/shard_data.dart';
 import '../providers/lockbox_provider.dart';
+import '../utils/invite_code_utils.dart';
 import 'backup_service.dart';
 import 'ndk_service.dart';
 import 'logger.dart';
@@ -171,7 +172,8 @@ class RecoveryService {
     await initialize();
 
     // Create recovery request
-    final requestId = '${DateTime.now().millisecondsSinceEpoch}_$lockboxId';
+    // Generate cryptographically secure request ID
+    final requestId = '${generateSecureID()}_$lockboxId';
     final expiresAt = expirationDuration != null
         ? DateTime.now().add(expirationDuration)
         : DateTime.now().add(const Duration(hours: 24)); // Default 24 hour expiration

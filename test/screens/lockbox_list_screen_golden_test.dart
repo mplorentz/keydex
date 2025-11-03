@@ -35,9 +35,20 @@ void main() {
     recoveryRequests: [],
   );
 
+  final awaitingKeyLockbox = Lockbox(
+    id: 'lockbox-awaiting',
+    name: "Bob's Shared Lockbox",
+    content: null,
+    createdAt: DateTime(2024, 9, 25, 16, 45),
+    ownerPubkey: otherPubkey,
+    shards: [], // No shards yet - awaiting key distribution
+    recoveryRequests: [],
+  );
+
   final multipleLockboxes = [
     ownedLockbox,
     keyHolderLockbox,
+    awaitingKeyLockbox,
     Lockbox(
       id: 'lockbox-3',
       name: 'Work Documents',
@@ -168,6 +179,35 @@ void main() {
       await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'lockbox_list_screen_single_key_holder');
+
+      container.dispose();
+    });
+
+    testGoldens('single awaiting key lockbox', (tester) async {
+      final container = ProviderContainer(
+        overrides: [
+          lockboxListProvider.overrideWith(
+            (ref) => Stream.value([awaitingKeyLockbox]),
+          ),
+          currentPublicKeyProvider.overrideWith((ref) => testPubkey),
+        ],
+      );
+
+      await tester.pumpWidgetBuilder(
+        const LockboxListScreen(),
+        wrapper: (child) => UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            theme: keydexTheme,
+            home: child,
+          ),
+        ),
+        surfaceSize: const Size(375, 667),
+      );
+
+      await tester.pumpAndSettle();
+
+      await screenMatchesGolden(tester, 'lockbox_list_screen_single_awaiting_key');
 
       container.dispose();
     });

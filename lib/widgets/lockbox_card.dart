@@ -26,6 +26,7 @@ class LockboxCard extends ConsumerWidget {
 
     // Determine icon based on lockbox state
     IconData stateIcon;
+    Color? iconColor;
 
     switch (lockbox.state) {
       case LockboxState.recovery:
@@ -36,6 +37,10 @@ class LockboxCard extends ConsumerWidget {
         break;
       case LockboxState.keyHolder:
         stateIcon = Icons.key;
+        break;
+      case LockboxState.awaitingKey:
+        stateIcon = Icons.hourglass_empty;
+        iconColor = Colors.orange;
         break;
     }
 
@@ -73,7 +78,7 @@ class LockboxCard extends ConsumerWidget {
                 ),
                 child: Icon(
                   stateIcon,
-                  color: theme.scaffoldBackgroundColor,
+                  color: iconColor ?? theme.scaffoldBackgroundColor,
                   size: 24,
                 ),
               ),
@@ -91,9 +96,14 @@ class LockboxCard extends ConsumerWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      "Owner: $ownerDisplayText",
+                      lockbox.state == LockboxState.awaitingKey
+                          ? 'Waiting for owner to distribute keys'
+                          : "Owner: $ownerDisplayText",
                       style: textTheme.bodySmall?.copyWith(
                         fontFamily: isOwnedByCurrentUser ? null : 'RobotoMono',
+                        color: lockbox.state == LockboxState.awaitingKey
+                            ? Colors.orange
+                            : null,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,

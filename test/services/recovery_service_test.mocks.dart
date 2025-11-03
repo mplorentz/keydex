@@ -889,7 +889,6 @@ class MockShardDistributionService extends _i1.Mock
               int totalShards
             })>?
         shards,
-    required _i9.Ndk? ndk,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -899,7 +898,6 @@ class MockShardDistributionService extends _i1.Mock
             #ownerPubkey: ownerPubkey,
             #config: config,
             #shards: shards,
-            #ndk: ndk,
           },
         ),
         returnValue: _i3.Future<
@@ -951,7 +949,6 @@ class MockShardDistributionService extends _i1.Mock
               _i8.EventStatus status
             })>?
         shardEvents,
-    required _i9.Ndk? ndk,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -960,7 +957,6 @@ class MockShardDistributionService extends _i1.Mock
           {
             #lockboxId: lockboxId,
             #shardEvents: shardEvents,
-            #ndk: ndk,
           },
         ),
         returnValue: _i3.Future<void>.value(),

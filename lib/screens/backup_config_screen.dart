@@ -227,10 +227,11 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                                   ],
                                 ),
                                 const SizedBox(height: 8),
-                                Text(
-                                  'Invitation for: ${_generatedInvitation!.inviteeName}',
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
+                                if (_generatedInvitation!.inviteeName != null)
+                                  Text(
+                                    'Invitation for: ${_generatedInvitation!.inviteeName}',
+                                    style: Theme.of(context).textTheme.bodySmall,
+                                  ),
                               ],
                             ),
                           ),

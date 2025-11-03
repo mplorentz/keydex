@@ -862,6 +862,30 @@ class MockLockboxRepository extends _i1.Mock implements _i6.LockboxRepository {
           })?>);
 
   @override
+  _i3.Future<void> updateKeyHolderStatus({
+    required String? lockboxId,
+    required String? pubkey,
+    required _i8.KeyHolderStatus? status,
+    DateTime? acknowledgedAt,
+    String? acknowledgmentEventId,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #updateKeyHolderStatus,
+          [],
+          {
+            #lockboxId: lockboxId,
+            #pubkey: pubkey,
+            #status: status,
+            #acknowledgedAt: acknowledgedAt,
+            #acknowledgmentEventId: acknowledgmentEventId,
+          },
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
   _i3.Future<void> addShardToLockbox(
     String? lockboxId,
     ({

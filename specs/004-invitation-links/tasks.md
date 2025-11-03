@@ -105,10 +105,10 @@
 
 ## Phase 3.9: UI Implementation - Connect Stubs to Services
 - [X] T042 Implement invitation link generation UI in `lib/screens/backup_config_screen.dart` (connect to InvitationService.generateInvitationLink, display link, copy functionality)
-- [ ] T043 Implement invitation acceptance screen in `lib/screens/invitation_acceptance_screen.dart` (connect to DeepLinkService, InvitationService.redeemInvitation or denyInvitation)
-- [ ] T044 Implement key holder status display in `lib/widgets/key_holder_list.dart` (show invitation status badges, fetch from pendingInvitationsProvider)
-- [ ] T045 Implement "Generate and Distribute Keys" button in `lib/screens/lockbox_detail_screen.dart` (show when all invited key holders accepted, trigger backup service)
-- [ ] T046 Add deep link initialization in `lib/main.dart` (call DeepLinkService.initializeDeepLinking on app start)
+- [X] T043 Implement invitation acceptance screen in `lib/screens/invitation_acceptance_screen.dart` (connect to DeepLinkService, InvitationService.redeemInvitation or denyInvitation)
+- [X] T044 Implement key holder status display in `lib/widgets/key_holder_list.dart` (show invitation status badges, fetch from pendingInvitationsProvider)
+- [X] T045 Implement "Generate and Distribute Keys" button in `lib/screens/lockbox_detail_screen.dart` (show when all invited key holders accepted, trigger backup service)
+- [X] T046 Add deep link initialization in `lib/main.dart` (call DeepLinkService.initializeDeepLinking on app start)
 
 ## Phase 3.10: Edge Cases & Error Handling
 - [ ] T047 Handle invalid invitation codes (already redeemed, invalidated, format errors) in `lib/services/invitation_service.dart`
@@ -116,7 +116,8 @@
 - [ ] T049 Handle duplicate invitation redemption (user already key holder) in `lib/services/invitation_service.dart`
 - [ ] T050 Handle network failures during event publishing (retry logic, user feedback) in `lib/services/invitation_sending_service.dart`
 - [ ] T051 Handle decryption failures when processing events in `lib/services/invitation_service.dart`
-- [ ] T052 Add error messages and user feedback for all error cases in UI screens
+- [ ] T052.1 Add error messages and user feedback for all error cases in UI screens
+- [ ] T052.2 Show error message when the lockbox owner tries to redeem an invitation to their own lockbox 
 
 ## Phase 3.11: Refactoring Pass 2 (Post-Edge Cases)
 **Final cleanup before testing**
@@ -124,6 +125,10 @@
 - [ ] T054 Extract invitation URL generation logic into reusable utility
 - [ ] T055 Optimize SharedPreferences storage access patterns
 - [ ] T056 Add logging for invitation operations (debug/info levels)
+- [ ] properly integrate key holders list and generated invites on the backupconfig screen and lockbox detail screen. Tie number of total keys to numbber of invited + manually added keys.
+- [ ] Get rid of orange text color on lockbox list screen
+- [ ] Make the invitation accept screen prettier
+- [ ] display invitationstatus on lockbox detail screen
 
 ## Phase 3.12: Unit Tests (After Implementation)
 - [ ] T057 [P] Unit tests for `InvitationLink` model in `test/models/invitation_link_test.dart` (validation, JSON serialization, URL generation)

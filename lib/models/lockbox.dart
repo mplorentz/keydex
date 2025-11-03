@@ -22,6 +22,7 @@ enum LockboxState {
   recovery, // Active recovery in progress
   owned, // Has decrypted content
   keyHolder, // Has shard but no content
+  awaitingKey, // Invitee has accepted invitation but hasn't received shard yet
 }
 
 /// Data model for a secure lockbox containing encrypted text content
@@ -50,6 +51,7 @@ class Lockbox {
   /// 1. Recovery (if has active recovery request)
   /// 2. Owned (if has decrypted content)
   /// 3. Key holder (if has shards but no content)
+  /// 4. Awaiting key (if no content and no shards - invitee waiting for shard)
   LockboxState get state {
     if (hasActiveRecovery) {
       return LockboxState.recovery;
@@ -57,7 +59,11 @@ class Lockbox {
     if (content != null) {
       return LockboxState.owned;
     }
-    return LockboxState.keyHolder;
+    if (shards.isNotEmpty) {
+      return LockboxState.keyHolder;
+    }
+    // No content and no shards - invitee is awaiting key distribution
+    return LockboxState.awaitingKey;
   }
 
   /// Check if the given hex key is the owner of this lockbox

@@ -42,7 +42,6 @@ class InvitationSendingService {
 
       // Create RSVP event payload
       final rsvpData = {
-        'type': 'invitation_rsvp',
         'invite_code': inviteCode,
         'invitee_pubkey': currentPubkey,
         'responded_at': DateTime.now().toIso8601String(),
@@ -60,7 +59,7 @@ class InvitationSendingService {
         relays: relayUrls,
         tags: [
           ['d', 'invitation_rsvp_$inviteCode'],
-          ['invite_code', inviteCode],
+          ['invite', inviteCode],
         ],
       );
     } catch (e) {
@@ -92,7 +91,6 @@ class InvitationSendingService {
 
       // Create denial event payload
       final denialData = {
-        'type': 'invitation_denial',
         'invite_code': inviteCode,
         'invitee_pubkey': currentPubkey,
         'responded_at': DateTime.now().toIso8601String(),
@@ -114,7 +112,7 @@ class InvitationSendingService {
         relays: relayUrls,
         tags: [
           ['d', 'invitation_denial_$inviteCode'],
-          ['invite_code', inviteCode],
+          ['invite', inviteCode],
         ],
       );
     } catch (e) {

@@ -428,6 +428,53 @@ void main() {
       container.dispose();
     });
 
+    testGoldens('awaiting key state - invitee waiting for shard', (tester) async {
+      final awaitingKeyLockbox = Lockbox(
+        id: 'test-lockbox',
+        name: "Bob's Shared Lockbox",
+        content: null, // No content - invitee doesn't have access yet
+        createdAt: DateTime(2024, 9, 25, 16, 45),
+        ownerPubkey: otherPubkey, // Different owner
+        shards: [], // No shards yet - awaiting key distribution
+        recoveryRequests: [],
+      );
+
+      final container = ProviderContainer(
+        overrides: [
+          lockboxProvider('test-lockbox').overrideWith(
+            (ref) => Stream.value(awaitingKeyLockbox),
+          ),
+          currentPublicKeyProvider.overrideWith((ref) => testPubkey),
+          // Mock recovery status to show no active recovery
+          recoveryStatusProvider.overrideWith((ref, lockboxId) {
+            return const AsyncValue.data(RecoveryStatus(
+              hasActiveRecovery: false,
+              canRecover: false,
+              activeRecoveryRequest: null,
+            ));
+          }),
+        ],
+      );
+
+      await tester.pumpWidgetBuilder(
+        const LockboxDetailScreen(lockboxId: 'test-lockbox'),
+        wrapper: (child) => UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            theme: keydexTheme,
+            home: child,
+          ),
+        ),
+        surfaceSize: const Size(375, 1000), // Increased height to handle overflow
+      );
+
+      await tester.pumpAndSettle();
+
+      await screenMatchesGolden(tester, 'lockbox_detail_screen_awaiting_key');
+
+      container.dispose();
+    });
+
     testGoldens('multiple device sizes', (tester) async {
       final ownedLockbox = Lockbox(
         id: 'test-lockbox',

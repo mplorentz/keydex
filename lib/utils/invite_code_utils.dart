@@ -4,11 +4,12 @@ import 'dart:typed_data';
 
 /// Utilities for generating and validating Base64URL-encoded invitation codes
 
-/// Generates a cryptographically secure invite code
+/// Generates a cryptographically secure ID
 ///
 /// Returns a Base64URL-encoded string from 32 random bytes (~43 characters).
 /// Uses a cryptographically secure random number generator.
-String generateSecureInviteCode() {
+/// Can be used for invitation codes, lockbox IDs, recovery request IDs, and other secure identifiers.
+String generateSecureID() {
   final random = Random.secure();
   final bytes = Uint8List(32); // 32 bytes = 256 bits
 

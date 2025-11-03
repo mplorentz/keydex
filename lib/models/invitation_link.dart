@@ -8,9 +8,10 @@ import '../utils/validators.dart';
 typedef InvitationLink = ({
   String inviteCode, // Base64URL encoded 32-byte random string
   String lockboxId, // ID of the lockbox being shared
+  String lockboxName, // Name of the lockbox being shared (null when not available)
   String ownerPubkey, // Hex format (64 chars) - lockbox owner's public key
   List<String> relayUrls, // Up to 3 relay URLs for communication
-  String inviteeName, // Name entered by lockbox owner
+  String? inviteeName, // Name entered by lockbox owner (null when received via deep link)
   DateTime createdAt, // When invitation was generated
   InvitationStatus status, // Current status of invitation
   String? redeemedBy, // Hex pubkey of redeemer (null if not redeemed)
@@ -23,11 +24,13 @@ InvitationLink createInvitationLink({
   required String lockboxId,
   required String ownerPubkey,
   required List<String> relayUrls,
-  required String inviteeName,
+  String? lockboxName,
+  String? inviteeName,
 }) {
   return (
     inviteCode: inviteCode,
     lockboxId: lockboxId,
+    lockboxName: lockboxName ?? 'Shared Lockbox',
     ownerPubkey: ownerPubkey,
     relayUrls: relayUrls,
     inviteeName: inviteeName,
@@ -49,6 +52,7 @@ extension InvitationLinkExtension on InvitationLink {
     return (
       inviteCode: inviteCode,
       lockboxId: lockboxId,
+      lockboxName: lockboxName,
       ownerPubkey: ownerPubkey,
       relayUrls: relayUrls,
       inviteeName: inviteeName,
@@ -61,12 +65,14 @@ extension InvitationLinkExtension on InvitationLink {
 
   /// Generates an invitation URL from this InvitationLink
   ///
-  /// Format: https://keydex.app/invite/{inviteCode}?owner={ownerPubkey}&relays={relayUrls}
+  /// Format: https://keydex.app/invite/{inviteCode}?lockbox={lockboxId}&name={lockboxName}&owner={ownerPubkey}&relays={relayUrls}
   /// Relay URLs are comma-separated and URL-encoded.
   String toUrl() {
     final baseUrl = 'https://keydex.app/invite/$inviteCode';
     final params = <String>[];
 
+    params.add('lockbox=${Uri.encodeComponent(lockboxId)}');
+    params.add('name=${Uri.encodeComponent(lockboxName)}');
     params.add('owner=${Uri.encodeComponent(ownerPubkey)}');
 
     if (relayUrls.isNotEmpty) {
@@ -83,6 +89,7 @@ Map<String, dynamic> invitationLinkToJson(InvitationLink link) {
   return {
     'inviteCode': link.inviteCode,
     'lockboxId': link.lockboxId,
+    'lockboxName': link.lockboxName,
     'ownerPubkey': link.ownerPubkey,
     'relayUrls': link.relayUrls,
     'inviteeName': link.inviteeName,
@@ -98,9 +105,10 @@ InvitationLink invitationLinkFromJson(Map<String, dynamic> json) {
   return (
     inviteCode: json['inviteCode'] as String,
     lockboxId: json['lockboxId'] as String,
+    lockboxName: json['lockboxName'] as String? ?? 'Shared Lockbox',
     ownerPubkey: json['ownerPubkey'] as String,
     relayUrls: List<String>.from(json['relayUrls'] as List),
-    inviteeName: json['inviteeName'] as String,
+    inviteeName: json['inviteeName'] as String?,
     createdAt: DateTime.parse(json['createdAt'] as String),
     status: InvitationStatus.values.firstWhere(
       (e) => e.name == json['status'] as String,
@@ -139,7 +147,8 @@ void validateInvitationLink(InvitationLink link) {
     throw ArgumentError('Invalid relay URLs: must be 1-3 valid WebSocket URLs (wss:// or ws://)');
   }
 
-  if (link.inviteeName.trim().isEmpty) {
+  // inviteeName can be null (for received invitations), but if provided, must not be empty
+  if (link.inviteeName != null && link.inviteeName!.trim().isEmpty) {
     throw ArgumentError('Invitee name cannot be empty');
   }
 

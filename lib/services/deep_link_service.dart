@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'package:app_links/app_links.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/invitation_service.dart';
 import '../services/logger.dart';
 import '../utils/validators.dart';
+import '../screens/invitation_acceptance_screen.dart';
 
 /// Provider for DeepLinkService
 final deepLinkServiceProvider = Provider<DeepLinkService>((ref) {
@@ -17,6 +19,8 @@ final deepLinkServiceProvider = Provider<DeepLinkService>((ref) {
 /// Data structure for parsed invitation link information
 typedef InvitationLinkData = ({
   String inviteCode,
+  String lockboxId,
+  String? lockboxName,
   String ownerPubkey, // Hex format
   List<String> relayUrls,
 });
@@ -26,8 +30,14 @@ class DeepLinkService {
   final InvitationService invitationService;
   final AppLinks _appLinks = AppLinks();
   StreamSubscription<Uri>? _linkSubscription;
+  GlobalKey<NavigatorState>? _navigatorKey;
 
   DeepLinkService(this.invitationService);
+
+  /// Sets the navigator key for navigation
+  void setNavigatorKey(GlobalKey<NavigatorState> navigatorKey) {
+    _navigatorKey = navigatorKey;
+  }
 
   /// Disposes resources
   void dispose() {
@@ -109,12 +119,32 @@ class DeepLinkService {
         return;
       }
 
-      Log.info('Parsed invitation link: inviteCode=${linkData.inviteCode}');
+      Log.info(
+          'Parsed invitation link: inviteCode=${linkData.inviteCode}, lockboxId=${linkData.lockboxId}, lockboxName=${linkData.lockboxName}');
 
-      // TODO: Route to invitation acceptance screen
-      // This will be implemented in Phase 3.9 (UI Implementation)
-      // For now, we just parse and validate the link
-      Log.info('Invitation link processed successfully');
+      // Create/update invitation record on receiving side
+      // This allows the invitation acceptance screen to load the invitation
+      await invitationService.createReceivedInvitation(
+        inviteCode: linkData.inviteCode,
+        lockboxId: linkData.lockboxId,
+        ownerPubkey: linkData.ownerPubkey,
+        relayUrls: linkData.relayUrls,
+        lockboxName: linkData.lockboxName,
+      );
+
+      // Navigate to invitation acceptance screen
+      if (_navigatorKey?.currentContext != null) {
+        Navigator.of(_navigatorKey!.currentContext!).push(
+          MaterialPageRoute(
+            builder: (context) => InvitationAcceptanceScreen(
+              inviteCode: linkData.inviteCode,
+            ),
+          ),
+        );
+        Log.info('Navigated to invitation acceptance screen');
+      } else {
+        Log.warning('Navigator key not set, cannot navigate to invitation screen');
+      }
     } catch (e) {
       Log.error('Error processing deep link', e);
     }
@@ -130,13 +160,15 @@ class DeepLinkService {
   InvitationLinkData? parseInvitationLink(Uri uri) {
     try {
       // Validate scheme: https or keydex
-      if (uri.scheme != 'https' && uri.scheme != 'keydex') {
+      if (uri.scheme != 'https' && uri.scheme != 'keydex' && uri.scheme != 'http') {
         Log.warning('Unsupported scheme: ${uri.scheme}');
         return null;
       }
 
       // Validate host: keydex.app (for Universal Links) or keydex.app (for custom scheme)
-      if (uri.host != 'keydex.app') {
+      // Allow localhost for testing on web
+      final allowedHosts = ['keydex.app', 'localhost'];
+      if (!allowedHosts.contains(uri.host)) {
         Log.warning('Invalid host: ${uri.host}');
         return null;
       }
@@ -165,6 +197,17 @@ class DeepLinkService {
         Log.warning('Invalid owner pubkey format: $ownerPubkey');
         return null;
       }
+
+      // Extract lockboxId from query params
+      final lockboxId = uri.queryParameters['lockbox'];
+      if (lockboxId == null || lockboxId.isEmpty) {
+        Log.warning('Missing lockboxId in query params');
+        return null;
+      }
+
+      // Extract lockbox name from query params (optional)
+      final lockboxName = uri.queryParameters['name'];
+      // Decode if present, otherwise use null (will fallback to "Shared Lockbox" in createInvitationLink)
 
       // Extract relay URLs from query params (comma-separated)
       final relayUrlsParam = uri.queryParameters['relays'];
@@ -197,10 +240,13 @@ class DeepLinkService {
       }
 
       Log.info(
-          'Successfully parsed invitation link: inviteCode=$inviteCode, owner=$ownerPubkey, relays=${relayUrls.length}');
+          'Successfully parsed invitation link: inviteCode=$inviteCode, lockboxId=$lockboxId, lockboxName=$lockboxName, owner=$ownerPubkey, relays=${relayUrls.length}');
 
       return (
         inviteCode: inviteCode,
+        lockboxId: lockboxId,
+        lockboxName:
+            lockboxName != null && lockboxName.isNotEmpty ? Uri.decodeComponent(lockboxName) : null,
         ownerPubkey: ownerPubkey,
         relayUrls: relayUrls,
       );

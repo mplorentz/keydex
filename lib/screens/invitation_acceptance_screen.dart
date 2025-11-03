@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ndk/shared/nips/nip01/helpers.dart';
+import '../models/invitation_link.dart';
+import '../models/invitation_status.dart';
+import '../models/invitation_exceptions.dart';
+import '../services/invitation_service.dart';
+import '../providers/invitation_provider.dart';
+import '../providers/key_provider.dart';
 
 /// Screen for accepting or denying an invitation link
 ///
-/// This is a stub screen that will be connected to deep linking
-/// and invitation service in later phases.
+/// This screen is accessed via deep link and displays invitation details
+/// allowing the user to accept or deny the invitation.
 class InvitationAcceptanceScreen extends ConsumerStatefulWidget {
   final String inviteCode;
 
@@ -19,123 +26,514 @@ class InvitationAcceptanceScreen extends ConsumerStatefulWidget {
 
 class _InvitationAcceptanceScreenState extends ConsumerState<InvitationAcceptanceScreen> {
   bool _isProcessing = false;
+  String? _errorMessage;
 
   @override
   Widget build(BuildContext context) {
+    final invitationAsync = ref.watch(invitationByCodeProvider(widget.inviteCode));
+    final currentPubkeyAsync = ref.watch(currentPublicKeyProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Invitation'),
         centerTitle: false,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Invitation Details Card
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
+      body: invitationAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, stack) => Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                const SizedBox(height: 16),
+                Text(
+                  'Error loading invitation',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  error.toString(),
+                  style: Theme.of(context).textTheme.bodyMedium,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Go Back'),
+                ),
+              ],
+            ),
+          ),
+        ),
+        data: (invitation) {
+          if (invitation == null) {
+            return Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Center(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    const Icon(Icons.link_off, size: 64, color: Colors.grey),
+                    const SizedBox(height: 16),
                     Text(
-                      'You\'ve been invited',
+                      'Invitation Not Found',
                       style: Theme.of(context).textTheme.headlineSmall,
                     ),
-                    const SizedBox(height: 16),
-                    const Text('Invitation Code:'),
-                    const SizedBox(height: 4),
-                    SelectableText(
-                      widget.inviteCode,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontFamily: 'monospace',
-                            backgroundColor: Colors.grey[200],
-                          ),
-                    ),
-                    const SizedBox(height: 16),
-                    // Stub: Will show actual invitation details in later phase
-                    const Text(
-                      'Lockbox details will be displayed here',
-                      style: TextStyle(color: Colors.grey),
-                    ),
                     const SizedBox(height: 8),
                     const Text(
-                      'Owner: (will be loaded)',
-                      style: TextStyle(color: Colors.grey),
+                      'This invitation link is invalid or has expired.',
+                      textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Invitee Name: (will be loaded)',
-                      style: TextStyle(color: Colors.grey),
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Go Back'),
                     ),
                   ],
                 ),
               ),
-            ),
-            const Spacer(),
-            // Action Buttons
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: _isProcessing
-                        ? null
-                        : () {
-                            // Stub: Non-functional for now
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Deny invitation coming soon'),
-                              ),
-                            );
-                          },
-                    child: const Text('Deny'),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: _isProcessing
-                        ? null
-                        : () {
-                            // Stub: Non-functional for now
-                            setState(() {
-                              _isProcessing = true;
-                            });
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Accept invitation coming soon'),
-                              ),
-                            );
-                            Future.delayed(const Duration(seconds: 1), () {
-                              if (mounted) {
-                                setState(() {
-                                  _isProcessing = false;
-                                });
-                              }
-                            });
-                          },
-                    child: _isProcessing
-                        ? const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              ),
-                              SizedBox(width: 8),
-                              Text('Processing...'),
-                            ],
-                          )
-                        : const Text('Accept'),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
+            );
+          }
+
+          return _buildInvitationContent(invitation, currentPubkeyAsync);
+        },
       ),
     );
+  }
+
+  Widget _buildInvitationContent(
+    InvitationLink invitation,
+    AsyncValue<String?> currentPubkeyAsync,
+  ) {
+    final canAct = invitation.status.canRedeem && !_isProcessing;
+    final isTerminal = invitation.status.isTerminal;
+
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Status Banner
+          if (isTerminal)
+            Container(
+              padding: const EdgeInsets.all(12.0),
+              margin: const EdgeInsets.only(bottom: 16.0),
+              decoration: BoxDecoration(
+                color: _getStatusColor(invitation.status).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8.0),
+                border: Border.all(
+                  color: _getStatusColor(invitation.status),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    _getStatusIcon(invitation.status),
+                    color: _getStatusColor(invitation.status),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      invitation.status.description,
+                      style: TextStyle(
+                        color: _getStatusColor(invitation.status),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+          // Invitation Details Card
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'You\'ve been invited',
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                  const SizedBox(height: 16),
+                  _buildDetailRow('Invitation Code:', widget.inviteCode, monospace: true),
+                  const SizedBox(height: 12),
+                  if (invitation.inviteeName != null)
+                    _buildDetailRow('Invitee Name:', invitation.inviteeName!),
+                  const SizedBox(height: 12),
+                  _buildDetailRow(
+                    'Owner Public Key:',
+                    Helpers.encodeBech32(invitation.ownerPubkey, 'npub'),
+                    monospace: true,
+                  ),
+                  const SizedBox(height: 12),
+                  _buildDetailRow('Relays:', '${invitation.relayUrls.length} relay(s)'),
+                  if (invitation.relayUrls.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    ...invitation.relayUrls.map(
+                      (relay) => Padding(
+                        padding: const EdgeInsets.only(left: 16.0, top: 4.0),
+                        child: Text(
+                          relay,
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                fontFamily: 'monospace',
+                                color: Colors.grey[700],
+                              ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+
+          // Error Message
+          if (_errorMessage != null) ...[
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12.0),
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8.0),
+                border: Border.all(color: Colors.red, width: 1),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.error_outline, color: Colors.red, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      _errorMessage!,
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+
+          const Spacer(),
+
+          // Action Buttons
+          if (!isTerminal)
+            currentPubkeyAsync.when(
+              loading: () => const SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: null,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                      SizedBox(width: 8),
+                      Text('Checking account...'),
+                    ],
+                  ),
+                ),
+              ),
+              error: (error, _) => Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12.0),
+                    margin: const EdgeInsets.only(bottom: 16.0),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8.0),
+                      border: Border.all(color: Colors.red, width: 1),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(Icons.error_outline, color: Colors.red, size: 20),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Error checking account. Please ensure you are logged in.',
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Go Back'),
+                    ),
+                  ),
+                ],
+              ),
+              data: (pubkey) {
+                if (pubkey == null) {
+                  return Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12.0),
+                        margin: const EdgeInsets.only(bottom: 16.0),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8.0),
+                          border: Border.all(color: Colors.orange, width: 1),
+                        ),
+                        child: const Row(
+                          children: [
+                            Icon(Icons.warning_amber, color: Colors.orange, size: 20),
+                            SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'You need to be logged in to accept an invitation.',
+                                style: TextStyle(color: Colors.orange),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Go Back'),
+                        ),
+                      ),
+                    ],
+                  );
+                }
+
+                return Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: canAct ? _denyInvitation : null,
+                        child: const Text('Deny'),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: canAct ? () => _acceptInvitation(pubkey) : null,
+                        child: _isProcessing
+                            ? const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text('Processing...'),
+                                ],
+                              )
+                            : const Text('Accept'),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            )
+          else
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Go Back'),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value, {bool monospace = false}) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 120,
+          child: Text(
+            label,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey[700],
+                ),
+          ),
+        ),
+        Expanded(
+          child: SelectableText(
+            value,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontFamily: monospace ? 'monospace' : null,
+                ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Color _getStatusColor(InvitationStatus status) {
+    switch (status) {
+      case InvitationStatus.redeemed:
+        return Colors.green;
+      case InvitationStatus.denied:
+        return Colors.orange;
+      case InvitationStatus.invalidated:
+      case InvitationStatus.error:
+        return Colors.red;
+      case InvitationStatus.created:
+      case InvitationStatus.pending:
+        return Colors.blue;
+    }
+  }
+
+  IconData _getStatusIcon(InvitationStatus status) {
+    switch (status) {
+      case InvitationStatus.redeemed:
+        return Icons.check_circle;
+      case InvitationStatus.denied:
+        return Icons.cancel;
+      case InvitationStatus.invalidated:
+      case InvitationStatus.error:
+        return Icons.error;
+      case InvitationStatus.created:
+      case InvitationStatus.pending:
+        return Icons.info;
+    }
+  }
+
+  Future<void> _acceptInvitation(String inviteePubkey) async {
+    setState(() {
+      _isProcessing = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final invitationService = ref.read(invitationServiceProvider);
+      await invitationService.redeemInvitation(
+        inviteCode: widget.inviteCode,
+        inviteePubkey: inviteePubkey,
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Invitation accepted successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        // Refresh the invitation data
+        ref.invalidate(invitationByCodeProvider(widget.inviteCode));
+
+        // Navigate back after a short delay
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (mounted) {
+            Navigator.pop(context);
+          }
+        });
+      }
+    } on InvitationAlreadyRedeemedException {
+      setState(() {
+        _errorMessage = 'This invitation has already been redeemed.';
+        _isProcessing = false;
+      });
+      ref.invalidate(invitationByCodeProvider(widget.inviteCode));
+    } on InvitationInvalidatedException catch (e) {
+      setState(() {
+        _errorMessage = 'This invitation has been invalidated: ${e.reason}';
+        _isProcessing = false;
+      });
+      ref.invalidate(invitationByCodeProvider(widget.inviteCode));
+    } on InvitationNotFoundException {
+      setState(() {
+        _errorMessage = 'Invitation not found. It may have expired or been removed.';
+        _isProcessing = false;
+      });
+      ref.invalidate(invitationByCodeProvider(widget.inviteCode));
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Failed to accept invitation: $e';
+          _isProcessing = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _denyInvitation() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Deny Invitation?'),
+        content: const Text(
+          'Are you sure you want to deny this invitation? This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          OutlinedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.red,
+            ),
+            child: const Text('Deny'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    setState(() {
+      _isProcessing = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final invitationService = ref.read(invitationServiceProvider);
+      await invitationService.denyInvitation(inviteCode: widget.inviteCode);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Invitation denied'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+
+        // Refresh the invitation data
+        ref.invalidate(invitationByCodeProvider(widget.inviteCode));
+
+        // Navigate back after a short delay
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (mounted) {
+            Navigator.pop(context);
+          }
+        });
+      }
+    } on InvitationNotFoundException {
+      setState(() {
+        _errorMessage = 'Invitation not found. It may have expired or been removed.';
+        _isProcessing = false;
+      });
+      ref.invalidate(invitationByCodeProvider(widget.inviteCode));
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Failed to deny invitation: $e';
+          _isProcessing = false;
+        });
+      }
+    }
   }
 }

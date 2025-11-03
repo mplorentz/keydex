@@ -8,6 +8,7 @@ import '../models/invitation_status.dart';
 import '../models/invitation_exceptions.dart';
 import '../models/key_holder.dart';
 import '../models/backup_config.dart';
+import '../models/lockbox.dart';
 import '../models/nostr_kinds.dart';
 import '../providers/lockbox_provider.dart';
 import '../providers/key_provider.dart';
@@ -16,6 +17,7 @@ import '../services/logger.dart';
 import '../utils/invite_code_utils.dart';
 import '../utils/validators.dart';
 import 'invitation_sending_service.dart';
+import 'ndk_service.dart';
 
 /// Provider for InvitationService
 final invitationServiceProvider = Provider<InvitationService>((ref) {
@@ -23,6 +25,7 @@ final invitationServiceProvider = Provider<InvitationService>((ref) {
     ref.read(lockboxRepositoryProvider),
     ref.read(invitationSendingServiceProvider),
     ref.read(loginServiceProvider),
+    () => ref.read(ndkServiceProvider),
   );
 
   // Properly clean up when the provider is disposed
@@ -38,6 +41,7 @@ class InvitationService {
   final LockboxRepository repository;
   final InvitationSendingService invitationSendingService;
   final LoginService _loginService;
+  final NdkService Function() _getNdkService;
 
   // Stream controller for notifying listeners when invitations change
   final StreamController<void> _invitationsChangedController = StreamController<void>.broadcast();
@@ -50,6 +54,7 @@ class InvitationService {
     this.repository,
     this.invitationSendingService,
     this._loginService,
+    this._getNdkService,
   );
 
   /// Stream that emits whenever invitations change
@@ -103,12 +108,13 @@ class InvitationService {
     }
 
     // Generate secure invite code
-    final inviteCode = generateSecureInviteCode();
+    final inviteCode = generateSecureID();
 
     // Create invitation link
     final invitation = createInvitationLink(
       inviteCode: inviteCode,
       lockboxId: lockboxId,
+      lockboxName: lockbox.name,
       ownerPubkey: ownerPubkey,
       relayUrls: relayUrls,
       inviteeName: inviteeName.trim(),
@@ -125,6 +131,10 @@ class InvitationService {
 
     // Add to lockbox invitations index
     await _addToLockboxIndex(lockboxId, inviteCode);
+
+    // Ensure relay URLs are added to NDK service so we can receive RSVP events
+    // Add relays asynchronously - don't fail invitation generation if relay addition fails
+    _addRelaysToNdk(relayUrls);
 
     // Notify listeners
     _notifyInvitationsChanged();
@@ -167,6 +177,54 @@ class InvitationService {
     return await _loadInvitation(inviteCode);
   }
 
+  /// Creates an invitation record when received via deep link
+  ///
+  /// This is called when an invitee opens an invitation link.
+  /// Creates a local invitation record so it can be displayed and processed.
+  /// If the invitation already exists, updates it with the latest data.
+  Future<void> createReceivedInvitation({
+    required String inviteCode,
+    required String lockboxId,
+    required String ownerPubkey,
+    required List<String> relayUrls,
+    String? lockboxName,
+  }) async {
+    // Check if invitation already exists
+    final existing = await _loadInvitation(inviteCode);
+    if (existing != null) {
+      Log.debug('Invitation $inviteCode already exists, skipping creation');
+      return;
+    }
+
+    // Create invitation record from received link data
+    // Note: inviteeName is not known on the receiving side, so we pass null
+    final invitation = createInvitationLink(
+      inviteCode: inviteCode,
+      lockboxId: lockboxId,
+      lockboxName: lockboxName,
+      ownerPubkey: ownerPubkey,
+      relayUrls: relayUrls,
+      inviteeName: null, // Not available on receiving side
+    );
+
+    // Set status to pending (awaiting acceptance)
+    final pendingInvitation = invitation.updateStatus(InvitationStatus.pending);
+
+    // Validate the invitation
+    validateInvitationLink(pendingInvitation);
+
+    // Store invitation locally
+    await _saveInvitation(pendingInvitation);
+
+    // Note: We don't add to lockbox invitations index on the receiving side
+    // because the invitee doesn't own the lockbox - that index is owner-only
+
+    // Notify listeners
+    _notifyInvitationsChanged();
+
+    Log.info('Created received invitation record for inviteCode=$inviteCode, lockboxId=$lockboxId');
+  }
+
   /// Processes invitation redemption when invitee accepts
   ///
   /// Validates invite code exists and is pending.
@@ -204,22 +262,51 @@ class InvitationService {
     }
 
     // Check if user is already a key holder
-    final backupConfig = await repository.getBackupConfig(invitation.lockboxId);
-    final isAlreadyKeyHolder =
-        backupConfig?.keyHolders.any((holder) => holder.pubkey == inviteePubkey) ?? false;
+    // Note: On the invitee side, the lockbox may not exist yet, so we check if it exists first
+    final lockbox = await repository.getLockbox(invitation.lockboxId);
+    if (lockbox != null) {
+      final backupConfig = lockbox.backupConfig;
+      final isAlreadyKeyHolder =
+          backupConfig?.keyHolders.any((holder) => holder.pubkey == inviteePubkey) ?? false;
 
-    if (isAlreadyKeyHolder) {
-      Log.warning(
-          'Invitee $inviteePubkey is already a key holder for lockbox ${invitation.lockboxId}');
-      // Still mark invitation as redeemed to prevent duplicate processing
-      final redeemedInvitation = invitation.updateStatus(
-        InvitationStatus.redeemed,
-        redeemedBy: inviteePubkey,
-        redeemedAt: DateTime.now(),
+      if (isAlreadyKeyHolder) {
+        Log.warning(
+            'Invitee $inviteePubkey is already a key holder for lockbox ${invitation.lockboxId}');
+        // Still mark invitation as redeemed to prevent duplicate processing
+        final redeemedInvitation = invitation.updateStatus(
+          InvitationStatus.redeemed,
+          redeemedBy: inviteePubkey,
+          redeemedAt: DateTime.now(),
+        );
+        await _saveInvitation(redeemedInvitation);
+        _notifyInvitationsChanged();
+        return;
+      }
+
+      // Lockbox exists - add invitee to backup config
+      // This happens on the owner's side when they accept their own invitation
+      await _addKeyHolderToBackupConfig(
+        invitation.lockboxId,
+        inviteePubkey,
+        invitation.inviteeName, // Can be null for received invitations
+        invitation.relayUrls,
       );
-      await _saveInvitation(redeemedInvitation);
-      _notifyInvitationsChanged();
-      return;
+    } else {
+      // Lockbox doesn't exist yet - this is the invitee side
+      // Create a lockbox stub so invitee can see it in their list
+      final lockboxStub = Lockbox(
+        id: invitation.lockboxId,
+        name: invitation.lockboxName,
+        content: null, // No content yet - waiting for shard
+        createdAt: invitation.createdAt,
+        ownerPubkey: invitation.ownerPubkey,
+        shards: [], // No shards yet - awaiting key distribution
+        backupConfig: null,
+      );
+
+      await repository.addLockbox(lockboxStub);
+      Log.info(
+          'Created lockbox stub for invitee: ${invitation.lockboxId} (${invitation.lockboxName})');
     }
 
     // Update invitation status to redeemed
@@ -229,13 +316,6 @@ class InvitationService {
       redeemedAt: DateTime.now(),
     );
     await _saveInvitation(redeemedInvitation);
-
-    // Add invitee to backup config as key holder
-    await _addKeyHolderToBackupConfig(
-      invitation.lockboxId,
-      inviteePubkey,
-      invitation.inviteeName,
-    );
 
     // Send RSVP event
     try {
@@ -361,49 +441,27 @@ class InvitationService {
       throw Exception('No key pair available. Cannot process RSVP event.');
     }
 
-    // Extract invite code from tags
-    final inviteCode = _extractTagValue(event.tags, 'invite');
-    if (inviteCode == null) {
-      throw ArgumentError('Missing invite tag in RSVP event');
-    }
-
-    // Verify we're the recipient (p tag should be owner)
-    final recipientPubkey = _extractTagValue(event.tags, 'p');
-    if (recipientPubkey != ownerPubkey) {
-      throw ArgumentError('RSVP event not addressed to current user');
-    }
-
-    // Decrypt event content
-    String decryptedContent;
-    try {
-      decryptedContent = await _loginService.decryptFromSender(
-        encryptedText: event.content,
-        senderPubkey: event.pubKey,
-      );
-    } catch (e) {
-      Log.error('Error decrypting RSVP event content', e);
-      throw Exception('Failed to decrypt RSVP event content: $e');
-    }
-
-    // Parse decrypted JSON
+    // Parse the RSVP data from the unwrapped content (already decrypted by NDK)
     Map<String, dynamic> payload;
     try {
-      payload = jsonDecode(decryptedContent) as Map<String, dynamic>;
+      Log.debug('RSVP event content: ${event.content}');
+      payload = json.decode(event.content) as Map<String, dynamic>;
+      Log.debug('RSVP event payload keys: ${payload.keys.toList()}');
     } catch (e) {
       Log.error('Error parsing RSVP event JSON', e);
       throw Exception('Invalid JSON in RSVP event content: $e');
     }
 
-    // Validate payload
-    final payloadInviteCode = payload['inviteCode'] as String?;
-    final inviteePubkey = payload['pubkey'] as String?;
-
-    if (payloadInviteCode != inviteCode) {
-      throw ArgumentError('Invite code mismatch in RSVP event payload');
+    // Extract invite code from payload
+    final inviteCode = payload['invite_code'] as String?;
+    if (inviteCode == null) {
+      throw ArgumentError('Missing invite_code in RSVP event payload');
     }
 
+    // Extract invitee pubkey from payload
+    final inviteePubkey = payload['invitee_pubkey'] as String?;
     if (inviteePubkey == null || !isValidHexPubkey(inviteePubkey)) {
-      throw ArgumentError('Invalid invitee pubkey in RSVP event payload');
+      throw ArgumentError('Invalid invitee_pubkey in RSVP event payload');
     }
 
     if (inviteePubkey != event.pubKey) {
@@ -429,7 +487,8 @@ class InvitationService {
     await _addKeyHolderToBackupConfig(
       invitation.lockboxId,
       inviteePubkey,
-      invitation.inviteeName,
+      invitation.inviteeName, // Can be null for received invitations
+      invitation.relayUrls, // Pass relay URLs from invitation
     );
 
     // Notify listeners
@@ -459,43 +518,27 @@ class InvitationService {
       throw Exception('No key pair available. Cannot process denial event.');
     }
 
-    // Extract invite code from tags
-    final inviteCode = _extractTagValue(event.tags, 'invite');
-    if (inviteCode == null) {
-      throw ArgumentError('Missing invite tag in denial event');
-    }
-
-    // Verify we're the recipient (p tag should be owner)
-    final recipientPubkey = _extractTagValue(event.tags, 'p');
-    if (recipientPubkey != ownerPubkey) {
-      throw ArgumentError('Denial event not addressed to current user');
-    }
-
-    // Decrypt event content
-    String decryptedContent;
-    try {
-      decryptedContent = await _loginService.decryptFromSender(
-        encryptedText: event.content,
-        senderPubkey: event.pubKey,
-      );
-    } catch (e) {
-      Log.error('Error decrypting denial event content', e);
-      throw Exception('Failed to decrypt denial event content: $e');
-    }
-
-    // Parse decrypted JSON
+    // Parse the denial data from the unwrapped content (already decrypted by NDK)
     Map<String, dynamic> payload;
     try {
-      payload = jsonDecode(decryptedContent) as Map<String, dynamic>;
+      Log.debug('Denial event content: ${event.content}');
+      payload = json.decode(event.content) as Map<String, dynamic>;
+      Log.debug('Denial event payload keys: ${payload.keys.toList()}');
     } catch (e) {
       Log.error('Error parsing denial event JSON', e);
       throw Exception('Invalid JSON in denial event content: $e');
     }
 
-    // Validate payload
-    final payloadInviteCode = payload['inviteCode'] as String?;
-    if (payloadInviteCode != inviteCode) {
-      throw ArgumentError('Invite code mismatch in denial event payload');
+    // Extract invite code from payload
+    final inviteCode = payload['invite_code'] as String?;
+    if (inviteCode == null) {
+      throw ArgumentError('Missing invite_code in denial event payload');
+    }
+
+    // Extract invitee pubkey from payload (optional for denial)
+    final inviteePubkey = payload['invitee_pubkey'] as String?;
+    if (inviteePubkey != null && !isValidHexPubkey(inviteePubkey)) {
+      throw ArgumentError('Invalid invitee_pubkey in denial event payload');
     }
 
     // Load invitation
@@ -569,7 +612,8 @@ class InvitationService {
   Future<void> _addKeyHolderToBackupConfig(
     String lockboxId,
     String pubkey,
-    String name,
+    String? name, // Can be null for received invitations
+    List<String> relayUrls,
   ) async {
     var backupConfig = await repository.getBackupConfig(lockboxId);
 
@@ -579,10 +623,10 @@ class InvitationService {
       final newKeyHolder = createKeyHolder(pubkey: pubkey, name: name);
       backupConfig = createBackupConfig(
         lockboxId: lockboxId,
-        threshold: 2, // Default threshold
+        threshold: 1, // Start with 1-of-1, will be updated when more key holders are added
         totalKeys: 1, // Will be updated when more key holders are added
         keyHolders: [newKeyHolder],
-        relays: [], // Will be populated from invitation relayUrls if needed
+        relays: relayUrls, // Use relay URLs from invitation
       );
       await repository.updateBackupConfig(lockboxId, backupConfig);
       Log.info('Created new backup config for lockbox $lockboxId with key holder $pubkey');
@@ -608,16 +652,25 @@ class InvitationService {
     }
   }
 
-  /// Extract a tag value from event tags
+  /// Add relay URLs to NDK service so we can receive RSVP events
   ///
-  /// Returns the value of the first tag matching the given name, or null if not found.
-  /// Tags are formatted as [name, value] or [name, value, ...].
-  String? _extractTagValue(List<List<String>> tags, String tagName) {
-    for (final tag in tags) {
-      if (tag.isNotEmpty && tag[0] == tagName) {
-        return tag.length > 1 ? tag[1] : null;
+  /// This is called when an invitation is generated to ensure the owner
+  /// is listening on the relays where the invitee will send RSVP events.
+  Future<void> _addRelaysToNdk(List<String> relayUrls) async {
+    try {
+      final ndkService = _getNdkService();
+      for (final relayUrl in relayUrls) {
+        try {
+          await ndkService.addRelay(relayUrl);
+          Log.info('Added relay to NDK for invitation listening: $relayUrl');
+        } catch (e) {
+          Log.warning('Failed to add relay $relayUrl to NDK: $e');
+          // Continue with other relays even if one fails
+        }
       }
+    } catch (e) {
+      Log.error('Error accessing NDK service to add relays', e);
+      // Don't fail invitation generation if relay addition fails
     }
-    return null;
   }
 }

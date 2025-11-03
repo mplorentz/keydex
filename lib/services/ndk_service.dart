@@ -5,6 +5,7 @@ import 'package:ndk/ndk.dart';
 import '../providers/key_provider.dart';
 import 'login_service.dart';
 import 'lockbox_share_service.dart';
+import 'invitation_service.dart';
 import 'logger.dart';
 import '../models/nostr_kinds.dart';
 import '../models/shard_data.dart';
@@ -34,6 +35,7 @@ final Provider<NdkService> ndkServiceProvider = Provider<NdkService>((ref) {
   final service = NdkService(
     lockboxShareService: lockboxShareService,
     loginService: loginService,
+    getInvitationService: () => ref.read(invitationServiceProvider),
   );
 
   // Clean up when disposed
@@ -49,6 +51,7 @@ final Provider<NdkService> ndkServiceProvider = Provider<NdkService>((ref) {
 class NdkService {
   final LockboxShareService lockboxShareService;
   final LoginService _loginService;
+  final InvitationService Function() _getInvitationService;
 
   Ndk? _ndk;
   bool _isInitialized = false;
@@ -71,7 +74,9 @@ class NdkService {
   NdkService({
     required this.lockboxShareService,
     required LoginService loginService,
-  }) : _loginService = loginService;
+    required InvitationService Function() getInvitationService,
+  })  : _loginService = loginService,
+        _getInvitationService = getInvitationService;
 
   /// Initialize NDK with current user's key and set up subscriptions
   Future<void> initialize() async {
@@ -210,6 +215,10 @@ class NdkService {
         await _handleRecoveryRequestData(unwrappedEvent);
       } else if (unwrappedEvent.kind == NostrKind.recoveryResponse.value) {
         await _handleRecoveryResponseData(unwrappedEvent);
+      } else if (unwrappedEvent.kind == NostrKind.invitationRsvp.value) {
+        await _handleInvitationRsvp(unwrappedEvent);
+      } else if (unwrappedEvent.kind == NostrKind.invitationDenial.value) {
+        await _handleInvitationDenial(unwrappedEvent);
       } else {
         Log.warning('Unknown gift wrap inner kind: ${unwrappedEvent.kind}');
       }
@@ -308,6 +317,32 @@ class NdkService {
       Log.info('Emitted recovery response to stream: $recoveryRequestId from $senderPubkey');
     } catch (e) {
       Log.error('Error handling recovery response data', e);
+    }
+  }
+
+  /// Handle incoming invitation RSVP event (kind 1340)
+  Future<void> _handleInvitationRsvp(Nip01Event event) async {
+    try {
+      Log.info('Processing invitation RSVP event: ${event.id}');
+      Log.debug(
+          'RSVP event before processing: kind=${event.kind}, content length=${event.content.length}, content preview=${event.content.length > 100 ? event.content.substring(0, 100) : event.content}');
+      final invitationService = _getInvitationService();
+      await invitationService.processRsvpEvent(event: event);
+      Log.info('Successfully processed RSVP event: ${event.id}');
+    } catch (e) {
+      Log.error('Error handling invitation RSVP event ${event.id}', e);
+    }
+  }
+
+  /// Handle incoming invitation denial event (kind 1341)
+  Future<void> _handleInvitationDenial(Nip01Event event) async {
+    try {
+      Log.info('Processing invitation denial event: ${event.id}');
+      final invitationService = _getInvitationService();
+      await invitationService.processDenialEvent(event: event);
+      Log.info('Successfully processed denial event: ${event.id}');
+    } catch (e) {
+      Log.error('Error handling invitation denial event ${event.id}', e);
     }
   }
 
@@ -499,6 +534,9 @@ class NdkService {
         kind: kind,
         tags: tags ?? [],
       );
+
+      Log.debug(
+          'Created rumor event: kind=$kind, content length=${content.length}, content preview=${content.length > 100 ? content.substring(0, 100) : content}');
 
       // Wrap the rumor in a gift wrap for the recipient
       final giftWrap = await _ndk!.giftWrap.toGiftWrap(

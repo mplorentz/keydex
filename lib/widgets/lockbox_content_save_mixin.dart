@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/lockbox.dart';
 import '../providers/lockbox_provider.dart';
 import '../providers/key_provider.dart';
+import '../utils/invite_code_utils.dart';
 
 /// Mixin for shared lockbox save logic between create and edit screens
 mixin LockboxContentSaveMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
@@ -43,8 +44,12 @@ mixin LockboxContentSaveMixin<T extends ConsumerStatefulWidget> on ConsumerState
       throw Exception('Unable to get current user public key');
     }
 
+    // Generate cryptographically secure lockbox ID
+    // Lockbox IDs are exposed in invitation URLs, so they must be unguessable
+    final lockboxId = generateSecureID();
+
     return Lockbox(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      id: lockboxId,
       name: name.trim(),
       content: content,
       createdAt: DateTime.now(),

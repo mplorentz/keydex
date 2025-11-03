@@ -4,8 +4,11 @@ import 'package:ndk/shared/nips/nip01/helpers.dart';
 import '../models/lockbox.dart';
 import '../models/key_holder.dart';
 import '../models/key_holder_status.dart';
+import '../models/invitation_link.dart';
+import '../models/invitation_status.dart';
 import '../providers/lockbox_provider.dart';
 import '../providers/key_provider.dart';
+import '../providers/invitation_provider.dart';
 import '../screens/backup_config_screen.dart';
 
 /// Widget for displaying list of key holders who have shards
@@ -76,14 +79,16 @@ class KeyHolderList extends ConsumerWidget {
               child: Text('Error loading user info: $error'),
             ),
           ),
-          data: (currentPubkey) => _buildKeyHolderContent(context, lockbox, currentPubkey),
+          data: (currentPubkey) => _buildKeyHolderContent(context, ref, lockbox, currentPubkey),
         );
       },
     );
   }
 
-  Widget _buildKeyHolderContent(BuildContext context, Lockbox lockbox, String? currentPubkey) {
+  Widget _buildKeyHolderContent(
+      BuildContext context, WidgetRef ref, Lockbox lockbox, String? currentPubkey) {
     final keyHolders = _extractKeyHolders(lockbox, currentPubkey);
+    final pendingInvitationsAsync = ref.watch(pendingInvitationsProvider(lockbox.id));
 
     return Container(
       width: double.infinity,
@@ -164,7 +169,61 @@ class KeyHolderList extends ConsumerWidget {
             ),
           ] else ...[
             // Key holder list
-            ...keyHolders.map((keyHolder) => _buildKeyHolderItem(context, keyHolder)),
+            pendingInvitationsAsync.when(
+              data: (pendingInvitations) {
+                // Map invitations to key holders by pubkey
+                final invitationMap = <String, InvitationLink>{};
+                for (final invitation in pendingInvitations) {
+                  if (invitation.redeemedBy != null) {
+                    invitationMap[invitation.redeemedBy!] = invitation;
+                  }
+                }
+
+                return Column(
+                  children: keyHolders.map((keyHolder) {
+                    // Determine invitation status
+                    KeyHolderStatus? invitationStatus;
+                    final invitation = invitationMap[keyHolder.pubkey];
+                    if (invitation != null) {
+                      switch (invitation.status) {
+                        case InvitationStatus.pending:
+                          invitationStatus = KeyHolderStatus.invited;
+                          break;
+                        case InvitationStatus.redeemed:
+                          invitationStatus = KeyHolderStatus.awaitingKey;
+                          break;
+                        case InvitationStatus.denied:
+                        case InvitationStatus.invalidated:
+                          invitationStatus = null; // Don't show badge for denied/invalidated
+                          break;
+                        case InvitationStatus.created:
+                        case InvitationStatus.error:
+                          invitationStatus = null;
+                          break;
+                      }
+                    }
+
+                    return _buildKeyHolderItem(
+                      context,
+                      KeyHolderInfo(
+                        pubkey: keyHolder.pubkey,
+                        displayName: keyHolder.displayName,
+                        isOwner: keyHolder.isOwner,
+                        invitationStatus: invitationStatus,
+                      ),
+                    );
+                  }).toList(),
+                );
+              },
+              loading: () => Column(
+                children:
+                    keyHolders.map((keyHolder) => _buildKeyHolderItem(context, keyHolder)).toList(),
+              ),
+              error: (error, stack) => Column(
+                children:
+                    keyHolders.map((keyHolder) => _buildKeyHolderItem(context, keyHolder)).toList(),
+              ),
+            ),
           ],
         ],
       ),
@@ -310,6 +369,8 @@ class KeyHolderList extends ConsumerWidget {
                 pubkey: kh.pubkey,
                 displayName: kh.displayName,
                 isOwner: kh.pubkey == lockbox.ownerPubkey,
+                invitationStatus:
+                    null, // Will be determined by widget using pendingInvitationsProvider
               ))
           .toList();
     }
@@ -329,6 +390,7 @@ class KeyHolderList extends ConsumerWidget {
           pubkey: peerPubkey,
           displayName: Helpers.encodeBech32(peerPubkey, 'npub'),
           isOwner: peerPubkey == lockbox.ownerPubkey,
+          invitationStatus: null, // Will be determined by widget using pendingInvitationsProvider
         ));
       }
     }
