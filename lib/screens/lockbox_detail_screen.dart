@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/lockbox.dart';
-import '../models/invitation_status.dart';
+import '../models/key_holder_status.dart';
 import '../providers/lockbox_provider.dart';
 import '../providers/key_provider.dart';
-import '../providers/invitation_provider.dart';
 import '../widgets/recovery_section.dart';
 import '../widgets/row_button.dart';
 import '../widgets/lockbox_metadata_section.dart';
@@ -106,7 +105,7 @@ class LockboxDetailScreen extends ConsumerWidget {
               color: Colors.orange.withOpacity(0.1),
               child: Row(
                 children: [
-                  Icon(Icons.hourglass_empty, color: Colors.orange, size: 20),
+                  const Icon(Icons.hourglass_empty, color: Colors.orange, size: 20),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
@@ -170,37 +169,58 @@ class LockboxDetailScreen extends ConsumerWidget {
   }
 
   Widget _buildGenerateAndDistributeButton(BuildContext context, WidgetRef ref, Lockbox lockbox) {
-    final pendingInvitationsAsync = ref.watch(pendingInvitationsProvider(lockbox.id));
+    // Watch the lockbox provider to ensure reactivity when backup config changes
+    final lockboxAsync = ref.watch(lockboxProvider(lockbox.id));
 
-    return pendingInvitationsAsync.when(
-      data: (pendingInvitations) {
-        // Only show button if:
-        // 1. There are pending invitations that have been redeemed (i.e., all invited key holders accepted)
-        // 2. All redeemed invitations have status "redeemed" (accepted)
-        final redeemedInvitations = pendingInvitations.where((inv) => inv.status == InvitationStatus.redeemed).toList();
-        final hasRedeemedInvitations = redeemedInvitations.isNotEmpty;
-        
-        // Check if backup config exists and has key holders
-        final hasBackupConfig = lockbox.backupConfig != null && lockbox.backupConfig!.keyHolders.isNotEmpty;
-
-        // Show button if there are redeemed invitations and backup config exists
-        if (!hasRedeemedInvitations || !hasBackupConfig) {
+    return lockboxAsync.when(
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (currentLockbox) {
+        if (currentLockbox == null) {
           return const SizedBox.shrink();
         }
 
-        return RowButton(
-          onPressed: () => _generateAndDistributeKeys(context, ref, lockbox),
-          icon: Icons.vpn_key,
-          text: 'Generate and Distribute Keys',
-          backgroundColor: const Color(0xFF5a6b55),
-        );
+        // Use the current lockbox from the provider (may have updated)
+        final backupConfig = currentLockbox.backupConfig;
+        if (backupConfig == null || backupConfig.keyHolders.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        // Get all key holders
+        final keyHolders = backupConfig.keyHolders;
+
+        // Check if all key holders have accepted invitations (status is awaitingKey or holdingKey)
+        // and that none are still invited (waiting to accept)
+        final hasInvitedKeyHolders = keyHolders.any((kh) => kh.status == KeyHolderStatus.invited);
+        final allAccepted = keyHolders.every((kh) =>
+            kh.status == KeyHolderStatus.awaitingKey || kh.status == KeyHolderStatus.holdingKey);
+
+        // Don't show button if there are still invited key holders
+        if (hasInvitedKeyHolders) {
+          return const SizedBox.shrink();
+        }
+
+        // Show button if all key holders have accepted (awaitingKey or holdingKey)
+        // and at least one is awaitingKey (meaning shards haven't been distributed yet)
+        final hasAwaitingKeyHolders =
+            keyHolders.any((kh) => kh.status == KeyHolderStatus.awaitingKey);
+
+        if (allAccepted && hasAwaitingKeyHolders) {
+          return RowButton(
+            onPressed: () => _generateAndDistributeKeys(context, ref, currentLockbox),
+            icon: Icons.vpn_key,
+            text: 'Generate and Distribute Keys',
+            backgroundColor: const Color(0xFF5a6b55),
+          );
+        }
+
+        return const SizedBox.shrink();
       },
-      loading: () => const SizedBox.shrink(),
-      error: (error, stack) => const SizedBox.shrink(),
     );
   }
 
-  Future<void> _generateAndDistributeKeys(BuildContext context, WidgetRef ref, Lockbox lockbox) async {
+  Future<void> _generateAndDistributeKeys(
+      BuildContext context, WidgetRef ref, Lockbox lockbox) async {
     if (lockbox.backupConfig == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -289,7 +309,7 @@ class LockboxDetailScreen extends ConsumerWidget {
             backgroundColor: Colors.green,
           ),
         );
-        
+
         // Refresh lockbox data
         ref.invalidate(lockboxProvider(lockbox.id));
       }
