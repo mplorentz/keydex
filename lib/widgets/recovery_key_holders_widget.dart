@@ -104,7 +104,10 @@ class RecoveryKeyHoldersWidget extends ConsumerWidget {
     // Get pubkeys from backupConfig if available
     List<String> keyHolderPubkeys = [];
     if (lockbox.backupConfig?.keyHolders.isNotEmpty == true) {
-      keyHolderPubkeys = lockbox.backupConfig!.keyHolders.map((kh) => kh.pubkey).toList();
+      keyHolderPubkeys = lockbox.backupConfig!.keyHolders
+          .where((kh) => kh.pubkey != null)
+          .map((kh) => kh.pubkey!)
+          .toList();
     } else if (lockbox.shards.isNotEmpty) {
       // Fallback: use peers from shards
       final firstShard = lockbox.shards.first;

@@ -4,11 +4,8 @@ import 'package:ndk/shared/nips/nip01/helpers.dart';
 import '../models/lockbox.dart';
 import '../models/key_holder.dart';
 import '../models/key_holder_status.dart';
-import '../models/invitation_link.dart';
-import '../models/invitation_status.dart';
 import '../providers/lockbox_provider.dart';
 import '../providers/key_provider.dart';
-import '../providers/invitation_provider.dart';
 import '../screens/backup_config_screen.dart';
 
 /// Widget for displaying list of key holders who have shards
@@ -88,7 +85,6 @@ class KeyHolderList extends ConsumerWidget {
   Widget _buildKeyHolderContent(
       BuildContext context, WidgetRef ref, Lockbox lockbox, String? currentPubkey) {
     final keyHolders = _extractKeyHolders(lockbox, currentPubkey);
-    final pendingInvitationsAsync = ref.watch(pendingInvitationsProvider(lockbox.id));
 
     return Container(
       width: double.infinity,
@@ -169,60 +165,13 @@ class KeyHolderList extends ConsumerWidget {
             ),
           ] else ...[
             // Key holder list
-            pendingInvitationsAsync.when(
-              data: (pendingInvitations) {
-                // Map invitations to key holders by pubkey
-                final invitationMap = <String, InvitationLink>{};
-                for (final invitation in pendingInvitations) {
-                  if (invitation.redeemedBy != null) {
-                    invitationMap[invitation.redeemedBy!] = invitation;
-                  }
-                }
-
-                return Column(
-                  children: keyHolders.map((keyHolder) {
-                    // Determine invitation status
-                    KeyHolderStatus? invitationStatus;
-                    final invitation = invitationMap[keyHolder.pubkey];
-                    if (invitation != null) {
-                      switch (invitation.status) {
-                        case InvitationStatus.pending:
-                          invitationStatus = KeyHolderStatus.invited;
-                          break;
-                        case InvitationStatus.redeemed:
-                          invitationStatus = KeyHolderStatus.awaitingKey;
-                          break;
-                        case InvitationStatus.denied:
-                        case InvitationStatus.invalidated:
-                          invitationStatus = null; // Don't show badge for denied/invalidated
-                          break;
-                        case InvitationStatus.created:
-                        case InvitationStatus.error:
-                          invitationStatus = null;
-                          break;
-                      }
-                    }
-
-                    return _buildKeyHolderItem(
-                      context,
-                      KeyHolderInfo(
-                        pubkey: keyHolder.pubkey,
-                        displayName: keyHolder.displayName,
-                        isOwner: keyHolder.isOwner,
-                        invitationStatus: invitationStatus,
-                      ),
-                    );
-                  }).toList(),
+            Column(
+              children: keyHolders.map((keyHolder) {
+                return _buildKeyHolderItem(
+                  context,
+                  keyHolder,
                 );
-              },
-              loading: () => Column(
-                children:
-                    keyHolders.map((keyHolder) => _buildKeyHolderItem(context, keyHolder)).toList(),
-              ),
-              error: (error, stack) => Column(
-                children:
-                    keyHolders.map((keyHolder) => _buildKeyHolderItem(context, keyHolder)).toList(),
-              ),
+              }).toList(),
             ),
           ],
         ],
@@ -256,7 +205,10 @@ class KeyHolderList extends ConsumerWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        keyHolder.displayName ?? Helpers.encodeBech32(keyHolder.pubkey, 'npub'),
+                        keyHolder.displayName ??
+                            (keyHolder.pubkey != null
+                                ? Helpers.encodeBech32(keyHolder.pubkey!, 'npub')
+                                : 'Unknown'),
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               fontWeight: FontWeight.bold,
                               color: const Color(0xFFd2d7bf),
@@ -266,11 +218,6 @@ class KeyHolderList extends ConsumerWidget {
                         softWrap: false,
                       ),
                     ),
-                    // Stub: Invitation status badge
-                    if (keyHolder.invitationStatus != null) ...[
-                      const SizedBox(width: 8),
-                      _buildInvitationStatusBadge(keyHolder.invitationStatus!),
-                    ],
                   ],
                 ),
                 if (keyHolder.isOwner) ...[
@@ -282,77 +229,16 @@ class KeyHolderList extends ConsumerWidget {
                       fontWeight: FontWeight.w500,
                     ),
                   ),
+                ] else if (keyHolder.status != null) ...[
+                  Text(
+                    keyHolder.status!.label,
+                    style: TextStyle(
+                      color: const Color(0xFFd2d7bf).withValues(alpha: 0.7),
+                      fontSize: 12,
+                    ),
+                  ),
                 ]
               ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Stub: Build invitation status badge widget
-  /// Will be connected to actual invitation data in later phases
-  Widget _buildInvitationStatusBadge(KeyHolderStatus status) {
-    Color badgeColor;
-    IconData badgeIcon;
-    String badgeText;
-
-    switch (status) {
-      case KeyHolderStatus.invited:
-        badgeColor = Colors.orange;
-        badgeIcon = Icons.mail_outline;
-        badgeText = 'Invited';
-        break;
-      case KeyHolderStatus.awaitingKey:
-        badgeColor = Colors.blue;
-        badgeIcon = Icons.hourglass_empty;
-        badgeText = 'Awaiting Key';
-        break;
-      case KeyHolderStatus.holdingKey:
-        badgeColor = Colors.green;
-        badgeIcon = Icons.check_circle;
-        badgeText = 'Holding Key';
-        break;
-      case KeyHolderStatus.error:
-        badgeColor = Colors.red;
-        badgeIcon = Icons.error_outline;
-        badgeText = 'Error';
-        break;
-      case KeyHolderStatus.inactive:
-      case KeyHolderStatus.revoked:
-        // These don't show invitation badges
-        badgeColor = Colors.grey;
-        badgeIcon = Icons.pause_circle;
-        badgeText = status.label;
-        break;
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: badgeColor.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: badgeColor.withValues(alpha: 0.5),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            badgeIcon,
-            size: 12,
-            color: badgeColor,
-          ),
-          const SizedBox(width: 4),
-          Text(
-            badgeText,
-            style: TextStyle(
-              color: badgeColor,
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -368,9 +254,8 @@ class KeyHolderList extends ConsumerWidget {
           .map((kh) => KeyHolderInfo(
                 pubkey: kh.pubkey,
                 displayName: kh.displayName,
-                isOwner: kh.pubkey == lockbox.ownerPubkey,
-                invitationStatus:
-                    null, // Will be determined by widget using pendingInvitationsProvider
+                isOwner: kh.pubkey != null && kh.pubkey == lockbox.ownerPubkey,
+                status: kh.status, // Use actual status from KeyHolder model
               ))
           .toList();
     }
@@ -390,7 +275,7 @@ class KeyHolderList extends ConsumerWidget {
           pubkey: peerPubkey,
           displayName: Helpers.encodeBech32(peerPubkey, 'npub'),
           isOwner: peerPubkey == lockbox.ownerPubkey,
-          invitationStatus: null, // Will be determined by widget using pendingInvitationsProvider
+          status: KeyHolderStatus.holdingKey, // Default for key holders with shards
         ));
       }
     }
@@ -408,16 +293,15 @@ class KeyHolderList extends ConsumerWidget {
 
 /// Data class for key holder information
 class KeyHolderInfo {
-  final String pubkey;
+  final String? pubkey; // Nullable for invited key holders
   final String? displayName;
   final bool isOwner;
-  // Stub: Invitation status for UI display
-  final KeyHolderStatus? invitationStatus;
+  final KeyHolderStatus? status; // Status from KeyHolder model
 
   KeyHolderInfo({
-    required this.pubkey,
+    this.pubkey,
     this.displayName,
     required this.isOwner,
-    this.invitationStatus,
+    this.status,
   });
 }

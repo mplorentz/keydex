@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import '../models/key_holder.dart';
+import '../models/key_holder_status.dart';
 import '../models/lockbox.dart';
 import '../models/invitation_link.dart';
 import '../services/backup_service.dart';
@@ -36,7 +37,8 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
 
   // Invitation link generation state
   final TextEditingController _inviteeNameController = TextEditingController();
-  InvitationLink? _generatedInvitation;
+  // Map to track invitation links by invitee name
+  final Map<String, InvitationLink> _invitationLinksByInviteeName = {};
   bool _isGeneratingInvitation = false;
 
   @override
@@ -154,95 +156,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Invite by Link Section
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Invite by Link',
-                          style: Theme.of(context).textTheme.headlineSmall,
-                        ),
-                        const SizedBox(height: 16),
-                        TextField(
-                          controller: _inviteeNameController,
-                          decoration: const InputDecoration(
-                            labelText: 'Invitee Name',
-                            hintText: 'Enter name for the invitee',
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            onPressed: (_isGeneratingInvitation || _relays.isEmpty)
-                                ? null
-                                : _generateInvitationLink,
-                            icon: _isGeneratingInvitation
-                                ? const SizedBox(
-                                    width: 16,
-                                    height: 16,
-                                    child: CircularProgressIndicator(strokeWidth: 2),
-                                  )
-                                : const Icon(Icons.link),
-                            label: Text(_isGeneratingInvitation
-                                ? 'Generating...'
-                                : 'Generate Invitation Link'),
-                          ),
-                        ),
-                        if (_generatedInvitation != null) ...[
-                          const SizedBox(height: 16),
-                          Container(
-                            padding: const EdgeInsets.all(12.0),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                              borderRadius: BorderRadius.circular(8.0),
-                              border: Border.all(
-                                color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
-                              ),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        _generatedInvitation!.toUrl(),
-                                        style: TextStyle(
-                                          fontFamily: 'monospace',
-                                          fontSize: 12,
-                                          color: Theme.of(context).colorScheme.onSurface,
-                                        ),
-                                      ),
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.copy, size: 20),
-                                      onPressed: () => _copyInvitationLink(),
-                                      tooltip: 'Copy invitation link',
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-                                if (_generatedInvitation!.inviteeName != null)
-                                  Text(
-                                    'Invitation for: ${_generatedInvitation!.inviteeName}',
-                                    style: Theme.of(context).textTheme.bodySmall,
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // Key Holders Section
+                // Unified Key Holders Section
                 Card(
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
@@ -253,36 +167,62 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'Key Holders (${_keyHolders.length}/$_totalKeys)',
+                              'Key Holders (${_keyHolders.length})',
                               style: Theme.of(context).textTheme.headlineSmall,
-                            ),
-                            ElevatedButton.icon(
-                              onPressed: _addKeyHolder,
-                              icon: const Icon(Icons.add),
-                              label: const Text('Add Contact'),
                             ),
                           ],
                         ),
                         const SizedBox(height: 16),
+
+                        // Add Key Holder Input Section
+                        TextField(
+                          controller: _inviteeNameController,
+                          decoration: const InputDecoration(
+                            labelText: 'Invitee Name',
+                            hintText: 'Enter name for the invitee',
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: (_isGeneratingInvitation || _relays.isEmpty)
+                                    ? null
+                                    : _generateInvitationLink,
+                                icon: _isGeneratingInvitation
+                                    ? const SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: CircularProgressIndicator(strokeWidth: 2),
+                                      )
+                                    : const Icon(Icons.link),
+                                label: Text(_isGeneratingInvitation
+                                    ? 'Generating...'
+                                    : 'Generate Invitation Link'),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: _addKeyHolderManually,
+                                icon: const Icon(Icons.person_add),
+                                label: const Text('Add Manually'),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Key Holders List
                         if (_keyHolders.isEmpty)
                           const Text(
                             'No key holders added yet. Add trusted contacts to distribute backup keys.',
                           )
                         else
                           ..._keyHolders.map(
-                            (holder) => ListTile(
-                              leading: const Icon(Icons.person),
-                              title: Text(holder.displayName),
-                              subtitle: Text(holder.npub),
-                              trailing: IconButton(
-                                icon: const Icon(Icons.remove_circle),
-                                onPressed: () {
-                                  setState(() {
-                                    _keyHolders.remove(holder);
-                                  });
-                                },
-                              ),
-                            ),
+                            (holder) => _buildKeyHolderListItem(holder),
                           ),
                       ],
                     ),
@@ -370,71 +310,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
   }
 
   bool _canCreateBackup() {
-    return _keyHolders.length == _totalKeys && _relays.isNotEmpty;
-  }
-
-  Future<void> _addKeyHolder() async {
-    final npubController = TextEditingController();
-    final nameController = TextEditingController();
-
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Add Key Holder'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: npubController,
-              decoration: const InputDecoration(
-                labelText: 'Nostr Public Key (npub)',
-                hintText: 'npub1...',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(
-                labelText: 'Display Name (optional)',
-                hintText: 'Alice',
-                border: OutlineInputBorder(),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text('Add')),
-        ],
-      ),
-    );
-
-    if (result == true) {
-      try {
-        // Convert bech32 npub to hex pubkey
-        final npub = npubController.text.trim();
-        final decoded = Helpers.decodeBech32(npub);
-        if (decoded[0].isEmpty) {
-          throw Exception('Invalid npub format: $npub');
-        }
-
-        final keyHolder = createKeyHolder(
-          pubkey: decoded[0], // Hex format
-          name: nameController.text.trim().isEmpty ? null : nameController.text.trim(),
-        );
-
-        setState(() {
-          _keyHolders.add(keyHolder);
-        });
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Invalid key holder: $e'), backgroundColor: Colors.red),
-          );
-        }
-      }
-    }
+    return _keyHolders.isNotEmpty && _relays.isNotEmpty;
   }
 
   Future<void> _addRelay() async {
@@ -525,6 +401,17 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
       return;
     }
 
+    // Check if key holder with this name already exists
+    if (_keyHolders.any((holder) => holder.name == inviteeName)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('A key holder with the name "$inviteeName" already exists'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
     // Limit to first 3 relays as per design
     final relayUrls = _relays.take(3).toList();
 
@@ -541,14 +428,18 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
       );
 
       if (mounted) {
+        // Create invited key holder and add to list
+        final invitedKeyHolder = createInvitedKeyHolder(name: inviteeName);
+
         setState(() {
-          _generatedInvitation = invitation;
+          _keyHolders.add(invitedKeyHolder);
+          _invitationLinksByInviteeName[inviteeName] = invitation;
           _inviteeNameController.clear();
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Invitation link generated successfully!'),
+            content: Text('Invitation link generated and key holder added!'),
             backgroundColor: Colors.green,
           ),
         );
@@ -571,10 +462,120 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
     }
   }
 
-  void _copyInvitationLink() {
-    if (_generatedInvitation == null) return;
+  Future<void> _addKeyHolderManually() async {
+    final inviteeName = _inviteeNameController.text.trim();
+    if (inviteeName.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter an invitee name first'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
 
-    final url = _generatedInvitation!.toUrl();
+    final npubController = TextEditingController();
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Add Key Holder Manually'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Adding: $inviteeName',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: npubController,
+              decoration: const InputDecoration(
+                labelText: 'Nostr Public Key (npub)',
+                hintText: 'npub1...',
+                border: OutlineInputBorder(),
+              ),
+              autofocus: true,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text('Add')),
+        ],
+      ),
+    );
+
+    if (result == true) {
+      try {
+        // Convert bech32 npub to hex pubkey
+        final npub = npubController.text.trim();
+        final decoded = Helpers.decodeBech32(npub);
+        if (decoded[0].isEmpty) {
+          throw Exception('Invalid npub format: $npub');
+        }
+
+        // Check if key holder with this pubkey already exists
+        if (_keyHolders.any((holder) => holder.pubkey == decoded[0])) {
+          throw Exception('A key holder with this public key already exists');
+        }
+
+        final keyHolder = createKeyHolder(
+          pubkey: decoded[0], // Hex format
+          name: inviteeName,
+        );
+
+        setState(() {
+          _keyHolders.add(keyHolder);
+          _inviteeNameController.clear();
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Key holder added successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Invalid key holder: $e'), backgroundColor: Colors.red),
+          );
+        }
+      }
+    }
+  }
+
+  Widget _buildKeyHolderListItem(KeyHolder holder) {
+    final invitation = holder.name != null ? _invitationLinksByInviteeName[holder.name] : null;
+
+    return ListTile(
+      leading: Icon(
+        holder.status == KeyHolderStatus.invited ? Icons.mail_outline : Icons.person,
+      ),
+      title: Text(holder.displayName),
+      subtitle: Text(holder.displaySubtitle),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (holder.status == KeyHolderStatus.invited && invitation != null)
+            IconButton(
+              icon: const Icon(Icons.copy, size: 20),
+              onPressed: () => _copyInvitationLinkForHolder(invitation),
+              tooltip: 'Copy invitation link',
+            ),
+          IconButton(
+            icon: const Icon(Icons.remove_circle),
+            onPressed: () => _removeKeyHolder(holder),
+            tooltip: 'Remove key holder',
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _copyInvitationLinkForHolder(InvitationLink invitation) {
+    final url = invitation.toUrl();
     Clipboard.setData(ClipboardData(text: url));
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -583,6 +584,15 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
         behavior: SnackBarBehavior.floating,
       ),
     );
+  }
+
+  void _removeKeyHolder(KeyHolder holder) {
+    setState(() {
+      _keyHolders.remove(holder);
+      if (holder.name != null) {
+        _invitationLinksByInviteeName.remove(holder.name);
+      }
+    });
   }
 
   Future<void> _createBackup() async {
@@ -595,12 +605,15 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
     try {
       final backupService = ref.read(backupServiceProvider);
 
-      // Create/recreate the backup configuration and distribute shards
-      // BackupService will handle overwriting existing config
-      await backupService.createAndDistributeBackup(
+      // Use actual key holders count for totalKeys
+      final totalKeys = _keyHolders.length;
+
+      // Create/recreate the backup configuration (without distributing shares)
+      // Shares can be distributed later once all invites are confirmed
+      await backupService.saveBackupConfig(
         lockboxId: widget.lockboxId,
         threshold: _threshold,
-        totalKeys: _totalKeys,
+        totalKeys: totalKeys,
         keyHolders: _keyHolders,
         relays: _relays,
       );

@@ -1,14 +1,17 @@
 import '../utils/validators.dart';
 import 'key_holder_status.dart';
+import 'package:ndk/shared/nips/nip01/helpers.dart';
+import 'package:uuid/uuid.dart';
+
+const _uuid = Uuid();
 
 /// Represents a trusted contact who holds a backup key
 ///
 /// This model contains information about a key holder including
 /// their Nostr public key, status, and acknowledgment details.
-import 'package:ndk/shared/nips/nip01/helpers.dart';
-
 typedef KeyHolder = ({
-  String pubkey, // Hex format
+  String id, // Unique identifier for this key holder
+  String? pubkey, // Hex format - nullable for invited key holders
   String? name,
   KeyHolderStatus status,
   DateTime? lastSeen,
@@ -22,12 +25,14 @@ typedef KeyHolder = ({
 KeyHolder createKeyHolder({
   required String pubkey, // Takes hex format directly
   String? name,
+  String? id, // Optional - will be generated if not provided
 }) {
   if (!isValidHexPubkey(pubkey)) {
     throw ArgumentError('Invalid hex pubkey format: $pubkey');
   }
 
   return (
+    id: id ?? _uuid.v4(),
     pubkey: pubkey,
     name: name,
     status: KeyHolderStatus.awaitingKey,
@@ -39,9 +44,28 @@ KeyHolder createKeyHolder({
   );
 }
 
+/// Create a new KeyHolder for an invited person (no pubkey yet)
+KeyHolder createInvitedKeyHolder({
+  required String name,
+  String? id, // Optional - will be generated if not provided
+}) {
+  return (
+    id: id ?? _uuid.v4(),
+    pubkey: null,
+    name: name,
+    status: KeyHolderStatus.invited,
+    lastSeen: null,
+    keyShare: null,
+    giftWrapEventId: null,
+    acknowledgedAt: null,
+    acknowledgmentEventId: null,
+  );
+}
+
 /// Create a copy of this KeyHolder with updated fields
 KeyHolder copyKeyHolder(
   KeyHolder holder, {
+  String? id,
   String? pubkey, // Hex format
   String? name,
   KeyHolderStatus? status,
@@ -52,6 +76,7 @@ KeyHolder copyKeyHolder(
   String? acknowledgmentEventId,
 }) {
   return (
+    id: id ?? holder.id,
     pubkey: pubkey ?? holder.pubkey,
     name: name ?? holder.name,
     status: status ?? holder.status,
@@ -83,10 +108,16 @@ extension KeyHolderExtension on KeyHolder {
     return timeSinceLastSeen.inHours < 24; // Consider responsive if seen within 24 hours
   }
 
+  /// Check if this key holder is invited (no pubkey yet)
+  bool get isInvited {
+    return status == KeyHolderStatus.invited && pubkey == null;
+  }
+
   /// Get the bech32-encoded npub for display
-  String get npub {
+  String? get npub {
+    if (pubkey == null) return null;
     // pubkey is already in hex format without 0x prefix (Nostr convention)
-    return Helpers.encodeBech32(pubkey, 'npub');
+    return Helpers.encodeBech32(pubkey!, 'npub');
   }
 
   /// Get display name (name if available, otherwise truncated npub)
@@ -94,15 +125,31 @@ extension KeyHolderExtension on KeyHolder {
     if (name != null && name!.isNotEmpty) {
       return name!;
     }
+    // For invited key holders without a real pubkey, show "Invited"
+    if (isInvited) {
+      return 'Invited';
+    }
     final displayNpub = npub;
+    if (displayNpub == null) {
+      return 'Unknown';
+    }
     return '${displayNpub.substring(0, 8)}...${displayNpub.substring(displayNpub.length - 8)}';
+  }
+
+  /// Get display subtitle (npub for real key holders, status for invited)
+  String get displaySubtitle {
+    if (isInvited) {
+      return 'Invited';
+    }
+    return npub ?? 'No pubkey';
   }
 }
 
 /// Convert to JSON for storage
 Map<String, dynamic> keyHolderToJson(KeyHolder holder) {
   return {
-    'pubkey': holder.pubkey, // Store hex format
+    'id': holder.id,
+    'pubkey': holder.pubkey, // Store hex format, nullable
     'name': holder.name,
     'status': holder.status.name,
     'lastSeen': holder.lastSeen?.toIso8601String(),
@@ -116,7 +163,8 @@ Map<String, dynamic> keyHolderToJson(KeyHolder holder) {
 /// Create from JSON
 KeyHolder keyHolderFromJson(Map<String, dynamic> json) {
   return (
-    pubkey: json['pubkey'] as String, // Hex format without 0x prefix
+    id: json['id'] as String? ?? _uuid.v4(), // Generate ID if missing for backward compatibility
+    pubkey: json['pubkey'] as String?, // Hex format without 0x prefix, nullable
     name: json['name'] as String?,
     status: KeyHolderStatus.values.firstWhere(
       (s) => s.name == json['status'],
@@ -133,5 +181,6 @@ KeyHolder keyHolderFromJson(Map<String, dynamic> json) {
 
 /// String representation of KeyHolder
 String keyHolderToString(KeyHolder holder) {
-  return 'KeyHolder(pubkey: ${holder.pubkey.substring(0, 8)}..., name: ${holder.name}, status: ${holder.status})';
+  final pubkeyPreview = holder.pubkey != null ? '${holder.pubkey!.substring(0, 8)}...' : 'null';
+  return 'KeyHolder(id: ${holder.id}, pubkey: $pubkeyPreview, name: ${holder.name}, status: ${holder.status})';
 }

@@ -49,6 +49,13 @@ class ShardDistributionService {
         final shard = shards[i];
         final keyHolder = config.keyHolders[i];
 
+        // Skip key holders without pubkeys (invited but not yet accepted)
+        if (keyHolder.pubkey == null) {
+          Log.info(
+              'Skipping shard distribution to key holder ${keyHolder.name ?? keyHolder.id} - no pubkey yet (invited)');
+          continue;
+        }
+
         try {
           // Create shard data JSON
           final shardJson = shardDataToJson(shard);
@@ -60,7 +67,7 @@ class ShardDistributionService {
           final eventId = await _ndkService.publishGiftWrapEvent(
             content: shardString,
             kind: NostrKind.shardData.value,
-            recipientPubkey: keyHolder.pubkey, // Hex format
+            recipientPubkey: keyHolder.pubkey!, // Hex format - safe because we checked null above
             relays: config.relays,
             tags: [
               ['d', 'shard_${config.lockboxId}_$i'], // Distinguisher tag
@@ -77,7 +84,7 @@ class ShardDistributionService {
           // Create ShardEvent record
           final shardEvent = createShardEvent(
             eventId: eventId,
-            recipientPubkey: keyHolder.pubkey, // Hex format
+            recipientPubkey: keyHolder.pubkey!, // Hex format - safe because we checked null above
             encryptedContent: shardString, // Store original content for reference
             backupConfigId: config.lockboxId,
             shardIndex: i,
@@ -91,9 +98,11 @@ class ShardDistributionService {
           );
 
           shardEvents.add(publishedShardEvent);
-          Log.info('Distributed shard $i to ${keyHolder.npub}');
+          Log.info('Distributed shard $i to ${keyHolder.npub ?? keyHolder.name ?? keyHolder.id}');
         } catch (e) {
-          Log.error('Failed to distribute shard $i to ${keyHolder.npub}', e);
+          Log.error(
+              'Failed to distribute shard $i to ${keyHolder.npub ?? keyHolder.name ?? keyHolder.id}',
+              e);
           // Continue with other shards even if one fails
         }
       }

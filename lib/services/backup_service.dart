@@ -248,7 +248,7 @@ class BackupService {
 
     // Find and update the key holder
     final updatedKeyHolders = config.keyHolders.map((holder) {
-      if (holder.pubkey == pubkey) {
+      if (holder.pubkey != null && holder.pubkey == pubkey) {
         return copyKeyHolder(
           holder,
           status: status,
@@ -276,6 +276,38 @@ class BackupService {
     if (config == null) return false;
 
     return config.acknowledgedKeyHoldersCount >= config.threshold;
+  }
+
+  /// Create or update backup configuration without distributing shares
+  ///
+  /// This allows saving the backup configuration before all key holders
+  /// have accepted their invitations. Shares can be distributed later
+  /// using createAndDistributeBackup or a separate distribution method.
+  Future<BackupConfig> saveBackupConfig({
+    required String lockboxId,
+    required int threshold,
+    required int totalKeys,
+    required List<KeyHolder> keyHolders,
+    required List<String> relays,
+  }) async {
+    // Delete existing config if present (allows overwrite)
+    final existingConfig = await _repository.getBackupConfig(lockboxId);
+    if (existingConfig != null) {
+      await deleteBackupConfig(lockboxId);
+      Log.info('Deleted existing backup configuration for overwrite');
+    }
+
+    // Create backup configuration
+    final config = await createBackupConfiguration(
+      lockboxId: lockboxId,
+      threshold: threshold,
+      totalKeys: totalKeys,
+      keyHolders: keyHolders,
+      relays: relays,
+    );
+
+    Log.info('Created backup configuration for lockbox $lockboxId');
+    return config;
   }
 
   /// High-level method to create and distribute a backup
@@ -316,15 +348,8 @@ class BackupService {
       }
       Log.info('Retrieved creator key pair');
 
-      // Step 3: Delete existing config if present (allows overwrite)
-      final existingConfig = await _repository.getBackupConfig(lockboxId);
-      if (existingConfig != null) {
-        await deleteBackupConfig(lockboxId);
-        Log.info('Deleted existing backup configuration for overwrite');
-      }
-
-      // Step 4: Create backup configuration
-      final config = await createBackupConfiguration(
+      // Step 3: Create backup configuration (may delete existing config)
+      final config = await saveBackupConfig(
         lockboxId: lockboxId,
         threshold: threshold,
         totalKeys: totalKeys,
@@ -333,10 +358,19 @@ class BackupService {
       );
       Log.info('Created backup configuration');
 
+      // Validate all key holders have pubkeys before distributing
+      final keyHoldersWithoutPubkeys = keyHolders.where((kh) => kh.pubkey == null).toList();
+      if (keyHoldersWithoutPubkeys.isNotEmpty) {
+        final names = keyHoldersWithoutPubkeys.map((kh) => kh.name ?? kh.id).join(', ');
+        throw ArgumentError(
+          'Cannot distribute backup: ${keyHoldersWithoutPubkeys.length} key holder(s) do not have a pubkey yet (invited but not accepted): $names',
+        );
+      }
+
       // Step 5: Generate Shamir shares
       // Note: peers list excludes the creator - recipients need to know OTHER key holders
       final peers =
-          keyHolders.map((kh) => kh.pubkey).where((pubkey) => pubkey != creatorPubkey).toList();
+          keyHolders.where((kh) => kh.pubkey != creatorPubkey).map((kh) => kh.pubkey!).toList();
       final shards = await generateShamirShares(
         content: content,
         threshold: threshold,

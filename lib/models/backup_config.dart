@@ -47,10 +47,17 @@ BackupConfig createBackupConfig({
     throw ArgumentError('At least one relay must be provided');
   }
 
-  // Validate key holders have unique npubs
-  final npubs = keyHolders.map((h) => h.npub).toSet();
-  if (npubs.length != keyHolders.length) {
-    throw ArgumentError('All key holders must have unique npubs');
+  // Validate key holders have unique IDs
+  final ids = keyHolders.map((h) => h.id).toSet();
+  if (ids.length != keyHolders.length) {
+    throw ArgumentError('All key holders must have unique IDs');
+  }
+
+  // Validate key holders with pubkeys have unique npubs
+  final keyHoldersWithPubkeys = keyHolders.where((h) => h.pubkey != null).toList();
+  final npubs = keyHoldersWithPubkeys.map((h) => h.npub).where((n) => n != null).toSet();
+  if (npubs.length != keyHoldersWithPubkeys.length) {
+    throw ArgumentError('All key holders with pubkeys must have unique npubs');
   }
 
   // Validate relay URLs
@@ -119,9 +126,14 @@ extension BackupConfigExtension on BackupConfig {
       if (keyHolders.length != totalKeys) return false;
       if (relays.isEmpty) return false;
 
-      // Check for unique npubs
-      final npubs = keyHolders.map((h) => h.npub).toSet();
-      if (npubs.length != keyHolders.length) return false;
+      // Check for unique IDs
+      final ids = keyHolders.map((h) => h.id).toSet();
+      if (ids.length != keyHolders.length) return false;
+
+      // Check for unique npubs (only for key holders with pubkeys)
+      final keyHoldersWithPubkeys = keyHolders.where((h) => h.pubkey != null).toList();
+      final npubs = keyHoldersWithPubkeys.map((h) => h.npub).where((n) => n != null).toSet();
+      if (npubs.length != keyHoldersWithPubkeys.length) return false;
 
       // Check relay URLs
       for (final relay in relays) {
