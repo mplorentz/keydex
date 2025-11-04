@@ -7,6 +7,7 @@ import '../models/invitation_link.dart';
 import '../models/invitation_status.dart';
 import '../models/invitation_exceptions.dart';
 import '../models/key_holder.dart';
+import '../models/key_holder_status.dart';
 import '../models/backup_config.dart';
 import '../models/lockbox.dart';
 import '../models/nostr_kinds.dart';
@@ -484,12 +485,47 @@ class InvitationService {
     await _saveInvitation(redeemedInvitation);
 
     // Add invitee to backup config if not already present
+    // This will update invited key holders or add new ones
     await _addKeyHolderToBackupConfig(
       invitation.lockboxId,
       inviteePubkey,
       invitation.inviteeName, // Can be null for received invitations
       invitation.relayUrls, // Pass relay URLs from invitation
+      inviteCode: inviteCode, // Pass invite code for matching
     );
+
+    // Also update status to awaitingKey if key holder already exists with invited status
+    // This handles the case where the key holder was added to the backup config
+    // but the UI hasn't saved yet
+    try {
+      final backupConfig = await repository.getBackupConfig(invitation.lockboxId);
+      if (backupConfig != null) {
+        final keyHolderIndex = backupConfig.keyHolders.indexWhere(
+          (holder) => holder.pubkey == inviteePubkey,
+        );
+        if (keyHolderIndex != -1) {
+          final holder = backupConfig.keyHolders[keyHolderIndex];
+          if (holder.status == KeyHolderStatus.invited) {
+            // Update status to awaitingKey
+            final updatedKeyHolders = List<KeyHolder>.from(backupConfig.keyHolders);
+            updatedKeyHolders[keyHolderIndex] = copyKeyHolder(
+              holder,
+              status: KeyHolderStatus.awaitingKey,
+            );
+            final updatedConfig = copyBackupConfig(
+              backupConfig,
+              keyHolders: updatedKeyHolders,
+              lastUpdated: DateTime.now(),
+            );
+            await repository.updateBackupConfig(invitation.lockboxId, updatedConfig);
+            Log.info('Updated key holder $inviteePubkey status from invited to awaitingKey');
+          }
+        }
+      }
+    } catch (e) {
+      Log.warning('Error updating key holder status after RSVP: $e');
+      // Don't fail RSVP processing if status update fails
+    }
 
     // Notify listeners
     _notifyInvitationsChanged();
@@ -609,12 +645,19 @@ class InvitationService {
   }
 
   /// Add a key holder to backup config (or create config if it doesn't exist)
+  ///
+  /// When an RSVP is received:
+  /// - If a key holder with this pubkey already exists, do nothing
+  /// - If a key holder with matching inviteCode exists but no pubkey (invited status),
+  ///   update it with the pubkey and change status to awaitingKey
+  /// - Otherwise, add a new key holder
   Future<void> _addKeyHolderToBackupConfig(
     String lockboxId,
     String pubkey,
     String? name, // Can be null for received invitations
-    List<String> relayUrls,
-  ) async {
+    List<String> relayUrls, {
+    String? inviteCode, // Invite code for matching invited key holders
+  }) async {
     var backupConfig = await repository.getBackupConfig(lockboxId);
 
     if (backupConfig == null) {
@@ -631,14 +674,63 @@ class InvitationService {
       await repository.updateBackupConfig(lockboxId, backupConfig);
       Log.info('Created new backup config for lockbox $lockboxId with key holder $pubkey');
     } else {
-      // Check if key holder already exists
-      final exists = backupConfig.keyHolders.any((holder) => holder.pubkey == pubkey);
-      if (exists) {
-        Log.debug('Key holder $pubkey already exists in backup config');
+      // FIRST: Check if there's an invited key holder (no pubkey) with matching invite code
+      // This must be checked BEFORE checking for existing pubkey, otherwise we'll miss
+      // updating invited key holders when RSVP comes in
+      if (inviteCode != null) {
+        Log.debug('Looking for invited key holder with invite code: "$inviteCode"');
+
+        final invitedHolderIndex = backupConfig.keyHolders.indexWhere(
+          (holder) =>
+              holder.inviteCode == inviteCode &&
+              holder.pubkey == null &&
+              holder.status == KeyHolderStatus.invited,
+        );
+
+        if (invitedHolderIndex != -1) {
+          // Update the invited key holder with pubkey and change status to awaitingKey
+          final updatedKeyHolders = List<KeyHolder>.from(backupConfig.keyHolders);
+          updatedKeyHolders[invitedHolderIndex] = copyKeyHolder(
+            updatedKeyHolders[invitedHolderIndex],
+            pubkey: pubkey,
+            status: KeyHolderStatus.awaitingKey,
+            // Keep inviteCode for reference, but it's no longer needed after acceptance
+          );
+
+          final updatedConfig = copyBackupConfig(
+            backupConfig,
+            keyHolders: updatedKeyHolders,
+            lastUpdated: DateTime.now(),
+          );
+          await repository.updateBackupConfig(lockboxId, updatedConfig);
+          Log.info(
+              'Updated invited key holder with invite code "$inviteCode" - added pubkey $pubkey and changed status to awaitingKey');
+          return;
+        } else {
+          Log.debug('No invited key holder found with invite code "$inviteCode"');
+        }
+      } else {
+        Log.debug('No invite code provided, skipping invited key holder check');
+      }
+
+      // SECOND: Check if key holder with this pubkey already exists
+      final existingByPubkey =
+          backupConfig.keyHolders.where((holder) => holder.pubkey == pubkey).toList();
+      if (existingByPubkey.isNotEmpty) {
+        // Check if this key holder needs status update (e.g., was invited, now accepting)
+        final existingHolder = existingByPubkey.first;
+        if (existingHolder.status == KeyHolderStatus.invited ||
+            existingHolder.status == KeyHolderStatus.awaitingKey) {
+          // Status is already appropriate or will be updated elsewhere
+          Log.debug(
+              'Key holder $pubkey already exists in backup config with status ${existingHolder.status}');
+        } else {
+          Log.debug('Key holder $pubkey already exists in backup config');
+        }
         return;
       }
 
-      // Add new key holder and update totalKeys
+      // THIRD: Add new key holder and update totalKeys
       final newKeyHolder = createKeyHolder(pubkey: pubkey, name: name);
       final updatedKeyHolders = [...backupConfig.keyHolders, newKeyHolder];
       final updatedConfig = copyBackupConfig(

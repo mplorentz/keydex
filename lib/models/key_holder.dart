@@ -13,6 +13,7 @@ typedef KeyHolder = ({
   String id, // Unique identifier for this key holder
   String? pubkey, // Hex format - nullable for invited key holders
   String? name,
+  String? inviteCode, // Invitation code for invited key holders (before they accept)
   KeyHolderStatus status,
   DateTime? lastSeen,
   String? keyShare,
@@ -35,6 +36,7 @@ KeyHolder createKeyHolder({
     id: id ?? _uuid.v4(),
     pubkey: pubkey,
     name: name,
+    inviteCode: null,
     status: KeyHolderStatus.awaitingKey,
     lastSeen: null,
     keyShare: null,
@@ -47,12 +49,14 @@ KeyHolder createKeyHolder({
 /// Create a new KeyHolder for an invited person (no pubkey yet)
 KeyHolder createInvitedKeyHolder({
   required String name,
+  required String inviteCode,
   String? id, // Optional - will be generated if not provided
 }) {
   return (
     id: id ?? _uuid.v4(),
     pubkey: null,
     name: name,
+    inviteCode: inviteCode,
     status: KeyHolderStatus.invited,
     lastSeen: null,
     keyShare: null,
@@ -68,6 +72,7 @@ KeyHolder copyKeyHolder(
   String? id,
   String? pubkey, // Hex format
   String? name,
+  String? inviteCode,
   KeyHolderStatus? status,
   DateTime? lastSeen,
   String? keyShare,
@@ -79,6 +84,7 @@ KeyHolder copyKeyHolder(
     id: id ?? holder.id,
     pubkey: pubkey ?? holder.pubkey,
     name: name ?? holder.name,
+    inviteCode: inviteCode ?? holder.inviteCode,
     status: status ?? holder.status,
     lastSeen: lastSeen ?? holder.lastSeen,
     keyShare: keyShare ?? holder.keyShare,
@@ -151,6 +157,7 @@ Map<String, dynamic> keyHolderToJson(KeyHolder holder) {
     'id': holder.id,
     'pubkey': holder.pubkey, // Store hex format, nullable
     'name': holder.name,
+    'inviteCode': holder.inviteCode,
     'status': holder.status.name,
     'lastSeen': holder.lastSeen?.toIso8601String(),
     'keyShare': holder.keyShare,
@@ -166,6 +173,7 @@ KeyHolder keyHolderFromJson(Map<String, dynamic> json) {
     id: json['id'] as String? ?? _uuid.v4(), // Generate ID if missing for backward compatibility
     pubkey: json['pubkey'] as String?, // Hex format without 0x prefix, nullable
     name: json['name'] as String?,
+    inviteCode: json['inviteCode'] as String?, // Nullable for backward compatibility
     status: KeyHolderStatus.values.firstWhere(
       (s) => s.name == json['status'],
       orElse: () => KeyHolderStatus.awaitingKey,
