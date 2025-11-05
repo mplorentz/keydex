@@ -57,8 +57,14 @@ class ShardDistributionService {
         }
 
         try {
+          // Update shard with relay URLs from backup config for confirmation events
+          final shardWithRelays = copyShardData(
+            shard,
+            relayUrls: config.relays,
+          );
+
           // Create shard data JSON
-          final shardJson = shardDataToJson(shard);
+          final shardJson = shardDataToJson(shardWithRelays);
           final shardString = json.encode(shardJson);
 
           Log.debug('recipient pubkey: ${keyHolder.pubkey}');
@@ -204,59 +210,21 @@ class ShardDistributionService {
     }
 
     // Extract lockbox ID and shard index from tags
-    final lockboxId = _extractTagValue(event.tags, 'lockbox');
-    final shardIndexStr = _extractTagValue(event.tags, 'shard');
+    // All confirmation data is stored in tags (no content)
+    final lockboxId = _extractTagValue(event.tags, 'lockbox_id');
+    final shardIndexStr = _extractTagValue(event.tags, 'shard_index');
 
     if (lockboxId == null) {
-      throw ArgumentError('Missing lockbox tag in shard confirmation event');
+      throw ArgumentError('Missing lockbox_id tag in shard confirmation event');
     }
 
     if (shardIndexStr == null) {
-      throw ArgumentError('Missing shard tag in shard confirmation event');
+      throw ArgumentError('Missing shard_index tag in shard confirmation event');
     }
 
     final shardIndex = int.tryParse(shardIndexStr);
     if (shardIndex == null) {
       throw ArgumentError('Invalid shard index in shard confirmation event: $shardIndexStr');
-    }
-
-    // Verify we're the recipient (p tag should be owner)
-    final recipientPubkey = _extractTagValue(event.tags, 'p');
-    if (recipientPubkey != ownerPubkey) {
-      throw ArgumentError('Shard confirmation event not addressed to current user');
-    }
-
-    // Decrypt event content
-    String decryptedContent;
-    try {
-      decryptedContent = await _loginService.decryptFromSender(
-        encryptedText: event.content,
-        senderPubkey: event.pubKey,
-      );
-    } catch (e) {
-      Log.error('Error decrypting shard confirmation event content', e);
-      throw Exception('Failed to decrypt shard confirmation event content: $e');
-    }
-
-    // Parse decrypted JSON
-    Map<String, dynamic> payload;
-    try {
-      payload = jsonDecode(decryptedContent) as Map<String, dynamic>;
-    } catch (e) {
-      Log.error('Error parsing shard confirmation event JSON', e);
-      throw Exception('Invalid JSON in shard confirmation event content: $e');
-    }
-
-    // Validate payload
-    final payloadLockboxId = payload['lockboxId'] as String?;
-    final payloadShardIndex = payload['shardIndex'] as int?;
-
-    if (payloadLockboxId != lockboxId) {
-      throw ArgumentError('Lockbox ID mismatch in shard confirmation event payload');
-    }
-
-    if (payloadShardIndex != shardIndex) {
-      throw ArgumentError('Shard index mismatch in shard confirmation event payload');
     }
 
     // Update key holder status

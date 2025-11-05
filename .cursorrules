@@ -142,3 +142,29 @@ final currentKeyProvider = FutureProvider<String?>((ref) async {
   - Logging for human readability
   - Error messages shown to users
   - Configuration files that users edit
+
+## Nostr Event Payload Conventions
+
+### Snake Case for Raw Nostr Events
+- **Always use snake_case (not camelCase) for JSON payloads in raw Nostr events**
+  - NDK automatically converts snake_case to camelCase when processing events
+  - This ensures consistency across the Nostr protocol
+  - Examples: `lockbox_id`, `shard_index`, `invite_code`, `confirmed_at`
+
+**Example:**
+```dart
+// ✅ Good: Use snake_case in Nostr event payloads
+final confirmationData = {
+  'type': 'shard_confirmation',
+  'lockbox_id': lockboxId,
+  'shard_index': shardIndex,
+  'key_holder_pubkey': currentPubkey,
+  'confirmed_at': DateTime.now().toIso8601String(),
+};
+
+// ❌ Bad: Don't use camelCase in Nostr event payloads
+final confirmationData = {
+  'lockboxId': lockboxId,  // Wrong - NDK expects snake_case
+  'shardIndex': shardIndex,
+};
+```

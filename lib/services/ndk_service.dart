@@ -6,6 +6,7 @@ import '../providers/key_provider.dart';
 import 'login_service.dart';
 import 'lockbox_share_service.dart';
 import 'invitation_service.dart';
+import 'shard_distribution_service.dart';
 import 'logger.dart';
 import '../models/nostr_kinds.dart';
 import '../models/shard_data.dart';
@@ -30,10 +31,9 @@ class RecoveryResponseEvent {
 
 // Provider for NdkService
 final Provider<NdkService> ndkServiceProvider = Provider<NdkService>((ref) {
-  final lockboxShareService = ref.watch(lockboxShareServiceProvider);
   final loginService = ref.read(loginServiceProvider);
   final service = NdkService(
-    lockboxShareService: lockboxShareService,
+    ref: ref,
     loginService: loginService,
     getInvitationService: () => ref.read(invitationServiceProvider),
   );
@@ -49,7 +49,7 @@ final Provider<NdkService> ndkServiceProvider = Provider<NdkService>((ref) {
 /// Service for managing NDK (Nostr Development Kit) connections and subscriptions
 /// Handles real-time listening for recovery requests and key share events
 class NdkService {
-  final LockboxShareService lockboxShareService;
+  final Ref _ref;
   final LoginService _loginService;
   final InvitationService Function() _getInvitationService;
 
@@ -72,10 +72,11 @@ class NdkService {
   Stream<RecoveryResponseEvent> get recoveryResponseStream => _recoveryResponseController.stream;
 
   NdkService({
-    required this.lockboxShareService,
+    required Ref ref,
     required LoginService loginService,
     required InvitationService Function() getInvitationService,
-  })  : _loginService = loginService,
+  })  : _ref = ref,
+        _loginService = loginService,
         _getInvitationService = getInvitationService;
 
   /// Initialize NDK with current user's key and set up subscriptions
@@ -207,6 +208,8 @@ class NdkService {
       final unwrappedEvent = await _ndk!.giftWrap.fromGiftWrap(giftWrap: event);
 
       Log.info('Unwrapped event: kind=${unwrappedEvent.kind}, id=${unwrappedEvent.id}');
+      Log.debug('Gift wrap event tags: ${event.tags}');
+      Log.debug('Unwrapped event tags: ${unwrappedEvent.tags}');
 
       // Route based on the inner event kind
       if (unwrappedEvent.kind == NostrKind.shardData.value) {
@@ -219,6 +222,8 @@ class NdkService {
         await _handleInvitationRsvp(unwrappedEvent);
       } else if (unwrappedEvent.kind == NostrKind.invitationDenial.value) {
         await _handleInvitationDenial(unwrappedEvent);
+      } else if (unwrappedEvent.kind == NostrKind.shardConfirmation.value) {
+        await _handleShardConfirmation(unwrappedEvent);
       } else {
         Log.warning('Unknown gift wrap inner kind: ${unwrappedEvent.kind}');
       }
@@ -237,9 +242,16 @@ class NdkService {
       final shardData = shardDataFromJson(shardJson);
       Log.debug('Shard data: $shardData');
 
-      // Store the shard data
-      final lockboxId = shardData.lockboxId ?? 'unknown';
-      await lockboxShareService.addLockboxShare(lockboxId, shardData);
+      // Store the shard data and send confirmation event
+      // This handles the complete invitation flow
+      final lockboxId = shardData.lockboxId;
+      if (lockboxId == null || lockboxId.isEmpty) {
+        Log.error('Cannot process shard data event ${event.id}: missing lockboxId in shard data');
+        return;
+      }
+
+      final lockboxShareService = _ref.read(lockboxShareServiceProvider);
+      await lockboxShareService.processLockboxShare(lockboxId, shardData);
     } catch (e) {
       Log.error('Error handling shard data event ${event.id}', e);
     }
@@ -298,6 +310,7 @@ class NdkService {
         shardData = shardDataFromJson(shardDataJson);
 
         // Store as a recovery shard (not a key holder shard)
+        final lockboxShareService = _ref.read(lockboxShareServiceProvider);
         await lockboxShareService.addRecoveryShard(recoveryRequestId, shardData);
 
         Log.info(
@@ -343,6 +356,19 @@ class NdkService {
       Log.info('Successfully processed denial event: ${event.id}');
     } catch (e) {
       Log.error('Error handling invitation denial event ${event.id}', e);
+    }
+  }
+
+  /// Handle incoming shard confirmation event (kind 1342)
+  Future<void> _handleShardConfirmation(Nip01Event event) async {
+    try {
+      Log.info('Processing shard confirmation event: ${event.id}');
+      Log.debug('Shard confirmation event tags: ${event.tags}');
+      final shardDistributionService = _ref.read(shardDistributionServiceProvider);
+      await shardDistributionService.processShardConfirmationEvent(event: event);
+      Log.info('Successfully processed shard confirmation event: ${event.id}');
+    } catch (e) {
+      Log.error('Error handling shard confirmation event ${event.id}', e);
     }
   }
 
