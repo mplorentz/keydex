@@ -1,16 +1,19 @@
 /// Enum representing the status of a key holder
 enum KeyHolderStatus {
-  /// Key holder added but gift wrap event not yet published
-  pending,
+  /// Invitation sent, awaiting acceptance
+  invited,
 
-  /// Gift wrap event published and key holder is responsive
-  active,
+  /// Key share is being prepared for distribution OR invitation accepted, awaiting shard distribution
+  awaitingKey,
 
-  /// Key holder has acknowledged receipt of their key share
-  acknowledged,
+  /// Shard received and confirmed (key holder is holding their key)
+  holdingKey,
 
   /// Key holder is unresponsive or offline
   inactive,
+
+  /// Error occurred during invitation or shard processing
+  error,
 
   /// Key holder removed from backup configuration
   revoked,
@@ -21,14 +24,16 @@ extension KeyHolderStatusExtension on KeyHolderStatus {
   /// Get a human-readable description of the status
   String get description {
     switch (this) {
-      case KeyHolderStatus.pending:
-        return 'Key share is being prepared for distribution';
-      case KeyHolderStatus.active:
-        return 'Key share has been sent and key holder is responsive';
-      case KeyHolderStatus.acknowledged:
+      case KeyHolderStatus.invited:
+        return 'Invitation sent, awaiting acceptance';
+      case KeyHolderStatus.awaitingKey:
+        return 'Awaiting key share distribution';
+      case KeyHolderStatus.holdingKey:
         return 'Key holder has confirmed receipt of their key share';
       case KeyHolderStatus.inactive:
         return 'Key holder is unresponsive or offline';
+      case KeyHolderStatus.error:
+        return 'Error occurred during invitation or shard processing';
       case KeyHolderStatus.revoked:
         return 'Key holder has been removed from backup';
     }
@@ -37,14 +42,16 @@ extension KeyHolderStatusExtension on KeyHolderStatus {
   /// Get a short label for the status
   String get label {
     switch (this) {
-      case KeyHolderStatus.pending:
-        return 'Pending';
-      case KeyHolderStatus.active:
-        return 'Active';
-      case KeyHolderStatus.acknowledged:
-        return 'Acknowledged';
+      case KeyHolderStatus.invited:
+        return 'Invited';
+      case KeyHolderStatus.awaitingKey:
+        return 'Awaiting Key';
+      case KeyHolderStatus.holdingKey:
+        return 'Holding Key';
       case KeyHolderStatus.inactive:
         return 'Inactive';
+      case KeyHolderStatus.error:
+        return 'Error';
       case KeyHolderStatus.revoked:
         return 'Revoked';
     }
@@ -52,35 +59,46 @@ extension KeyHolderStatusExtension on KeyHolderStatus {
 
   /// Check if the key holder is active (can participate in recovery)
   bool get isActive {
-    return this == KeyHolderStatus.active || this == KeyHolderStatus.acknowledged;
+    return this == KeyHolderStatus.awaitingKey || this == KeyHolderStatus.holdingKey;
   }
 
   /// Check if the key holder has confirmed receipt
   bool get hasConfirmed {
-    return this == KeyHolderStatus.acknowledged;
+    return this == KeyHolderStatus.holdingKey;
   }
 
   /// Check if the key holder is available for recovery
   bool get isAvailable {
-    return this == KeyHolderStatus.active || this == KeyHolderStatus.acknowledged;
+    return this == KeyHolderStatus.awaitingKey || this == KeyHolderStatus.holdingKey;
   }
 
   /// Check if the key holder is problematic
   bool get isProblematic {
-    return this == KeyHolderStatus.inactive || this == KeyHolderStatus.revoked;
+    return this == KeyHolderStatus.inactive ||
+        this == KeyHolderStatus.revoked ||
+        this == KeyHolderStatus.error;
+  }
+
+  /// Check if the status is terminal (no further transitions expected)
+  bool get isTerminal {
+    return this == KeyHolderStatus.holdingKey ||
+        this == KeyHolderStatus.revoked ||
+        this == KeyHolderStatus.error;
   }
 
   /// Get the appropriate color for UI display
   String get colorName {
     switch (this) {
-      case KeyHolderStatus.pending:
+      case KeyHolderStatus.invited:
         return 'orange';
-      case KeyHolderStatus.active:
+      case KeyHolderStatus.awaitingKey:
         return 'blue';
-      case KeyHolderStatus.acknowledged:
+      case KeyHolderStatus.holdingKey:
         return 'green';
       case KeyHolderStatus.inactive:
         return 'grey';
+      case KeyHolderStatus.error:
+        return 'red';
       case KeyHolderStatus.revoked:
         return 'red';
     }
@@ -89,14 +107,16 @@ extension KeyHolderStatusExtension on KeyHolderStatus {
   /// Get the appropriate icon name for UI display
   String get iconName {
     switch (this) {
-      case KeyHolderStatus.pending:
-        return 'schedule';
-      case KeyHolderStatus.active:
+      case KeyHolderStatus.invited:
+        return 'mail_outline';
+      case KeyHolderStatus.awaitingKey:
+        return 'hourglass_empty';
+      case KeyHolderStatus.holdingKey:
         return 'check_circle';
-      case KeyHolderStatus.acknowledged:
-        return 'verified';
       case KeyHolderStatus.inactive:
         return 'pause_circle';
+      case KeyHolderStatus.error:
+        return 'error_outline';
       case KeyHolderStatus.revoked:
         return 'cancel';
     }

@@ -5,12 +5,17 @@ import '../models/shard_data.dart';
 import '../models/lockbox.dart';
 import '../providers/lockbox_provider.dart';
 import 'logger.dart';
+import 'ndk_service.dart';
+import '../models/nostr_kinds.dart';
 
 /// Provider for LockboxShareService
 /// This service depends on LockboxRepository for shard management
 final lockboxShareServiceProvider = Provider<LockboxShareService>((ref) {
   final repository = ref.watch(lockboxRepositoryProvider);
-  return LockboxShareService(repository);
+  return LockboxShareService(
+    repository,
+    () => ref.read(ndkServiceProvider),
+  );
 });
 
 /// Service for managing lockbox shares and recovery operations
@@ -20,8 +25,9 @@ final lockboxShareServiceProvider = Provider<LockboxShareService>((ref) {
 /// 2. Recovery shards: Shards we collect during recovery (multiple per recovery request)
 class LockboxShareService {
   final LockboxRepository repository;
+  final NdkService Function() _getNdkService;
 
-  LockboxShareService(this.repository);
+  LockboxShareService(this.repository, this._getNdkService);
   static const String _shardDataKey = 'lockbox_shard_data';
   static const String _recoveryShardDataKey = 'recovery_shard_data';
 
@@ -184,13 +190,122 @@ class LockboxShareService {
     Log.info('Added shard for lockbox $lockboxId (event: ${shardData.nostrEventId})');
   }
 
+  /// Process a received lockbox share (invitation flow)
+  ///
+  /// This method handles the complete flow when an invitee receives a shard:
+  /// 1. Stores the shard via addLockboxShare
+  /// 2. Sends a confirmation event to notify the owner
+  ///
+  /// Uses relay URLs from the shard data (included during distribution).
+  Future<void> processLockboxShare(String lockboxId, ShardData shardData) async {
+    // Validate shard data
+    if (!shardData.isValid) {
+      throw ArgumentError('Invalid shard data');
+    }
+
+    // Store the shard first
+    await addLockboxShare(lockboxId, shardData);
+
+    // Send shard confirmation event after successfully storing the shard
+    // This is required for invitation flow - the owner needs to know the invitee received the shard
+    try {
+      // Get relay URLs from shard data (included during distribution from backup config)
+      if (shardData.relayUrls != null && shardData.relayUrls!.isNotEmpty) {
+        final ownerPubkey = shardData.creatorPubkey;
+        final shardIndex = shardData.shardIndex;
+
+        // Send confirmation event
+        final eventId = await sendShardConfirmationEvent(
+          lockboxId: lockboxId,
+          shardIndex: shardIndex,
+          ownerPubkey: ownerPubkey,
+          relayUrls: shardData.relayUrls!,
+        );
+
+        if (eventId != null) {
+          Log.info(
+              'Sent shard confirmation event $eventId for lockbox $lockboxId, shard $shardIndex');
+        } else {
+          Log.warning(
+              'Failed to send shard confirmation event for lockbox $lockboxId, shard $shardIndex');
+        }
+      } else {
+        Log.warning(
+            'No relay URLs found in shard data for lockbox $lockboxId - cannot send shard confirmation event');
+      }
+    } catch (e) {
+      Log.error('Error sending shard confirmation event for lockbox $lockboxId', e);
+      // Don't fail shard storage if confirmation sending fails
+    }
+  }
+
+  /// Creates and publishes shard confirmation event
+  ///
+  /// Creates confirmation event with empty content.
+  /// All confirmation data is stored in tags.
+  /// Encrypts using NIP-44.
+  /// Creates Nostr event (kind 1342).
+  /// Signs with key holder's private key.
+  /// Publishes to relays.
+  /// Returns event ID.
+  Future<String?> sendShardConfirmationEvent({
+    required String lockboxId,
+    required int shardIndex,
+    required String ownerPubkey, // Hex format
+    required List<String> relayUrls,
+  }) async {
+    try {
+      final ndkService = _getNdkService();
+      final currentPubkey = await ndkService.getCurrentPubkey();
+      if (currentPubkey == null) {
+        Log.error('No key pair available for sending shard confirmation event');
+        return null;
+      }
+
+      Log.info(
+          'Sending shard confirmation event for lockbox: ${lockboxId.substring(0, 8)}..., shard: $shardIndex');
+
+      // Publish using NdkService with empty content, all data in tags
+      return await ndkService.publishGiftWrapEvent(
+        content: '',
+        kind: NostrKind.shardConfirmation.value,
+        recipientPubkey: ownerPubkey,
+        relays: relayUrls,
+        tags: [
+          ['lockbox_id', lockboxId],
+          ['shard_index', shardIndex.toString()],
+          ['key_holder_pubkey', currentPubkey],
+          ['confirmed_at', DateTime.now().toIso8601String()],
+        ],
+      );
+    } catch (e) {
+      Log.error('Error sending shard confirmation event', e);
+      return null;
+    }
+  }
+
   /// Ensure a lockbox record exists for received shares
   Future<void> _ensureLockboxExists(String lockboxId, ShardData shardData) async {
     try {
       // Check if lockbox already exists
       final existingLockbox = await repository.getLockbox(lockboxId);
       if (existingLockbox != null) {
-        Log.info('Lockbox $lockboxId already exists');
+        // Lockbox exists - check if it's a stub (no shards, no content)
+        // If stub, update it with shard data
+        if (existingLockbox.shards.isEmpty && existingLockbox.content == null) {
+          // This is a stub lockbox created when invitation was accepted
+          // Update it with shard data and name from ShardData if available
+          final updatedLockbox = existingLockbox.copyWith(
+            name: shardData.lockboxName ?? existingLockbox.name,
+            // createdAt stays the same (from invitation)
+            // ownerPubkey stays the same (from invitation)
+            // shards will be added via addShardToLockbox below
+          );
+          await repository.saveLockbox(updatedLockbox);
+          Log.info('Updated stub lockbox $lockboxId with shard data');
+        } else {
+          Log.info('Lockbox $lockboxId already exists with shards/content');
+        }
         return;
       }
 

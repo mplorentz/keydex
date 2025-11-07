@@ -6,16 +6,19 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:meta/meta.dart';
 import 'logger.dart';
 
-/// Key management service for storing Nostr keys securely
+/// Login service for managing user's Nostr authentication credentials
 /// Only stores the private key - public key is derived as needed
-class KeyService {
+class LoginService {
   static const _storage = FlutterSecureStorage();
   static const String _nostrPrivateKeyKey = 'nostr_private_key';
 
   static KeyPair? _cachedKeyPair;
 
+  // Regular constructor - Riverpod manages the singleton behavior
+  LoginService();
+
   /// Generate a new Nostr key pair and store only the private key securely
-  static Future<KeyPair> generateAndStoreNostrKey() async {
+  Future<KeyPair> generateAndStoreNostrKey() async {
     Log.info('Generating and storing new Nostr key pair');
     final keyPair = Bip340.generatePrivateKey();
 
@@ -28,7 +31,7 @@ class KeyService {
   }
 
   /// Get the stored Nostr key pair, deriving public key from private key
-  static Future<KeyPair?> getStoredNostrKey() async {
+  Future<KeyPair?> getStoredNostrKey() async {
     if (_cachedKeyPair != null) {
       return _cachedKeyPair;
     }
@@ -59,7 +62,7 @@ class KeyService {
   }
 
   /// Initialize key (generate if doesn't exist, or load existing)
-  static Future<KeyPair> initializeKey() async {
+  Future<KeyPair> initializeKey() async {
     final existingKey = await getStoredNostrKey();
     if (existingKey != null) {
       return existingKey;
@@ -71,20 +74,20 @@ class KeyService {
 
   /// Get the current user's public key
   /// Returns null if no key has been initialized
-  static Future<String?> getCurrentPublicKey() async {
+  Future<String?> getCurrentPublicKey() async {
     final keyPair = await getStoredNostrKey();
     return keyPair?.publicKey;
   }
 
   /// Get the current user's public key in bech32 format (npub)
   /// Returns null if no key has been initialized
-  static Future<String?> getCurrentPublicKeyBech32() async {
+  Future<String?> getCurrentPublicKeyBech32() async {
     final keyPair = await getStoredNostrKey();
     return keyPair?.publicKeyBech32;
   }
 
   /// Encrypt text using NIP-44 (self-encryption)
-  static Future<String> encryptText(String plaintext) async {
+  Future<String> encryptText(String plaintext) async {
     final keyPair = await getStoredNostrKey();
     if (keyPair?.privateKey == null || keyPair?.publicKey == null) {
       throw Exception('No key pair available for encryption');
@@ -99,7 +102,7 @@ class KeyService {
   }
 
   /// Decrypt text using NIP-44 (self-decryption)
-  static Future<String> decryptText(String encryptedText) async {
+  Future<String> decryptText(String encryptedText) async {
     final keyPair = await getStoredNostrKey();
     if (keyPair?.privateKey == null || keyPair?.publicKey == null) {
       throw Exception('No key pair available for decryption');
@@ -114,19 +117,19 @@ class KeyService {
   }
 
   /// Clear stored keys (for testing or reset purposes)
-  static Future<void> clearStoredKeys() async {
+  Future<void> clearStoredKeys() async {
     await _storage.delete(key: _nostrPrivateKeyKey);
     _cachedKeyPair = null;
   }
 
   /// Test-only helper to reset the in-memory cache without touching storage
   @visibleForTesting
-  static void resetCacheForTest() {
+  void resetCacheForTest() {
     _cachedKeyPair = null;
   }
 
   /// Convert bech32 npub to hex public key
-  static String? npubToHex(String npub) {
+  String? npubToHex(String npub) {
     try {
       final decoded = Helpers.decodeBech32(npub);
       return decoded[0]; // First element is the hex key
@@ -137,7 +140,7 @@ class KeyService {
   }
 
   /// Encrypt text for a specific recipient using NIP-44
-  static Future<String> encryptForRecipient({
+  Future<String> encryptForRecipient({
     required String plaintext,
     required String recipientPubkey, // Expects hex public key
   }) async {
@@ -155,7 +158,7 @@ class KeyService {
   }
 
   /// Decrypt text from a specific sender using NIP-44
-  static Future<String> decryptFromSender({
+  Future<String> decryptFromSender({
     required String encryptedText,
     required String senderPubkey, // Expects hex public key
   }) async {
@@ -172,3 +175,4 @@ class KeyService {
     );
   }
 }
+

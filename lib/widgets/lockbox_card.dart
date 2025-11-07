@@ -26,6 +26,7 @@ class LockboxCard extends ConsumerWidget {
 
     // Determine icon based on lockbox state
     IconData stateIcon;
+    Color? iconColor;
 
     switch (lockbox.state) {
       case LockboxState.recovery:
@@ -36,6 +37,9 @@ class LockboxCard extends ConsumerWidget {
         break;
       case LockboxState.keyHolder:
         stateIcon = Icons.key;
+        break;
+      case LockboxState.awaitingKey:
+        stateIcon = Icons.hourglass_empty;
         break;
     }
 
@@ -73,7 +77,7 @@ class LockboxCard extends ConsumerWidget {
                 ),
                 child: Icon(
                   stateIcon,
-                  color: theme.scaffoldBackgroundColor,
+                  color: iconColor ?? theme.scaffoldBackgroundColor,
                   size: 24,
                 ),
               ),

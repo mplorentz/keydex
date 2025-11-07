@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import '../models/key_holder.dart';
+import '../models/key_holder_status.dart';
+import '../models/backup_status.dart';
 import '../models/lockbox.dart';
+import '../models/invitation_link.dart';
 import '../services/backup_service.dart';
+import '../services/invitation_service.dart';
 import '../providers/lockbox_provider.dart';
 
 /// Backup configuration screen for setting up distributed backup
@@ -25,16 +30,28 @@ class BackupConfigScreen extends ConsumerStatefulWidget {
 
 class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
   int _threshold = LockboxBackupConstraints.defaultThreshold;
-  int _totalKeys = LockboxBackupConstraints.defaultTotalKeys;
   final List<KeyHolder> _keyHolders = [];
   final List<String> _relays = ['ws://localhost:10547'];
   bool _isCreating = false;
   bool _isLoading = true;
+  bool _hasUnsavedChanges = false;
+
+  // Invitation link generation state
+  final TextEditingController _inviteeNameController = TextEditingController();
+  // Map to track invitation links by invitee name
+  final Map<String, InvitationLink> _invitationLinksByInviteeName = {};
+  bool _isGeneratingInvitation = false;
 
   @override
   void initState() {
     super.initState();
     _loadExistingConfig();
+  }
+
+  @override
+  void dispose() {
+    _inviteeNameController.dispose();
+    super.dispose();
   }
 
   /// Load existing backup configuration if one exists
@@ -46,13 +63,16 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
       if (existingConfig != null && mounted) {
         setState(() {
           _threshold = existingConfig.threshold;
-          _totalKeys = existingConfig.totalKeys;
           _keyHolders.clear();
           _keyHolders.addAll(existingConfig.keyHolders);
           _relays.clear();
           _relays.addAll(existingConfig.relays);
           _isLoading = false;
+          _hasUnsavedChanges = false;
         });
+
+        // Load existing invitations and match them to key holders
+        await _loadExistingInvitations();
       } else {
         if (mounted) {
           setState(() {
@@ -81,252 +101,251 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
       );
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Backup Configuration'),
-        centerTitle: false,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Threshold and Total Keys Configuration
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Backup Settings', style: Theme.of(context).textTheme.headlineSmall),
-                    const SizedBox(height: 16),
-                    Text('Threshold: $_threshold (minimum keys needed)'),
-                    Slider(
-                      value: _threshold.toDouble(),
-                      min: LockboxBackupConstraints.minThreshold.toDouble(),
-                      max: _totalKeys.toDouble(),
-                      divisions: (_totalKeys - LockboxBackupConstraints.minThreshold) > 0
-                          ? _totalKeys - LockboxBackupConstraints.minThreshold
-                          : null,
-                      onChanged: (value) {
-                        setState(() {
-                          _threshold = value.round();
-                        });
-                      },
-                    ),
-                    Text('Total Keys: $_totalKeys'),
-                    Slider(
-                      value: _totalKeys.toDouble(),
-                      min: _threshold.toDouble(),
-                      max: LockboxBackupConstraints.maxTotalKeys.toDouble(),
-                      divisions: (LockboxBackupConstraints.maxTotalKeys - _threshold) > 0
-                          ? LockboxBackupConstraints.maxTotalKeys - _threshold
-                          : null,
-                      onChanged: (value) {
-                        setState(() {
-                          _totalKeys = value.round();
-                          if (_threshold > _totalKeys) {
-                            _threshold = _totalKeys;
-                          }
-                        });
-                      },
-                    ),
-                  ],
-                ),
+    return WillPopScope(
+      onWillPop: () async {
+        if (_hasUnsavedChanges) {
+          final shouldDiscard = await showDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Discard Changes?'),
+              content: const Text(
+                'You have unsaved changes. Are you sure you want to discard them?',
               ),
-            ),
-            const SizedBox(height: 16),
-
-            // Key Holders Section
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Key Holders (${_keyHolders.length}/$_totalKeys)',
-                          style: Theme.of(context).textTheme.headlineSmall,
-                        ),
-                        ElevatedButton.icon(
-                          onPressed: _addKeyHolder,
-                          icon: const Icon(Icons.add),
-                          label: const Text('Add Contact'),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    if (_keyHolders.isEmpty)
-                      const Text(
-                        'No key holders added yet. Add trusted contacts to distribute backup keys.',
-                      )
-                    else
-                      ..._keyHolders.map(
-                        (holder) => ListTile(
-                          leading: const Icon(Icons.person),
-                          title: Text(holder.displayName),
-                          subtitle: Text(holder.npub),
-                          trailing: IconButton(
-                            icon: const Icon(Icons.remove_circle),
-                            onPressed: () {
-                              setState(() {
-                                _keyHolders.remove(holder);
-                              });
-                            },
-                          ),
-                        ),
-                      ),
-                  ],
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('Cancel'),
                 ),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Relay Configuration
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Nostr Relays', style: Theme.of(context).textTheme.headlineSmall),
-                    const SizedBox(height: 16),
-                    ..._relays.map(
-                      (relay) => ListTile(
-                        leading: const Icon(Icons.cloud),
-                        title: Text(relay),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.remove_circle),
-                          onPressed: () {
-                            if (_relays.length > 1) {
-                              setState(() {
-                                _relays.remove(relay);
-                              });
-                            }
-                          },
-                        ),
-                      ),
-                    ),
-                    ElevatedButton.icon(
-                      onPressed: _addRelay,
-                      icon: const Icon(Icons.add),
-                      label: const Text('Add Relay'),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            const Spacer(),
-
-            // Action Buttons
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('Cancel'),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: _canCreateBackup() && !_isCreating ? _createBackup : null,
-                    child: _isCreating
-                        ? const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              ),
-                              SizedBox(width: 8),
-                              Text('Creating...'),
-                            ],
-                          )
-                        : const Text('Create Backup'),
-                  ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text('Discard'),
                 ),
               ],
             ),
-          ],
+          );
+          return shouldDiscard ?? false;
+        }
+        return true;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Backup Configuration'),
+          centerTitle: false,
+        ),
+        body: ScrollConfiguration(
+          behavior: const ScrollBehavior().copyWith(scrollbars: false),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 0),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Threshold and Total Keys Configuration
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Backup Settings', style: Theme.of(context).textTheme.headlineSmall),
+                          const SizedBox(height: 16),
+                          Text('Threshold: $_threshold (minimum keys needed)'),
+                          Slider(
+                            value: _threshold.toDouble(),
+                            min: LockboxBackupConstraints.minThreshold.toDouble(),
+                            max: _keyHolders.isEmpty
+                                ? LockboxBackupConstraints.maxTotalKeys.toDouble()
+                                : _keyHolders.length.toDouble(),
+                            divisions: (_keyHolders.isEmpty
+                                            ? LockboxBackupConstraints.maxTotalKeys
+                                            : _keyHolders.length) -
+                                        LockboxBackupConstraints.minThreshold >
+                                    0
+                                ? (_keyHolders.isEmpty
+                                        ? LockboxBackupConstraints.maxTotalKeys
+                                        : _keyHolders.length) -
+                                    LockboxBackupConstraints.minThreshold
+                                : null,
+                            onChanged: _keyHolders.isEmpty
+                                ? null
+                                : (value) {
+                                    setState(() {
+                                      _threshold = value.round();
+                                      _hasUnsavedChanges = true;
+                                    });
+                                  },
+                          ),
+                          if (_keyHolders.isEmpty)
+                            Text(
+                              'Add key holders to configure threshold',
+                              style: Theme.of(context).textTheme.bodySmall,
+                            )
+                          else
+                            Text(
+                              'Total Keys: ${_keyHolders.length} (automatically set)',
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Unified Key Holders Section
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Key Holders (${_keyHolders.length})',
+                                style: Theme.of(context).textTheme.headlineSmall,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Add Key Holder Input Section
+                          TextField(
+                            controller: _inviteeNameController,
+                            decoration: const InputDecoration(
+                              labelText: 'Invitee Name',
+                              hintText: 'Enter name for the invitee',
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: ElevatedButton.icon(
+                                  onPressed: (_isGeneratingInvitation || _relays.isEmpty)
+                                      ? null
+                                      : _generateInvitationLink,
+                                  icon: _isGeneratingInvitation
+                                      ? const SizedBox(
+                                          width: 16,
+                                          height: 16,
+                                          child: CircularProgressIndicator(strokeWidth: 2),
+                                        )
+                                      : const Icon(Icons.link),
+                                  label: Text(_isGeneratingInvitation
+                                      ? 'Generating...'
+                                      : 'Generate Invitation Link'),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: _addKeyHolderManually,
+                                  icon: const Icon(Icons.person_add),
+                                  label: const Text('Add Manually'),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Key Holders List
+                          if (_keyHolders.isEmpty)
+                            const Text(
+                              'No key holders added yet. Add trusted contacts to distribute backup keys.',
+                            )
+                          else
+                            ..._keyHolders.map(
+                              (holder) => _buildKeyHolderListItem(holder),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Relay Configuration
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Nostr Relays', style: Theme.of(context).textTheme.headlineSmall),
+                          const SizedBox(height: 16),
+                          ..._relays.map(
+                            (relay) => ListTile(
+                              leading: const Icon(Icons.cloud),
+                              title: Text(relay),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.remove_circle),
+                                onPressed: () {
+                                  if (_relays.length > 1) {
+                                    setState(() {
+                                      _relays.remove(relay);
+                                      _hasUnsavedChanges = true;
+                                    });
+                                  }
+                                },
+                              ),
+                            ),
+                          ),
+                          ElevatedButton.icon(
+                            onPressed: _addRelay,
+                            icon: const Icon(Icons.add),
+                            label: const Text('Add Relay'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Action Buttons
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: _handleCancel,
+                          child: const Text('Cancel'),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: _canCreateBackup() && !_isCreating ? _saveBackup : null,
+                          child: _isCreating
+                              ? const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                    ),
+                                    SizedBox(width: 8),
+                                    Text('Saving...'),
+                                  ],
+                                )
+                              : const Text('Save'),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16), // Bottom padding inside scroll view
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );
   }
 
   bool _canCreateBackup() {
-    return _keyHolders.length == _totalKeys && _relays.isNotEmpty;
-  }
-
-  Future<void> _addKeyHolder() async {
-    final npubController = TextEditingController();
-    final nameController = TextEditingController();
-
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Add Key Holder'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: npubController,
-              decoration: const InputDecoration(
-                labelText: 'Nostr Public Key (npub)',
-                hintText: 'npub1...',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(
-                labelText: 'Display Name (optional)',
-                hintText: 'Alice',
-                border: OutlineInputBorder(),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text('Add')),
-        ],
-      ),
-    );
-
-    if (result == true) {
-      try {
-        // Convert bech32 npub to hex pubkey
-        final npub = npubController.text.trim();
-        final decoded = Helpers.decodeBech32(npub);
-        if (decoded[0].isEmpty) {
-          throw Exception('Invalid npub format: $npub');
-        }
-
-        final keyHolder = createKeyHolder(
-          pubkey: decoded[0], // Hex format
-          name: nameController.text.trim().isEmpty ? null : nameController.text.trim(),
-        );
-
-        setState(() {
-          _keyHolders.add(keyHolder);
-        });
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Invalid key holder: $e'), backgroundColor: Colors.red),
-          );
-        }
-      }
-    }
+    return _keyHolders.isNotEmpty && _relays.isNotEmpty;
   }
 
   Future<void> _addRelay() async {
@@ -384,6 +403,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
 
         setState(() {
           _relays.add(relayUrl);
+          _hasUnsavedChanges = true;
         });
       } catch (e) {
         if (mounted) {
@@ -395,32 +415,416 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
     }
   }
 
-  Future<void> _createBackup() async {
-    if (!_canCreateBackup()) return;
+  Future<void> _generateInvitationLink() async {
+    final inviteeName = _inviteeNameController.text.trim();
+    if (inviteeName.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter an invitee name'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    if (_relays.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please add at least one relay before generating an invitation'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    // Check if key holder with this name already exists
+    if (_keyHolders.any((holder) => holder.name == inviteeName)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('A key holder with the name "$inviteeName" already exists'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    // Limit to first 3 relays as per design
+    final relayUrls = _relays.take(3).toList();
 
     setState(() {
-      _isCreating = true;
+      _isGeneratingInvitation = true;
     });
 
     try {
-      final repository = ref.read(lockboxRepositoryProvider);
-
-      // Create/recreate the backup configuration and distribute shards
-      // BackupService will handle overwriting existing config
-      await BackupService.createAndDistributeBackup(
+      final invitationService = ref.read(invitationServiceProvider);
+      final invitation = await invitationService.generateInvitationLink(
         lockboxId: widget.lockboxId,
-        threshold: _threshold,
-        totalKeys: _totalKeys,
-        keyHolders: _keyHolders,
-        relays: _relays,
-        repository: repository,
+        inviteeName: inviteeName,
+        relayUrls: relayUrls,
       );
 
       if (mounted) {
-        Navigator.pop(context, true);
+        // Create invited key holder and add to list
+        final invitedKeyHolder = createInvitedKeyHolder(
+          name: inviteeName,
+          inviteCode: invitation.inviteCode,
+        );
+
+        setState(() {
+          _keyHolders.add(invitedKeyHolder);
+          _invitationLinksByInviteeName[inviteeName] = invitation;
+          _inviteeNameController.clear();
+          _hasUnsavedChanges = true;
+        });
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Backup created successfully!'),
+            content: Text('Invitation link generated and key holder added!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        String errorMessage = 'Failed to generate invitation link';
+        if (e is ArgumentError) {
+          errorMessage = e.message ?? errorMessage;
+        } else {
+          errorMessage = '$errorMessage: $e';
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isGeneratingInvitation = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _addKeyHolderManually() async {
+    final inviteeName = _inviteeNameController.text.trim();
+    if (inviteeName.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter an invitee name first'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    final npubController = TextEditingController();
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Add Key Holder Manually'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Adding: $inviteeName',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: npubController,
+              decoration: const InputDecoration(
+                labelText: 'Nostr Public Key (npub)',
+                hintText: 'npub1...',
+                border: OutlineInputBorder(),
+              ),
+              autofocus: true,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text('Add')),
+        ],
+      ),
+    );
+
+    if (result == true) {
+      try {
+        // Convert bech32 npub to hex pubkey
+        final npub = npubController.text.trim();
+        final decoded = Helpers.decodeBech32(npub);
+        if (decoded[0].isEmpty) {
+          throw Exception('Invalid npub format: $npub');
+        }
+
+        // Check if key holder with this pubkey already exists
+        if (_keyHolders.any((holder) => holder.pubkey == decoded[0])) {
+          throw Exception('A key holder with this public key already exists');
+        }
+
+        final keyHolder = createKeyHolder(
+          pubkey: decoded[0], // Hex format
+          name: inviteeName,
+        );
+
+        setState(() {
+          _keyHolders.add(keyHolder);
+          _inviteeNameController.clear();
+          _hasUnsavedChanges = true;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Key holder added successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Invalid key holder: $e'), backgroundColor: Colors.red),
+          );
+        }
+      }
+    }
+  }
+
+  Widget _buildKeyHolderListItem(KeyHolder holder) {
+    final invitation = holder.name != null ? _invitationLinksByInviteeName[holder.name] : null;
+    final isInvited = holder.status == KeyHolderStatus.invited;
+    final isMostRecentInvitation = invitation != null &&
+        _invitationLinksByInviteeName.values
+            .where((inv) => inv.createdAt.isAfter(invitation.createdAt))
+            .isEmpty;
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ListTile(
+            leading: Icon(
+              isInvited ? Icons.mail_outline : Icons.person,
+            ),
+            title: Text(holder.displayName),
+            subtitle: Text(holder.displaySubtitle),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (isInvited && invitation != null) ...[
+                  PopupMenuButton<String>(
+                    icon: const Icon(Icons.more_vert),
+                    onSelected: (value) {
+                      if (value == 'copy') {
+                        _copyInvitationLinkForHolder(invitation);
+                      } else if (value == 'regenerate') {
+                        _regenerateInvitationLink(holder, invitation);
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(
+                        value: 'copy',
+                        child: Row(
+                          children: [
+                            Icon(Icons.copy, size: 20),
+                            SizedBox(width: 8),
+                            Text('Copy Link'),
+                          ],
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'regenerate',
+                        child: Row(
+                          children: [
+                            Icon(Icons.refresh, size: 20),
+                            SizedBox(width: 8),
+                            Text('Regenerate Link'),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+                IconButton(
+                  icon: const Icon(Icons.remove_circle),
+                  onPressed: () => _removeKeyHolder(holder),
+                  tooltip: 'Remove key holder',
+                ),
+              ],
+            ),
+          ),
+          // Show invitation link preview for invited key holders
+          if (isInvited && invitation != null) ...[
+            const Divider(height: 1),
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (isMostRecentInvitation)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      margin: const EdgeInsets.only(bottom: 8),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        'Most Recent',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.onPrimaryContainer,
+                        ),
+                      ),
+                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          _truncateUrl(invitation.toUrl()),
+                          style: TextStyle(
+                            fontFamily: 'monospace',
+                            fontSize: 11,
+                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.copy, size: 18),
+                        onPressed: () => _copyInvitationLinkForHolder(invitation),
+                        tooltip: 'Copy invitation link',
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  String _truncateUrl(String url) {
+    if (url.length <= 60) return url;
+    return '${url.substring(0, 30)}...${url.substring(url.length - 27)}';
+  }
+
+  void _copyInvitationLinkForHolder(InvitationLink invitation) {
+    final url = invitation.toUrl();
+    Clipboard.setData(ClipboardData(text: url));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Invitation link copied to clipboard'),
+        duration: Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  Future<void> _loadExistingInvitations() async {
+    try {
+      final invitationService = ref.read(invitationServiceProvider);
+      final pendingInvitations = await invitationService.getPendingInvitations(widget.lockboxId);
+
+      // Match invitations to key holders by inviteeName
+      final updatedInvitations = <String, InvitationLink>{};
+      for (final invitation in pendingInvitations) {
+        if (invitation.inviteeName != null &&
+            _keyHolders.any((kh) => kh.name == invitation.inviteeName)) {
+          updatedInvitations[invitation.inviteeName!] = invitation;
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          _invitationLinksByInviteeName.clear();
+          _invitationLinksByInviteeName.addAll(updatedInvitations);
+        });
+      }
+    } catch (e) {
+      // Log error but don't fail loading
+      debugPrint('Error loading existing invitations: $e');
+    }
+  }
+
+  Future<void> _removeKeyHolder(KeyHolder holder) async {
+    // If this is an invited key holder, invalidate their invitation
+    if (holder.status == KeyHolderStatus.invited && holder.name != null) {
+      final invitation = _invitationLinksByInviteeName[holder.name];
+      if (invitation != null) {
+        try {
+          final invitationService = ref.read(invitationServiceProvider);
+          await invitationService.invalidateInvitation(
+            inviteCode: invitation.inviteCode,
+            reason: 'Key holder removed from backup configuration',
+          );
+        } catch (e) {
+          debugPrint('Error invalidating invitation: $e');
+          // Continue with removal even if invalidation fails
+        }
+      }
+    }
+
+    setState(() {
+      _keyHolders.remove(holder);
+      if (holder.name != null) {
+        _invitationLinksByInviteeName.remove(holder.name);
+      }
+
+      // Ensure threshold doesn't exceed the number of key holders
+      if (_keyHolders.isEmpty) {
+        _threshold = LockboxBackupConstraints.minThreshold;
+      } else if (_threshold > _keyHolders.length) {
+        _threshold = _keyHolders.length;
+      }
+
+      _hasUnsavedChanges = true;
+    });
+  }
+
+  Future<void> _regenerateInvitationLink(KeyHolder holder, InvitationLink oldInvitation) async {
+    if (holder.name == null) return;
+
+    setState(() {
+      _isGeneratingInvitation = true;
+    });
+
+    try {
+      final invitationService = ref.read(invitationServiceProvider);
+
+      // Invalidate old invitation
+      await invitationService.invalidateInvitation(
+        inviteCode: oldInvitation.inviteCode,
+        reason: 'Invitation link regenerated',
+      );
+
+      // Generate new invitation link
+      final relayUrls = oldInvitation.relayUrls;
+      final newInvitation = await invitationService.generateInvitationLink(
+        lockboxId: widget.lockboxId,
+        inviteeName: holder.name!,
+        relayUrls: relayUrls,
+      );
+
+      if (mounted) {
+        setState(() {
+          _invitationLinksByInviteeName[holder.name!] = newInvitation;
+          _hasUnsavedChanges = true;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Invitation link regenerated successfully!'),
             backgroundColor: Colors.green,
           ),
         );
@@ -428,7 +832,139 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to create backup: $e'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text('Failed to regenerate invitation link: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isGeneratingInvitation = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _handleCancel() async {
+    if (_hasUnsavedChanges) {
+      final shouldDiscard = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Discard Changes?'),
+          content: const Text(
+            'You have unsaved changes. Are you sure you want to discard them?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Discard'),
+            ),
+          ],
+        ),
+      );
+
+      if (shouldDiscard == true && mounted) {
+        Navigator.of(context).pop();
+      }
+    } else {
+      Navigator.of(context).pop();
+    }
+  }
+
+  Future<bool> _hasDistributedShards() async {
+    try {
+      final repository = ref.read(lockboxRepositoryProvider);
+      final lockbox = await repository.getLockbox(widget.lockboxId);
+      if (lockbox == null) return false;
+
+      final backupConfig = lockbox.backupConfig;
+      if (backupConfig == null) return false;
+
+      // Check if backup status is active (shards distributed)
+      if (backupConfig.status == BackupStatus.active) {
+        return true;
+      }
+
+      // Check if any key holder has a giftWrapEventId (shard distributed)
+      return backupConfig.keyHolders.any((kh) => kh.giftWrapEventId != null);
+    } catch (e) {
+      debugPrint('Error checking distributed shards: $e');
+      return false;
+    }
+  }
+
+  Future<void> _saveBackup() async {
+    if (!_canCreateBackup()) return;
+
+    // Check if shards have been distributed and show warning
+    final hasDistributed = await _hasDistributedShards();
+    if (hasDistributed) {
+      final shouldContinue = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Warning: Shards Already Distributed'),
+          content: const Text(
+            'Saving these changes will invalidate the distributed shards and require redistribution. Continue?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Continue'),
+            ),
+          ],
+        ),
+      );
+
+      if (shouldContinue != true) return;
+    }
+
+    setState(() {
+      _isCreating = true;
+    });
+
+    try {
+      final backupService = ref.read(backupServiceProvider);
+
+      // Use actual key holders count for totalKeys
+      final totalKeys = _keyHolders.length;
+
+      // Create/recreate the backup configuration (without distributing shares)
+      // Shares can be distributed later once all invites are confirmed
+      await backupService.saveBackupConfig(
+        lockboxId: widget.lockboxId,
+        threshold: _threshold,
+        totalKeys: totalKeys,
+        keyHolders: _keyHolders,
+        relays: _relays,
+      );
+
+      if (mounted) {
+        setState(() {
+          _hasUnsavedChanges = false;
+        });
+
+        Navigator.pop(context, true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Backup configuration saved successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to save backup: $e'), backgroundColor: Colors.red),
         );
       }
     } finally {

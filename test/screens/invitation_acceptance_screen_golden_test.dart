@@ -1,0 +1,558 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:golden_toolkit/golden_toolkit.dart';
+import 'package:keydex/models/invitation_link.dart';
+import 'package:keydex/models/invitation_status.dart';
+import 'package:keydex/providers/invitation_provider.dart';
+import 'package:keydex/providers/key_provider.dart';
+import 'package:keydex/screens/invitation_acceptance_screen.dart';
+import 'package:keydex/widgets/theme.dart';
+import '../helpers/golden_test_helpers.dart';
+
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  // Sample test data
+  final testPubkey = 'a' * 64; // 64-char hex pubkey
+  final ownerPubkey = 'b' * 64;
+  final inviteePubkey = 'c' * 64;
+
+  // Helper to create invitation links
+  InvitationLink createTestInvitation({
+    required String inviteCode,
+    required InvitationStatus status,
+    String? inviteeName,
+    List<String>? relayUrls,
+    String? redeemedBy,
+    DateTime? redeemedAt,
+  }) {
+    return (
+      inviteCode: inviteCode,
+      lockboxId: 'lockbox-123',
+      lockboxName: 'My Shared Lockbox',
+      ownerPubkey: ownerPubkey,
+      relayUrls: relayUrls ?? ['wss://relay.example.com'],
+      inviteeName: inviteeName,
+      createdAt: DateTime(2024, 10, 1, 10, 30),
+      status: status,
+      redeemedBy: redeemedBy,
+      redeemedAt: redeemedAt,
+    );
+  }
+
+  group('InvitationAcceptanceScreen Golden Tests', () {
+    testGoldens('loading state', (tester) async {
+      final container = ProviderContainer(
+        overrides: [
+          // Use a Stream that never emits to show loading state
+          invitationByCodeProvider('test-code').overrideWith(
+            (ref) => Stream<InvitationLink?>.multi((controller) {
+              // Never emit, keeping the stream in loading state
+              // Don't await anything - just return without emitting
+            }),
+          ),
+          currentPublicKeyProvider.overrideWith((ref) => Future.value(testPubkey)),
+        ],
+      );
+
+      await tester.pumpWidgetBuilder(
+        const InvitationAcceptanceScreen(inviteCode: 'test-code'),
+        wrapper: (child) => UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            theme: keydexTheme,
+            home: child,
+          ),
+        ),
+        surfaceSize: const Size(375, 667), // iPhone SE size
+      );
+
+      // Don't pumpAndSettle - just capture the loading state
+      await tester.pump();
+
+      await screenMatchesGoldenWithoutSettle<InvitationAcceptanceScreen>(
+        tester,
+        'invitation_acceptance_screen_loading',
+      );
+
+      container.dispose();
+    });
+
+    testGoldens('error state', (tester) async {
+      final container = ProviderContainer(
+        overrides: [
+          invitationByCodeProvider('test-code').overrideWith(
+            (ref) => Stream.error('Failed to load invitation'),
+          ),
+          currentPublicKeyProvider.overrideWith((ref) => Future.value(testPubkey)),
+        ],
+      );
+
+      await tester.pumpWidgetBuilder(
+        const InvitationAcceptanceScreen(inviteCode: 'test-code'),
+        wrapper: (child) => UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            theme: keydexTheme,
+            home: child,
+          ),
+        ),
+        surfaceSize: const Size(375, 667),
+      );
+
+      await tester.pumpAndSettle();
+
+      await screenMatchesGolden(tester, 'invitation_acceptance_screen_error');
+
+      container.dispose();
+    });
+
+    testGoldens('invitation not found', (tester) async {
+      final container = ProviderContainer(
+        overrides: [
+          invitationByCodeProvider('invalid-code').overrideWith(
+            (ref) => Stream.value(null),
+          ),
+          currentPublicKeyProvider.overrideWith((ref) => Future.value(testPubkey)),
+        ],
+      );
+
+      await tester.pumpWidgetBuilder(
+        const InvitationAcceptanceScreen(inviteCode: 'invalid-code'),
+        wrapper: (child) => UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            theme: keydexTheme,
+            home: child,
+          ),
+        ),
+        surfaceSize: const Size(375, 667),
+      );
+
+      await tester.pumpAndSettle();
+
+      await screenMatchesGolden(tester, 'invitation_acceptance_screen_not_found');
+
+      container.dispose();
+    });
+
+    testGoldens('active invitation - logged in user', (tester) async {
+      final invitation = createTestInvitation(
+        inviteCode: 'active-code',
+        status: InvitationStatus.pending,
+        inviteeName: 'Alice',
+      );
+
+      final container = ProviderContainer(
+        overrides: [
+          invitationByCodeProvider('active-code').overrideWith(
+            (ref) => Stream.value(invitation),
+          ),
+          currentPublicKeyProvider.overrideWith((ref) => Future.value(testPubkey)),
+        ],
+      );
+
+      await tester.pumpWidgetBuilder(
+        const InvitationAcceptanceScreen(inviteCode: 'active-code'),
+        wrapper: (child) => UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            theme: keydexTheme,
+            home: child,
+          ),
+        ),
+        surfaceSize: const Size(375, 667),
+      );
+
+      await tester.pumpAndSettle();
+
+      await screenMatchesGolden(tester, 'invitation_acceptance_screen_active_logged_in');
+
+      container.dispose();
+    });
+
+    testGoldens('active invitation - no invitee name', (tester) async {
+      final invitation = createTestInvitation(
+        inviteCode: 'active-code-2',
+        status: InvitationStatus.created,
+        inviteeName: null,
+      );
+
+      final container = ProviderContainer(
+        overrides: [
+          invitationByCodeProvider('active-code-2').overrideWith(
+            (ref) => Stream.value(invitation),
+          ),
+          currentPublicKeyProvider.overrideWith((ref) => Future.value(testPubkey)),
+        ],
+      );
+
+      await tester.pumpWidgetBuilder(
+        const InvitationAcceptanceScreen(inviteCode: 'active-code-2'),
+        wrapper: (child) => UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            theme: keydexTheme,
+            home: child,
+          ),
+        ),
+        surfaceSize: const Size(375, 667),
+      );
+
+      await tester.pumpAndSettle();
+
+      await screenMatchesGolden(tester, 'invitation_acceptance_screen_active_no_name');
+
+      container.dispose();
+    });
+
+    testGoldens('active invitation - multiple relays', (tester) async {
+      final invitation = createTestInvitation(
+        inviteCode: 'active-code-3',
+        status: InvitationStatus.pending,
+        inviteeName: 'Bob',
+        relayUrls: [
+          'wss://relay1.example.com',
+          'wss://relay2.example.com',
+          'wss://relay3.example.com',
+        ],
+      );
+
+      final container = ProviderContainer(
+        overrides: [
+          invitationByCodeProvider('active-code-3').overrideWith(
+            (ref) => Stream.value(invitation),
+          ),
+          currentPublicKeyProvider.overrideWith((ref) => Future.value(testPubkey)),
+        ],
+      );
+
+      await tester.pumpWidgetBuilder(
+        const InvitationAcceptanceScreen(inviteCode: 'active-code-3'),
+        wrapper: (child) => UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            theme: keydexTheme,
+            home: child,
+          ),
+        ),
+        surfaceSize: const Size(375, 667),
+      );
+
+      await tester.pumpAndSettle();
+
+      await screenMatchesGolden(tester, 'invitation_acceptance_screen_active_multiple_relays');
+
+      container.dispose();
+    });
+
+    testGoldens('active invitation - not logged in', (tester) async {
+      final invitation = createTestInvitation(
+        inviteCode: 'active-code-4',
+        status: InvitationStatus.pending,
+        inviteeName: 'Charlie',
+      );
+
+      final container = ProviderContainer(
+        overrides: [
+          invitationByCodeProvider('active-code-4').overrideWith(
+            (ref) => Stream.value(invitation),
+          ),
+          currentPublicKeyProvider.overrideWith((ref) => Future.value(null)),
+        ],
+      );
+
+      await tester.pumpWidgetBuilder(
+        const InvitationAcceptanceScreen(inviteCode: 'active-code-4'),
+        wrapper: (child) => UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            theme: keydexTheme,
+            home: child,
+          ),
+        ),
+        surfaceSize: const Size(375, 667),
+      );
+
+      await tester.pumpAndSettle();
+
+      await screenMatchesGolden(tester, 'invitation_acceptance_screen_active_not_logged_in');
+
+      container.dispose();
+    });
+
+    testGoldens('active invitation - checking account', (tester) async {
+      final invitation = createTestInvitation(
+        inviteCode: 'active-code-5',
+        status: InvitationStatus.pending,
+        inviteeName: 'Diana',
+      );
+
+      final container = ProviderContainer(
+        overrides: [
+          invitationByCodeProvider('active-code-5').overrideWith(
+            (ref) => Stream.value(invitation),
+          ),
+          currentPublicKeyProvider.overrideWith(
+            (ref) {
+              // Use a Completer that never completes to simulate loading state
+              final completer = Completer<String?>();
+              return completer.future; // This will never complete
+            },
+          ),
+        ],
+      );
+
+      await tester.pumpWidgetBuilder(
+        const InvitationAcceptanceScreen(inviteCode: 'active-code-5'),
+        wrapper: (child) => UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            theme: keydexTheme,
+            home: child,
+          ),
+        ),
+        surfaceSize: const Size(375, 667),
+      );
+
+      // Capture the loading state for checking account
+      await tester.pump();
+
+      await screenMatchesGoldenWithoutSettle<InvitationAcceptanceScreen>(
+        tester,
+        'invitation_acceptance_screen_active_checking_account',
+      );
+
+      container.dispose();
+    });
+
+    testGoldens('active invitation - account check error', (tester) async {
+      final invitation = createTestInvitation(
+        inviteCode: 'active-code-6',
+        status: InvitationStatus.pending,
+        inviteeName: 'Eve',
+      );
+
+      final container = ProviderContainer(
+        overrides: [
+          invitationByCodeProvider('active-code-6').overrideWith(
+            (ref) => Stream.value(invitation),
+          ),
+          currentPublicKeyProvider.overrideWith(
+            (ref) => Future.error('Failed to check account'),
+          ),
+        ],
+      );
+
+      await tester.pumpWidgetBuilder(
+        const InvitationAcceptanceScreen(inviteCode: 'active-code-6'),
+        wrapper: (child) => UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            theme: keydexTheme,
+            home: child,
+          ),
+        ),
+        surfaceSize: const Size(375, 667),
+      );
+
+      await tester.pumpAndSettle();
+
+      await screenMatchesGolden(tester, 'invitation_acceptance_screen_active_account_error');
+
+      container.dispose();
+    });
+
+    testGoldens('redeemed invitation', (tester) async {
+      final invitation = createTestInvitation(
+        inviteCode: 'redeemed-code',
+        status: InvitationStatus.redeemed,
+        inviteeName: 'Frank',
+        redeemedBy: inviteePubkey,
+        redeemedAt: DateTime(2024, 10, 1, 11, 0),
+      );
+
+      final container = ProviderContainer(
+        overrides: [
+          invitationByCodeProvider('redeemed-code').overrideWith(
+            (ref) => Stream.value(invitation),
+          ),
+          currentPublicKeyProvider.overrideWith((ref) => Future.value(testPubkey)),
+        ],
+      );
+
+      await tester.pumpWidgetBuilder(
+        const InvitationAcceptanceScreen(inviteCode: 'redeemed-code'),
+        wrapper: (child) => UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            theme: keydexTheme,
+            home: child,
+          ),
+        ),
+        surfaceSize: const Size(375, 667),
+      );
+
+      await tester.pumpAndSettle();
+
+      await screenMatchesGolden(tester, 'invitation_acceptance_screen_redeemed');
+
+      container.dispose();
+    });
+
+    testGoldens('denied invitation', (tester) async {
+      final invitation = createTestInvitation(
+        inviteCode: 'denied-code',
+        status: InvitationStatus.denied,
+        inviteeName: 'Grace',
+      );
+
+      final container = ProviderContainer(
+        overrides: [
+          invitationByCodeProvider('denied-code').overrideWith(
+            (ref) => Stream.value(invitation),
+          ),
+          currentPublicKeyProvider.overrideWith((ref) => Future.value(testPubkey)),
+        ],
+      );
+
+      await tester.pumpWidgetBuilder(
+        const InvitationAcceptanceScreen(inviteCode: 'denied-code'),
+        wrapper: (child) => UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            theme: keydexTheme,
+            home: child,
+          ),
+        ),
+        surfaceSize: const Size(375, 667),
+      );
+
+      await tester.pumpAndSettle();
+
+      await screenMatchesGolden(tester, 'invitation_acceptance_screen_denied');
+
+      container.dispose();
+    });
+
+    testGoldens('invalidated invitation', (tester) async {
+      final invitation = createTestInvitation(
+        inviteCode: 'invalidated-code',
+        status: InvitationStatus.invalidated,
+        inviteeName: 'Henry',
+      );
+
+      final container = ProviderContainer(
+        overrides: [
+          invitationByCodeProvider('invalidated-code').overrideWith(
+            (ref) => Stream.value(invitation),
+          ),
+          currentPublicKeyProvider.overrideWith((ref) => Future.value(testPubkey)),
+        ],
+      );
+
+      await tester.pumpWidgetBuilder(
+        const InvitationAcceptanceScreen(inviteCode: 'invalidated-code'),
+        wrapper: (child) => UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            theme: keydexTheme,
+            home: child,
+          ),
+        ),
+        surfaceSize: const Size(375, 667),
+      );
+
+      await tester.pumpAndSettle();
+
+      await screenMatchesGolden(tester, 'invitation_acceptance_screen_invalidated');
+
+      container.dispose();
+    });
+
+    testGoldens('error status invitation', (tester) async {
+      final invitation = createTestInvitation(
+        inviteCode: 'error-code',
+        status: InvitationStatus.error,
+        inviteeName: 'Iris',
+      );
+
+      final container = ProviderContainer(
+        overrides: [
+          invitationByCodeProvider('error-code').overrideWith(
+            (ref) => Stream.value(invitation),
+          ),
+          currentPublicKeyProvider.overrideWith((ref) => Future.value(testPubkey)),
+        ],
+      );
+
+      await tester.pumpWidgetBuilder(
+        const InvitationAcceptanceScreen(inviteCode: 'error-code'),
+        wrapper: (child) => UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            theme: keydexTheme,
+            home: child,
+          ),
+        ),
+        surfaceSize: const Size(375, 667),
+      );
+
+      await tester.pumpAndSettle();
+
+      await screenMatchesGolden(tester, 'invitation_acceptance_screen_error_status');
+
+      container.dispose();
+    });
+
+    testGoldens('multiple device sizes', (tester) async {
+      final invitation = createTestInvitation(
+        inviteCode: 'device-test-code',
+        status: InvitationStatus.pending,
+        inviteeName: 'Jane',
+        relayUrls: [
+          'wss://relay1.example.com',
+          'wss://relay2.example.com',
+        ],
+      );
+
+      final container = ProviderContainer(
+        overrides: [
+          invitationByCodeProvider('device-test-code').overrideWith(
+            (ref) => Stream.value(invitation),
+          ),
+          currentPublicKeyProvider.overrideWith((ref) => Future.value(testPubkey)),
+        ],
+      );
+
+      final builder = DeviceBuilder()
+        ..overrideDevicesForAllScenarios(devices: [
+          Device.phone,
+          Device.iphone11,
+          Device.tabletPortrait,
+        ])
+        ..addScenario(
+          widget: const InvitationAcceptanceScreen(inviteCode: 'device-test-code'),
+          name: 'active_invitation',
+        );
+
+      await tester.pumpDeviceBuilder(
+        builder,
+        wrapper: (child) => UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            theme: keydexTheme,
+            home: child,
+          ),
+        ),
+      );
+
+      await screenMatchesGolden(tester, 'invitation_acceptance_screen_multiple_devices');
+
+      container.dispose();
+    });
+  });
+}

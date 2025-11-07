@@ -2,29 +2,56 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ndk/ndk.dart';
-import 'key_service.dart';
-import 'recovery_service.dart';
+import '../providers/key_provider.dart';
+import 'login_service.dart';
 import 'lockbox_share_service.dart';
+import 'invitation_service.dart';
+import 'shard_distribution_service.dart';
 import 'logger.dart';
 import '../models/nostr_kinds.dart';
 import '../models/shard_data.dart';
 import '../models/recovery_request.dart';
 
+/// Event emitted when a recovery response is received
+class RecoveryResponseEvent {
+  final String recoveryRequestId;
+  final String lockboxId;
+  final String senderPubkey;
+  final bool approved;
+  final ShardData? shardData;
+
+  RecoveryResponseEvent({
+    required this.recoveryRequestId,
+    required this.lockboxId,
+    required this.senderPubkey,
+    required this.approved,
+    this.shardData,
+  });
+}
+
 // Provider for NdkService
-final ndkServiceProvider = Provider<NdkService>((ref) {
-  final recoveryService = ref.watch(recoveryServiceProvider);
-  final lockboxShareService = ref.watch(lockboxShareServiceProvider);
-  return NdkService(
-    recoveryService: recoveryService,
-    lockboxShareService: lockboxShareService,
+final Provider<NdkService> ndkServiceProvider = Provider<NdkService>((ref) {
+  final loginService = ref.read(loginServiceProvider);
+  final service = NdkService(
+    ref: ref,
+    loginService: loginService,
+    getInvitationService: () => ref.read(invitationServiceProvider),
   );
+
+  // Clean up when disposed
+  ref.onDispose(() async {
+    await service.dispose();
+  });
+
+  return service;
 });
 
 /// Service for managing NDK (Nostr Development Kit) connections and subscriptions
 /// Handles real-time listening for recovery requests and key share events
 class NdkService {
-  final RecoveryService recoveryService;
-  final LockboxShareService lockboxShareService;
+  final Ref _ref;
+  final LoginService _loginService;
+  final InvitationService Function() _getInvitationService;
 
   Ndk? _ndk;
   bool _isInitialized = false;
@@ -32,10 +59,25 @@ class NdkService {
   final List<String> _activeRelays = [];
   StreamSubscription<Nip01Event>? _giftWrapStreamSub;
 
+  // Event streams for recovery-related events (breaking circular dependency)
+  final StreamController<RecoveryRequest> _recoveryRequestController =
+      StreamController<RecoveryRequest>.broadcast();
+  final StreamController<RecoveryResponseEvent> _recoveryResponseController =
+      StreamController<RecoveryResponseEvent>.broadcast();
+
+  /// Stream of incoming recovery requests
+  Stream<RecoveryRequest> get recoveryRequestStream => _recoveryRequestController.stream;
+
+  /// Stream of incoming recovery responses
+  Stream<RecoveryResponseEvent> get recoveryResponseStream => _recoveryResponseController.stream;
+
   NdkService({
-    required this.recoveryService,
-    required this.lockboxShareService,
-  });
+    required Ref ref,
+    required LoginService loginService,
+    required InvitationService Function() getInvitationService,
+  })  : _ref = ref,
+        _loginService = loginService,
+        _getInvitationService = getInvitationService;
 
   /// Initialize NDK with current user's key and set up subscriptions
   Future<void> initialize() async {
@@ -46,13 +88,17 @@ class NdkService {
 
     try {
       // Get current user's key pair
-      final keyPair = await KeyService.getStoredNostrKey();
+      final keyPair = await _loginService.getStoredNostrKey();
       if (keyPair == null) {
         throw Exception('No key pair available. Cannot initialize NDK.');
       }
 
       // Initialize NDK with default config
-      _ndk = Ndk.defaultConfig();
+      _ndk = Ndk(NdkConfig(
+        cache: MemCacheManager(),
+        eventVerifier: Bip340EventVerifier(),
+        engine: NdkEngine.JIT,
+      ));
 
       // Login with user's private key
       _ndk!.accounts.loginPrivateKey(
@@ -117,7 +163,7 @@ class NdkService {
     }
 
     // Get current user's pubkey
-    final keyPair = await KeyService.getStoredNostrKey();
+    final keyPair = await _loginService.getStoredNostrKey();
     if (keyPair == null) {
       Log.error('No key pair available for subscriptions');
       return;
@@ -162,6 +208,8 @@ class NdkService {
       final unwrappedEvent = await _ndk!.giftWrap.fromGiftWrap(giftWrap: event);
 
       Log.info('Unwrapped event: kind=${unwrappedEvent.kind}, id=${unwrappedEvent.id}');
+      Log.debug('Gift wrap event tags: ${event.tags}');
+      Log.debug('Unwrapped event tags: ${unwrappedEvent.tags}');
 
       // Route based on the inner event kind
       if (unwrappedEvent.kind == NostrKind.shardData.value) {
@@ -170,6 +218,12 @@ class NdkService {
         await _handleRecoveryRequestData(unwrappedEvent);
       } else if (unwrappedEvent.kind == NostrKind.recoveryResponse.value) {
         await _handleRecoveryResponseData(unwrappedEvent);
+      } else if (unwrappedEvent.kind == NostrKind.invitationRsvp.value) {
+        await _handleInvitationRsvp(unwrappedEvent);
+      } else if (unwrappedEvent.kind == NostrKind.invitationDenial.value) {
+        await _handleInvitationDenial(unwrappedEvent);
+      } else if (unwrappedEvent.kind == NostrKind.shardConfirmation.value) {
+        await _handleShardConfirmation(unwrappedEvent);
       } else {
         Log.warning('Unknown gift wrap inner kind: ${unwrappedEvent.kind}');
       }
@@ -188,9 +242,16 @@ class NdkService {
       final shardData = shardDataFromJson(shardJson);
       Log.debug('Shard data: $shardData');
 
-      // Store the shard data
-      final lockboxId = shardData.lockboxId ?? 'unknown';
-      await lockboxShareService.addLockboxShare(lockboxId, shardData);
+      // Store the shard data and send confirmation event
+      // This handles the complete invitation flow
+      final lockboxId = shardData.lockboxId;
+      if (lockboxId == null || lockboxId.isEmpty) {
+        Log.error('Cannot process shard data event ${event.id}: missing lockboxId in shard data');
+        return;
+      }
+
+      final lockboxShareService = _ref.read(lockboxShareServiceProvider);
+      await lockboxShareService.processLockboxShare(lockboxId, shardData);
     } catch (e) {
       Log.error('Error handling shard data event ${event.id}', e);
     }
@@ -218,10 +279,10 @@ class NdkService {
         keyHolderResponses: {}, // Will be populated later
       );
 
-      // Add to recovery service (will automatically show as notification)
-      await recoveryService.addIncomingRecoveryRequest(recoveryRequest);
+      // Emit recovery request to stream (RecoveryService will listen)
+      _recoveryRequestController.add(recoveryRequest);
 
-      Log.info('Added incoming recovery request: ${event.id}');
+      Log.info('Emitted incoming recovery request to stream: ${event.id}');
     } catch (e) {
       Log.error('Error handling recovery request data', e);
     }
@@ -249,23 +310,65 @@ class NdkService {
         shardData = shardDataFromJson(shardDataJson);
 
         // Store as a recovery shard (not a key holder shard)
+        final lockboxShareService = _ref.read(lockboxShareServiceProvider);
         await lockboxShareService.addRecoveryShard(recoveryRequestId, shardData);
 
         Log.info(
             'Stored recovery shard from $senderPubkey for recovery request $recoveryRequestId');
       }
 
-      // Update the recovery service with this response
-      await recoveryService.respondToRecoveryRequest(
-        recoveryRequestId,
-        senderPubkey,
-        approved,
+      // Emit recovery response to stream (RecoveryService will listen)
+      final responseEvent = RecoveryResponseEvent(
+        recoveryRequestId: recoveryRequestId,
+        lockboxId: lockboxId,
+        senderPubkey: senderPubkey,
+        approved: approved,
         shardData: shardData,
       );
+      _recoveryResponseController.add(responseEvent);
 
-      Log.info('Updated recovery request $recoveryRequestId with response from $senderPubkey');
+      Log.info('Emitted recovery response to stream: $recoveryRequestId from $senderPubkey');
     } catch (e) {
       Log.error('Error handling recovery response data', e);
+    }
+  }
+
+  /// Handle incoming invitation RSVP event (kind 1340)
+  Future<void> _handleInvitationRsvp(Nip01Event event) async {
+    try {
+      Log.info('Processing invitation RSVP event: ${event.id}');
+      Log.debug(
+          'RSVP event before processing: kind=${event.kind}, content length=${event.content.length}, content preview=${event.content.length > 100 ? event.content.substring(0, 100) : event.content}');
+      final invitationService = _getInvitationService();
+      await invitationService.processRsvpEvent(event: event);
+      Log.info('Successfully processed RSVP event: ${event.id}');
+    } catch (e) {
+      Log.error('Error handling invitation RSVP event ${event.id}', e);
+    }
+  }
+
+  /// Handle incoming invitation denial event (kind 1341)
+  Future<void> _handleInvitationDenial(Nip01Event event) async {
+    try {
+      Log.info('Processing invitation denial event: ${event.id}');
+      final invitationService = _getInvitationService();
+      await invitationService.processDenialEvent(event: event);
+      Log.info('Successfully processed denial event: ${event.id}');
+    } catch (e) {
+      Log.error('Error handling invitation denial event ${event.id}', e);
+    }
+  }
+
+  /// Handle incoming shard confirmation event (kind 1342)
+  Future<void> _handleShardConfirmation(Nip01Event event) async {
+    try {
+      Log.info('Processing shard confirmation event: ${event.id}');
+      Log.debug('Shard confirmation event tags: ${event.tags}');
+      final shardDistributionService = _ref.read(shardDistributionServiceProvider);
+      await shardDistributionService.processShardConfirmationEvent(event: event);
+      Log.info('Successfully processed shard confirmation event: ${event.id}');
+    } catch (e) {
+      Log.error('Error handling shard confirmation event ${event.id}', e);
     }
   }
 
@@ -280,7 +383,7 @@ class NdkService {
     }
 
     try {
-      final keyPair = await KeyService.getStoredNostrKey();
+      final keyPair = await _loginService.getStoredNostrKey();
       if (keyPair == null) {
         throw Exception('No key pair available');
       }
@@ -300,7 +403,7 @@ class NdkService {
 
       for (final keyHolderPubkey in keyHolderPubkeys) {
         // Encrypt the request for this key holder
-        final encryptedContent = await KeyService.encryptForRecipient(
+        final encryptedContent = await _loginService.encryptForRecipient(
           plaintext: requestJson,
           recipientPubkey: keyHolderPubkey,
         );
@@ -346,7 +449,7 @@ class NdkService {
     }
 
     try {
-      final keyPair = await KeyService.getStoredNostrKey();
+      final keyPair = await _loginService.getStoredNostrKey();
       if (keyPair == null) {
         throw Exception('No key pair available');
       }
@@ -362,7 +465,7 @@ class NdkService {
       final responseJson = json.encode(responsePayload);
 
       // Encrypt for initiator
-      final encryptedContent = await KeyService.encryptForRecipient(
+      final encryptedContent = await _loginService.encryptForRecipient(
         plaintext: responseJson,
         recipientPubkey: initiatorPubkey,
       );
@@ -412,12 +515,133 @@ class NdkService {
     return List.unmodifiable(_activeRelays);
   }
 
+  /// Ensure NDK is initialized before use
+  Future<void> _ensureInitialized() async {
+    if (!_isInitialized || _ndk == null) {
+      await initialize();
+    }
+  }
+
+  /// Get current user's public key
+  Future<String?> getCurrentPubkey() async {
+    final keyPair = await _loginService.getStoredNostrKey();
+    return keyPair?.publicKey;
+  }
+
+  /// Publish a gift wrap event (rumor + gift wrap)
+  ///
+  /// Creates a rumor event with the given content and kind,
+  /// wraps it in a gift wrap for the recipient,
+  /// and broadcasts it to the specified relays.
+  ///
+  /// Returns the gift wrap event ID.
+  Future<String?> publishGiftWrapEvent({
+    required String content,
+    required int kind,
+    required String recipientPubkey, // Hex format
+    required List<String> relays,
+    List<List<String>>? tags,
+    String? customPubkey, // Hex format - if null, uses current user's pubkey
+  }) async {
+    await _ensureInitialized();
+
+    try {
+      final keyPair = await _loginService.getStoredNostrKey();
+      if (keyPair == null) {
+        throw Exception('No key pair available');
+      }
+
+      final senderPubkey = customPubkey ?? keyPair.publicKey;
+
+      // Create rumor event
+      final rumor = await _ndk!.giftWrap.createRumor(
+        customPubkey: senderPubkey,
+        content: content,
+        kind: kind,
+        tags: tags ?? [],
+      );
+
+      Log.debug(
+          'Created rumor event: kind=$kind, content length=${content.length}, content preview=${content.length > 100 ? content.substring(0, 100) : content}');
+
+      // Wrap the rumor in a gift wrap for the recipient
+      final giftWrap = await _ndk!.giftWrap.toGiftWrap(
+        rumor: rumor,
+        recipientPubkey: recipientPubkey,
+      );
+
+      // Broadcast the gift wrap event
+      _ndk!.broadcast.broadcast(
+        nostrEvent: giftWrap,
+        specificRelays: relays,
+      );
+
+      Log.info(
+          'Published gift wrap event (kind $kind) to ${recipientPubkey.substring(0, 8)}... (event: ${giftWrap.id.substring(0, 8)}...)');
+      return giftWrap.id;
+    } catch (e) {
+      Log.error('Error publishing gift wrap event', e);
+      return null;
+    }
+  }
+
+  /// Publish a gift wrap event to multiple recipients
+  ///
+  /// Creates a rumor event with the given content and kind,
+  /// wraps it in gift wraps for each recipient,
+  /// and broadcasts them to the specified relays.
+  ///
+  /// Returns list of gift wrap event IDs.
+  Future<List<String>> publishGiftWrapEventToMultiple({
+    required String content,
+    required int kind,
+    required List<String> recipientPubkeys, // Hex format
+    required List<String> relays,
+    List<List<String>>? tags,
+    String? customPubkey, // Hex format - if null, uses current user's pubkey
+  }) async {
+    await _ensureInitialized();
+
+    final eventIds = <String>[];
+
+    for (final recipientPubkey in recipientPubkeys) {
+      try {
+        final eventId = await publishGiftWrapEvent(
+          content: content,
+          kind: kind,
+          recipientPubkey: recipientPubkey,
+          relays: relays,
+          tags: tags,
+          customPubkey: customPubkey,
+        );
+        if (eventId != null) {
+          eventIds.add(eventId);
+        }
+      } catch (e) {
+        Log.error('Error publishing gift wrap to ${recipientPubkey.substring(0, 8)}...', e);
+      }
+    }
+
+    return eventIds;
+  }
+
+  /// Get the underlying NDK instance for advanced operations
+  ///
+  /// Note: This should be used sparingly. Prefer using the methods
+  /// provided by NdkService instead of accessing NDK directly.
+  Future<Ndk> getNdk() async {
+    await _ensureInitialized();
+    return _ndk!;
+  }
+
   /// Check if NDK is initialized
   bool get isInitialized => _isInitialized;
 
   /// Dispose of NDK resources
   Future<void> dispose() async {
     await _closeSubscriptions();
+    await _recoveryRequestController.close();
+    await _recoveryResponseController.close();
     _activeRelays.clear();
     _ndk = null;
     _isInitialized = false;

@@ -2,21 +2,24 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:ndk/ndk.dart';
 import '../models/nostr_kinds.dart';
 import '../models/recovery_request.dart';
 import '../models/recovery_status.dart';
 import '../models/shard_data.dart';
 import '../providers/lockbox_provider.dart';
-import 'key_service.dart';
+import '../utils/invite_code_utils.dart';
 import 'backup_service.dart';
+import 'ndk_service.dart';
 import 'logger.dart';
 
 /// Provider for RecoveryService
 /// This service depends on LockboxRepository for recovery operations
-final recoveryServiceProvider = Provider<RecoveryService>((ref) {
+final Provider<RecoveryService> recoveryServiceProvider = Provider<RecoveryService>((ref) {
   final repository = ref.watch(lockboxRepositoryProvider);
-  final service = RecoveryService(repository);
+  final backupService = ref.read(backupServiceProvider);
+  // Use ref.read() to break circular dependency with NdkService
+  final NdkService ndkService = ref.read(ndkServiceProvider);
+  final service = RecoveryService(repository, backupService, ndkService);
 
   // Clean up streams when disposed
   ref.onDispose(() {
@@ -30,6 +33,8 @@ final recoveryServiceProvider = Provider<RecoveryService>((ref) {
 /// Includes notification tracking for incoming recovery requests
 class RecoveryService {
   final LockboxRepository repository;
+  final BackupService backupService;
+  final NdkService _ndkService;
 
   static const String _viewedNotificationIdsKey = 'viewed_recovery_notification_ids';
 
@@ -44,7 +49,48 @@ class RecoveryService {
   final _recoveryRequestController = StreamController<RecoveryRequest>.broadcast();
   Stream<RecoveryRequest> get recoveryRequestStream => _recoveryRequestController.stream;
 
-  RecoveryService(this.repository);
+  RecoveryService(this.repository, this.backupService, this._ndkService) {
+    _loadViewedNotificationIds();
+    _setupNdkStreamListeners();
+  }
+
+  /// Set up listeners for incoming NDK events
+  void _setupNdkStreamListeners() {
+    // Listen for incoming recovery requests
+    _ndkService.recoveryRequestStream.listen(
+      (recoveryRequest) async {
+        try {
+          await addIncomingRecoveryRequest(recoveryRequest);
+        } catch (e) {
+          Log.error('Error processing incoming recovery request from stream', e);
+        }
+      },
+      onError: (error) {
+        Log.error('Error in recovery request stream', error);
+      },
+    );
+
+    // Listen for incoming recovery responses
+    _ndkService.recoveryResponseStream.listen(
+      (responseEvent) async {
+        try {
+          await respondToRecoveryRequest(
+            responseEvent.recoveryRequestId,
+            responseEvent.senderPubkey,
+            responseEvent.approved,
+            shardData: responseEvent.shardData,
+          );
+        } catch (e) {
+          Log.error('Error processing recovery response from stream', e);
+        }
+      },
+      onError: (error) {
+        Log.error('Error in recovery response stream', error);
+      },
+    );
+
+    Log.info('RecoveryService listening to NdkService event streams');
+  }
 
   /// Dispose resources
   void dispose() {
@@ -126,7 +172,8 @@ class RecoveryService {
     await initialize();
 
     // Create recovery request
-    final requestId = '${DateTime.now().millisecondsSinceEpoch}_$lockboxId';
+    // Generate cryptographically secure request ID
+    final requestId = '${generateSecureID()}_$lockboxId';
     final expiresAt = expirationDuration != null
         ? DateTime.now().add(expirationDuration)
         : DateTime.now().add(const Duration(hours: 24)); // Default 24 hour expiration
@@ -404,7 +451,7 @@ class RecoveryService {
     }
 
     // Reconstruct the lockbox content from the shards
-    final content = await BackupService.reconstructFromShares(shares: shards);
+    final content = await backupService.reconstructFromShares(shares: shards);
 
     // Update the lockbox with recovered content
     final lockbox = await repository.getLockbox(request.lockboxId);
@@ -487,19 +534,13 @@ class RecoveryService {
     required List<String> relays,
   }) async {
     try {
-      // Get current user's keys
-      final keyPair = await KeyService.getStoredNostrKey();
-      final currentPubkey = keyPair?.publicKey;
-      final currentPrivkey = keyPair?.privateKey;
-
-      if (currentPubkey == null || currentPrivkey == null) {
+      final currentPubkey = await _ndkService.getCurrentPubkey();
+      if (currentPubkey == null) {
         throw Exception('Unable to get current user keys for signing');
       }
 
-      // Initialize NDK
-      final ndk = Ndk.defaultConfig();
-      ndk.accounts.loginPrivateKey(pubkey: currentPubkey, privkey: currentPrivkey);
-      Log.info('Initialized NDK for recovery request distribution');
+      Log.info(
+          'Sending recovery request ${request.id} to ${request.keyHolderResponses.length} key holders');
 
       // Prepare recovery request data
       final requestData = {
@@ -513,44 +554,20 @@ class RecoveryService {
       };
 
       final requestJson = json.encode(requestData);
-      final eventIds = <String>[];
 
-      // Send gift wrap to each key holder
-      for (final pubkey in request.keyHolderResponses.keys) {
-        try {
-          Log.debug('Sending recovery request to ${pubkey.substring(0, 8)}...');
-
-          // Create rumor event with recovery request data
-          final rumor = await ndk.giftWrap.createRumor(
-            customPubkey: currentPubkey,
-            content: requestJson,
-            kind: NostrKind.recoveryRequest.value, // Keydex custom kind for recovery requests
-            tags: [
-              ['d', 'recovery_request_${request.id}'],
-              ['lockbox_id', request.lockboxId],
-              ['recovery_request_id', request.id],
-            ],
-          );
-
-          // Wrap the rumor in a gift wrap for the recipient
-          final giftWrap = await ndk.giftWrap.toGiftWrap(
-            rumor: rumor,
-            recipientPubkey: pubkey,
-          );
-
-          // Broadcast the gift wrap event
-          ndk.broadcast.broadcast(
-            nostrEvent: giftWrap,
-            specificRelays: relays,
-          );
-
-          eventIds.add(giftWrap.id);
-          Log.info(
-              'Sent recovery request to ${pubkey.substring(0, 8)}... (event: ${giftWrap.id.substring(0, 8)}...)');
-        } catch (e) {
-          Log.error('Failed to send recovery request to ${pubkey.substring(0, 8)}...', e);
-        }
-      }
+      // Send gift wrap to each key holder using NdkService
+      final eventIds = await _ndkService.publishGiftWrapEventToMultiple(
+        content: requestJson,
+        kind: NostrKind.recoveryRequest.value,
+        recipientPubkeys: request.keyHolderResponses.keys.toList(),
+        relays: relays,
+        tags: [
+          ['d', 'recovery_request_${request.id}'],
+          ['lockbox_id', request.lockboxId],
+          ['recovery_request_id', request.id],
+        ],
+        customPubkey: currentPubkey,
+      );
 
       // Update request status to sent
       await updateRecoveryRequestStatus(
@@ -577,19 +594,10 @@ class RecoveryService {
     required List<String> relays,
   }) async {
     try {
-      // Get current user's keys
-      final keyPair = await KeyService.getStoredNostrKey();
-      final currentPubkey = keyPair?.publicKey;
-      final currentPrivkey = keyPair?.privateKey;
-
-      if (currentPubkey == null || currentPrivkey == null) {
+      final currentPubkey = await _ndkService.getCurrentPubkey();
+      if (currentPubkey == null) {
         throw Exception('Unable to get current user keys for signing');
       }
-
-      // Initialize NDK
-      final ndk = Ndk.defaultConfig();
-      ndk.accounts.loginPrivateKey(pubkey: currentPubkey, privkey: currentPrivkey);
-      Log.info('Initialized NDK for recovery response');
 
       // Prepare recovery response data
       final responseData = {
@@ -610,11 +618,12 @@ class RecoveryService {
 
       Log.debug('Sending recovery response to ${request.initiatorPubkey.substring(0, 8)}...');
 
-      // Create rumor event with recovery response data
-      final rumor = await ndk.giftWrap.createRumor(
-        customPubkey: currentPubkey,
+      // Publish using NdkService
+      final eventId = await _ndkService.publishGiftWrapEvent(
         content: responseJson,
-        kind: NostrKind.recoveryResponse.value, // Keydex custom kind for recovery responses
+        kind: NostrKind.recoveryResponse.value,
+        recipientPubkey: request.initiatorPubkey,
+        relays: relays,
         tags: [
           ['d', 'recovery_response_${request.id}_$currentPubkey'],
           ['lockbox_id', request.lockboxId],
@@ -623,22 +632,13 @@ class RecoveryService {
         ],
       );
 
-      // Wrap the rumor in a gift wrap for the initiator
-      final giftWrap = await ndk.giftWrap.toGiftWrap(
-        rumor: rumor,
-        recipientPubkey: request.initiatorPubkey,
-      );
-
-      // Broadcast the gift wrap event
-      ndk.broadcast.broadcast(
-        nostrEvent: giftWrap,
-        specificRelays: relays,
-      );
+      if (eventId == null) {
+        throw Exception('Failed to publish recovery response event');
+      }
 
       Log.info(
-          'Sent recovery response to ${request.initiatorPubkey.substring(0, 8)}... (event: ${giftWrap.id.substring(0, 8)}..., approved: $approved)');
-
-      return giftWrap.id;
+          'Sent recovery response to ${request.initiatorPubkey.substring(0, 8)}... (event: ${eventId.substring(0, 8)}..., approved: $approved)');
+      return eventId;
     } catch (e) {
       Log.error('Failed to send recovery response via Nostr', e);
       rethrow;

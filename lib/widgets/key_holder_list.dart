@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import '../models/lockbox.dart';
 import '../models/key_holder.dart';
+import '../models/key_holder_status.dart';
 import '../providers/lockbox_provider.dart';
 import '../providers/key_provider.dart';
 import '../screens/backup_config_screen.dart';
@@ -75,13 +76,14 @@ class KeyHolderList extends ConsumerWidget {
               child: Text('Error loading user info: $error'),
             ),
           ),
-          data: (currentPubkey) => _buildKeyHolderContent(context, lockbox, currentPubkey),
+          data: (currentPubkey) => _buildKeyHolderContent(context, ref, lockbox, currentPubkey),
         );
       },
     );
   }
 
-  Widget _buildKeyHolderContent(BuildContext context, Lockbox lockbox, String? currentPubkey) {
+  Widget _buildKeyHolderContent(
+      BuildContext context, WidgetRef ref, Lockbox lockbox, String? currentPubkey) {
     final keyHolders = _extractKeyHolders(lockbox, currentPubkey);
 
     return Container(
@@ -163,7 +165,14 @@ class KeyHolderList extends ConsumerWidget {
             ),
           ] else ...[
             // Key holder list
-            ...keyHolders.map((keyHolder) => _buildKeyHolderItem(context, keyHolder)),
+            Column(
+              children: keyHolders.map((keyHolder) {
+                return _buildKeyHolderItem(
+                  context,
+                  keyHolder,
+                );
+              }).toList(),
+            ),
           ],
         ],
       ),
@@ -192,15 +201,24 @@ class KeyHolderList extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  keyHolder.displayName ?? Helpers.encodeBech32(keyHolder.pubkey, 'npub'),
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFFd2d7bf),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        keyHolder.displayName ??
+                            (keyHolder.pubkey != null
+                                ? Helpers.encodeBech32(keyHolder.pubkey!, 'npub')
+                                : 'Unknown'),
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFFd2d7bf),
+                            ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        softWrap: false,
                       ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  softWrap: false,
+                    ),
+                  ],
                 ),
                 if (keyHolder.isOwner) ...[
                   Text(
@@ -209,6 +227,14 @@ class KeyHolderList extends ConsumerWidget {
                       color: const Color(0xFFd2d7bf).withValues(alpha: 0.8),
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ] else if (keyHolder.status != null) ...[
+                  Text(
+                    keyHolder.status!.label,
+                    style: TextStyle(
+                      color: const Color(0xFFd2d7bf).withValues(alpha: 0.7),
+                      fontSize: 12,
                     ),
                   ),
                 ]
@@ -228,7 +254,8 @@ class KeyHolderList extends ConsumerWidget {
           .map((kh) => KeyHolderInfo(
                 pubkey: kh.pubkey,
                 displayName: kh.displayName,
-                isOwner: kh.pubkey == lockbox.ownerPubkey,
+                isOwner: kh.pubkey != null && kh.pubkey == lockbox.ownerPubkey,
+                status: kh.status, // Use actual status from KeyHolder model
               ))
           .toList();
     }
@@ -248,6 +275,7 @@ class KeyHolderList extends ConsumerWidget {
           pubkey: peerPubkey,
           displayName: Helpers.encodeBech32(peerPubkey, 'npub'),
           isOwner: peerPubkey == lockbox.ownerPubkey,
+          status: KeyHolderStatus.holdingKey, // Default for key holders with shards
         ));
       }
     }
@@ -265,13 +293,15 @@ class KeyHolderList extends ConsumerWidget {
 
 /// Data class for key holder information
 class KeyHolderInfo {
-  final String pubkey;
+  final String? pubkey; // Nullable for invited key holders
   final String? displayName;
   final bool isOwner;
+  final KeyHolderStatus? status; // Status from KeyHolder model
 
   KeyHolderInfo({
-    required this.pubkey,
+    this.pubkey,
     this.displayName,
     required this.isOwner,
+    this.status,
   });
 }

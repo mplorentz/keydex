@@ -23,6 +23,7 @@ typedef ShardData = ({
   bool? isReceived,
   DateTime? receivedAt,
   String? nostrEventId,
+  List<String>? relayUrls, // Relay URLs from backup config for sending confirmations
 });
 
 /// Create a new ShardData with validation
@@ -40,6 +41,7 @@ ShardData createShardData({
   bool? isReceived,
   DateTime? receivedAt,
   String? nostrEventId,
+  List<String>? relayUrls,
 }) {
   if (shard.isEmpty) {
     throw ArgumentError('Shard cannot be empty');
@@ -88,6 +90,7 @@ ShardData createShardData({
     isReceived: isReceived,
     receivedAt: receivedAt,
     nostrEventId: nostrEventId,
+    relayUrls: relayUrls,
   );
 }
 
@@ -113,6 +116,7 @@ ShardData copyShardData(
   bool? isReceived,
   DateTime? receivedAt,
   String? nostrEventId,
+  List<String>? relayUrls,
 }) {
   return (
     shard: shard ?? shardData.shard,
@@ -129,6 +133,7 @@ ShardData copyShardData(
     isReceived: isReceived ?? shardData.isReceived,
     receivedAt: receivedAt ?? shardData.receivedAt,
     nostrEventId: nostrEventId ?? shardData.nostrEventId,
+    relayUrls: relayUrls ?? shardData.relayUrls,
   );
 }
 
@@ -221,6 +226,7 @@ Map<String, dynamic> shardDataToJson(ShardData shardData) {
     if (shardData.isReceived != null) 'isReceived': shardData.isReceived,
     if (shardData.receivedAt != null) 'receivedAt': shardData.receivedAt!.toIso8601String(),
     if (shardData.nostrEventId != null) 'nostrEventId': shardData.nostrEventId,
+    if (shardData.relayUrls != null) 'relayUrls': shardData.relayUrls,
   };
 }
 
@@ -241,6 +247,7 @@ ShardData shardDataFromJson(Map<String, dynamic> json) {
     isReceived: json['isReceived'] as bool?,
     receivedAt: json['receivedAt'] != null ? DateTime.parse(json['receivedAt'] as String) : null,
     nostrEventId: json['nostrEventId'] as String?,
+    relayUrls: json['relayUrls'] != null ? List<String>.from(json['relayUrls'] as List) : null,
   );
 }
 

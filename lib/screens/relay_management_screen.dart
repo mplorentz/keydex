@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/relay_configuration.dart';
 import '../services/relay_scan_service.dart';
 import '../services/logger.dart';
+import '../utils/invite_code_utils.dart';
 
 /// Screen for managing Nostr relay configurations
 class RelayManagementScreen extends ConsumerStatefulWidget {
@@ -56,8 +57,9 @@ class _RelayManagementScreenState extends ConsumerState<RelayManagementScreen> {
 
     if (result != null) {
       try {
+        // Generate cryptographically secure relay configuration ID
         final relay = RelayConfiguration(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          id: generateSecureID(),
           url: result['url'] as String,
           name: result['name'] as String,
           isEnabled: true,
