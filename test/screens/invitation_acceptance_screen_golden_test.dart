@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -45,11 +47,11 @@ void main() {
     testGoldens('loading state', (tester) async {
       final container = ProviderContainer(
         overrides: [
-          // Use a Stream that takes time to emit to show loading state
+          // Use a Stream that never emits to show loading state
           invitationByCodeProvider('test-code').overrideWith(
-            (ref) => Stream.multi((controller) async {
+            (ref) => Stream<InvitationLink?>.multi((controller) {
               // Never emit, keeping the stream in loading state
-              await Future.delayed(const Duration(hours: 1));
+              // Don't await anything - just return without emitting
             }),
           ),
           currentPublicKeyProvider.overrideWith((ref) => Future.value(testPubkey)),
@@ -295,7 +297,11 @@ void main() {
             (ref) => Stream.value(invitation),
           ),
           currentPublicKeyProvider.overrideWith(
-            (ref) => Future.delayed(const Duration(seconds: 1), () => testPubkey),
+            (ref) {
+              // Use a Completer that never completes to simulate loading state
+              final completer = Completer<String?>();
+              return completer.future; // This will never complete
+            },
           ),
         ],
       );
@@ -550,4 +556,3 @@ void main() {
     });
   });
 }
-

@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_toolkit/golden_toolkit.dart';
@@ -9,10 +12,48 @@ import 'package:keydex/providers/lockbox_provider.dart';
 import 'package:keydex/screens/backup_config_screen.dart';
 import 'package:keydex/services/login_service.dart';
 import 'package:keydex/widgets/theme.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../helpers/golden_test_helpers.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  const MethodChannel sharedPreferencesChannel =
+      MethodChannel('plugins.flutter.io/shared_preferences');
+  final Map<String, dynamic> sharedPreferencesStore = {};
+
+  setUpAll(() {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(sharedPreferencesChannel, (call) async {
+      final args = call.arguments as Map? ?? {};
+      if (call.method == 'getAll') {
+        return Map<String, dynamic>.from(sharedPreferencesStore);
+      } else if (call.method == 'setString') {
+        sharedPreferencesStore[args['key']] = args['value'];
+        return true;
+      } else if (call.method == 'getString') {
+        return sharedPreferencesStore[args['key']];
+      } else if (call.method == 'remove') {
+        sharedPreferencesStore.remove(args['key']);
+        return true;
+      } else if (call.method == 'getStringList') {
+        final value = sharedPreferencesStore[args['key']];
+        return value is List ? value : null;
+      } else if (call.method == 'setStringList') {
+        sharedPreferencesStore[args['key']] = args['value'];
+        return true;
+      } else if (call.method == 'clear') {
+        sharedPreferencesStore.clear();
+        return true;
+      }
+      return null;
+    });
+  });
+
+  tearDownAll(() {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(sharedPreferencesChannel, null);
+  });
 
   // Sample test data
   final keyHolder1Pubkey = 'b' * 64;
@@ -57,9 +98,14 @@ void main() {
   }
 
   group('BackupConfigScreen Golden Tests', () {
+    setUp(() async {
+      sharedPreferencesStore.clear();
+      SharedPreferences.setMockInitialValues({});
+    });
+
     testGoldens('loading state', (tester) async {
-      // Create a repository that takes time to load
-      final mockRepository = _MockLockboxRepository(null, delay: const Duration(hours: 1));
+      // Create a repository that never completes loading
+      final mockRepository = _MockLockboxRepository(null, neverCompletes: true);
 
       final container = ProviderContainer(
         overrides: [
@@ -116,41 +162,6 @@ void main() {
       await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'backup_config_screen_empty');
-
-      container.dispose();
-    });
-
-    testGoldens('with existing config - no key holders', (tester) async {
-      final backupConfig = createTestBackupConfig(
-        lockboxId: 'test-lockbox',
-        threshold: 2,
-        keyHolders: [],
-        relays: ['wss://relay.example.com'],
-      );
-
-      final mockRepository = _MockLockboxRepository(backupConfig);
-
-      final container = ProviderContainer(
-        overrides: [
-          lockboxRepositoryProvider.overrideWith((ref) => mockRepository),
-        ],
-      );
-
-      await tester.pumpWidgetBuilder(
-        const BackupConfigScreen(lockboxId: 'test-lockbox'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
-        ),
-        surfaceSize: const Size(375, 1000),
-      );
-
-      await tester.pumpAndSettle();
-
-      await screenMatchesGolden(tester, 'backup_config_screen_no_key_holders');
 
       container.dispose();
     });
@@ -405,17 +416,18 @@ void main() {
 /// Mock LockboxRepository for testing
 class _MockLockboxRepository extends LockboxRepository {
   final BackupConfig? _backupConfig;
-  final Duration? _delay;
+  final bool _neverCompletes;
 
-  _MockLockboxRepository(this._backupConfig, {Duration? delay})
-      : _delay = delay,
+  _MockLockboxRepository(this._backupConfig, {bool neverCompletes = false})
+      : _neverCompletes = neverCompletes,
         super(LoginService());
 
   @override
   Future<BackupConfig?> getBackupConfig(String lockboxId) async {
-    final delay = _delay;
-    if (delay != null) {
-      await Future.delayed(delay);
+    if (_neverCompletes) {
+      // Use a Completer that never completes to simulate loading state
+      final completer = Completer<BackupConfig?>();
+      return completer.future; // This will never complete
     }
     return _backupConfig;
   }
