@@ -27,7 +27,7 @@ class InvitationSendingService {
   /// Creates Nostr event (kind 1340).
   /// Signs with invitee's private key.
   /// Publishes to relays.
-  /// Returns event ID.
+  /// Returns event ID, or null if publishing fails.
   Future<String?> sendRsvpEvent({
     required String inviteCode,
     required String ownerPubkey, // Hex format
@@ -75,7 +75,7 @@ class InvitationSendingService {
   /// Creates Nostr event (kind 1341).
   /// Signs with invitee's private key.
   /// Publishes to relays.
-  /// Returns event ID.
+  /// Returns event ID, or null if publishing fails.
   Future<String?> sendDenialEvent({
     required String inviteCode,
     required String ownerPubkey, // Hex format
@@ -128,7 +128,7 @@ class InvitationSendingService {
   /// Creates Nostr event (kind 1342).
   /// Signs with key holder's private key.
   /// Publishes to relays.
-  /// Returns event ID.
+  /// Returns event ID, or null if publishing fails.
   Future<String?> sendShardConfirmationEvent({
     required String lockboxId,
     required int shardIndex,
@@ -181,7 +181,7 @@ class InvitationSendingService {
   /// Creates Nostr event (kind 1343).
   /// Signs with key holder's private key.
   /// Publishes to relays.
-  /// Returns event ID.
+  /// Returns event ID, or null if publishing fails.
   Future<String?> sendShardErrorEvent({
     required String lockboxId,
     required int shardIndex,
@@ -236,7 +236,7 @@ class InvitationSendingService {
   /// Creates Nostr event (kind 1344).
   /// Signs with lockbox owner's private key.
   /// Publishes to relays.
-  /// Returns event ID.
+  /// Returns event ID, or null if publishing fails.
   Future<String?> sendInvitationInvalidEvent({
     required String inviteCode,
     required String inviteePubkey, // Hex format

@@ -174,7 +174,14 @@ class InvitationService {
   ///
   /// Looks up invitation code in SharedPreferences.
   /// Returns InvitationLink if found, null otherwise.
+  /// Throws ArgumentError if invite code format is invalid.
   Future<InvitationLink?> lookupInvitationByCode(String inviteCode) async {
+    // Validate invite code format first
+    if (!isValidInviteCodeFormat(inviteCode)) {
+      throw ArgumentError(
+          'Invalid invitation code format. The code must be a valid Base64URL string.');
+    }
+
     return await _loadInvitation(inviteCode);
   }
 
@@ -238,6 +245,12 @@ class InvitationService {
     required String inviteCode,
     required String inviteePubkey, // Hex format
   }) async {
+    // Validate invite code format first
+    if (!isValidInviteCodeFormat(inviteCode)) {
+      throw ArgumentError(
+          'Invalid invitation code format. The code must be a valid Base64URL string.');
+    }
+
     // Validate invitee pubkey format
     if (!isValidHexPubkey(inviteePubkey)) {
       throw ArgumentError('Invalid invitee pubkey format: must be 64 hex characters');
@@ -262,6 +275,13 @@ class InvitationService {
       throw ArgumentError('Invitation cannot be redeemed in current status: ${invitation.status}');
     }
 
+    // Check if user is trying to redeem their own invitation (lockbox owner)
+    final ownerPubkey = await _loginService.getCurrentPublicKey();
+    if (ownerPubkey != null && invitation.ownerPubkey == ownerPubkey) {
+      throw ArgumentError(
+          'You cannot redeem an invitation to your own lockbox. You are already the owner.');
+    }
+
     // Check if user is already a key holder
     // Note: On the invitee side, the lockbox may not exist yet, so we check if it exists first
     final lockbox = await repository.getLockbox(invitation.lockboxId);
@@ -271,17 +291,8 @@ class InvitationService {
           backupConfig?.keyHolders.any((holder) => holder.pubkey == inviteePubkey) ?? false;
 
       if (isAlreadyKeyHolder) {
-        Log.warning(
-            'Invitee $inviteePubkey is already a key holder for lockbox ${invitation.lockboxId}');
-        // Still mark invitation as redeemed to prevent duplicate processing
-        final redeemedInvitation = invitation.updateStatus(
-          InvitationStatus.redeemed,
-          redeemedBy: inviteePubkey,
-          redeemedAt: DateTime.now(),
-        );
-        await _saveInvitation(redeemedInvitation);
-        _notifyInvitationsChanged();
-        return;
+        throw ArgumentError(
+            'You are already a key holder for this lockbox. This invitation has already been accepted.');
       }
 
       // Lockbox exists - add invitee to backup config
@@ -346,6 +357,12 @@ class InvitationService {
     required String inviteCode,
     String? reason,
   }) async {
+    // Validate invite code format first
+    if (!isValidInviteCodeFormat(inviteCode)) {
+      throw ArgumentError(
+          'Invalid invitation code format. The code must be a valid Base64URL string.');
+    }
+
     // Load invitation
     final invitation = await _loadInvitation(inviteCode);
     if (invitation == null) {
@@ -353,6 +370,14 @@ class InvitationService {
     }
 
     // Validate invitation status
+    if (invitation.status == InvitationStatus.redeemed) {
+      throw InvitationAlreadyRedeemedException(inviteCode);
+    }
+
+    if (invitation.status == InvitationStatus.invalidated) {
+      throw InvitationInvalidatedException(inviteCode, 'Invitation has been invalidated');
+    }
+
     if (!invitation.status.canRedeem) {
       throw ArgumentError('Invitation cannot be denied in current status: ${invitation.status}');
     }
@@ -450,7 +475,7 @@ class InvitationService {
       Log.debug('RSVP event payload keys: ${payload.keys.toList()}');
     } catch (e) {
       Log.error('Error parsing RSVP event JSON', e);
-      throw Exception('Invalid JSON in RSVP event content: $e');
+      throw Exception('Failed to parse RSVP event content. The event may be corrupted or encrypted incorrectly: $e');
     }
 
     // Extract invite code from payload
@@ -562,7 +587,7 @@ class InvitationService {
       Log.debug('Denial event payload keys: ${payload.keys.toList()}');
     } catch (e) {
       Log.error('Error parsing denial event JSON', e);
-      throw Exception('Invalid JSON in denial event content: $e');
+      throw Exception('Failed to parse denial event content. The event may be corrupted or encrypted incorrectly: $e');
     }
 
     // Extract invite code from payload

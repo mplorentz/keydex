@@ -486,9 +486,15 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
       }
     } catch (e) {
       if (mounted) {
+        String errorMessage = 'Failed to generate invitation link';
+        if (e is ArgumentError) {
+          errorMessage = e.message ?? errorMessage;
+        } else {
+          errorMessage = '$errorMessage: $e';
+        }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to generate invitation link: $e'),
+            content: Text(errorMessage),
             backgroundColor: Colors.red,
           ),
         );

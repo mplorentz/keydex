@@ -458,10 +458,17 @@ class _InvitationAcceptanceScreenState extends ConsumerState<InvitationAcceptanc
         _isProcessing = false;
       });
       ref.invalidate(invitationByCodeProvider(widget.inviteCode));
+    } on ArgumentError catch (e) {
+      // Handle various argument errors including duplicate redemption and owner redemption
+      setState(() {
+        _errorMessage = e.message;
+        _isProcessing = false;
+      });
+      ref.invalidate(invitationByCodeProvider(widget.inviteCode));
     } catch (e) {
       if (mounted) {
         setState(() {
-          _errorMessage = 'Failed to accept invitation: $e';
+          _errorMessage = 'Failed to accept invitation: ${e.toString()}';
           _isProcessing = false;
         });
       }
@@ -527,10 +534,28 @@ class _InvitationAcceptanceScreenState extends ConsumerState<InvitationAcceptanc
         _isProcessing = false;
       });
       ref.invalidate(invitationByCodeProvider(widget.inviteCode));
+    } on InvitationAlreadyRedeemedException {
+      setState(() {
+        _errorMessage = 'This invitation has already been redeemed.';
+        _isProcessing = false;
+      });
+      ref.invalidate(invitationByCodeProvider(widget.inviteCode));
+    } on InvitationInvalidatedException catch (e) {
+      setState(() {
+        _errorMessage = 'This invitation has been invalidated: ${e.reason}';
+        _isProcessing = false;
+      });
+      ref.invalidate(invitationByCodeProvider(widget.inviteCode));
+    } on ArgumentError catch (e) {
+      setState(() {
+        _errorMessage = e.message;
+        _isProcessing = false;
+      });
+      ref.invalidate(invitationByCodeProvider(widget.inviteCode));
     } catch (e) {
       if (mounted) {
         setState(() {
-          _errorMessage = 'Failed to deny invitation: $e';
+          _errorMessage = 'Failed to deny invitation: ${e.toString()}';
           _isProcessing = false;
         });
       }

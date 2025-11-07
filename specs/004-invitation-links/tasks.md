@@ -111,13 +111,13 @@
 - [X] T046 Add deep link initialization in `lib/main.dart` (call DeepLinkService.initializeDeepLinking on app start)
 
 ## Phase 3.10: Edge Cases & Error Handling
-- [ ] T047 Handle invalid invitation codes (already redeemed, invalidated, format errors) in `lib/services/invitation_service.dart`
-- [ ] T048 Handle malformed invitation links (invalid URL format, missing parameters) in `lib/services/deep_link_service.dart`
-- [ ] T049 Handle duplicate invitation redemption (user already key holder) in `lib/services/invitation_service.dart`
-- [ ] T050 Handle network failures during event publishing (retry logic, user feedback) in `lib/services/invitation_sending_service.dart`
-- [ ] T051 Handle decryption failures when processing events in `lib/services/invitation_service.dart`
-- [ ] T052.1 Add error messages and user feedback for all error cases in UI screens
-- [ ] T052.2 Show error message when the lockbox owner tries to redeem an invitation to their own lockbox 
+- [X] T047 Handle invalid invitation codes (already redeemed, invalidated, format errors) in `lib/services/invitation_service.dart`
+- [X] T048 Handle malformed invitation links (invalid URL format, missing parameters) in `lib/services/deep_link_service.dart`
+- [X] T049 Handle duplicate invitation redemption (user already key holder) in `lib/services/invitation_service.dart`
+- [X] T050 Handle network failures during event publishing (retry logic, user feedback) in `lib/services/invitation_sending_service.dart`
+- [X] T051 Handle decryption failures when processing events in `lib/services/invitation_service.dart`
+- [X] T052.1 Add error messages and user feedback for all error cases in UI screens
+- [X] T052.2 Show error message when the lockbox owner tries to redeem an invitation to their own lockbox 
 
 ## Phase 3.11: Refactoring Pass 2 (Post-Edge Cases)
 **Final cleanup before testing**
