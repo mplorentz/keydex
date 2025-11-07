@@ -40,7 +40,6 @@ class LockboxCard extends ConsumerWidget {
         break;
       case LockboxState.awaitingKey:
         stateIcon = Icons.hourglass_empty;
-        iconColor = Colors.orange;
         break;
     }
 
@@ -96,14 +95,9 @@ class LockboxCard extends ConsumerWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      lockbox.state == LockboxState.awaitingKey
-                          ? 'Waiting for owner to distribute keys'
-                          : "Owner: $ownerDisplayText",
+                      "Owner: $ownerDisplayText",
                       style: textTheme.bodySmall?.copyWith(
                         fontFamily: isOwnedByCurrentUser ? null : 'RobotoMono',
-                        color: lockbox.state == LockboxState.awaitingKey
-                            ? Colors.orange
-                            : null,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
