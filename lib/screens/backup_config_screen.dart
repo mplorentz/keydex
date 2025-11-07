@@ -151,7 +151,12 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                           const SizedBox(height: 16),
                           Text('Threshold: $_threshold (minimum keys needed)'),
                           Slider(
-                            value: _threshold.toDouble(),
+                            value: _threshold.toDouble().clamp(
+                              LockboxBackupConstraints.minThreshold.toDouble(),
+                              (_keyHolders.isEmpty
+                                  ? LockboxBackupConstraints.maxTotalKeys.toDouble()
+                                  : _keyHolders.length.toDouble()),
+                            ),
                             min: LockboxBackupConstraints.minThreshold.toDouble(),
                             max: _keyHolders.isEmpty
                                 ? LockboxBackupConstraints.maxTotalKeys.toDouble()
@@ -474,6 +479,10 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
           _keyHolders.add(invitedKeyHolder);
           _invitationLinksByInviteeName[inviteeName] = invitation;
           _inviteeNameController.clear();
+          // Ensure threshold doesn't exceed the number of key holders
+          if (_threshold > _keyHolders.length) {
+            _threshold = _keyHolders.length;
+          }
           _hasUnsavedChanges = true;
         });
 
@@ -574,6 +583,10 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
         setState(() {
           _keyHolders.add(keyHolder);
           _inviteeNameController.clear();
+          // Ensure threshold doesn't exceed the number of key holders
+          if (_threshold > _keyHolders.length) {
+            _threshold = _keyHolders.length;
+          }
           _hasUnsavedChanges = true;
         });
 

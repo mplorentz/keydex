@@ -11,6 +11,7 @@ import '../providers/lockbox_provider.dart';
 import '../providers/key_provider.dart';
 import 'login_service.dart';
 import 'shard_distribution_service.dart';
+import 'relay_scan_service.dart';
 import '../services/logger.dart';
 
 /// Provider for BackupService
@@ -19,6 +20,7 @@ final Provider<BackupService> backupServiceProvider = Provider<BackupService>((r
     ref.read(lockboxRepositoryProvider),
     ref.read(shardDistributionServiceProvider),
     ref.read(loginServiceProvider),
+    ref.read(relayScanServiceProvider),
   );
 });
 
@@ -27,8 +29,14 @@ class BackupService {
   final LockboxRepository _repository;
   final ShardDistributionService _shardDistributionService;
   final LoginService _loginService;
+  final RelayScanService _relayScanService;
 
-  BackupService(this._repository, this._shardDistributionService, this._loginService);
+  BackupService(
+    this._repository,
+    this._shardDistributionService,
+    this._loginService,
+    this._relayScanService,
+  );
 
   /// Create a new backup configuration
   Future<BackupConfig> createBackupConfiguration({
@@ -305,6 +313,16 @@ class BackupService {
       keyHolders: keyHolders,
       relays: relays,
     );
+
+    // Sync relays to RelayScanService and ensure scanning is started
+    try {
+      await _relayScanService.syncRelaysFromUrls(relays);
+      await _relayScanService.ensureScanningStarted();
+      Log.info('Synced ${relays.length} relay(s) to RelayScanService');
+    } catch (e) {
+      Log.error('Error syncing relays to RelayScanService', e);
+      // Don't fail backup config save if relay sync fails
+    }
 
     Log.info('Created backup configuration for lockbox $lockboxId');
     return config;

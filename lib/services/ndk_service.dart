@@ -570,14 +570,45 @@ class NdkService {
         recipientPubkey: recipientPubkey,
       );
 
-      // Broadcast the gift wrap event
-      _ndk!.broadcast.broadcast(
+      // Broadcast the gift wrap event and await the result
+      final broadcastResponse = _ndk!.broadcast.broadcast(
         nostrEvent: giftWrap,
         specificRelays: relays,
       );
 
       Log.info(
-          'Published gift wrap event (kind $kind) to ${recipientPubkey.substring(0, 8)}... (event: ${giftWrap.id.substring(0, 8)}...)');
+          'Publishing gift wrap event (kind $kind) addressed to ${recipientPubkey.substring(0, 8)}... to relays ${relays.join(', ')} (event: ${giftWrap.id.substring(0, 8)}...)');
+
+      // Await broadcast results and log any errors
+      try {
+        final results = await broadcastResponse.broadcastDoneFuture;
+        final failed = results.where((r) => !r.broadcastSuccessful).toList();
+        final successful = results.where((r) => r.broadcastSuccessful).toList();
+
+        if (failed.isNotEmpty) {
+          Log.warning(
+              'Broadcast completed with ${failed.length} failed relay(s) out of ${results.length} total');
+          for (final failure in failed) {
+            Log.warning(
+                'Relay ${failure.relayUrl} failed: ${failure.msg.isNotEmpty ? failure.msg : "No response"}');
+          }
+        } else {
+          Log.info('Broadcast successful to all ${results.length} relay(s)');
+        }
+
+        // Return null if all relays failed, otherwise return event ID
+        if (successful.isEmpty && results.isNotEmpty) {
+          // Only return null if we got results and all failed
+          // If results is empty, it might be an NDK bug, so we'll return the event ID anyway
+          Log.error('All relays failed to publish event ${giftWrap.id}');
+          return null;
+        }
+      } catch (e, stackTrace) {
+        Log.error('Error awaiting broadcast results', e);
+        Log.debug('Broadcast error stack trace', stackTrace);
+        return null;
+      }
+
       return giftWrap.id;
     } catch (e) {
       Log.error('Error publishing gift wrap event', e);

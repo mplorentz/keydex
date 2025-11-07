@@ -467,10 +467,20 @@ class _InvitationAcceptanceScreenState extends ConsumerState<InvitationAcceptanc
       ref.invalidate(invitationByCodeProvider(widget.inviteCode));
     } catch (e) {
       if (mounted) {
+        final errorMessage = e.toString().replaceAll('Exception: ', '');
         setState(() {
-          _errorMessage = 'Failed to accept invitation: ${e.toString()}';
+          _errorMessage = errorMessage;
           _isProcessing = false;
         });
+
+        // Show error snackbar
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
+        );
       }
     }
   }
