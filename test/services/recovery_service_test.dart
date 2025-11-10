@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
+import 'package:mockito/mockito.dart';
+import 'dart:async';
 import 'package:keydex/models/lockbox.dart';
 import 'package:keydex/models/recovery_request.dart';
 import 'package:keydex/models/shard_data.dart';
@@ -84,6 +86,13 @@ void main() {
       // Create mocks for circular dependency
       final mockBackupService = MockBackupService();
       final mockNdkService = MockNdkService();
+
+      // Stub the streams that RecoveryService accesses in its constructor
+      when(mockNdkService.recoveryRequestStream)
+          .thenAnswer((_) => const Stream<RecoveryRequest>.empty());
+      when(mockNdkService.recoveryResponseStream)
+          .thenAnswer((_) => const Stream<RecoveryResponseEvent>.empty());
+
       backupService = mockBackupService;
       ndkService = mockNdkService;
       recoveryService = RecoveryService(repository, backupService, ndkService);

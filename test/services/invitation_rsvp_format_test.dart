@@ -286,7 +286,8 @@ void main() {
       // Arrange
       const ownerPubkey = TestHexPubkeys.alice;
       const inviteePubkey = TestHexPubkeys.bob;
-      const inviteCode = 'unknown-invite-code';
+      // Use a valid Base64URL invite code (no padding, Base64URL format)
+      const inviteCode = 'dGVzdF9iYXNlNjRfY29kZQ'; // Base64URL without padding
 
       final validJson = json.encode({
         'invite_code': inviteCode,
