@@ -266,7 +266,7 @@ class LockboxShareService {
           'Sending shard confirmation event for lockbox: ${lockboxId.substring(0, 8)}..., shard: $shardIndex');
 
       // Publish using NdkService with empty content, all data in tags
-      return await ndkService.publishGiftWrapEvent(
+      return await ndkService.publishEncryptedEvent(
         content: '',
         kind: NostrKind.shardConfirmation.value,
         recipientPubkey: ownerPubkey,

@@ -102,9 +102,9 @@ void main() {
       // Mock NdkService.getCurrentPubkey() to return invitee pubkey
       when(mockNdkService.getCurrentPubkey()).thenAnswer((_) async => inviteePubkey);
 
-      // Capture the content passed to publishGiftWrapEvent
+      // Capture the content passed to publishEncryptedEvent
       String? capturedContent;
-      when(mockNdkService.publishGiftWrapEvent(
+      when(mockNdkService.publishEncryptedEvent(
         content: anyNamed('content'),
         kind: anyNamed('kind'),
         recipientPubkey: anyNamed('recipientPubkey'),
@@ -323,7 +323,7 @@ void main() {
       when(mockNdkService.getCurrentPubkey()).thenAnswer((_) async => inviteePubkey);
 
       String? capturedContent;
-      when(mockNdkService.publishGiftWrapEvent(
+      when(mockNdkService.publishEncryptedEvent(
         content: anyNamed('content'),
         kind: anyNamed('kind'),
         recipientPubkey: anyNamed('recipientPubkey'),
@@ -365,7 +365,7 @@ void main() {
       invitationSendingService = InvitationSendingService(mockNdkService);
     });
 
-    test('sendRsvpEvent calls publishGiftWrapEvent with correct parameters', () async {
+    test('sendRsvpEvent calls publishEncryptedEvent with correct parameters', () async {
       // Arrange
       const inviteCode = 'test-invite-code-abc';
       const ownerPubkey = TestHexPubkeys.alice;
@@ -379,7 +379,7 @@ void main() {
       List<String>? capturedRelays;
       List<List<String>>? capturedTags;
 
-      when(mockNdkService.publishGiftWrapEvent(
+      when(mockNdkService.publishEncryptedEvent(
         content: anyNamed('content'),
         kind: anyNamed('kind'),
         recipientPubkey: anyNamed('recipientPubkey'),
@@ -406,6 +406,8 @@ void main() {
       expect(capturedRecipientPubkey, ownerPubkey);
       expect(capturedRelays, relayUrls);
       expect(capturedTags, isNotNull);
+      // Note: expiration tag is added inside publishEncryptedEvent, so we verify
+      // the custom tags passed to it (expiration will be prepended internally)
       expect(capturedTags!.length, 2);
       expect(capturedTags![0], ['d', 'invitation_rsvp_$inviteCode']);
       expect(capturedTags![1], ['invite', inviteCode]);
@@ -421,7 +423,7 @@ void main() {
       when(mockNdkService.getCurrentPubkey()).thenAnswer((_) async => inviteePubkey);
 
       String? capturedContent;
-      when(mockNdkService.publishGiftWrapEvent(
+      when(mockNdkService.publishEncryptedEvent(
         content: anyNamed('content'),
         kind: anyNamed('kind'),
         recipientPubkey: anyNamed('recipientPubkey'),
@@ -474,7 +476,7 @@ void main() {
 
       // Assert
       expect(result, isNull);
-      verifyNever(mockNdkService.publishGiftWrapEvent(
+      verifyNever(mockNdkService.publishEncryptedEvent(
         content: anyNamed('content'),
         kind: anyNamed('kind'),
         recipientPubkey: anyNamed('recipientPubkey'),
@@ -483,14 +485,14 @@ void main() {
       ));
     });
 
-    test('sendRsvpEvent handles publishGiftWrapEvent errors gracefully', () async {
+    test('sendRsvpEvent handles publishEncryptedEvent errors gracefully', () async {
       // Arrange
       const inviteCode = 'test-code';
       const ownerPubkey = TestHexPubkeys.alice;
       const inviteePubkey = TestHexPubkeys.bob;
 
       when(mockNdkService.getCurrentPubkey()).thenAnswer((_) async => inviteePubkey);
-      when(mockNdkService.publishGiftWrapEvent(
+      when(mockNdkService.publishEncryptedEvent(
         content: anyNamed('content'),
         kind: anyNamed('kind'),
         recipientPubkey: anyNamed('recipientPubkey'),
@@ -518,7 +520,7 @@ void main() {
       when(mockNdkService.getCurrentPubkey()).thenAnswer((_) async => inviteePubkey);
 
       List<List<String>>? capturedTags;
-      when(mockNdkService.publishGiftWrapEvent(
+      when(mockNdkService.publishEncryptedEvent(
         content: anyNamed('content'),
         kind: anyNamed('kind'),
         recipientPubkey: anyNamed('recipientPubkey'),
@@ -555,7 +557,7 @@ void main() {
       when(mockNdkService.getCurrentPubkey()).thenAnswer((_) async => inviteePubkey);
 
       String? capturedContent;
-      when(mockNdkService.publishGiftWrapEvent(
+      when(mockNdkService.publishEncryptedEvent(
         content: anyNamed('content'),
         kind: anyNamed('kind'),
         recipientPubkey: anyNamed('recipientPubkey'),

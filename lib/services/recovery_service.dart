@@ -556,7 +556,7 @@ class RecoveryService {
       final requestJson = json.encode(requestData);
 
       // Send gift wrap to each key holder using NdkService
-      final eventIds = await _ndkService.publishGiftWrapEventToMultiple(
+      final eventIds = await _ndkService.publishEncryptedEventToMultiple(
         content: requestJson,
         kind: NostrKind.recoveryRequest.value,
         recipientPubkeys: request.keyHolderResponses.keys.toList(),
@@ -619,7 +619,7 @@ class RecoveryService {
       Log.debug('Sending recovery response to ${request.initiatorPubkey.substring(0, 8)}...');
 
       // Publish using NdkService
-      final eventId = await _ndkService.publishGiftWrapEvent(
+      final eventId = await _ndkService.publishEncryptedEvent(
         content: responseJson,
         kind: NostrKind.recoveryResponse.value,
         recipientPubkey: request.initiatorPubkey,

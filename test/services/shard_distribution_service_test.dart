@@ -46,8 +46,8 @@ void main() {
       mockLoginService = MockLoginService();
       mockNdkService = MockNdkService();
 
-      // Stub publishGiftWrapEvent to return a mock event ID (64-char hex string)
-      when(mockNdkService.publishGiftWrapEvent(
+      // Stub publishEncryptedEvent to return a mock event ID (64-char hex string)
+      when(mockNdkService.publishEncryptedEvent(
         content: anyNamed('content'),
         kind: anyNamed('kind'),
         recipientPubkey: anyNamed('recipientPubkey'),
@@ -318,8 +318,8 @@ void main() {
       expect(secondShardEvent.createdAt, isA<DateTime>());
       expect(secondShardEvent.status, EventStatus.published);
 
-      // Verify that publishGiftWrapEvent was called for each shard
-      verify(mockNdkService.publishGiftWrapEvent(
+      // Verify that publishEncryptedEvent was called for each shard
+      verify(mockNdkService.publishEncryptedEvent(
         content: anyNamed('content'),
         kind: anyNamed('kind'),
         recipientPubkey: anyNamed('recipientPubkey'),
