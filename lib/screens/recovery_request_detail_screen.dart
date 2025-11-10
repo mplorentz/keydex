@@ -231,7 +231,7 @@ class _RecoveryRequestDetailScreenState extends ConsumerState<RecoveryRequestDet
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
-                              'Someone is requesting recovery of a lockbox you have a key for',
+                              'Someone is requesting recovery of a vault you have a key for',
                               style: TextStyle(
                                 color: Colors.orange[900],
                                 fontWeight: FontWeight.bold,
@@ -257,7 +257,7 @@ class _RecoveryRequestDetailScreenState extends ConsumerState<RecoveryRequestDet
                           ),
                           const SizedBox(height: 16),
                           _buildInfoRow('Request ID', request.id),
-                          _buildInfoRow('Lockbox ID', request.lockboxId),
+                          _buildInfoRow('Vault ID', request.lockboxId),
                           _buildInfoRow(
                             'Requested',
                             _formatDateTime(request.requestedAt),
@@ -327,7 +327,7 @@ class _RecoveryRequestDetailScreenState extends ConsumerState<RecoveryRequestDet
                   ),
                   const SizedBox(height: 16),
 
-                  // Key holders summary
+                  // Stewards summary
                   Card(
                     child: Padding(
                       padding: const EdgeInsets.all(16),
@@ -335,7 +335,7 @@ class _RecoveryRequestDetailScreenState extends ConsumerState<RecoveryRequestDet
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Key Holders',
+                            'Stewards',
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
                           const SizedBox(height: 16),

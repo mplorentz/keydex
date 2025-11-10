@@ -55,10 +55,10 @@ class LockboxDetailScreen extends ConsumerWidget {
         if (lockbox == null) {
           return Scaffold(
             appBar: AppBar(
-              title: const Text('Lockbox Not Found'),
+              title: const Text('Vault Not Found'),
               centerTitle: false,
             ),
-            body: const Center(child: Text('This lockbox no longer exists.')),
+            body: const Center(child: Text('This vault no longer exists.')),
           );
         }
 
@@ -235,7 +235,7 @@ class LockboxDetailScreen extends ConsumerWidget {
     if (config.keyHolders.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('No key holders configured'),
+          content: Text('No stewards configured'),
           backgroundColor: Colors.orange,
         ),
       );
@@ -258,7 +258,7 @@ class LockboxDetailScreen extends ConsumerWidget {
       builder: (context) => AlertDialog(
         title: const Text('Generate and Distribute Keys?'),
         content: Text(
-          'This will generate ${config.totalKeys} key shares and distribute them to ${config.keyHolders.length} key holders.\n\n'
+          'This will generate ${config.totalKeys} key shares and distribute them to ${config.keyHolders.length} stewards.\n\n'
           'Threshold: ${config.threshold} (minimum keys needed for recovery)',
         ),
         actions: [
@@ -340,7 +340,7 @@ class LockboxDetailScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Lockbox'),
+        title: const Text('Delete Vault'),
         content: Text(
             'Are you sure you want to delete "${lockbox.name}"? This action cannot be undone.'),
         actions: [

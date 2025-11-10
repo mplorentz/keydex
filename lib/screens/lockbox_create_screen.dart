@@ -30,7 +30,7 @@ class _LockboxCreateScreenState extends ConsumerState<LockboxCreateScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('New Lockbox'),
+        title: const Text('New Vault'),
         centerTitle: false,
       ),
       body: Column(

@@ -47,7 +47,7 @@ class _RecoveryRequestScreenState extends State<RecoveryRequestScreen> {
                         ),
                         const SizedBox(width: 8),
                         const Text(
-                          'Lockbox Recovery',
+                          'Vault Recovery',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -57,8 +57,8 @@ class _RecoveryRequestScreenState extends State<RecoveryRequestScreen> {
                     ),
                     const SizedBox(height: 12),
                     const Text(
-                      'You are about to initiate recovery for this lockbox. '
-                      'This will send recovery requests to all key holders.',
+                      'You are about to initiate recovery for this vault. '
+                      'This will send recovery requests to all stewards.',
                       style: TextStyle(fontSize: 14),
                     ),
                   ],
@@ -67,9 +67,9 @@ class _RecoveryRequestScreenState extends State<RecoveryRequestScreen> {
             ),
             const SizedBox(height: 24),
 
-            // Key holders section
+            // Stewards section
             const Text(
-              'Key Holders',
+              'Stewards',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -77,7 +77,7 @@ class _RecoveryRequestScreenState extends State<RecoveryRequestScreen> {
             ),
             const SizedBox(height: 12),
 
-            // Placeholder for key holder list
+            // Placeholder for steward list
             Expanded(
               child: ListView.builder(
                 itemCount: 3, // Placeholder count
@@ -92,7 +92,7 @@ class _RecoveryRequestScreenState extends State<RecoveryRequestScreen> {
                           color: Theme.of(context).primaryColor,
                         ),
                       ),
-                      title: Text('Key Holder ${index + 1}'),
+                      title: Text('Steward ${index + 1}'),
                       subtitle: const Text('npub1...abc123'),
                       trailing: Container(
                         padding: const EdgeInsets.symmetric(
@@ -171,7 +171,7 @@ class _RecoveryRequestScreenState extends State<RecoveryRequestScreen> {
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Recovery requests sent to key holders'),
+            content: Text('Recovery requests sent to stewards'),
             backgroundColor: Colors.green,
           ),
         );

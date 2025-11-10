@@ -107,12 +107,12 @@ class LockboxListScreen extends ConsumerWidget {
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              'No lockboxes yet',
+                              'No vaults yet',
                               style: textTheme.titleLarge,
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Tap + to create your first secure lockbox',
+                              'Tap + to create your first secure vault',
                               style: textTheme.bodySmall,
                             ),
                           ],
@@ -152,7 +152,7 @@ class LockboxListScreen extends ConsumerWidget {
               );
             },
             icon: Icons.add,
-            text: 'Create Lockbox',
+            text: 'Create Vault',
           ),
         ],
       ),
