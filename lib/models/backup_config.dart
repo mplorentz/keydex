@@ -14,6 +14,7 @@ typedef BackupConfig = ({
   int totalKeys,
   List<KeyHolder> keyHolders,
   List<String> relays,
+  String? ownerName,
   DateTime createdAt,
   DateTime lastUpdated,
   DateTime? lastContentChange,
@@ -29,6 +30,7 @@ BackupConfig createBackupConfig({
   required int totalKeys,
   required List<KeyHolder> keyHolders,
   required List<String> relays,
+  String? ownerName,
   String? contentHash,
 }) {
   // Validate inputs
@@ -75,6 +77,7 @@ BackupConfig createBackupConfig({
     totalKeys: totalKeys,
     keyHolders: keyHolders,
     relays: relays,
+    ownerName: ownerName,
     createdAt: now,
     lastUpdated: now,
     lastContentChange: null,
@@ -93,6 +96,7 @@ BackupConfig copyBackupConfig(
   int? totalKeys,
   List<KeyHolder>? keyHolders,
   List<String>? relays,
+  String? ownerName,
   DateTime? createdAt,
   DateTime? lastUpdated,
   DateTime? lastContentChange,
@@ -107,6 +111,7 @@ BackupConfig copyBackupConfig(
     totalKeys: totalKeys ?? config.totalKeys,
     keyHolders: keyHolders ?? config.keyHolders,
     relays: relays ?? config.relays,
+    ownerName: ownerName ?? config.ownerName,
     createdAt: createdAt ?? config.createdAt,
     lastUpdated: lastUpdated ?? config.lastUpdated,
     lastContentChange: lastContentChange ?? config.lastContentChange,
@@ -179,6 +184,7 @@ Map<String, dynamic> backupConfigToJson(BackupConfig config) {
     'totalKeys': config.totalKeys,
     'keyHolders': config.keyHolders.map((h) => keyHolderToJson(h)).toList(),
     'relays': config.relays,
+    if (config.ownerName != null) 'ownerName': config.ownerName,
     'createdAt': config.createdAt.toIso8601String(),
     'lastUpdated': config.lastUpdated.toIso8601String(),
     'lastContentChange': config.lastContentChange?.toIso8601String(),
@@ -199,6 +205,7 @@ BackupConfig backupConfigFromJson(Map<String, dynamic> json) {
         .map((h) => keyHolderFromJson(h as Map<String, dynamic>))
         .toList(),
     relays: (json['relays'] as List).cast<String>(),
+    ownerName: json['ownerName'] as String?,
     createdAt: DateTime.parse(json['createdAt'] as String),
     lastUpdated: DateTime.parse(json['lastUpdated'] as String),
     lastContentChange: json['lastContentChange'] != null

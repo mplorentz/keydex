@@ -26,10 +26,20 @@ void main() {
         'lockboxId': 'lockbox-abc-456',
         'lockboxName': 'Shared Lockbox Test',
         'peers': [
-          'a11ac73f57e93ef42ef8bce513de552bcda3b6169c8f9ab96c6143f0c9b73437',
-          'b22bd84f68f94fa53fa9cdf624ef663ccdeb4c7260d9f0ab97d7254f1d9c8454',
-          'c33ce95f79fa5ab64fa0def735fa774ddfc5d8371e0a1bc08e8263a2e0d9546'
+          {
+            'name': 'Alice',
+            'pubkey': 'a11ac73f57e93ef42ef8bce513de552bcda3b6169c8f9ab96c6143f0c9b73437'
+          },
+          {
+            'name': 'Bob',
+            'pubkey': 'b22bd84f68f94fa53fa9cdf624ef663ccdeb4c7260d9f0ab97d7254f1d9c8454'
+          },
+          {
+            'name': 'Charlie',
+            'pubkey': 'c33ce95f79fa5ab64fa0def735fa774ddfc5d8371e0a1bc08e8263a2e0d9546'
+          }
         ],
+        'ownerName': 'Owner',
         'recipientPubkey': 'b22bd84f68f94fa53fa9cdf624ef663ccdeb4c7260d9f0ab97d7254f1d9c8454',
         'isReceived': true,
         'receivedAt': '2025-02-06T12:00:00.000Z',
@@ -68,7 +78,12 @@ void main() {
       expect(shardData.createdAt, validJsonWithRecoveryMetadata['createdAt']);
       expect(shardData.lockboxId, validJsonWithRecoveryMetadata['lockboxId']);
       expect(shardData.lockboxName, validJsonWithRecoveryMetadata['lockboxName']);
-      expect(shardData.peers, validJsonWithRecoveryMetadata['peers']);
+      expect(shardData.peers, isNotNull);
+      expect(shardData.peers!.length, 3);
+      expect(shardData.peers![0]['name'], 'Alice');
+      expect(shardData.peers![0]['pubkey'],
+          'a11ac73f57e93ef42ef8bce513de552bcda3b6169c8f9ab96c6143f0c9b73437');
+      expect(shardData.ownerName, 'Owner');
       expect(shardData.recipientPubkey, validJsonWithRecoveryMetadata['recipientPubkey']);
       expect(shardData.isReceived, validJsonWithRecoveryMetadata['isReceived']);
       expect(shardData.receivedAt, DateTime.parse(validJsonWithRecoveryMetadata['receivedAt']));
@@ -108,7 +123,9 @@ void main() {
       expect(json['createdAt'], validJsonWithRecoveryMetadata['createdAt']);
       expect(json['lockboxId'], validJsonWithRecoveryMetadata['lockboxId']);
       expect(json['lockboxName'], validJsonWithRecoveryMetadata['lockboxName']);
-      expect(json['peers'], validJsonWithRecoveryMetadata['peers']);
+      expect(json['peers'], isNotNull);
+      expect(json['peers'], isA<List>());
+      expect(json['ownerName'], 'Owner');
       expect(json['recipientPubkey'], validJsonWithRecoveryMetadata['recipientPubkey']);
       expect(json['isReceived'], validJsonWithRecoveryMetadata['isReceived']);
       expect(json['receivedAt'], validJsonWithRecoveryMetadata['receivedAt']);
@@ -129,6 +146,9 @@ void main() {
       expect(decodedShardData.createdAt, originalShardData.createdAt);
       expect(decodedShardData.lockboxId, originalShardData.lockboxId);
       expect(decodedShardData.lockboxName, originalShardData.lockboxName);
+      expect(decodedShardData.peers, isNotNull);
+      expect(decodedShardData.peers!.length, originalShardData.peers!.length);
+      expect(decodedShardData.ownerName, originalShardData.ownerName);
       expect(decodedShardData.recipientPubkey, originalShardData.recipientPubkey);
       expect(decodedShardData.isReceived, originalShardData.isReceived);
       expect(decodedShardData.receivedAt, originalShardData.receivedAt);
@@ -396,6 +416,7 @@ void main() {
         lockboxId: null,
         lockboxName: null,
         peers: null,
+        ownerName: null,
         recipientPubkey: null,
         isReceived: null,
         receivedAt: null,
@@ -420,6 +441,7 @@ void main() {
         lockboxId: null,
         lockboxName: null,
         peers: null,
+        ownerName: null,
         recipientPubkey: null,
         isReceived: null,
         receivedAt: null,
@@ -444,6 +466,7 @@ void main() {
         lockboxId: null,
         lockboxName: null,
         peers: null,
+        ownerName: null,
         recipientPubkey: null,
         isReceived: null,
         receivedAt: null,
@@ -468,6 +491,7 @@ void main() {
         lockboxId: null,
         lockboxName: null,
         peers: null,
+        ownerName: null,
         recipientPubkey: null,
         isReceived: null,
         receivedAt: null,

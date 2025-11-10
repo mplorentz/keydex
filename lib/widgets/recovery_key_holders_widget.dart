@@ -112,7 +112,16 @@ class RecoveryKeyHoldersWidget extends ConsumerWidget {
       // Fallback: use peers from shards
       final firstShard = lockbox.shards.first;
       if (firstShard.peers != null) {
-        keyHolderPubkeys = List.from(firstShard.peers!);
+        // Peers is now a list of maps with 'name' and 'pubkey'
+        keyHolderPubkeys = firstShard.peers!
+            .map((peer) => peer['pubkey'])
+            .where((p) => p != null)
+            .cast<String>()
+            .toList();
+      }
+      // Also include owner if ownerName is present
+      if (firstShard.ownerName != null) {
+        keyHolderPubkeys.add(firstShard.creatorPubkey);
       }
     }
 

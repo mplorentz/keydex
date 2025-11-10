@@ -250,14 +250,25 @@ class KeyHolderList extends ConsumerWidget {
   List<KeyHolderInfo> _extractKeyHolders(Lockbox lockbox, String? currentPubkey) {
     // NEW: Try backupConfig first (owner will have this)
     if (lockbox.backupConfig != null) {
-      return lockbox.backupConfig!.keyHolders
-          .map((kh) => KeyHolderInfo(
-                pubkey: kh.pubkey,
-                displayName: kh.displayName,
-                isOwner: kh.pubkey != null && kh.pubkey == lockbox.ownerPubkey,
-                status: kh.status, // Use actual status from KeyHolder model
-              ))
-          .toList();
+      final keyHolders = lockbox.backupConfig!.keyHolders.map((kh) {
+        final isCurrentUser = currentPubkey != null && kh.pubkey == currentPubkey;
+        final displayName = isCurrentUser ? 'You (${kh.displayName})' : kh.displayName;
+        return KeyHolderInfo(
+          pubkey: kh.pubkey,
+          displayName: displayName,
+          isOwner: kh.pubkey != null && kh.pubkey == lockbox.ownerPubkey,
+          status: kh.status, // Use actual status from KeyHolder model
+        );
+      }).toList();
+
+      // Sort: owner first, then others
+      keyHolders.sort((a, b) {
+        if (a.isOwner && !b.isOwner) return -1;
+        if (!a.isOwner && b.isOwner) return 1;
+        return 0;
+      });
+
+      return keyHolders;
     }
 
     // FALLBACK: Use shard peers (key holder perspective)
@@ -268,12 +279,31 @@ class KeyHolderList extends ConsumerWidget {
     final shard = lockbox.shards.first;
     final keyHolders = <KeyHolderInfo>[];
 
-    // Add peers (key holders)
+    // Add owner first if ownerName is available
+    if (shard.ownerName != null) {
+      final isCurrentUser = currentPubkey != null && shard.creatorPubkey == currentPubkey;
+      final ownerDisplayName = isCurrentUser ? 'You (${shard.ownerName})' : shard.ownerName;
+      keyHolders.add(KeyHolderInfo(
+        pubkey: shard.creatorPubkey,
+        displayName: ownerDisplayName,
+        isOwner: true,
+        status: KeyHolderStatus.holdingKey,
+      ));
+    }
+
+    // Add peers (key holders) - now a list of maps with name and pubkey
     if (shard.peers != null) {
-      for (final peerPubkey in shard.peers!) {
+      for (final peer in shard.peers!) {
+        final peerPubkey = peer['pubkey'];
+        final peerName = peer['name'];
+        if (peerPubkey == null) continue;
+
+        final isCurrentUser = currentPubkey != null && peerPubkey == currentPubkey;
+        final displayName = isCurrentUser && peerName != null ? 'You ($peerName)' : peerName;
+
         keyHolders.add(KeyHolderInfo(
           pubkey: peerPubkey,
-          displayName: Helpers.encodeBech32(peerPubkey, 'npub'),
+          displayName: displayName,
           isOwner: peerPubkey == lockbox.ownerPubkey,
           status: KeyHolderStatus.holdingKey, // Default for key holders with shards
         ));
