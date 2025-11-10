@@ -175,7 +175,7 @@ class _RecoveryNotificationOverlayState extends ConsumerState<RecoveryNotificati
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Lockbox ID: ${request.lockboxId.substring(0, 8)}...',
+              'Vault ID: ${request.lockboxId.substring(0, 8)}...',
               style: TextStyle(fontSize: 12, color: Colors.grey[600]),
             ),
             Text(

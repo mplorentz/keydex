@@ -37,7 +37,7 @@ class KeyHolderList extends ConsumerWidget {
                   Icon(Icons.people, color: Theme.of(context).primaryColor),
                   const SizedBox(width: 8),
                   Text(
-                    'Key Holders',
+                    'Stewards',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           color: Theme.of(context).primaryColor,
                         ),
@@ -46,7 +46,7 @@ class KeyHolderList extends ConsumerWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'Error loading key holders: $error',
+                'Error loading stewards: $error',
                 style: TextStyle(color: Colors.red[600]),
               ),
             ],
@@ -58,7 +58,7 @@ class KeyHolderList extends ConsumerWidget {
           return const Card(
             child: Padding(
               padding: EdgeInsets.all(16),
-              child: Text('Lockbox not found'),
+              child: Text('Vault not found'),
             ),
           );
         }
@@ -99,7 +99,7 @@ class KeyHolderList extends ConsumerWidget {
               const Icon(Icons.people, color: Color(0xFFd2d7bf)),
               const SizedBox(width: 8),
               Text(
-                'Key Holders',
+                'Stewards',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       color: const Color(0xFFd2d7bf),
                     ),
@@ -146,7 +146,7 @@ class KeyHolderList extends ConsumerWidget {
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    'No key holders configured',
+                    'No stewards configured',
                     style: TextStyle(
                       color: Color(0xFFd2d7bf),
                       fontSize: 16,
@@ -154,7 +154,7 @@ class KeyHolderList extends ConsumerWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Change backup settings to add key holders',
+                    'Change backup settings to add stewards',
                     style: TextStyle(
                       color: const Color(0xFFd2d7bf).withValues(alpha: 0.7),
                       fontSize: 14,

@@ -37,7 +37,7 @@ class RecoverySection extends ConsumerWidget {
                   Icon(Icons.lock_open, color: Theme.of(context).primaryColor),
                   const SizedBox(width: 8),
                   Text(
-                    'Lockbox Recovery',
+                    'Vault Recovery',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           color: Theme.of(context).primaryColor,
                         ),
@@ -129,14 +129,14 @@ class RecoverySection extends ConsumerWidget {
       if (keyHolderPubkeys.isEmpty) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('No key holders available for recovery')),
+            const SnackBar(content: Text('No stewards available for recovery')),
           );
         }
         return;
       }
 
       Log.info(
-          'Initiating recovery with ${keyHolderPubkeys.length} key holders: ${keyHolderPubkeys.map((k) => k.substring(0, 8)).join(", ")}...');
+          'Initiating recovery with ${keyHolderPubkeys.length} stewards: ${keyHolderPubkeys.map((k) => k.substring(0, 8)).join(", ")}...');
 
       final recoveryService = ref.read(recoveryServiceProvider);
       final recoveryRequest = await recoveryService.initiateRecovery(

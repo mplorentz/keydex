@@ -51,14 +51,14 @@ class _EditLockboxScreenState extends ConsumerState<EditLockboxScreen>
   Widget build(BuildContext context) {
     if (_lockbox == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Lockbox Not Found')),
-        body: const Center(child: Text('This lockbox no longer exists.')),
+        appBar: AppBar(title: const Text('Vault Not Found')),
+        body: const Center(child: Text('This vault no longer exists.')),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Edit Lockbox'),
+        title: const Text('Edit Vault'),
         centerTitle: false,
         actions: [
           TextButton(
@@ -88,7 +88,7 @@ class _EditLockboxScreenState extends ConsumerState<EditLockboxScreen>
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Lockbox "${_nameController.text.trim()}" updated successfully!'),
+          content: Text('Vault "${_nameController.text.trim()}" updated successfully!'),
           backgroundColor: Colors.green,
         ),
       );

@@ -64,7 +64,7 @@ class RecoveryMetadataWidget extends ConsumerWidget {
                 ),
                 const SizedBox(height: 16),
                 _buildInfoRow('Request ID', request.id),
-                _buildInfoRow('Lockbox ID', request.lockboxId),
+                _buildInfoRow('Vault ID', request.lockboxId),
                 _buildInfoRow('Requested', _formatDateTime(request.requestedAt)),
                 if (request.expiresAt != null)
                   _buildInfoRow(

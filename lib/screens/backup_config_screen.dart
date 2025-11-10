@@ -186,7 +186,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                           ),
                           if (_keyHolders.isEmpty)
                             Text(
-                              'Add key holders to configure threshold',
+                              'Add stewards to configure threshold',
                               style: Theme.of(context).textTheme.bodySmall,
                             )
                           else
@@ -200,7 +200,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Unified Key Holders Section
+                  // Unified Stewards Section
                   Card(
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
@@ -211,18 +211,18 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                'Key Holders (${_keyHolders.length})',
+                                'Stewards (${_keyHolders.length})',
                                 style: Theme.of(context).textTheme.headlineSmall,
                               ),
                             ],
                           ),
                           const SizedBox(height: 16),
 
-                          // Add Key Holder Input Section
+                          // Add Steward Input Section
                           TextField(
                             controller: _inviteeNameController,
                             decoration: const InputDecoration(
-                              labelText: 'Invitee Name',
+                              labelText: "Enter steward's name",
                               hintText: 'Enter name for the invitee',
                               border: OutlineInputBorder(),
                             ),
@@ -259,10 +259,10 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                           ),
                           const SizedBox(height: 16),
 
-                          // Key Holders List
+                          // Stewards List
                           if (_keyHolders.isEmpty)
                             const Text(
-                              'No key holders added yet. Add trusted contacts to distribute backup keys.',
+                              'No stewards added yet. Add trusted contacts to distribute backup keys.',
                             )
                           else
                             ..._keyHolders.map(
@@ -446,11 +446,11 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
       return;
     }
 
-    // Check if key holder with this name already exists
+    // Check if steward with this name already exists
     if (_keyHolders.any((holder) => holder.name == inviteeName)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('A key holder with the name "$inviteeName" already exists'),
+          content: Text('A steward with the name "$inviteeName" already exists'),
           backgroundColor: Colors.orange,
         ),
       );
@@ -473,7 +473,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
       );
 
       if (mounted) {
-        // Create invited key holder and add to list
+        // Create invited steward and add to list
         final invitedKeyHolder = createInvitedKeyHolder(
           name: inviteeName,
           inviteCode: invitation.inviteCode,
@@ -483,7 +483,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
           _keyHolders.add(invitedKeyHolder);
           _invitationLinksByInviteeName[inviteeName] = invitation;
           _inviteeNameController.clear();
-          // Ensure threshold doesn't exceed the number of key holders
+          // Ensure threshold doesn't exceed the number of stewards
           if (_threshold > _keyHolders.length) {
             _threshold = _keyHolders.length;
           }
@@ -492,7 +492,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Invitation link generated and key holder added!'),
+            content: Text('Invitation link generated and steward added!'),
             backgroundColor: Colors.green,
           ),
         );
@@ -538,7 +538,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Add Key Holder Manually'),
+        title: const Text('Add Steward Manually'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -575,9 +575,9 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
           throw Exception('Invalid npub format: $npub');
         }
 
-        // Check if key holder with this pubkey already exists
+        // Check if steward with this pubkey already exists
         if (_keyHolders.any((holder) => holder.pubkey == decoded[0])) {
-          throw Exception('A key holder with this public key already exists');
+          throw Exception('A steward with this public key already exists');
         }
 
         final keyHolder = createKeyHolder(
@@ -589,7 +589,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
         setState(() {
           _keyHolders.add(keyHolder);
           _inviteeNameController.clear();
-          // Ensure threshold doesn't exceed the number of key holders
+          // Ensure threshold doesn't exceed the number of stewards
           if (_threshold > _keyHolders.length) {
             _threshold = _keyHolders.length;
           }
@@ -599,7 +599,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Key holder added successfully!'),
+              content: Text('Steward added successfully!'),
               backgroundColor: Colors.green,
             ),
           );
@@ -607,7 +607,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Invalid key holder: $e'), backgroundColor: Colors.red),
+            SnackBar(content: Text('Invalid steward: $e'), backgroundColor: Colors.red),
           );
         }
       }
@@ -673,12 +673,12 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                 IconButton(
                   icon: const Icon(Icons.remove_circle),
                   onPressed: () => _removeKeyHolder(holder),
-                  tooltip: 'Remove key holder',
+                  tooltip: 'Remove steward',
                 ),
               ],
             ),
           ),
-          // Show invitation link preview for invited key holders
+          // Show invitation link preview for invited stewards
           if (isInvited && invitation != null) ...[
             const Divider(height: 1),
             Padding(
@@ -757,7 +757,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
       final invitationService = ref.read(invitationServiceProvider);
       final pendingInvitations = await invitationService.getPendingInvitations(widget.lockboxId);
 
-      // Match invitations to key holders by inviteeName
+      // Match invitations to stewards by inviteeName
       final updatedInvitations = <String, InvitationLink>{};
       for (final invitation in pendingInvitations) {
         if (invitation.inviteeName != null &&
@@ -779,7 +779,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
   }
 
   Future<void> _removeKeyHolder(KeyHolder holder) async {
-    // If this is an invited key holder, invalidate their invitation
+    // If this is an invited steward, invalidate their invitation
     if (holder.status == KeyHolderStatus.invited && holder.name != null) {
       final invitation = _invitationLinksByInviteeName[holder.name];
       if (invitation != null) {
@@ -787,7 +787,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
           final invitationService = ref.read(invitationServiceProvider);
           await invitationService.invalidateInvitation(
             inviteCode: invitation.inviteCode,
-            reason: 'Key holder removed from backup configuration',
+            reason: 'Steward removed from backup configuration',
           );
         } catch (e) {
           debugPrint('Error invalidating invitation: $e');
@@ -802,7 +802,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
         _invitationLinksByInviteeName.remove(holder.name);
       }
 
-      // Ensure threshold doesn't exceed the number of key holders
+      // Ensure threshold doesn't exceed the number of stewards
       if (_keyHolders.isEmpty) {
         _threshold = LockboxBackupConstraints.minThreshold;
       } else if (_threshold > _keyHolders.length) {

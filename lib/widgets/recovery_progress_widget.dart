@@ -116,12 +116,12 @@ class RecoveryProgressWidget extends ConsumerWidget {
                     _buildProgressRow(
                       'Approved',
                       '$approvedCount',
-                      'Key holders approved',
+                      'Stewards approved',
                     ),
                     _buildProgressRow(
                       'Denied',
                       '$deniedCount',
-                      'Key holders denied',
+                      'Stewards denied',
                     ),
                     _buildProgressRow(
                       'Pending',
@@ -164,7 +164,7 @@ class RecoveryProgressWidget extends ConsumerWidget {
                           ),
                           icon: const Icon(Icons.lock_open),
                           label: const Text(
-                            'Recover Lockbox',
+                            'Recover Vault',
                             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                         ),
@@ -229,9 +229,9 @@ class RecoveryProgressWidget extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Recover Lockbox'),
+        title: const Text('Recover Vault'),
         content: const Text(
-          'This will recover and unlock your lockbox using the collected key shares. '
+          'This will recover and unlock your vault using the collected key shares. '
           'The recovered content will be displayed. Continue?',
         ),
         actions: [
@@ -259,7 +259,7 @@ class RecoveryProgressWidget extends ConsumerWidget {
         await showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('Lockbox Recovered!'),
+            title: const Text('Vault Recovered!'),
             content: SingleChildScrollView(
               child: SelectableText(
                 content,
@@ -278,7 +278,7 @@ class RecoveryProgressWidget extends ConsumerWidget {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Lockbox successfully recovered!'),
+              content: Text('Vault successfully recovered!'),
               backgroundColor: Colors.green,
             ),
           );
