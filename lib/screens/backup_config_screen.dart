@@ -565,6 +565,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
     );
 
     if (result == true) {
+      if (!mounted) return;
       try {
         // Convert bech32 npub to hex pubkey
         final npub = npubController.text.trim();
@@ -583,6 +584,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
           name: inviteeName,
         );
 
+        if (!mounted) return;
         setState(() {
           _keyHolders.add(keyHolder);
           _inviteeNameController.clear();
@@ -922,6 +924,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
 
     // Check if shards have been distributed and show warning
     final hasDistributed = await _hasDistributedShards();
+    if (!mounted) return;
     if (hasDistributed) {
       final shouldContinue = await showDialog<bool>(
         context: context,

@@ -276,6 +276,7 @@ class LockboxDetailScreen extends ConsumerWidget {
 
     if (confirmed != true) return;
 
+    if (!context.mounted) return;
     // Show loading indicator
     showDialog(
       context: context,
