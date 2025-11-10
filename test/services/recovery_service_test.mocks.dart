@@ -3,16 +3,18 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i3;
+import 'dart:async' as _i4;
 
-import 'package:keydex/models/backup_status.dart' as _i5;
-import 'package:keydex/models/event_status.dart' as _i8;
-import 'package:keydex/models/key_holder_status.dart' as _i4;
-import 'package:keydex/services/backup_service.dart' as _i2;
-import 'package:keydex/services/shard_distribution_service.dart' as _i7;
+import 'package:keydex/models/backup_status.dart' as _i6;
+import 'package:keydex/models/event_status.dart' as _i9;
+import 'package:keydex/models/key_holder_status.dart' as _i5;
+import 'package:keydex/models/recovery_request.dart' as _i11;
+import 'package:keydex/services/backup_service.dart' as _i3;
+import 'package:keydex/services/ndk_service.dart' as _i10;
+import 'package:keydex/services/shard_distribution_service.dart' as _i8;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i6;
-import 'package:ndk/ndk.dart' as _i9;
+import 'package:mockito/src/dummies.dart' as _i7;
+import 'package:ndk/ndk.dart' as _i2;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -37,16 +39,26 @@ class _FakeDateTime_0 extends _i1.SmartFake implements DateTime {
         );
 }
 
+class _FakeNdk_1 extends _i1.SmartFake implements _i2.Ndk {
+  _FakeNdk_1(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
 /// A class which mocks [BackupService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockBackupService extends _i1.Mock implements _i2.BackupService {
+class MockBackupService extends _i1.Mock implements _i3.BackupService {
   MockBackupService() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i3.Future<
+  _i4.Future<
       ({
         String? contentHash,
         DateTime createdAt,
@@ -55,11 +67,13 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
               DateTime? acknowledgedAt,
               String? acknowledgmentEventId,
               String? giftWrapEventId,
+              String id,
+              String? inviteCode,
               String? keyShare,
               DateTime? lastSeen,
               String? name,
-              String pubkey,
-              _i4.KeyHolderStatus status
+              String? pubkey,
+              _i5.KeyHolderStatus status
             })> keyHolders,
         DateTime? lastContentChange,
         DateTime? lastRedistribution,
@@ -67,7 +81,7 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
         String lockboxId,
         List<String> relays,
         String specVersion,
-        _i5.BackupStatus status,
+        _i6.BackupStatus status,
         int threshold,
         int totalKeys
       })> createBackupConfiguration({
@@ -79,11 +93,13 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
               DateTime? acknowledgedAt,
               String? acknowledgmentEventId,
               String? giftWrapEventId,
+              String id,
+              String? inviteCode,
               String? keyShare,
               DateTime? lastSeen,
               String? name,
-              String pubkey,
-              _i4.KeyHolderStatus status
+              String? pubkey,
+              _i5.KeyHolderStatus status
             })>?
         keyHolders,
     required List<String>? relays,
@@ -102,7 +118,7 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
             #contentHash: contentHash,
           },
         ),
-        returnValue: _i3.Future<
+        returnValue: _i4.Future<
             ({
               String? contentHash,
               DateTime createdAt,
@@ -111,11 +127,13 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
                     DateTime? acknowledgedAt,
                     String? acknowledgmentEventId,
                     String? giftWrapEventId,
+                    String id,
+                    String? inviteCode,
                     String? keyShare,
                     DateTime? lastSeen,
                     String? name,
-                    String pubkey,
-                    _i4.KeyHolderStatus status
+                    String? pubkey,
+                    _i5.KeyHolderStatus status
                   })> keyHolders,
               DateTime? lastContentChange,
               DateTime? lastRedistribution,
@@ -123,7 +141,7 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
               String lockboxId,
               List<String> relays,
               String specVersion,
-              _i5.BackupStatus status,
+              _i6.BackupStatus status,
               int threshold,
               int totalKeys
             })>.value((
@@ -147,11 +165,13 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
             DateTime? acknowledgedAt,
             String? acknowledgmentEventId,
             String? giftWrapEventId,
+            String id,
+            String? inviteCode,
             String? keyShare,
             DateTime? lastSeen,
             String? name,
-            String pubkey,
-            _i4.KeyHolderStatus status
+            String? pubkey,
+            _i5.KeyHolderStatus status
           })>[],
           lastContentChange: null,
           lastRedistribution: null,
@@ -170,7 +190,7 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
               },
             ),
           ),
-          lockboxId: _i6.dummyValue<String>(
+          lockboxId: _i7.dummyValue<String>(
             this,
             Invocation.method(
               #createBackupConfiguration,
@@ -186,7 +206,7 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
             ),
           ),
           relays: <String>[],
-          specVersion: _i6.dummyValue<String>(
+          specVersion: _i7.dummyValue<String>(
             this,
             Invocation.method(
               #createBackupConfiguration,
@@ -201,11 +221,11 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
               },
             ),
           ),
-          status: _i5.BackupStatus.pending,
+          status: _i6.BackupStatus.pending,
           threshold: 0,
           totalKeys: 0
         )),
-      ) as _i3.Future<
+      ) as _i4.Future<
           ({
             String? contentHash,
             DateTime createdAt,
@@ -214,11 +234,13 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
                   DateTime? acknowledgedAt,
                   String? acknowledgmentEventId,
                   String? giftWrapEventId,
+                  String id,
+                  String? inviteCode,
                   String? keyShare,
                   DateTime? lastSeen,
                   String? name,
-                  String pubkey,
-                  _i4.KeyHolderStatus status
+                  String? pubkey,
+                  _i5.KeyHolderStatus status
                 })> keyHolders,
             DateTime? lastContentChange,
             DateTime? lastRedistribution,
@@ -226,13 +248,13 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
             String lockboxId,
             List<String> relays,
             String specVersion,
-            _i5.BackupStatus status,
+            _i6.BackupStatus status,
             int threshold,
             int totalKeys
           })>);
 
   @override
-  _i3.Future<
+  _i4.Future<
       ({
         String? contentHash,
         DateTime createdAt,
@@ -241,11 +263,13 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
               DateTime? acknowledgedAt,
               String? acknowledgmentEventId,
               String? giftWrapEventId,
+              String id,
+              String? inviteCode,
               String? keyShare,
               DateTime? lastSeen,
               String? name,
-              String pubkey,
-              _i4.KeyHolderStatus status
+              String? pubkey,
+              _i5.KeyHolderStatus status
             })> keyHolders,
         DateTime? lastContentChange,
         DateTime? lastRedistribution,
@@ -253,7 +277,7 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
         String lockboxId,
         List<String> relays,
         String specVersion,
-        _i5.BackupStatus status,
+        _i6.BackupStatus status,
         int threshold,
         int totalKeys
       })?> getBackupConfig(String? lockboxId) => (super.noSuchMethod(
@@ -261,7 +285,7 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
           #getBackupConfig,
           [lockboxId],
         ),
-        returnValue: _i3.Future<
+        returnValue: _i4.Future<
             ({
               String? contentHash,
               DateTime createdAt,
@@ -270,11 +294,13 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
                     DateTime? acknowledgedAt,
                     String? acknowledgmentEventId,
                     String? giftWrapEventId,
+                    String id,
+                    String? inviteCode,
                     String? keyShare,
                     DateTime? lastSeen,
                     String? name,
-                    String pubkey,
-                    _i4.KeyHolderStatus status
+                    String? pubkey,
+                    _i5.KeyHolderStatus status
                   })> keyHolders,
               DateTime? lastContentChange,
               DateTime? lastRedistribution,
@@ -282,11 +308,11 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
               String lockboxId,
               List<String> relays,
               String specVersion,
-              _i5.BackupStatus status,
+              _i6.BackupStatus status,
               int threshold,
               int totalKeys
             })?>.value(),
-      ) as _i3.Future<
+      ) as _i4.Future<
           ({
             String? contentHash,
             DateTime createdAt,
@@ -295,11 +321,13 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
                   DateTime? acknowledgedAt,
                   String? acknowledgmentEventId,
                   String? giftWrapEventId,
+                  String id,
+                  String? inviteCode,
                   String? keyShare,
                   DateTime? lastSeen,
                   String? name,
-                  String pubkey,
-                  _i4.KeyHolderStatus status
+                  String? pubkey,
+                  _i5.KeyHolderStatus status
                 })> keyHolders,
             DateTime? lastContentChange,
             DateTime? lastRedistribution,
@@ -307,13 +335,13 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
             String lockboxId,
             List<String> relays,
             String specVersion,
-            _i5.BackupStatus status,
+            _i6.BackupStatus status,
             int threshold,
             int totalKeys
           })?>);
 
   @override
-  _i3.Future<
+  _i4.Future<
       List<
           ({
             String? contentHash,
@@ -323,11 +351,13 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
                   DateTime? acknowledgedAt,
                   String? acknowledgmentEventId,
                   String? giftWrapEventId,
+                  String id,
+                  String? inviteCode,
                   String? keyShare,
                   DateTime? lastSeen,
                   String? name,
-                  String pubkey,
-                  _i4.KeyHolderStatus status
+                  String? pubkey,
+                  _i5.KeyHolderStatus status
                 })> keyHolders,
             DateTime? lastContentChange,
             DateTime? lastRedistribution,
@@ -335,7 +365,7 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
             String lockboxId,
             List<String> relays,
             String specVersion,
-            _i5.BackupStatus status,
+            _i6.BackupStatus status,
             int threshold,
             int totalKeys
           })>> getAllBackupConfigs() => (super.noSuchMethod(
@@ -343,7 +373,7 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
           #getAllBackupConfigs,
           [],
         ),
-        returnValue: _i3.Future<
+        returnValue: _i4.Future<
             List<
                 ({
                   String? contentHash,
@@ -353,11 +383,13 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
                         DateTime? acknowledgedAt,
                         String? acknowledgmentEventId,
                         String? giftWrapEventId,
+                        String id,
+                        String? inviteCode,
                         String? keyShare,
                         DateTime? lastSeen,
                         String? name,
-                        String pubkey,
-                        _i4.KeyHolderStatus status
+                        String? pubkey,
+                        _i5.KeyHolderStatus status
                       })> keyHolders,
                   DateTime? lastContentChange,
                   DateTime? lastRedistribution,
@@ -365,7 +397,7 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
                   String lockboxId,
                   List<String> relays,
                   String specVersion,
-                  _i5.BackupStatus status,
+                  _i6.BackupStatus status,
                   int threshold,
                   int totalKeys
                 })>>.value(<({
@@ -376,11 +408,13 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
                 DateTime? acknowledgedAt,
                 String? acknowledgmentEventId,
                 String? giftWrapEventId,
+                String id,
+                String? inviteCode,
                 String? keyShare,
                 DateTime? lastSeen,
                 String? name,
-                String pubkey,
-                _i4.KeyHolderStatus status
+                String? pubkey,
+                _i5.KeyHolderStatus status
               })> keyHolders,
           DateTime? lastContentChange,
           DateTime? lastRedistribution,
@@ -388,11 +422,11 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
           String lockboxId,
           List<String> relays,
           String specVersion,
-          _i5.BackupStatus status,
+          _i6.BackupStatus status,
           int threshold,
           int totalKeys
         })>[]),
-      ) as _i3.Future<
+      ) as _i4.Future<
           List<
               ({
                 String? contentHash,
@@ -402,11 +436,13 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
                       DateTime? acknowledgedAt,
                       String? acknowledgmentEventId,
                       String? giftWrapEventId,
+                      String id,
+                      String? inviteCode,
                       String? keyShare,
                       DateTime? lastSeen,
                       String? name,
-                      String pubkey,
-                      _i4.KeyHolderStatus status
+                      String? pubkey,
+                      _i5.KeyHolderStatus status
                     })> keyHolders,
                 DateTime? lastContentChange,
                 DateTime? lastRedistribution,
@@ -414,13 +450,13 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
                 String lockboxId,
                 List<String> relays,
                 String specVersion,
-                _i5.BackupStatus status,
+                _i6.BackupStatus status,
                 int threshold,
                 int totalKeys
               })>>);
 
   @override
-  _i3.Future<void> updateBackupConfig(
+  _i4.Future<void> updateBackupConfig(
           ({
             String? contentHash,
             DateTime createdAt,
@@ -429,11 +465,13 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
                   DateTime? acknowledgedAt,
                   String? acknowledgmentEventId,
                   String? giftWrapEventId,
+                  String id,
+                  String? inviteCode,
                   String? keyShare,
                   DateTime? lastSeen,
                   String? name,
-                  String pubkey,
-                  _i4.KeyHolderStatus status
+                  String? pubkey,
+                  _i5.KeyHolderStatus status
                 })> keyHolders,
             DateTime? lastContentChange,
             DateTime? lastRedistribution,
@@ -441,7 +479,7 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
             String lockboxId,
             List<String> relays,
             String specVersion,
-            _i5.BackupStatus status,
+            _i6.BackupStatus status,
             int threshold,
             int totalKeys
           })? config) =>
@@ -450,22 +488,22 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
           #updateBackupConfig,
           [config],
         ),
-        returnValue: _i3.Future<void>.value(),
-        returnValueForMissingStub: _i3.Future<void>.value(),
-      ) as _i3.Future<void>);
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 
   @override
-  _i3.Future<void> deleteBackupConfig(String? lockboxId) => (super.noSuchMethod(
+  _i4.Future<void> deleteBackupConfig(String? lockboxId) => (super.noSuchMethod(
         Invocation.method(
           #deleteBackupConfig,
           [lockboxId],
         ),
-        returnValue: _i3.Future<void>.value(),
-        returnValueForMissingStub: _i3.Future<void>.value(),
-      ) as _i3.Future<void>);
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 
   @override
-  _i3.Future<
+  _i4.Future<
       List<
           ({
             int createdAt,
@@ -478,6 +516,7 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
             String primeMod,
             DateTime? receivedAt,
             String? recipientPubkey,
+            List<String>? relayUrls,
             String shard,
             int shardIndex,
             int threshold,
@@ -505,7 +544,7 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
             #peers: peers,
           },
         ),
-        returnValue: _i3.Future<
+        returnValue: _i4.Future<
             List<
                 ({
                   int createdAt,
@@ -518,6 +557,7 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
                   String primeMod,
                   DateTime? receivedAt,
                   String? recipientPubkey,
+                  List<String>? relayUrls,
                   String shard,
                   int shardIndex,
                   int threshold,
@@ -533,12 +573,13 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
           String primeMod,
           DateTime? receivedAt,
           String? recipientPubkey,
+          List<String>? relayUrls,
           String shard,
           int shardIndex,
           int threshold,
           int totalShards
         })>[]),
-      ) as _i3.Future<
+      ) as _i4.Future<
           List<
               ({
                 int createdAt,
@@ -551,6 +592,7 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
                 String primeMod,
                 DateTime? receivedAt,
                 String? recipientPubkey,
+                List<String>? relayUrls,
                 String shard,
                 int shardIndex,
                 int threshold,
@@ -558,7 +600,7 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
               })>>);
 
   @override
-  _i3.Future<String> reconstructFromShares(
+  _i4.Future<String> reconstructFromShares(
           {required List<
                   ({
                     int createdAt,
@@ -571,6 +613,7 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
                     String primeMod,
                     DateTime? receivedAt,
                     String? recipientPubkey,
+                    List<String>? relayUrls,
                     String shard,
                     int shardIndex,
                     int threshold,
@@ -583,7 +626,7 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
           [],
           {#shares: shares},
         ),
-        returnValue: _i3.Future<String>.value(_i6.dummyValue<String>(
+        returnValue: _i4.Future<String>.value(_i7.dummyValue<String>(
           this,
           Invocation.method(
             #reconstructFromShares,
@@ -591,12 +634,12 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
             {#shares: shares},
           ),
         )),
-      ) as _i3.Future<String>);
+      ) as _i4.Future<String>);
 
   @override
-  _i3.Future<void> updateBackupStatus(
+  _i4.Future<void> updateBackupStatus(
     String? lockboxId,
-    _i5.BackupStatus? status,
+    _i6.BackupStatus? status,
   ) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -606,15 +649,15 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
             status,
           ],
         ),
-        returnValue: _i3.Future<void>.value(),
-        returnValueForMissingStub: _i3.Future<void>.value(),
-      ) as _i3.Future<void>);
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 
   @override
-  _i3.Future<void> updateKeyHolderStatus({
+  _i4.Future<void> updateKeyHolderStatus({
     required String? lockboxId,
     required String? pubkey,
-    required _i4.KeyHolderStatus? status,
+    required _i5.KeyHolderStatus? status,
     DateTime? acknowledgedAt,
     String? acknowledgmentEventId,
   }) =>
@@ -630,21 +673,21 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
             #acknowledgmentEventId: acknowledgmentEventId,
           },
         ),
-        returnValue: _i3.Future<void>.value(),
-        returnValueForMissingStub: _i3.Future<void>.value(),
-      ) as _i3.Future<void>);
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 
   @override
-  _i3.Future<bool> isBackupReady(String? lockboxId) => (super.noSuchMethod(
+  _i4.Future<bool> isBackupReady(String? lockboxId) => (super.noSuchMethod(
         Invocation.method(
           #isBackupReady,
           [lockboxId],
         ),
-        returnValue: _i3.Future<bool>.value(false),
-      ) as _i3.Future<bool>);
+        returnValue: _i4.Future<bool>.value(false),
+      ) as _i4.Future<bool>);
 
   @override
-  _i3.Future<
+  _i4.Future<
       ({
         String? contentHash,
         DateTime createdAt,
@@ -653,11 +696,13 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
               DateTime? acknowledgedAt,
               String? acknowledgmentEventId,
               String? giftWrapEventId,
+              String id,
+              String? inviteCode,
               String? keyShare,
               DateTime? lastSeen,
               String? name,
-              String pubkey,
-              _i4.KeyHolderStatus status
+              String? pubkey,
+              _i5.KeyHolderStatus status
             })> keyHolders,
         DateTime? lastContentChange,
         DateTime? lastRedistribution,
@@ -665,7 +710,197 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
         String lockboxId,
         List<String> relays,
         String specVersion,
-        _i5.BackupStatus status,
+        _i6.BackupStatus status,
+        int threshold,
+        int totalKeys
+      })> saveBackupConfig({
+    required String? lockboxId,
+    required int? threshold,
+    required int? totalKeys,
+    required List<
+            ({
+              DateTime? acknowledgedAt,
+              String? acknowledgmentEventId,
+              String? giftWrapEventId,
+              String id,
+              String? inviteCode,
+              String? keyShare,
+              DateTime? lastSeen,
+              String? name,
+              String? pubkey,
+              _i5.KeyHolderStatus status
+            })>?
+        keyHolders,
+    required List<String>? relays,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #saveBackupConfig,
+          [],
+          {
+            #lockboxId: lockboxId,
+            #threshold: threshold,
+            #totalKeys: totalKeys,
+            #keyHolders: keyHolders,
+            #relays: relays,
+          },
+        ),
+        returnValue: _i4.Future<
+            ({
+              String? contentHash,
+              DateTime createdAt,
+              List<
+                  ({
+                    DateTime? acknowledgedAt,
+                    String? acknowledgmentEventId,
+                    String? giftWrapEventId,
+                    String id,
+                    String? inviteCode,
+                    String? keyShare,
+                    DateTime? lastSeen,
+                    String? name,
+                    String? pubkey,
+                    _i5.KeyHolderStatus status
+                  })> keyHolders,
+              DateTime? lastContentChange,
+              DateTime? lastRedistribution,
+              DateTime lastUpdated,
+              String lockboxId,
+              List<String> relays,
+              String specVersion,
+              _i6.BackupStatus status,
+              int threshold,
+              int totalKeys
+            })>.value((
+          contentHash: null,
+          createdAt: _FakeDateTime_0(
+            this,
+            Invocation.method(
+              #saveBackupConfig,
+              [],
+              {
+                #lockboxId: lockboxId,
+                #threshold: threshold,
+                #totalKeys: totalKeys,
+                #keyHolders: keyHolders,
+                #relays: relays,
+              },
+            ),
+          ),
+          keyHolders: <({
+            DateTime? acknowledgedAt,
+            String? acknowledgmentEventId,
+            String? giftWrapEventId,
+            String id,
+            String? inviteCode,
+            String? keyShare,
+            DateTime? lastSeen,
+            String? name,
+            String? pubkey,
+            _i5.KeyHolderStatus status
+          })>[],
+          lastContentChange: null,
+          lastRedistribution: null,
+          lastUpdated: _FakeDateTime_0(
+            this,
+            Invocation.method(
+              #saveBackupConfig,
+              [],
+              {
+                #lockboxId: lockboxId,
+                #threshold: threshold,
+                #totalKeys: totalKeys,
+                #keyHolders: keyHolders,
+                #relays: relays,
+              },
+            ),
+          ),
+          lockboxId: _i7.dummyValue<String>(
+            this,
+            Invocation.method(
+              #saveBackupConfig,
+              [],
+              {
+                #lockboxId: lockboxId,
+                #threshold: threshold,
+                #totalKeys: totalKeys,
+                #keyHolders: keyHolders,
+                #relays: relays,
+              },
+            ),
+          ),
+          relays: <String>[],
+          specVersion: _i7.dummyValue<String>(
+            this,
+            Invocation.method(
+              #saveBackupConfig,
+              [],
+              {
+                #lockboxId: lockboxId,
+                #threshold: threshold,
+                #totalKeys: totalKeys,
+                #keyHolders: keyHolders,
+                #relays: relays,
+              },
+            ),
+          ),
+          status: _i6.BackupStatus.pending,
+          threshold: 0,
+          totalKeys: 0
+        )),
+      ) as _i4.Future<
+          ({
+            String? contentHash,
+            DateTime createdAt,
+            List<
+                ({
+                  DateTime? acknowledgedAt,
+                  String? acknowledgmentEventId,
+                  String? giftWrapEventId,
+                  String id,
+                  String? inviteCode,
+                  String? keyShare,
+                  DateTime? lastSeen,
+                  String? name,
+                  String? pubkey,
+                  _i5.KeyHolderStatus status
+                })> keyHolders,
+            DateTime? lastContentChange,
+            DateTime? lastRedistribution,
+            DateTime lastUpdated,
+            String lockboxId,
+            List<String> relays,
+            String specVersion,
+            _i6.BackupStatus status,
+            int threshold,
+            int totalKeys
+          })>);
+
+  @override
+  _i4.Future<
+      ({
+        String? contentHash,
+        DateTime createdAt,
+        List<
+            ({
+              DateTime? acknowledgedAt,
+              String? acknowledgmentEventId,
+              String? giftWrapEventId,
+              String id,
+              String? inviteCode,
+              String? keyShare,
+              DateTime? lastSeen,
+              String? name,
+              String? pubkey,
+              _i5.KeyHolderStatus status
+            })> keyHolders,
+        DateTime? lastContentChange,
+        DateTime? lastRedistribution,
+        DateTime lastUpdated,
+        String lockboxId,
+        List<String> relays,
+        String specVersion,
+        _i6.BackupStatus status,
         int threshold,
         int totalKeys
       })> createAndDistributeBackup({
@@ -677,11 +912,13 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
               DateTime? acknowledgedAt,
               String? acknowledgmentEventId,
               String? giftWrapEventId,
+              String id,
+              String? inviteCode,
               String? keyShare,
               DateTime? lastSeen,
               String? name,
-              String pubkey,
-              _i4.KeyHolderStatus status
+              String? pubkey,
+              _i5.KeyHolderStatus status
             })>?
         keyHolders,
     required List<String>? relays,
@@ -698,7 +935,7 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
             #relays: relays,
           },
         ),
-        returnValue: _i3.Future<
+        returnValue: _i4.Future<
             ({
               String? contentHash,
               DateTime createdAt,
@@ -707,11 +944,13 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
                     DateTime? acknowledgedAt,
                     String? acknowledgmentEventId,
                     String? giftWrapEventId,
+                    String id,
+                    String? inviteCode,
                     String? keyShare,
                     DateTime? lastSeen,
                     String? name,
-                    String pubkey,
-                    _i4.KeyHolderStatus status
+                    String? pubkey,
+                    _i5.KeyHolderStatus status
                   })> keyHolders,
               DateTime? lastContentChange,
               DateTime? lastRedistribution,
@@ -719,7 +958,7 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
               String lockboxId,
               List<String> relays,
               String specVersion,
-              _i5.BackupStatus status,
+              _i6.BackupStatus status,
               int threshold,
               int totalKeys
             })>.value((
@@ -742,11 +981,13 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
             DateTime? acknowledgedAt,
             String? acknowledgmentEventId,
             String? giftWrapEventId,
+            String id,
+            String? inviteCode,
             String? keyShare,
             DateTime? lastSeen,
             String? name,
-            String pubkey,
-            _i4.KeyHolderStatus status
+            String? pubkey,
+            _i5.KeyHolderStatus status
           })>[],
           lastContentChange: null,
           lastRedistribution: null,
@@ -764,7 +1005,7 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
               },
             ),
           ),
-          lockboxId: _i6.dummyValue<String>(
+          lockboxId: _i7.dummyValue<String>(
             this,
             Invocation.method(
               #createAndDistributeBackup,
@@ -779,7 +1020,7 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
             ),
           ),
           relays: <String>[],
-          specVersion: _i6.dummyValue<String>(
+          specVersion: _i7.dummyValue<String>(
             this,
             Invocation.method(
               #createAndDistributeBackup,
@@ -793,11 +1034,11 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
               },
             ),
           ),
-          status: _i5.BackupStatus.pending,
+          status: _i6.BackupStatus.pending,
           threshold: 0,
           totalKeys: 0
         )),
-      ) as _i3.Future<
+      ) as _i4.Future<
           ({
             String? contentHash,
             DateTime createdAt,
@@ -806,11 +1047,13 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
                   DateTime? acknowledgedAt,
                   String? acknowledgmentEventId,
                   String? giftWrapEventId,
+                  String id,
+                  String? inviteCode,
                   String? keyShare,
                   DateTime? lastSeen,
                   String? name,
-                  String pubkey,
-                  _i4.KeyHolderStatus status
+                  String? pubkey,
+                  _i5.KeyHolderStatus status
                 })> keyHolders,
             DateTime? lastContentChange,
             DateTime? lastRedistribution,
@@ -818,7 +1061,7 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
             String lockboxId,
             List<String> relays,
             String specVersion,
-            _i5.BackupStatus status,
+            _i6.BackupStatus status,
             int threshold,
             int totalKeys
           })>);
@@ -828,13 +1071,13 @@ class MockBackupService extends _i1.Mock implements _i2.BackupService {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockShardDistributionService extends _i1.Mock
-    implements _i7.ShardDistributionService {
+    implements _i8.ShardDistributionService {
   MockShardDistributionService() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i3.Future<
+  _i4.Future<
       List<
           ({
             String backupConfigId,
@@ -844,7 +1087,7 @@ class MockShardDistributionService extends _i1.Mock
             DateTime? publishedAt,
             String recipientPubkey,
             int shardIndex,
-            _i8.EventStatus status
+            _i9.EventStatus status
           })>> distributeShards({
     required String? ownerPubkey,
     required ({
@@ -855,11 +1098,13 @@ class MockShardDistributionService extends _i1.Mock
             DateTime? acknowledgedAt,
             String? acknowledgmentEventId,
             String? giftWrapEventId,
+            String id,
+            String? inviteCode,
             String? keyShare,
             DateTime? lastSeen,
             String? name,
-            String pubkey,
-            _i4.KeyHolderStatus status
+            String? pubkey,
+            _i5.KeyHolderStatus status
           })> keyHolders,
       DateTime? lastContentChange,
       DateTime? lastRedistribution,
@@ -867,7 +1112,7 @@ class MockShardDistributionService extends _i1.Mock
       String lockboxId,
       List<String> relays,
       String specVersion,
-      _i5.BackupStatus status,
+      _i6.BackupStatus status,
       int threshold,
       int totalKeys
     })? config,
@@ -883,6 +1128,7 @@ class MockShardDistributionService extends _i1.Mock
               String primeMod,
               DateTime? receivedAt,
               String? recipientPubkey,
+              List<String>? relayUrls,
               String shard,
               int shardIndex,
               int threshold,
@@ -900,7 +1146,7 @@ class MockShardDistributionService extends _i1.Mock
             #shards: shards,
           },
         ),
-        returnValue: _i3.Future<
+        returnValue: _i4.Future<
             List<
                 ({
                   String backupConfigId,
@@ -910,7 +1156,7 @@ class MockShardDistributionService extends _i1.Mock
                   DateTime? publishedAt,
                   String recipientPubkey,
                   int shardIndex,
-                  _i8.EventStatus status
+                  _i9.EventStatus status
                 })>>.value(<({
           String backupConfigId,
           DateTime createdAt,
@@ -919,9 +1165,9 @@ class MockShardDistributionService extends _i1.Mock
           DateTime? publishedAt,
           String recipientPubkey,
           int shardIndex,
-          _i8.EventStatus status
+          _i9.EventStatus status
         })>[]),
-      ) as _i3.Future<
+      ) as _i4.Future<
           List<
               ({
                 String backupConfigId,
@@ -931,11 +1177,11 @@ class MockShardDistributionService extends _i1.Mock
                 DateTime? publishedAt,
                 String recipientPubkey,
                 int shardIndex,
-                _i8.EventStatus status
+                _i9.EventStatus status
               })>>);
 
   @override
-  _i3.Future<void> updateDistributionStatus({
+  _i4.Future<void> updateDistributionStatus({
     required String? lockboxId,
     required List<
             ({
@@ -946,7 +1192,7 @@ class MockShardDistributionService extends _i1.Mock
               DateTime? publishedAt,
               String recipientPubkey,
               int shardIndex,
-              _i8.EventStatus status
+              _i9.EventStatus status
             })>?
         shardEvents,
   }) =>
@@ -959,32 +1205,234 @@ class MockShardDistributionService extends _i1.Mock
             #shardEvents: shardEvents,
           },
         ),
-        returnValue: _i3.Future<void>.value(),
-        returnValueForMissingStub: _i3.Future<void>.value(),
-      ) as _i3.Future<void>);
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 
   @override
-  _i3.Future<void> processShardConfirmationEvent(
-          {required _i9.Nip01Event? event}) =>
+  _i4.Future<void> processShardConfirmationEvent(
+          {required _i2.Nip01Event? event}) =>
       (super.noSuchMethod(
         Invocation.method(
           #processShardConfirmationEvent,
           [],
           {#event: event},
         ),
-        returnValue: _i3.Future<void>.value(),
-        returnValueForMissingStub: _i3.Future<void>.value(),
-      ) as _i3.Future<void>);
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 
   @override
-  _i3.Future<void> processShardErrorEvent({required _i9.Nip01Event? event}) =>
+  _i4.Future<void> processShardErrorEvent({required _i2.Nip01Event? event}) =>
       (super.noSuchMethod(
         Invocation.method(
           #processShardErrorEvent,
           [],
           {#event: event},
         ),
-        returnValue: _i3.Future<void>.value(),
-        returnValueForMissingStub: _i3.Future<void>.value(),
-      ) as _i3.Future<void>);
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+}
+
+/// A class which mocks [NdkService].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockNdkService extends _i1.Mock implements _i10.NdkService {
+  MockNdkService() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i4.Stream<_i11.RecoveryRequest> get recoveryRequestStream =>
+      (super.noSuchMethod(
+        Invocation.getter(#recoveryRequestStream),
+        returnValue: _i4.Stream<_i11.RecoveryRequest>.empty(),
+      ) as _i4.Stream<_i11.RecoveryRequest>);
+
+  @override
+  _i4.Stream<_i10.RecoveryResponseEvent> get recoveryResponseStream =>
+      (super.noSuchMethod(
+        Invocation.getter(#recoveryResponseStream),
+        returnValue: _i4.Stream<_i10.RecoveryResponseEvent>.empty(),
+      ) as _i4.Stream<_i10.RecoveryResponseEvent>);
+
+  @override
+  bool get isInitialized => (super.noSuchMethod(
+        Invocation.getter(#isInitialized),
+        returnValue: false,
+      ) as bool);
+
+  @override
+  _i4.Future<void> initialize() => (super.noSuchMethod(
+        Invocation.method(
+          #initialize,
+          [],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> addRelay(String? relayUrl) => (super.noSuchMethod(
+        Invocation.method(
+          #addRelay,
+          [relayUrl],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> removeRelay(String? relayUrl) => (super.noSuchMethod(
+        Invocation.method(
+          #removeRelay,
+          [relayUrl],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
+  _i4.Future<String?> publishRecoveryRequest({
+    required String? lockboxId,
+    required List<String>? keyHolderPubkeys,
+    DateTime? expiresAt,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #publishRecoveryRequest,
+          [],
+          {
+            #lockboxId: lockboxId,
+            #keyHolderPubkeys: keyHolderPubkeys,
+            #expiresAt: expiresAt,
+          },
+        ),
+        returnValue: _i4.Future<String?>.value(),
+      ) as _i4.Future<String?>);
+
+  @override
+  _i4.Future<String?> publishRecoveryResponse({
+    required String? initiatorPubkey,
+    required String? recoveryRequestId,
+    required bool? approved,
+    String? shardDataJson,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #publishRecoveryResponse,
+          [],
+          {
+            #initiatorPubkey: initiatorPubkey,
+            #recoveryRequestId: recoveryRequestId,
+            #approved: approved,
+            #shardDataJson: shardDataJson,
+          },
+        ),
+        returnValue: _i4.Future<String?>.value(),
+      ) as _i4.Future<String?>);
+
+  @override
+  _i4.Future<void> stopListening() => (super.noSuchMethod(
+        Invocation.method(
+          #stopListening,
+          [],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
+  List<String> getActiveRelays() => (super.noSuchMethod(
+        Invocation.method(
+          #getActiveRelays,
+          [],
+        ),
+        returnValue: <String>[],
+      ) as List<String>);
+
+  @override
+  _i4.Future<String?> getCurrentPubkey() => (super.noSuchMethod(
+        Invocation.method(
+          #getCurrentPubkey,
+          [],
+        ),
+        returnValue: _i4.Future<String?>.value(),
+      ) as _i4.Future<String?>);
+
+  @override
+  _i4.Future<String?> publishGiftWrapEvent({
+    required String? content,
+    required int? kind,
+    required String? recipientPubkey,
+    required List<String>? relays,
+    List<List<String>>? tags,
+    String? customPubkey,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #publishGiftWrapEvent,
+          [],
+          {
+            #content: content,
+            #kind: kind,
+            #recipientPubkey: recipientPubkey,
+            #relays: relays,
+            #tags: tags,
+            #customPubkey: customPubkey,
+          },
+        ),
+        returnValue: _i4.Future<String?>.value(),
+      ) as _i4.Future<String?>);
+
+  @override
+  _i4.Future<List<String>> publishGiftWrapEventToMultiple({
+    required String? content,
+    required int? kind,
+    required List<String>? recipientPubkeys,
+    required List<String>? relays,
+    List<List<String>>? tags,
+    String? customPubkey,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #publishGiftWrapEventToMultiple,
+          [],
+          {
+            #content: content,
+            #kind: kind,
+            #recipientPubkeys: recipientPubkeys,
+            #relays: relays,
+            #tags: tags,
+            #customPubkey: customPubkey,
+          },
+        ),
+        returnValue: _i4.Future<List<String>>.value(<String>[]),
+      ) as _i4.Future<List<String>>);
+
+  @override
+  _i4.Future<_i2.Ndk> getNdk() => (super.noSuchMethod(
+        Invocation.method(
+          #getNdk,
+          [],
+        ),
+        returnValue: _i4.Future<_i2.Ndk>.value(_FakeNdk_1(
+          this,
+          Invocation.method(
+            #getNdk,
+            [],
+          ),
+        )),
+      ) as _i4.Future<_i2.Ndk>);
+
+  @override
+  _i4.Future<void> dispose() => (super.noSuchMethod(
+        Invocation.method(
+          #dispose,
+          [],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 }

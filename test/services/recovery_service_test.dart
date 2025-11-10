@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
 import 'package:keydex/models/lockbox.dart';
 import 'package:keydex/models/recovery_request.dart';
@@ -11,11 +10,12 @@ import 'package:keydex/providers/lockbox_provider.dart';
 import 'package:keydex/services/recovery_service.dart';
 import 'package:keydex/services/backup_service.dart';
 import 'package:keydex/services/shard_distribution_service.dart';
+import 'package:keydex/services/ndk_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'recovery_service_test.mocks.dart';
 
-@GenerateMocks([BackupService, ShardDistributionService])
+@GenerateMocks([BackupService, ShardDistributionService, NdkService])
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -28,6 +28,7 @@ void main() {
     late LoginService loginService;
     late LockboxRepository repository;
     late BackupService backupService;
+    late NdkService ndkService;
     late RecoveryService recoveryService;
     const testKeyHolder1 = 'fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321';
     const testKeyHolder2 = 'abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdef1234';
@@ -82,9 +83,10 @@ void main() {
       repository = LockboxRepository(loginService);
       // Create mocks for circular dependency
       final mockBackupService = MockBackupService();
-      final mockShardService = MockShardDistributionService();
+      final mockNdkService = MockNdkService();
       backupService = mockBackupService;
-      recoveryService = RecoveryService(repository, backupService, loginService);
+      ndkService = mockNdkService;
+      recoveryService = RecoveryService(repository, backupService, ndkService);
       await recoveryService.clearAll();
       await repository.clearAll();
 
