@@ -121,7 +121,7 @@ class _InvitationAcceptanceScreenState extends ConsumerState<InvitationAcceptanc
               padding: const EdgeInsets.all(12.0),
               margin: const EdgeInsets.only(bottom: 16.0),
               decoration: BoxDecoration(
-                color: _getStatusColor(invitation.status).withOpacity(0.1),
+                color: _getStatusColor(invitation.status).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8.0),
                 border: Border.all(
                   color: _getStatusColor(invitation.status),
@@ -198,7 +198,7 @@ class _InvitationAcceptanceScreenState extends ConsumerState<InvitationAcceptanc
             Container(
               padding: const EdgeInsets.all(12.0),
               decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.1),
+                color: Colors.red.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8.0),
                 border: Border.all(color: Colors.red, width: 1),
               ),
@@ -246,7 +246,7 @@ class _InvitationAcceptanceScreenState extends ConsumerState<InvitationAcceptanc
                     padding: const EdgeInsets.all(12.0),
                     margin: const EdgeInsets.only(bottom: 16.0),
                     decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.1),
+                      color: Colors.red.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8.0),
                       border: Border.all(color: Colors.red, width: 1),
                     ),
@@ -280,7 +280,7 @@ class _InvitationAcceptanceScreenState extends ConsumerState<InvitationAcceptanc
                         padding: const EdgeInsets.all(12.0),
                         margin: const EdgeInsets.only(bottom: 16.0),
                         decoration: BoxDecoration(
-                          color: Colors.orange.withOpacity(0.1),
+                          color: Colors.orange.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8.0),
                           border: Border.all(color: Colors.orange, width: 1),
                         ),
