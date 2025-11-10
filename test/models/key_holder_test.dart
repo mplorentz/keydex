@@ -1,15 +1,20 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keydex/models/key_holder.dart';
 import 'package:keydex/models/key_holder_status.dart';
+import 'package:uuid/uuid.dart';
+
+const _uuid = Uuid();
 
 void main() {
   group('KeyHolder', () {
     // Helper function to create KeyHolder records directly for testing
     KeyHolder createTestKeyHolder(String pubkey, {String? name}) {
       return (
+        id: _uuid.v4(),
         pubkey: pubkey,
         name: name,
-        status: KeyHolderStatus.pending,
+        inviteCode: null,
+        status: KeyHolderStatus.awaitingKey,
         lastSeen: null,
         keyShare: null,
         giftWrapEventId: null,
@@ -27,8 +32,9 @@ void main() {
       final npub = keyHolder.npub;
 
       // Then: Should return a valid bech32 npub
+      expect(npub, isNotNull);
       expect(npub, startsWith('npub1'));
-      expect(npub.length, greaterThan(60));
+      expect(npub!.length, greaterThan(60));
       expect(npub.length, lessThan(70));
 
       // Verify it matches the expected npub
@@ -44,8 +50,9 @@ void main() {
       final npub = keyHolder.npub;
 
       // Then: Should return a valid bech32 npub
+      expect(npub, isNotNull);
       expect(npub, startsWith('npub1'));
-      expect(npub.length, greaterThan(60));
+      expect(npub!.length, greaterThan(60));
       expect(npub.length, lessThan(70));
 
       // Verify it matches the expected npub

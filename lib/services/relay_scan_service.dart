@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/relay_configuration.dart';
+import '../utils/invite_code_utils.dart';
 import 'ndk_service.dart';
 import 'logger.dart';
 
@@ -109,6 +110,28 @@ class RelayScanService {
           Log.info('Auto-started scanning with localhost relay');
         } catch (e) {
           Log.error('Error auto-starting scanning with localhost relay', e);
+        }
+      } else {
+        // Auto-start scanning if there are enabled relays and scanning isn't already active
+        // Only auto-start if scanning was never explicitly stopped (isActive was true or null/never set)
+        final enabledRelays = _cachedRelays!.where((r) => r.isEnabled).toList();
+        if (enabledRelays.isNotEmpty && !_isScanning) {
+          // Check if scanning was previously active (user didn't explicitly stop it)
+          // If scanningStatus is null or isActive was true, auto-start
+          // If isActive was false, respect the user's explicit stop
+          final shouldAutoStart = _scanningStatus == null || _scanningStatus!.isActive;
+
+          if (shouldAutoStart) {
+            try {
+              await startRelayScanning();
+              Log.info(
+                  'Auto-started relay scanning on initialization with ${enabledRelays.length} enabled relay(s)');
+            } catch (e) {
+              Log.error('Error auto-starting relay scanning on initialization', e);
+            }
+          } else {
+            Log.debug('Skipping auto-start: scanning was explicitly stopped by user');
+          }
         }
       }
       Log.info('RelayScanService initialized with ${_cachedRelays?.length ?? 0} relays');
@@ -524,5 +547,124 @@ class RelayScanService {
     _cachedRelays = null;
     _scanningStatus = null;
     await initialize();
+  }
+
+  /// Sync relays from a list of URLs, adding missing ones and ensuring they're enabled
+  ///
+  /// This is called when relays are added via backup configs or invitations.
+  /// It ensures all relays from the list are present in the relay configuration
+  /// and enabled for scanning.
+  Future<void> syncRelaysFromUrls(List<String> relayUrls) async {
+    await initialize();
+
+    if (relayUrls.isEmpty) {
+      Log.debug('No relay URLs provided for syncing');
+      return;
+    }
+
+    bool hasChanges = false;
+
+    for (final relayUrl in relayUrls) {
+      // Skip invalid URLs
+      try {
+        final uri = Uri.parse(relayUrl);
+        if (uri.scheme != 'ws' && uri.scheme != 'wss') {
+          Log.warning('Skipping invalid relay URL: $relayUrl');
+          continue;
+        }
+      } catch (e) {
+        Log.warning('Skipping invalid relay URL: $relayUrl', e);
+        continue;
+      }
+
+      // Check if relay already exists by URL
+      final existingRelay = _cachedRelays!.where((r) => r.url == relayUrl).firstOrNull;
+
+      if (existingRelay == null) {
+        // Generate a name from the URL (hostname or full URL if hostname is empty)
+        String relayName;
+        try {
+          final uri = Uri.parse(relayUrl);
+          relayName = uri.host.isNotEmpty ? uri.host : relayUrl;
+        } catch (e) {
+          relayName = relayUrl;
+        }
+
+        // Create new relay configuration
+        final newRelay = RelayConfiguration(
+          id: generateSecureID(),
+          url: relayUrl,
+          name: relayName,
+          isEnabled: true,
+          isTrusted: false,
+        );
+
+        _cachedRelays!.add(newRelay);
+        hasChanges = true;
+        Log.info('Added relay from sync: ${newRelay.name} (${newRelay.url})');
+      } else if (!existingRelay.isEnabled) {
+        // Enable existing relay if it was disabled
+        final updatedRelay = existingRelay.copyWith(isEnabled: true);
+        final relayIndex = _cachedRelays!.indexWhere((r) => r.id == existingRelay.id);
+        if (relayIndex != -1) {
+          _cachedRelays![relayIndex] = updatedRelay;
+          hasChanges = true;
+          Log.info('Enabled existing relay from sync: ${updatedRelay.name} (${updatedRelay.url})');
+        }
+      }
+    }
+
+    // Save changes if any
+    if (hasChanges) {
+      await _saveRelayConfigurations();
+
+      // If scanning is active, add new relays to NDK immediately
+      if (_isScanning) {
+        final newRelays = _cachedRelays!
+            .where((r) =>
+                relayUrls.contains(r.url) &&
+                r.isEnabled &&
+                !ndkService.getActiveRelays().contains(r.url))
+            .toList();
+
+        for (final relay in newRelays) {
+          try {
+            await ndkService.addRelay(relay.url);
+            Log.info('Added synced relay to NDK: ${relay.url}');
+          } catch (e) {
+            Log.error('Error adding synced relay to NDK: ${relay.url}', e);
+          }
+        }
+      }
+    }
+  }
+
+  /// Ensure scanning is started if there are enabled relays
+  ///
+  /// This is called after syncing relays to automatically start scanning
+  /// if it's not already active and there are enabled relays to scan.
+  Future<void> ensureScanningStarted() async {
+    await initialize();
+
+    // Don't start if already scanning
+    if (_isScanning) {
+      Log.debug('Scanning is already active');
+      return;
+    }
+
+    // Check if there are enabled relays
+    final enabledRelays = _cachedRelays!.where((r) => r.isEnabled).toList();
+    if (enabledRelays.isEmpty) {
+      Log.debug('No enabled relays to scan, skipping auto-start');
+      return;
+    }
+
+    // Start scanning
+    try {
+      await startRelayScanning();
+      Log.info('Auto-started relay scanning with ${enabledRelays.length} enabled relay(s)');
+    } catch (e) {
+      Log.error('Error auto-starting relay scanning', e);
+    }
   }
 }

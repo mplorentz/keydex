@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'providers/key_provider.dart';
 import 'services/deep_link_service.dart';
 import 'services/logger.dart';
+import 'services/relay_scan_service.dart';
 import 'screens/lockbox_list_screen.dart';
 import 'widgets/theme.dart';
 
@@ -12,7 +13,7 @@ final navigatorKey = GlobalKey<NavigatorState>();
 void main() {
   runApp(
     // Wrap the entire app with ProviderScope to enable Riverpod
-    ProviderScope(
+    const ProviderScope(
       child: KeydexApp(),
     ),
   );
@@ -45,6 +46,11 @@ class _KeydexAppState extends ConsumerState<KeydexApp> {
       final deepLinkService = ref.read(deepLinkServiceProvider);
       deepLinkService.setNavigatorKey(navigatorKey);
       await deepLinkService.initializeDeepLinking();
+
+      // Initialize relay scanning service
+      // This will auto-start scanning if there are enabled relays
+      final relayScanService = ref.read(relayScanServiceProvider);
+      await relayScanService.initialize();
 
       if (mounted) {
         setState(() {

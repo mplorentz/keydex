@@ -385,7 +385,7 @@ void main() {
 
     test('ageInSeconds calculates correctly', () {
       final pastTimestamp = DateTime.now().millisecondsSinceEpoch ~/ 1000 - 3600; // 1 hour ago
-      final shardData = (
+      final ShardData shardData = (
         shard: 'abc',
         threshold: 2,
         shardIndex: 0,
@@ -400,6 +400,7 @@ void main() {
         isReceived: null,
         receivedAt: null,
         nostrEventId: null,
+        relayUrls: null,
       );
 
       expect(shardData.ageInSeconds, greaterThanOrEqualTo(3600));
@@ -408,7 +409,7 @@ void main() {
 
     test('ageInHours calculates correctly', () {
       final pastTimestamp = DateTime.now().millisecondsSinceEpoch ~/ 1000 - 7200; // 2 hours ago
-      final shardData = (
+      final ShardData shardData = (
         shard: 'abc',
         threshold: 2,
         shardIndex: 0,
@@ -423,6 +424,7 @@ void main() {
         isReceived: null,
         receivedAt: null,
         nostrEventId: null,
+        relayUrls: null,
       );
 
       expect(shardData.ageInHours, greaterThanOrEqualTo(2.0));
@@ -431,7 +433,7 @@ void main() {
 
     test('isRecent returns true for recent shard', () {
       final recentTimestamp = DateTime.now().millisecondsSinceEpoch ~/ 1000 - 3600; // 1 hour ago
-      final shardData = (
+      final ShardData shardData = (
         shard: 'abc',
         threshold: 2,
         shardIndex: 0,
@@ -446,6 +448,7 @@ void main() {
         isReceived: null,
         receivedAt: null,
         nostrEventId: null,
+        relayUrls: null,
       );
 
       expect(shardData.isRecent, isTrue);
@@ -454,7 +457,7 @@ void main() {
     test('isRecent returns false for old shard', () {
       final oldTimestamp =
           DateTime.now().millisecondsSinceEpoch ~/ 1000 - 86400 - 3600; // >24 hours ago
-      final shardData = (
+      final ShardData shardData = (
         shard: 'abc',
         threshold: 2,
         shardIndex: 0,
@@ -469,6 +472,7 @@ void main() {
         isReceived: null,
         receivedAt: null,
         nostrEventId: null,
+        relayUrls: null,
       );
 
       expect(shardData.isRecent, isFalse);

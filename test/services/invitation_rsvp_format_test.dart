@@ -9,6 +9,7 @@ import 'package:keydex/services/invitation_sending_service.dart';
 import 'package:keydex/services/invitation_service.dart';
 import 'package:keydex/services/login_service.dart';
 import 'package:keydex/services/ndk_service.dart';
+import 'package:keydex/services/relay_scan_service.dart';
 import 'package:keydex/providers/lockbox_provider.dart';
 import 'package:keydex/models/lockbox.dart';
 import 'package:keydex/models/nostr_kinds.dart';
@@ -21,6 +22,7 @@ import 'invitation_rsvp_format_test.mocks.dart';
   LoginService,
   LockboxRepository,
   InvitationSendingService,
+  RelayScanService,
 ])
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -77,11 +79,13 @@ void main() {
       mockInvitationSendingService = MockInvitationSendingService();
 
       invitationSendingService = InvitationSendingService(mockNdkService);
+      final mockRelayScanService = MockRelayScanService();
       invitationService = InvitationService(
         realRepository,
         mockInvitationSendingService,
         mockLoginService,
         () => mockNdkService,
+        mockRelayScanService,
       );
 
       // Clear SharedPreferences before each test
@@ -282,7 +286,8 @@ void main() {
       // Arrange
       const ownerPubkey = TestHexPubkeys.alice;
       const inviteePubkey = TestHexPubkeys.bob;
-      const inviteCode = 'unknown-invite-code';
+      // Use a valid Base64URL invite code (no padding, Base64URL format)
+      const inviteCode = 'dGVzdF9iYXNlNjRfY29kZQ'; // Base64URL without padding
 
       final validJson = json.encode({
         'invite_code': inviteCode,
@@ -369,7 +374,6 @@ void main() {
 
       when(mockNdkService.getCurrentPubkey()).thenAnswer((_) async => inviteePubkey);
 
-      String? capturedContent;
       int? capturedKind;
       String? capturedRecipientPubkey;
       List<String>? capturedRelays;
@@ -382,7 +386,6 @@ void main() {
         relays: anyNamed('relays'),
         tags: anyNamed('tags'),
       )).thenAnswer((invocation) async {
-        capturedContent = invocation.namedArguments[#content] as String;
         capturedKind = invocation.namedArguments[#kind] as int;
         capturedRecipientPubkey = invocation.namedArguments[#recipientPubkey] as String;
         capturedRelays = invocation.namedArguments[#relays] as List<String>;

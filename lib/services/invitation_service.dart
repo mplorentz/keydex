@@ -19,6 +19,7 @@ import '../utils/invite_code_utils.dart';
 import '../utils/validators.dart';
 import 'invitation_sending_service.dart';
 import 'ndk_service.dart';
+import 'relay_scan_service.dart';
 
 /// Provider for InvitationService
 final invitationServiceProvider = Provider<InvitationService>((ref) {
@@ -27,6 +28,7 @@ final invitationServiceProvider = Provider<InvitationService>((ref) {
     ref.read(invitationSendingServiceProvider),
     ref.read(loginServiceProvider),
     () => ref.read(ndkServiceProvider),
+    ref.read(relayScanServiceProvider),
   );
 
   // Properly clean up when the provider is disposed
@@ -43,6 +45,7 @@ class InvitationService {
   final InvitationSendingService invitationSendingService;
   final LoginService _loginService;
   final NdkService Function() _getNdkService;
+  final RelayScanService _relayScanService;
 
   // Stream controller for notifying listeners when invitations change
   final StreamController<void> _invitationsChangedController = StreamController<void>.broadcast();
@@ -56,6 +59,7 @@ class InvitationService {
     this.invitationSendingService,
     this._loginService,
     this._getNdkService,
+    this._relayScanService,
   );
 
   /// Stream that emits whenever invitations change
@@ -136,6 +140,31 @@ class InvitationService {
     // Ensure relay URLs are added to NDK service so we can receive RSVP events
     // Add relays asynchronously - don't fail invitation generation if relay addition fails
     _addRelaysToNdk(relayUrls);
+
+    // Sync relays to RelayScanService and ensure scanning is started
+    try {
+      await _relayScanService.syncRelaysFromUrls(relayUrls);
+      await _relayScanService.ensureScanningStarted();
+      Log.info('Synced ${relayUrls.length} relay(s) from invitation to RelayScanService');
+    } catch (e) {
+      Log.error('Error syncing relays from invitation to RelayScanService', e);
+      // Don't fail invitation generation if relay sync fails
+    }
+
+    // Add invited key holder placeholder to backup config immediately
+    // This allows the RSVP handler to find and update it when the invitee accepts
+    try {
+      await _addInvitedKeyHolderToBackupConfig(
+        lockboxId: lockboxId,
+        inviteCode: inviteCode,
+        inviteeName: inviteeName.trim(),
+        relayUrls: relayUrls,
+      );
+      Log.info('Added invited key holder placeholder for $inviteeName to backup config');
+    } catch (e) {
+      Log.error('Error adding invited key holder to backup config', e);
+      // Don't fail invitation generation if this fails
+    }
 
     // Notify listeners
     _notifyInvitationsChanged();
@@ -329,16 +358,40 @@ class InvitationService {
     );
     await _saveInvitation(redeemedInvitation);
 
-    // Send RSVP event
+    // Send RSVP event BEFORE syncing relays to avoid timing issues
+    // The RSVP uses specificRelays which will connect to relays on demand
+    String? rsvpEventId;
     try {
-      await invitationSendingService.sendRsvpEvent(
+      rsvpEventId = await invitationSendingService.sendRsvpEvent(
         inviteCode: inviteCode,
         ownerPubkey: invitation.ownerPubkey,
         relayUrls: invitation.relayUrls,
       );
+
+      if (rsvpEventId == null) {
+        // RSVP event failed to publish - throw error so UI can show appropriate message
+        throw Exception(
+            'Failed to publish RSVP event to relays. Please check your relay connections.');
+      }
+
+      Log.info('RSVP event published successfully: $rsvpEventId');
     } catch (e) {
       Log.error('Error sending RSVP event for invitation $inviteCode', e);
-      // Don't fail the redemption if event sending fails - invitation is already redeemed
+      // Re-throw so the UI can handle it appropriately
+      // The invitation is already marked as redeemed, but RSVP failed
+      throw Exception('Invitation was accepted locally, but failed to notify the owner: $e');
+    }
+
+    // NOW sync relays from invitation and start scanning so invitee can receive shards
+    // This is done AFTER sending RSVP to avoid timing conflicts with relay connections
+    try {
+      await _relayScanService.syncRelaysFromUrls(invitation.relayUrls);
+      await _relayScanService.ensureScanningStarted();
+      Log.info(
+          'Synced ${invitation.relayUrls.length} relay(s) from invitation to RelayScanService (invitee side)');
+    } catch (e) {
+      Log.error('Error syncing relays from invitation to RelayScanService (invitee side)', e);
+      // Don't fail invitation redemption if relay sync fails
     }
 
     // Notify listeners
@@ -475,7 +528,8 @@ class InvitationService {
       Log.debug('RSVP event payload keys: ${payload.keys.toList()}');
     } catch (e) {
       Log.error('Error parsing RSVP event JSON', e);
-      throw Exception('Failed to parse RSVP event content. The event may be corrupted or encrypted incorrectly: $e');
+      throw Exception(
+          'Failed to parse RSVP event content. The event may be corrupted or encrypted incorrectly: $e');
     }
 
     // Extract invite code from payload
@@ -587,7 +641,8 @@ class InvitationService {
       Log.debug('Denial event payload keys: ${payload.keys.toList()}');
     } catch (e) {
       Log.error('Error parsing denial event JSON', e);
-      throw Exception('Failed to parse denial event content. The event may be corrupted or encrypted incorrectly: $e');
+      throw Exception(
+          'Failed to parse denial event content. The event may be corrupted or encrypted incorrectly: $e');
     }
 
     // Extract invite code from payload
@@ -698,6 +753,9 @@ class InvitationService {
       );
       await repository.updateBackupConfig(lockboxId, backupConfig);
       Log.info('Created new backup config for lockbox $lockboxId with key holder $pubkey');
+
+      // Sync relays from backup config to RelayScanService
+      await _syncRelaysFromBackupConfig(backupConfig);
     } else {
       // FIRST: Check if there's an invited key holder (no pubkey) with matching invite code
       // This must be checked BEFORE checking for existing pubkey, otherwise we'll miss
@@ -730,6 +788,9 @@ class InvitationService {
           await repository.updateBackupConfig(lockboxId, updatedConfig);
           Log.info(
               'Updated invited key holder with invite code "$inviteCode" - added pubkey $pubkey and changed status to awaitingKey');
+
+          // Sync relays from backup config to RelayScanService
+          await _syncRelaysFromBackupConfig(updatedConfig);
           return;
         } else {
           Log.debug('No invited key holder found with invite code "$inviteCode"');
@@ -766,6 +827,84 @@ class InvitationService {
       );
       await repository.updateBackupConfig(lockboxId, updatedConfig);
       Log.info('Added key holder $pubkey to backup config for lockbox $lockboxId');
+
+      // Sync relays from backup config to RelayScanService
+      await _syncRelaysFromBackupConfig(updatedConfig);
+    }
+  }
+
+  /// Sync relays from backup config to RelayScanService and ensure scanning is started
+  Future<void> _syncRelaysFromBackupConfig(BackupConfig backupConfig) async {
+    if (backupConfig.relays.isEmpty) {
+      Log.debug('No relays in backup config to sync');
+      return;
+    }
+
+    try {
+      await _relayScanService.syncRelaysFromUrls(backupConfig.relays);
+      await _relayScanService.ensureScanningStarted();
+      Log.info(
+          'Synced ${backupConfig.relays.length} relay(s) from backup config to RelayScanService');
+    } catch (e) {
+      Log.error('Error syncing relays from backup config to RelayScanService', e);
+      // Don't fail the operation if relay sync fails
+    }
+  }
+
+  /// Add an invited key holder placeholder to the backup config
+  ///
+  /// This is called when an invitation is generated, before the invitee has accepted.
+  /// It creates a key holder with null pubkey and invited status, which will be
+  /// updated when the RSVP is received.
+  Future<void> _addInvitedKeyHolderToBackupConfig({
+    required String lockboxId,
+    required String inviteCode,
+    required String inviteeName,
+    required List<String> relayUrls,
+  }) async {
+    var backupConfig = await repository.getBackupConfig(lockboxId);
+
+    // Create the invited key holder
+    final invitedKeyHolder = createInvitedKeyHolder(
+      name: inviteeName,
+      inviteCode: inviteCode,
+    );
+
+    if (backupConfig == null) {
+      // Create new backup config with just this invited key holder
+      backupConfig = createBackupConfig(
+        lockboxId: lockboxId,
+        threshold: 1,
+        totalKeys: 1,
+        keyHolders: [invitedKeyHolder],
+        relays: relayUrls,
+      );
+      await repository.updateBackupConfig(lockboxId, backupConfig);
+      Log.info('Created backup config with invited key holder for $inviteeName');
+    } else {
+      // Check if this invite code already exists (avoid duplicates)
+      final existingWithCode =
+          backupConfig.keyHolders.where((holder) => holder.inviteCode == inviteCode).toList();
+
+      if (existingWithCode.isNotEmpty) {
+        Log.info('Invited key holder with invite code $inviteCode already exists, skipping');
+        return;
+      }
+
+      // Add the invited key holder
+      final updatedKeyHolders = [...backupConfig.keyHolders, invitedKeyHolder];
+      final updatedConfig = copyBackupConfig(
+        backupConfig,
+        keyHolders: updatedKeyHolders,
+        totalKeys: updatedKeyHolders.length,
+        relays: relayUrls.isNotEmpty ? relayUrls : backupConfig.relays,
+        lastUpdated: DateTime.now(),
+      );
+      await repository.updateBackupConfig(lockboxId, updatedConfig);
+      Log.info('Added invited key holder for $inviteeName to existing backup config');
+
+      // Sync relays from updated backup config
+      await _syncRelaysFromBackupConfig(updatedConfig);
     }
   }
 

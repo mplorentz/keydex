@@ -1,8 +1,40 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/annotations.dart';
 import 'package:keydex/services/backup_service.dart';
+import 'package:keydex/providers/lockbox_provider.dart';
+import 'package:keydex/services/shard_distribution_service.dart';
+import 'package:keydex/services/login_service.dart';
+import 'package:keydex/services/relay_scan_service.dart';
 
+import 'backup_service_test.mocks.dart';
+
+@GenerateMocks([
+  LockboxRepository,
+  ShardDistributionService,
+  LoginService,
+  RelayScanService,
+])
 void main() {
   group('BackupService - Shamir Secret Sharing', () {
+    late BackupService backupService;
+    late MockLockboxRepository mockRepository;
+    late MockShardDistributionService mockShardDistributionService;
+    late MockLoginService mockLoginService;
+    late MockRelayScanService mockRelayScanService;
+
+    setUp(() {
+      mockRepository = MockLockboxRepository();
+      mockShardDistributionService = MockShardDistributionService();
+      mockLoginService = MockLoginService();
+      mockRelayScanService = MockRelayScanService();
+      backupService = BackupService(
+        mockRepository,
+        mockShardDistributionService,
+        mockLoginService,
+        mockRelayScanService,
+      );
+    });
+
     const testSecret = 'This is a test secret that we want to protect with Shamir Secret Sharing!';
     const testCreatorPubkey = '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
     const testLockboxId = 'test-lockbox-123';
@@ -19,7 +51,7 @@ void main() {
       const totalShards = 5;
 
       // Act
-      final shares = await BackupService.generateShamirShares(
+      final shares = await backupService.generateShamirShares(
         content: testSecret,
         threshold: threshold,
         totalShards: totalShards,
@@ -49,7 +81,7 @@ void main() {
       const totalShards = 3;
 
       // Act
-      final shares = await BackupService.generateShamirShares(
+      final shares = await backupService.generateShamirShares(
         content: testSecret,
         threshold: threshold,
         totalShards: totalShards,
@@ -68,7 +100,7 @@ void main() {
       // Arrange
       const threshold = 3;
       const totalShards = 5;
-      final originalShares = await BackupService.generateShamirShares(
+      final originalShares = await backupService.generateShamirShares(
         content: testSecret,
         threshold: threshold,
         totalShards: totalShards,
@@ -79,7 +111,7 @@ void main() {
       );
 
       // Act - Use exactly threshold number of shares
-      final reconstructed = await BackupService.reconstructFromShares(
+      final reconstructed = await backupService.reconstructFromShares(
         shares: originalShares.sublist(0, threshold),
       );
 
@@ -91,7 +123,7 @@ void main() {
       // Arrange
       const threshold = 2;
       const totalShards = 4;
-      final originalShares = await BackupService.generateShamirShares(
+      final originalShares = await backupService.generateShamirShares(
         content: testSecret,
         threshold: threshold,
         totalShards: totalShards,
@@ -102,7 +134,7 @@ void main() {
       );
 
       // Act - Use more than threshold shares (all 4)
-      final reconstructed = await BackupService.reconstructFromShares(
+      final reconstructed = await backupService.reconstructFromShares(
         shares: originalShares,
       );
 
@@ -114,7 +146,7 @@ void main() {
       // Arrange
       const threshold = 3;
       const totalShards = 5;
-      final originalShares = await BackupService.generateShamirShares(
+      final originalShares = await backupService.generateShamirShares(
         content: testSecret,
         threshold: threshold,
         totalShards: totalShards,
@@ -125,13 +157,13 @@ void main() {
       );
 
       // Act - Try different combinations of threshold shares
-      final combination1 = await BackupService.reconstructFromShares(
+      final combination1 = await backupService.reconstructFromShares(
         shares: [originalShares[0], originalShares[1], originalShares[2]],
       );
-      final combination2 = await BackupService.reconstructFromShares(
+      final combination2 = await backupService.reconstructFromShares(
         shares: [originalShares[1], originalShares[3], originalShares[4]],
       );
-      final combination3 = await BackupService.reconstructFromShares(
+      final combination3 = await backupService.reconstructFromShares(
         shares: [originalShares[0], originalShares[2], originalShares[4]],
       );
 
@@ -145,7 +177,7 @@ void main() {
       // Arrange
       const threshold = 3;
       const totalShards = 5;
-      final originalShares = await BackupService.generateShamirShares(
+      final originalShares = await backupService.generateShamirShares(
         content: testSecret,
         threshold: threshold,
         totalShards: totalShards,
@@ -157,7 +189,7 @@ void main() {
 
       // Act & Assert - Should throw when fewer than threshold shares provided
       expect(
-        () => BackupService.reconstructFromShares(
+        () => backupService.reconstructFromShares(
           shares: originalShares.sublist(0, threshold - 1),
         ),
         throwsA(isA<ArgumentError>()),
@@ -166,7 +198,7 @@ void main() {
 
     test('reconstructFromShares throws with mismatched parameters', () async {
       // Arrange - Create two different share sets
-      final shares1 = await BackupService.generateShamirShares(
+      final shares1 = await backupService.generateShamirShares(
         content: testSecret,
         threshold: 2,
         totalShards: 3,
@@ -175,7 +207,7 @@ void main() {
         lockboxName: testLockboxName,
         peers: testPeers,
       );
-      final shares2 = await BackupService.generateShamirShares(
+      final shares2 = await backupService.generateShamirShares(
         content: 'Different secret',
         threshold: 2,
         totalShards: 3,
@@ -191,7 +223,7 @@ void main() {
 
       // Act & Assert - Should throw when mixing shares from different sets
       expect(
-        () => BackupService.reconstructFromShares(
+        () => backupService.reconstructFromShares(
           shares: [shares1[0], shares2[1]],
         ),
         throwsA(isA<ArgumentError>()),
@@ -201,7 +233,7 @@ void main() {
     test('reconstructFromShares throws with empty shares list', () async {
       // Act & Assert
       expect(
-        () => BackupService.reconstructFromShares(shares: []),
+        () => backupService.reconstructFromShares(shares: []),
         throwsA(isA<ArgumentError>()),
       );
     });
@@ -213,7 +245,7 @@ void main() {
       const totalShards = 3;
 
       // Act
-      final shares = await BackupService.generateShamirShares(
+      final shares = await backupService.generateShamirShares(
         content: longSecret,
         threshold: threshold,
         totalShards: totalShards,
@@ -223,7 +255,7 @@ void main() {
         peers: testPeers,
       );
 
-      final reconstructed = await BackupService.reconstructFromShares(
+      final reconstructed = await backupService.reconstructFromShares(
         shares: shares.sublist(0, threshold),
       );
 
@@ -238,7 +270,7 @@ void main() {
       const totalShards = 3;
 
       // Act
-      final shares = await BackupService.generateShamirShares(
+      final shares = await backupService.generateShamirShares(
         content: specialSecret,
         threshold: threshold,
         totalShards: totalShards,
@@ -248,7 +280,7 @@ void main() {
         peers: testPeers,
       );
 
-      final reconstructed = await BackupService.reconstructFromShares(
+      final reconstructed = await backupService.reconstructFromShares(
         shares: shares.sublist(0, threshold),
       );
 
@@ -262,7 +294,7 @@ void main() {
       const totalShards = 3;
 
       // Generate valid shares first
-      final validShares = await BackupService.generateShamirShares(
+      final validShares = await backupService.generateShamirShares(
         content: testSecret,
         threshold: threshold,
         totalShards: totalShards,
@@ -292,12 +324,13 @@ void main() {
           isReceived: share.isReceived,
           receivedAt: share.receivedAt,
           nostrEventId: share.nostrEventId,
+          relayUrls: share.relayUrls,
         );
       }).toList();
 
       // Act & Assert
       expect(
-        () => BackupService.reconstructFromShares(shares: tamperedShares),
+        () => backupService.reconstructFromShares(shares: tamperedShares),
         throwsA(
           isA<ArgumentError>().having(
             (e) => e.message,
