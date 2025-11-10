@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ndk/ndk.dart';
 import '../providers/key_provider.dart';
@@ -528,14 +529,17 @@ class NdkService {
     return keyPair?.publicKey;
   }
 
-  /// Publish a gift wrap event (rumor + gift wrap)
+  /// Publish an expiring encrypted event (rumor + gift wrap)
   ///
   /// Creates a rumor event with the given content and kind,
   /// wraps it in a gift wrap for the recipient,
   /// and broadcasts it to the specified relays.
   ///
+  /// Automatically adds NIP-40 expiration tag (7 days) to the rumor event,
+  /// unless an expiration tag is already present in the tags list.
+  ///
   /// Returns the gift wrap event ID.
-  Future<String?> publishGiftWrapEvent({
+  Future<String?> publishEncryptedEvent({
     required String content,
     required int kind,
     required String recipientPubkey, // Hex format
@@ -553,12 +557,25 @@ class NdkService {
 
       final senderPubkey = customPubkey ?? keyPair.publicKey;
 
+      // Calculate expiration timestamp: 7 days from now (NIP-40)
+      final expirationTimestamp =
+          DateTime.now().add(const Duration(days: 7)).millisecondsSinceEpoch ~/ 1000;
+
+      // Prepare tags with expiration tag prepended (only if not already present)
+      final tagsList = tags ?? [];
+      final hasExpirationTag = tagsList.any((tag) => tag.isNotEmpty && tag[0] == 'expiration');
+
+      final tagsWithExpiration = <List<String>>[
+        if (!hasExpirationTag) ['expiration', expirationTimestamp.toString()],
+        ...tagsList,
+      ];
+
       // Create rumor event
       final rumor = await _ndk!.giftWrap.createRumor(
         customPubkey: senderPubkey,
         content: content,
         kind: kind,
-        tags: tags ?? [],
+        tags: tagsWithExpiration,
       );
 
       Log.debug(
@@ -577,7 +594,7 @@ class NdkService {
       );
 
       Log.info(
-          'Publishing gift wrap event (kind $kind) addressed to ${recipientPubkey.substring(0, 8)}... to relays ${relays.join(', ')} (event: ${giftWrap.id.substring(0, 8)}...)');
+          'Publishing encrypted event (kind $kind) addressed to ${recipientPubkey.substring(0, 8)}... to relays ${relays.join(', ')} (event: ${giftWrap.id.substring(0, 8)}...)');
 
       // Await broadcast results and log any errors
       try {
@@ -611,19 +628,21 @@ class NdkService {
 
       return giftWrap.id;
     } catch (e) {
-      Log.error('Error publishing gift wrap event', e);
+      Log.error('Error publishing encrypted event', e);
       return null;
     }
   }
 
-  /// Publish a gift wrap event to multiple recipients
+  /// Publish an encrypted event to multiple recipients
   ///
   /// Creates a rumor event with the given content and kind,
   /// wraps it in gift wraps for each recipient,
   /// and broadcasts them to the specified relays.
   ///
+  /// Automatically adds NIP-40 expiration tag (7 days) to each rumor event.
+  ///
   /// Returns list of gift wrap event IDs.
-  Future<List<String>> publishGiftWrapEventToMultiple({
+  Future<List<String>> publishEncryptedEventToMultiple({
     required String content,
     required int kind,
     required List<String> recipientPubkeys, // Hex format
@@ -637,7 +656,7 @@ class NdkService {
 
     for (final recipientPubkey in recipientPubkeys) {
       try {
-        final eventId = await publishGiftWrapEvent(
+        final eventId = await publishEncryptedEvent(
           content: content,
           kind: kind,
           recipientPubkey: recipientPubkey,
@@ -649,7 +668,7 @@ class NdkService {
           eventIds.add(eventId);
         }
       } catch (e) {
-        Log.error('Error publishing gift wrap to ${recipientPubkey.substring(0, 8)}...', e);
+        Log.error('Error publishing encrypted event to ${recipientPubkey.substring(0, 8)}...', e);
       }
     }
 
@@ -667,6 +686,14 @@ class NdkService {
 
   /// Check if NDK is initialized
   bool get isInitialized => _isInitialized;
+
+  /// Set NDK instance for testing purposes only
+  /// This method should only be used in tests
+  @visibleForTesting
+  void setNdkForTesting(Ndk ndk) {
+    _ndk = ndk;
+    _isInitialized = true;
+  }
 
   /// Dispose of NDK resources
   Future<void> dispose() async {

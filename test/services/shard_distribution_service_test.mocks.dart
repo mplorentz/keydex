@@ -1431,7 +1431,7 @@ class MockNdkService extends _i1.Mock implements _i13.NdkService {
       ) as _i4.Future<String?>);
 
   @override
-  _i4.Future<String?> publishGiftWrapEvent({
+  _i4.Future<String?> publishEncryptedEvent({
     required String? content,
     required int? kind,
     required String? recipientPubkey,
@@ -1441,7 +1441,7 @@ class MockNdkService extends _i1.Mock implements _i13.NdkService {
   }) =>
       (super.noSuchMethod(
         Invocation.method(
-          #publishGiftWrapEvent,
+          #publishEncryptedEvent,
           [],
           {
             #content: content,
@@ -1456,7 +1456,7 @@ class MockNdkService extends _i1.Mock implements _i13.NdkService {
       ) as _i4.Future<String?>);
 
   @override
-  _i4.Future<List<String>> publishGiftWrapEventToMultiple({
+  _i4.Future<List<String>> publishEncryptedEventToMultiple({
     required String? content,
     required int? kind,
     required List<String>? recipientPubkeys,
@@ -1466,7 +1466,7 @@ class MockNdkService extends _i1.Mock implements _i13.NdkService {
   }) =>
       (super.noSuchMethod(
         Invocation.method(
-          #publishGiftWrapEventToMultiple,
+          #publishEncryptedEventToMultiple,
           [],
           {
             #content: content,
@@ -1494,6 +1494,15 @@ class MockNdkService extends _i1.Mock implements _i13.NdkService {
           ),
         )),
       ) as _i4.Future<_i2.Ndk>);
+
+  @override
+  void setNdkForTesting(_i2.Ndk? ndk) => super.noSuchMethod(
+        Invocation.method(
+          #setNdkForTesting,
+          [ndk],
+        ),
+        returnValueForMissingStub: null,
+      );
 
   @override
   _i4.Future<void> dispose() => (super.noSuchMethod(
