@@ -70,7 +70,7 @@ class ShardDistributionService {
           Log.debug('recipient pubkey: ${keyHolder.pubkey}');
 
           // Publish using NdkService
-          final eventId = await _ndkService.publishGiftWrapEvent(
+          final eventId = await _ndkService.publishEncryptedEvent(
             content: shardString,
             kind: NostrKind.shardData.value,
             recipientPubkey: keyHolder.pubkey!, // Hex format - safe because we checked null above

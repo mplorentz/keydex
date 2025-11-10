@@ -168,3 +168,15 @@ final confirmationData = {
   'shardIndex': shardIndex,
 };
 ```
+
+## Nostr Event Expiration
+
+### NIP-40 Expiration Tags
+- **All Nostr events published by Keydex MUST include NIP-40 expiration tags**
+- Expiration is set to 7 days from publication time
+- Expiration tags are automatically added by `publishEncryptedEvent` and `publishEncryptedEventToMultiple`
+- Format: `['expiration', '<unix_timestamp_in_seconds>']` per NIP-40 specification
+- The expiration tag is added to the rumor event (inner event), not the gift wrap (outer event)
+- See NIP-40 for full specification details
+
+**Note:** When publishing events, you do NOT need to manually add expiration tags. They are automatically included by the publishing functions.

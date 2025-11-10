@@ -52,7 +52,7 @@ class InvitationSendingService {
       Log.info('Sending RSVP event for invite code: ${inviteCode.substring(0, 8)}...');
 
       // Publish using NdkService
-      return await ndkService.publishGiftWrapEvent(
+      return await ndkService.publishEncryptedEvent(
         content: rsvpJson,
         kind: NostrKind.invitationRsvp.value,
         recipientPubkey: ownerPubkey,
@@ -105,7 +105,7 @@ class InvitationSendingService {
       Log.info('Sending denial event for invite code: ${inviteCode.substring(0, 8)}...');
 
       // Publish using NdkService
-      return await ndkService.publishGiftWrapEvent(
+      return await ndkService.publishEncryptedEvent(
         content: denialJson,
         kind: NostrKind.invitationDenial.value,
         recipientPubkey: ownerPubkey,
@@ -157,7 +157,7 @@ class InvitationSendingService {
           'Sending shard confirmation event for lockbox: ${lockboxId.substring(0, 8)}..., shard: $shardIndex');
 
       // Publish using NdkService
-      return await ndkService.publishGiftWrapEvent(
+      return await ndkService.publishEncryptedEvent(
         content: confirmationJson,
         kind: NostrKind.shardConfirmation.value,
         recipientPubkey: ownerPubkey,
@@ -212,7 +212,7 @@ class InvitationSendingService {
           'Sending shard error event for lockbox: ${lockboxId.substring(0, 8)}..., shard: $shardIndex');
 
       // Publish using NdkService
-      return await ndkService.publishGiftWrapEvent(
+      return await ndkService.publishEncryptedEvent(
         content: errorJson,
         kind: NostrKind.shardError.value,
         recipientPubkey: ownerPubkey,
@@ -265,7 +265,7 @@ class InvitationSendingService {
           'Sending invitation invalid event for invite code: ${inviteCode.substring(0, 8)}...');
 
       // Publish using NdkService
-      return await ndkService.publishGiftWrapEvent(
+      return await ndkService.publishEncryptedEvent(
         content: invalidJson,
         kind: NostrKind.invitationInvalid.value,
         recipientPubkey: inviteePubkey,
