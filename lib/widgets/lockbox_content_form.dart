@@ -32,21 +32,21 @@ class LockboxContentForm extends StatelessWidget {
             TextFormField(
               controller: nameController,
               decoration: InputDecoration(
-                labelText: 'Lockbox Name',
+                labelText: 'Vault Name',
                 hintText: nameHintText,
                 border: const OutlineInputBorder(),
                 prefixIcon: const Icon(Icons.label_outline),
               ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return 'Please enter a name for your lockbox';
+                  return 'Please enter a name for your vault';
                 }
                 return null;
               },
             ),
             const SizedBox(height: 16),
             Text(
-              'Lockbox Contents',
+              'Vault Contents',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,

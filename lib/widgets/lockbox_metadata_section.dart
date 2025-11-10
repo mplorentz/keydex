@@ -96,7 +96,7 @@ class LockboxMetadataSection extends ConsumerWidget {
                   Icon(Icons.person, color: Theme.of(context).textTheme.titleMedium?.color),
                   const SizedBox(width: 8),
                   Text(
-                    'You own this lockbox',
+                    'You own this vault',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ],

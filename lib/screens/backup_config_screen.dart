@@ -222,7 +222,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                           TextField(
                             controller: _inviteeNameController,
                             decoration: const InputDecoration(
-                              labelText: 'Invitee Name',
+                              labelText: "Enter steward's name",
                               hintText: 'Enter name for the invitee',
                               border: OutlineInputBorder(),
                             ),
