@@ -105,7 +105,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
       canPop: !_hasUnsavedChanges,
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
-        
+
         final shouldDiscard = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
@@ -125,9 +125,9 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
             ],
           ),
         );
-        
+
+        if (!context.mounted) return;
         if (shouldDiscard == true) {
-          if (!mounted) return;
           Navigator.of(context).pop();
         }
       },
@@ -156,11 +156,11 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                           Text('Threshold: $_threshold (minimum keys needed)'),
                           Slider(
                             value: _threshold.toDouble().clamp(
-                              LockboxBackupConstraints.minThreshold.toDouble(),
-                              (_keyHolders.isEmpty
-                                  ? LockboxBackupConstraints.maxTotalKeys.toDouble()
-                                  : _keyHolders.length.toDouble()),
-                            ),
+                                  LockboxBackupConstraints.minThreshold.toDouble(),
+                                  (_keyHolders.isEmpty
+                                      ? LockboxBackupConstraints.maxTotalKeys.toDouble()
+                                      : _keyHolders.length.toDouble()),
+                                ),
                             min: LockboxBackupConstraints.minThreshold.toDouble(),
                             max: _keyHolders.isEmpty
                                 ? LockboxBackupConstraints.maxTotalKeys.toDouble()
