@@ -101,31 +101,35 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
       );
     }
 
-    return WillPopScope(
-      onWillPop: () async {
-        if (_hasUnsavedChanges) {
-          final shouldDiscard = await showDialog<bool>(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: const Text('Discard Changes?'),
-              content: const Text(
-                'You have unsaved changes. Are you sure you want to discard them?',
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  child: const Text('Cancel'),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.pop(context, true),
-                  child: const Text('Discard'),
-                ),
-              ],
+    return PopScope(
+      canPop: !_hasUnsavedChanges,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+
+        final shouldDiscard = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Discard Changes?'),
+            content: const Text(
+              'You have unsaved changes. Are you sure you want to discard them?',
             ),
-          );
-          return shouldDiscard ?? false;
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Discard'),
+              ),
+            ],
+          ),
+        );
+
+        if (!context.mounted) return;
+        if (shouldDiscard == true) {
+          Navigator.of(context).pop();
         }
-        return true;
       },
       child: Scaffold(
         appBar: AppBar(
@@ -152,11 +156,11 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                           Text('Threshold: $_threshold (minimum keys needed)'),
                           Slider(
                             value: _threshold.toDouble().clamp(
-                              LockboxBackupConstraints.minThreshold.toDouble(),
-                              (_keyHolders.isEmpty
-                                  ? LockboxBackupConstraints.maxTotalKeys.toDouble()
-                                  : _keyHolders.length.toDouble()),
-                            ),
+                                  LockboxBackupConstraints.minThreshold.toDouble(),
+                                  (_keyHolders.isEmpty
+                                      ? LockboxBackupConstraints.maxTotalKeys.toDouble()
+                                      : _keyHolders.length.toDouble()),
+                                ),
                             min: LockboxBackupConstraints.minThreshold.toDouble(),
                             max: _keyHolders.isEmpty
                                 ? LockboxBackupConstraints.maxTotalKeys.toDouble()
@@ -562,6 +566,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
     );
 
     if (result == true) {
+      if (!mounted) return;
       try {
         // Convert bech32 npub to hex pubkey
         final npub = npubController.text.trim();
@@ -580,6 +585,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
           name: inviteeName,
         );
 
+        if (!mounted) return;
         setState(() {
           _keyHolders.add(keyHolder);
           _inviteeNameController.clear();
@@ -590,12 +596,14 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
           _hasUnsavedChanges = true;
         });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Key holder added successfully!'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Key holder added successfully!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -703,7 +711,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                           style: TextStyle(
                             fontFamily: 'monospace',
                             fontSize: 11,
-                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -917,6 +925,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
 
     // Check if shards have been distributed and show warning
     final hasDistributed = await _hasDistributedShards();
+    if (!mounted) return;
     if (hasDistributed) {
       final shouldContinue = await showDialog<bool>(
         context: context,
@@ -966,7 +975,9 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
           _hasUnsavedChanges = false;
         });
 
-        Navigator.pop(context, true);
+        if (mounted) {
+          Navigator.pop(context, true);
+        }
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Backup configuration saved successfully!'),

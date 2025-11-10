@@ -102,7 +102,7 @@ class LockboxDetailScreen extends ConsumerWidget {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16.0),
-              color: Colors.orange.withOpacity(0.1),
+              color: Colors.orange.withValues(alpha: 0.1),
               child: Row(
                 children: [
                   const Icon(Icons.hourglass_empty, color: Colors.orange, size: 20),
@@ -276,6 +276,7 @@ class LockboxDetailScreen extends ConsumerWidget {
 
     if (confirmed != true) return;
 
+    if (!context.mounted) return;
     // Show loading indicator
     showDialog(
       context: context,
