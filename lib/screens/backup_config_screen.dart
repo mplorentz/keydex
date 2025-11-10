@@ -126,7 +126,8 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
           ),
         );
         
-        if (shouldDiscard == true && mounted) {
+        if (shouldDiscard == true) {
+          if (!mounted) return;
           Navigator.of(context).pop();
         }
       },
