@@ -377,6 +377,63 @@ class RecoveryService {
         'Updated recovery request $recoveryRequestId with response from ${responderPubkey.substring(0, 8)}... (approved: $approved)');
   }
 
+  /// Approve or deny a recovery request with automatic shard data retrieval and Nostr sending
+  /// This is a convenience method that handles the complete approval flow:
+  /// 1. Retrieves shard data if approving
+  /// 2. Records the response locally
+  /// 3. Sends the response via Nostr using relay URLs from shard data
+  Future<void> respondToRecoveryRequestWithShard(
+    String recoveryRequestId,
+    String responderPubkey,
+    bool approved,
+  ) async {
+    await initialize();
+
+    // Get the recovery request to find the lockbox ID
+    final request = await getRecoveryRequest(recoveryRequestId);
+    if (request == null) {
+      throw ArgumentError('Recovery request not found: $recoveryRequestId');
+    }
+
+    ShardData? shardData;
+
+    // If approving, get the shard data for this lockbox
+    if (approved) {
+      final shards = await repository.getShardsForLockbox(request.lockboxId);
+      if (shards.isEmpty) {
+        throw ArgumentError('No shard data found for lockbox ${request.lockboxId}');
+      }
+      shardData = shards.first;
+    }
+
+    // Submit response locally
+    await respondToRecoveryRequest(
+      recoveryRequestId,
+      responderPubkey,
+      approved,
+      shardData: shardData,
+    );
+
+    // Send response via Nostr if approved and relay URLs are available in shard data
+    if (approved &&
+        shardData != null &&
+        shardData.relayUrls != null &&
+        shardData.relayUrls!.isNotEmpty) {
+      try {
+        await sendRecoveryResponseViaNostr(
+          request,
+          shardData,
+          approved,
+          relays: shardData.relayUrls!,
+        );
+        Log.info('Sent recovery response via Nostr for request $recoveryRequestId');
+      } catch (e) {
+        Log.error('Failed to send recovery response via Nostr', e);
+        // Continue anyway - the response is still recorded locally
+      }
+    }
+  }
+
   /// Cancel a recovery request
   Future<void> cancelRecoveryRequest(String recoveryRequestId) async {
     await initialize();

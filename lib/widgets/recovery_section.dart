@@ -165,6 +165,22 @@ class RecoverySection extends ConsumerWidget {
         // Continue anyway - the request is still created locally
       }
 
+      // Auto-approve if the initiator is also a key holder
+      if (keyHolderPubkeys.contains(currentPubkey)) {
+        try {
+          Log.info('Initiator is a key holder, auto-approving recovery request');
+          await recoveryService.respondToRecoveryRequestWithShard(
+            recoveryRequest.id,
+            currentPubkey,
+            true, // approved
+          );
+          Log.info('Auto-approved recovery request');
+        } catch (e) {
+          Log.error('Failed to auto-approve recovery request', e);
+          // Continue anyway - user can manually approve later
+        }
+      }
+
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Recovery request initiated and sent')),
