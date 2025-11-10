@@ -61,10 +61,10 @@ packages:
     dependency: transitive
     description:
       name: bip340
-      sha256: "4c2df9fa2409d26f1d9334b2801015ebe4dc3978191f186743e60e89a90230c4"
+      sha256: b7bcd70a860e605046006adaa72bc4f7453f4d31d7ba74a4ad9d5de387a0fc0b
       url: "https://pub.dev"
     source: hosted
-    version: "0.3.1"
+    version: "0.3.0"
   boolean_selector:
     dependency: transitive
     description:
@@ -544,10 +544,10 @@ packages:
     dependency: "direct main"
     description:
       name: logger
-      sha256: a7967e31b703831a893bbc3c3dd11db08126fe5f369b5c648a36f821979f5be3
+      sha256: "2621da01aabaf223f8f961e751f2c943dbb374dc3559b982f200ccedadaa6999"
       url: "https://pub.dev"
     source: hosted
-    version: "2.6.2"
+    version: "2.6.0"
   logging:
     dependency: transitive
     description:
@@ -600,10 +600,10 @@ packages:
     dependency: "direct main"
     description:
       name: ndk
-      sha256: "6e71dc1b797aaffb5c4246d09d11ff69b5682c8e35549be52e5371473eb309c2"
+      sha256: "62f6dc5ffb5e4d9e4b18b707bfa9f5ab2d9ce7a2bc0ba1a0a2c2c8063432e90f"
       url: "https://pub.dev"
     source: hosted
-    version: "0.5.1"
+    version: "0.5.0"
   ntcdcrypto:
     dependency: "direct main"
     description:
@@ -696,10 +696,10 @@ packages:
     dependency: transitive
     description:
       name: pointycastle
-      sha256: "92aa3841d083cc4b0f4709b5c74fd6409a3e6ba833ffc7dc6a8fee096366acf5"
+      sha256: "4be0097fcf3fd3e8449e53730c631200ebc7b88016acecab2b0da2f0149222fe"
       url: "https://pub.dev"
     source: hosted
-    version: "4.0.0"
+    version: "3.9.1"
   pool:
     dependency: transitive
     description:

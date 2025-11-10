@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/recovery_request.dart';
-import '../models/shard_data.dart';
 import '../services/recovery_service.dart';
-import '../services/relay_scan_service.dart';
 import '../providers/key_provider.dart';
-import '../services/lockbox_share_service.dart';
 import '../services/logger.dart';
 import '../providers/recovery_provider.dart';
 
@@ -60,58 +57,13 @@ class _RecoveryRequestDetailScreenState extends ConsumerState<RecoveryRequestDet
 
     try {
       final approved = status == RecoveryResponseStatus.approved;
-      ShardData? shardData;
 
-      // If approving, get the shard data for this lockbox
-      if (approved) {
-        final shares = await ref.read(lockboxShareServiceProvider).getLockboxShares(
-              widget.recoveryRequest.lockboxId,
-            );
-
-        if (shares.isEmpty) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('No shard data found for this lockbox'),
-              ),
-            );
-            setState(() {
-              _isLoading = false;
-            });
-            return;
-          }
-        }
-
-        shardData = shares.first;
-      }
-
-      // Submit response locally
-      await ref.read(recoveryServiceProvider).respondToRecoveryRequest(
-          widget.recoveryRequest.id, _currentPubkey!, approved,
-          shardData: shardData);
-
-      // Send response via Nostr
-      try {
-        final relays =
-            await ref.read(relayScanServiceProvider).getRelayConfigurations(enabledOnly: true);
-        final relayUrls = relays.map((r) => r.url).toList();
-
-        if (relayUrls.isEmpty) {
-          Log.error('No relays configured, recovery response not sent via Nostr');
-        } else if (shardData == null) {
-          Log.error('No shard data found, recovery response not sent via Nostr');
-        } else {
-          await ref.read(recoveryServiceProvider).sendRecoveryResponseViaNostr(
-                widget.recoveryRequest,
-                shardData,
-                approved,
-                relays: relayUrls,
-              );
-        }
-      } catch (e) {
-        Log.error('Failed to send recovery response via Nostr', e);
-        // Continue anyway - the response is still recorded locally
-      }
+      // Use the convenience method that handles shard retrieval and Nostr sending
+      await ref.read(recoveryServiceProvider).respondToRecoveryRequestWithShard(
+            widget.recoveryRequest.id,
+            _currentPubkey!,
+            approved,
+          );
 
       if (mounted) {
         // Invalidate the recovery status provider to force a refresh when navigating back
