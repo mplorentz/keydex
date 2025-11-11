@@ -5,6 +5,7 @@ import 'package:keydex/providers/lockbox_provider.dart';
 import 'package:keydex/services/shard_distribution_service.dart';
 import 'package:keydex/services/login_service.dart';
 import 'package:keydex/services/relay_scan_service.dart';
+import 'package:keydex/models/shard_data.dart';
 
 import 'backup_service_test.mocks.dart';
 
@@ -41,8 +42,14 @@ void main() {
     const testLockboxName = 'Test Lockbox';
     // Note: peers list excludes the creator
     const testPeers = [
-      'fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321',
-      'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
+      {
+        'name': 'Peer 1',
+        'pubkey': 'fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321'
+      },
+      {
+        'name': 'Peer 2',
+        'pubkey': 'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890'
+      },
     ];
 
     test('generateShamirShares creates correct number of shares', () async {
@@ -215,9 +222,18 @@ void main() {
         lockboxId: 'different-lockbox',
         lockboxName: 'Different Lockbox',
         peers: [
-          'abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdef1234',
-          '1111111111111111111111111111111111111111111111111111111111111111',
-          '2222222222222222222222222222222222222222222222222222222222222222',
+          {
+            'name': 'Peer A',
+            'pubkey': 'abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdef1234'
+          },
+          {
+            'name': 'Peer B',
+            'pubkey': '1111111111111111111111111111111111111111111111111111111111111111'
+          },
+          {
+            'name': 'Peer C',
+            'pubkey': '2222222222222222222222222222222222222222222222222222222222222222'
+          },
         ],
       );
 
@@ -307,24 +323,11 @@ void main() {
       // Create tampered shares with an invalid prime modulus
       const invalidPrimeMod = 'aW52YWxpZFByaW1lTW9kdWx1cw=='; // "invalidPrimeModulus" in base64
 
-      // Import the factory function to create ShardData
+      // Create tampered shares with an invalid prime modulus
       final tamperedShares = validShares.map((share) {
-        return (
-          shard: share.shard,
-          threshold: share.threshold,
-          shardIndex: share.shardIndex,
-          totalShards: share.totalShards,
+        return copyShardData(
+          share,
           primeMod: invalidPrimeMod, // Replace with invalid prime
-          creatorPubkey: share.creatorPubkey,
-          createdAt: share.createdAt,
-          lockboxId: share.lockboxId,
-          lockboxName: share.lockboxName,
-          peers: share.peers,
-          recipientPubkey: share.recipientPubkey,
-          isReceived: share.isReceived,
-          receivedAt: share.receivedAt,
-          nostrEventId: share.nostrEventId,
-          relayUrls: share.relayUrls,
         );
       }).toList();
 

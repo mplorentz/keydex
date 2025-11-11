@@ -340,7 +340,9 @@ void main() {
         creatorPubkey: testCreatorPubkey,
         lockboxId: testLockboxId,
         lockboxName: 'Recovered Lockbox',
-        peers: [testKeyHolder1],
+        peers: [
+          {'name': 'Peer 1', 'pubkey': testKeyHolder1}
+        ],
       );
 
       // Respond to the recovery request (simulating what _handleRecoveryResponseData does)
