@@ -239,6 +239,7 @@ void main() {
               hasActiveRecovery: false,
               canRecover: false,
               activeRecoveryRequest: null,
+              isInitiator: false,
             ));
           }),
         ],
@@ -299,6 +300,7 @@ void main() {
               hasActiveRecovery: true,
               canRecover: true, // Has enough approvals
               activeRecoveryRequest: recoveryRequest,
+              isInitiator: true, // testPubkey is the initiator
             ));
           }),
         ],
@@ -348,6 +350,7 @@ void main() {
               hasActiveRecovery: false,
               canRecover: false,
               activeRecoveryRequest: null,
+              isInitiator: false,
             ));
           }),
         ],
@@ -407,6 +410,7 @@ void main() {
               hasActiveRecovery: true,
               canRecover: false, // Not enough approvals yet
               activeRecoveryRequest: recoveryRequest,
+              isInitiator: false, // otherPubkey is the initiator, not testPubkey
             ));
           }),
         ],
@@ -454,6 +458,7 @@ void main() {
               hasActiveRecovery: false,
               canRecover: false,
               activeRecoveryRequest: null,
+              isInitiator: false,
             ));
           }),
         ],
@@ -504,6 +509,7 @@ void main() {
               hasActiveRecovery: false,
               canRecover: false,
               activeRecoveryRequest: null,
+              isInitiator: false,
             ));
           }),
         ],
