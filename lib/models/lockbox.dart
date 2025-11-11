@@ -32,6 +32,7 @@ class Lockbox {
   final String? content; // Nullable - null when content is not decrypted
   final DateTime createdAt;
   final String ownerPubkey; // Hex format, 64 characters
+  final String? ownerName; // Name of the vault owner
   final List<ShardData> shards; // List of shards (single as key holder, multiple during recovery)
   final List<RecoveryRequest> recoveryRequests; // Embedded recovery requests
   final BackupConfig? backupConfig; // Optional backup configuration
@@ -42,6 +43,7 @@ class Lockbox {
     required this.content,
     required this.createdAt,
     required this.ownerPubkey,
+    this.ownerName,
     this.shards = const [],
     this.recoveryRequests = const [],
     this.backupConfig,
@@ -94,6 +96,7 @@ class Lockbox {
       'content': content,
       'createdAt': createdAt.toIso8601String(),
       'ownerPubkey': ownerPubkey,
+      if (ownerName != null) 'ownerName': ownerName,
       'shards': shards.map((shard) => shardDataToJson(shard)).toList(),
       'recoveryRequests': recoveryRequests.map((request) => request.toJson()).toList(),
       'backupConfig': backupConfig != null ? backupConfigToJson(backupConfig!) : null,
@@ -108,6 +111,7 @@ class Lockbox {
       content: json['content'] as String?,
       createdAt: DateTime.parse(json['createdAt'] as String),
       ownerPubkey: json['ownerPubkey'] as String,
+      ownerName: json['ownerName'] as String?,
       shards: json['shards'] != null
           ? (json['shards'] as List)
               .map((shardJson) => shardDataFromJson(shardJson as Map<String, dynamic>))
@@ -131,6 +135,7 @@ class Lockbox {
     String? content,
     DateTime? createdAt,
     String? ownerPubkey,
+    String? ownerName,
     List<ShardData>? shards,
     List<RecoveryRequest>? recoveryRequests,
     BackupConfig? backupConfig,
@@ -141,6 +146,7 @@ class Lockbox {
       content: content ?? this.content,
       createdAt: createdAt ?? this.createdAt,
       ownerPubkey: ownerPubkey ?? this.ownerPubkey,
+      ownerName: ownerName ?? this.ownerName,
       shards: shards ?? this.shards,
       recoveryRequests: recoveryRequests ?? this.recoveryRequests,
       backupConfig: backupConfig ?? this.backupConfig,

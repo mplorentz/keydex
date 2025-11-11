@@ -18,7 +18,10 @@ typedef ShardData = ({
   // Recovery metadata (optional fields)
   String? lockboxId,
   String? lockboxName,
-  List<String>? peers, // List of all OTHER key holder pubkeys (excludes creatorPubkey)
+  List<
+      Map<String,
+          String>>? peers, // List of maps with 'name' and 'pubkey' for OTHER key holders (excludes creatorPubkey)
+  String? ownerName, // Name of the vault owner (creator)
   String? recipientPubkey,
   bool? isReceived,
   DateTime? receivedAt,
@@ -36,7 +39,8 @@ ShardData createShardData({
   required String creatorPubkey,
   String? lockboxId,
   String? lockboxName,
-  List<String>? peers,
+  List<Map<String, String>>? peers,
+  String? ownerName,
   String? recipientPubkey,
   bool? isReceived,
   DateTime? receivedAt,
@@ -69,8 +73,15 @@ ShardData createShardData({
   }
   if (peers != null) {
     for (final peer in peers) {
-      if (peer.length != 64 || !_isHexString(peer)) {
-        throw ArgumentError('All peers must be valid hex format (64 characters): $peer');
+      if (!peer.containsKey('name') || !peer.containsKey('pubkey')) {
+        throw ArgumentError('All peers must have both "name" and "pubkey" keys');
+      }
+      final pubkey = peer['pubkey']!;
+      if (pubkey.length != 64 || !_isHexString(pubkey)) {
+        throw ArgumentError('All peer pubkeys must be valid hex format (64 characters): $pubkey');
+      }
+      if (peer['name'] == null || peer['name']!.isEmpty) {
+        throw ArgumentError('All peers must have a non-empty name');
       }
     }
   }
@@ -86,6 +97,7 @@ ShardData createShardData({
     lockboxId: lockboxId,
     lockboxName: lockboxName,
     peers: peers,
+    ownerName: ownerName,
     recipientPubkey: recipientPubkey,
     isReceived: isReceived,
     receivedAt: receivedAt,
@@ -111,7 +123,8 @@ ShardData copyShardData(
   int? createdAt,
   String? lockboxId,
   String? lockboxName,
-  List<String>? peers,
+  List<Map<String, String>>? peers,
+  String? ownerName,
   String? recipientPubkey,
   bool? isReceived,
   DateTime? receivedAt,
@@ -129,6 +142,7 @@ ShardData copyShardData(
     lockboxId: lockboxId ?? shardData.lockboxId,
     lockboxName: lockboxName ?? shardData.lockboxName,
     peers: peers ?? shardData.peers,
+    ownerName: ownerName ?? shardData.ownerName,
     recipientPubkey: recipientPubkey ?? shardData.recipientPubkey,
     isReceived: isReceived ?? shardData.isReceived,
     receivedAt: receivedAt ?? shardData.receivedAt,
@@ -222,6 +236,7 @@ Map<String, dynamic> shardDataToJson(ShardData shardData) {
     if (shardData.lockboxId != null) 'lockboxId': shardData.lockboxId,
     if (shardData.lockboxName != null) 'lockboxName': shardData.lockboxName,
     if (shardData.peers != null) 'peers': shardData.peers,
+    if (shardData.ownerName != null) 'ownerName': shardData.ownerName,
     if (shardData.recipientPubkey != null) 'recipientPubkey': shardData.recipientPubkey,
     if (shardData.isReceived != null) 'isReceived': shardData.isReceived,
     if (shardData.receivedAt != null) 'receivedAt': shardData.receivedAt!.toIso8601String(),
@@ -242,7 +257,10 @@ ShardData shardDataFromJson(Map<String, dynamic> json) {
     createdAt: json['createdAt'] as int,
     lockboxId: json['lockboxId'] as String?,
     lockboxName: json['lockboxName'] as String?,
-    peers: json['peers'] != null ? List<String>.from(json['peers'] as List) : null,
+    peers: json['peers'] != null
+        ? (json['peers'] as List).map((e) => Map<String, String>.from(e as Map)).toList()
+        : null,
+    ownerName: json['ownerName'] as String?,
     recipientPubkey: json['recipientPubkey'] as String?,
     isReceived: json['isReceived'] as bool?,
     receivedAt: json['receivedAt'] != null ? DateTime.parse(json['receivedAt'] as String) : null,

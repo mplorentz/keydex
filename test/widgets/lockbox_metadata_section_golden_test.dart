@@ -23,7 +23,7 @@ void main() {
     required String lockboxId,
     String lockboxName = 'Test Lockbox',
     int threshold = 2,
-    List<String>? peers,
+    List<Map<String, String>>? peers,
   }) {
     return createShardData(
       shard: 'test_shard_$shardIndex',
@@ -34,7 +34,10 @@ void main() {
       creatorPubkey: testPubkey,
       lockboxId: lockboxId,
       lockboxName: lockboxName,
-      peers: peers ?? [otherPubkey, thirdPubkey],
+      peers: peers ?? [
+        {'name': 'Peer 1', 'pubkey': otherPubkey},
+        {'name': 'Peer 2', 'pubkey': thirdPubkey},
+      ],
       recipientPubkey: recipientPubkey,
       isReceived: true,
       receivedAt: DateTime.now().subtract(const Duration(hours: 1)),

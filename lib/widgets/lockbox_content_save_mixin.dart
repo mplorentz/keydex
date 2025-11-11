@@ -14,6 +14,7 @@ mixin LockboxContentSaveMixin<T extends ConsumerStatefulWidget> on ConsumerState
     required String name,
     required String content,
     String? lockboxId, // null for create, value for update
+    String? ownerName,
   }) async {
     if (!formKey.currentState!.validate()) return null;
 
@@ -22,12 +23,19 @@ mixin LockboxContentSaveMixin<T extends ConsumerStatefulWidget> on ConsumerState
 
       if (lockboxId == null) {
         // Create new lockbox
-        final lockbox = await _createNewLockbox(name, content);
+        final lockbox = await _createNewLockbox(name, content, ownerName);
         await repository.addLockbox(lockbox);
         return lockbox.id;
       } else {
         // Update existing lockbox
         await repository.updateLockbox(lockboxId, name, content);
+        // Also update ownerName if provided
+        if (ownerName != null) {
+          final existingLockbox = await repository.getLockbox(lockboxId);
+          if (existingLockbox != null) {
+            await repository.saveLockbox(existingLockbox.copyWith(ownerName: ownerName));
+          }
+        }
         return lockboxId;
       }
     } catch (e) {
@@ -37,7 +45,7 @@ mixin LockboxContentSaveMixin<T extends ConsumerStatefulWidget> on ConsumerState
   }
 
   /// Create a new lockbox with the current user's public key
-  Future<Lockbox> _createNewLockbox(String name, String content) async {
+  Future<Lockbox> _createNewLockbox(String name, String content, String? ownerName) async {
     final loginService = ref.read(loginServiceProvider);
     final currentPubkey = await loginService.getCurrentPublicKey();
     if (currentPubkey == null) {
@@ -54,6 +62,7 @@ mixin LockboxContentSaveMixin<T extends ConsumerStatefulWidget> on ConsumerState
       content: content,
       createdAt: DateTime.now(),
       ownerPubkey: currentPubkey,
+      ownerName: ownerName?.trim().isEmpty == true ? null : ownerName?.trim(),
     );
   }
 

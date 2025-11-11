@@ -33,7 +33,10 @@ void main() {
       creatorPubkey: testPubkey,
       lockboxId: lockboxId,
       lockboxName: lockboxName,
-      peers: [otherPubkey, thirdPubkey],
+      peers: [
+        {'name': 'Peer 1', 'pubkey': otherPubkey},
+        {'name': 'Peer 2', 'pubkey': thirdPubkey},
+      ],
       recipientPubkey: recipientPubkey,
       isReceived: true,
       receivedAt: DateTime.now().subtract(const Duration(hours: 1)),

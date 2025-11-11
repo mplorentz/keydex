@@ -17,12 +17,14 @@ class _LockboxCreateScreenState extends ConsumerState<LockboxCreateScreen>
     with LockboxContentSaveMixin {
   final _nameController = TextEditingController();
   final _contentController = TextEditingController();
+  final _ownerNameController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   @override
   void dispose() {
     _nameController.dispose();
     _contentController.dispose();
+    _ownerNameController.dispose();
     super.dispose();
   }
 
@@ -36,10 +38,17 @@ class _LockboxCreateScreenState extends ConsumerState<LockboxCreateScreen>
       body: Column(
         children: [
           Expanded(
-            child: LockboxContentForm(
-              formKey: _formKey,
-              nameController: _nameController,
-              contentController: _contentController,
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  LockboxContentForm(
+                    formKey: _formKey,
+                    nameController: _nameController,
+                    contentController: _contentController,
+                    ownerNameController: _ownerNameController,
+                  ),
+                ],
+              ),
             ),
           ),
           RowButton(
@@ -57,6 +66,7 @@ class _LockboxCreateScreenState extends ConsumerState<LockboxCreateScreen>
       formKey: _formKey,
       name: _nameController.text,
       content: _contentController.text,
+      ownerName: _ownerNameController.text.trim().isEmpty ? null : _ownerNameController.text.trim(),
     );
 
     if (lockboxId != null && mounted) {

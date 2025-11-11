@@ -124,7 +124,16 @@ class RecoverySection extends ConsumerWidget {
       Log.debug('First shard: $firstShard');
 
       // Use peers list for recovery (excludes creator since they don't have a shard in current design)
-      final keyHolderPubkeys = firstShard.peers ?? [];
+      // Peers is now a list of maps with 'name' and 'pubkey'
+      final keyHolderPubkeys = <String>[];
+      if (firstShard.peers != null) {
+        for (final peer in firstShard.peers!) {
+          final pubkey = peer['pubkey'];
+          if (pubkey != null) {
+            keyHolderPubkeys.add(pubkey);
+          }
+        }
+      }
 
       if (keyHolderPubkeys.isEmpty) {
         if (context.mounted) {
