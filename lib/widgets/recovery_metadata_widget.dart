@@ -113,6 +113,8 @@ class RecoveryMetadataWidget extends ConsumerWidget {
         return Icons.error;
       case RecoveryRequestStatus.cancelled:
         return Icons.cancel;
+      case RecoveryRequestStatus.archived:
+        return Icons.archive;
     }
   }
 
@@ -129,6 +131,8 @@ class RecoveryMetadataWidget extends ConsumerWidget {
       case RecoveryRequestStatus.failed:
         return Colors.red;
       case RecoveryRequestStatus.cancelled:
+        return Colors.grey;
+      case RecoveryRequestStatus.archived:
         return Colors.grey;
     }
   }

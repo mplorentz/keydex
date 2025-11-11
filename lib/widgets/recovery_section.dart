@@ -10,14 +10,21 @@ import '../screens/recovery_status_screen.dart';
 import 'row_button.dart';
 
 /// Widget for recovery section on lockbox detail screen
-class RecoverySection extends ConsumerWidget {
+class RecoverySection extends ConsumerStatefulWidget {
   final String lockboxId;
 
   const RecoverySection({super.key, required this.lockboxId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final recoveryStatusAsync = ref.watch(recoveryStatusProvider(lockboxId));
+  ConsumerState<RecoverySection> createState() => _RecoverySectionState();
+}
+
+class _RecoverySectionState extends ConsumerState<RecoverySection> {
+  bool _isInitiating = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final recoveryStatusAsync = ref.watch(recoveryStatusProvider(widget.lockboxId));
 
     return recoveryStatusAsync.when(
       loading: () => const Card(
@@ -61,8 +68,8 @@ class RecoverySection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Title section in a card
-        if (recoveryStatus.hasActiveRecovery) ...[
+        // Show "Manage Recovery" only if current user initiated the recovery
+        if (recoveryStatus.hasActiveRecovery && recoveryStatus.isInitiator) ...[
           RowButton(
             onPressed: () async {
               await Navigator.push(
@@ -80,12 +87,20 @@ class RecoverySection extends ConsumerWidget {
             foregroundColor: const Color.fromARGB(255, 253, 255, 240),
           ),
         ] else ...[
-          RowButton(
-            onPressed: () => _initiateRecovery(context, ref),
-            icon: Icons.restore,
-            text: 'Initiate Recovery',
-            backgroundColor: Theme.of(context).primaryColor,
-            foregroundColor: const Color.fromARGB(255, 253, 255, 240),
+          // Show "Initiate Recovery" if no active recovery or user didn't initiate it
+          // Service layer will prevent duplicate initiation
+          AbsorbPointer(
+            absorbing: _isInitiating,
+            child: Opacity(
+              opacity: _isInitiating ? 0.6 : 1.0,
+              child: RowButton(
+                onPressed: () => _initiateRecovery(context, ref),
+                icon: Icons.restore,
+                text: 'Initiate Recovery',
+                backgroundColor: Theme.of(context).primaryColor,
+                foregroundColor: const Color.fromARGB(255, 253, 255, 240),
+              ),
+            ),
           ),
         ],
       ],
@@ -93,28 +108,83 @@ class RecoverySection extends ConsumerWidget {
   }
 
   Future<void> _initiateRecovery(BuildContext context, WidgetRef ref) async {
+    if (_isInitiating) return; // Prevent double-tap
+
+    setState(() {
+      _isInitiating = true;
+    });
+
+    // Show full-screen loading dialog
+    if (!context.mounted) return;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => PopScope(
+        canPop: false, // Prevent back button from dismissing
+        child: Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: EdgeInsets.zero,
+          child: Container(
+            width: double.infinity,
+            height: double.infinity,
+            color: Colors.black.withValues(alpha: 0.8),
+            child: const Center(
+              child: Card(
+                child: Padding(
+                  padding: EdgeInsets.all(32),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(height: 24),
+                      Text(
+                        'Sending recovery requests...',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
     try {
       final loginService = ref.read(loginServiceProvider);
       final currentPubkey = await loginService.getCurrentPublicKey();
 
       if (currentPubkey == null) {
         if (context.mounted) {
+          Navigator.pop(context); // Close loading dialog
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Error: Could not load current user')),
           );
+        }
+        if (mounted) {
+          setState(() {
+            _isInitiating = false;
+          });
         }
         return;
       }
 
       // Get shard data to extract peers and creator information
       final shareService = ref.read(lockboxShareServiceProvider);
-      final shards = await shareService.getLockboxShares(lockboxId);
+      final shards = await shareService.getLockboxShares(widget.lockboxId);
 
       if (shards.isEmpty) {
         if (context.mounted) {
+          Navigator.pop(context); // Close loading dialog
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('No shard data available for recovery')),
           );
+        }
+        if (mounted) {
+          setState(() {
+            _isInitiating = false;
+          });
         }
         return;
       }
@@ -137,9 +207,15 @@ class RecoverySection extends ConsumerWidget {
 
       if (keyHolderPubkeys.isEmpty) {
         if (context.mounted) {
+          Navigator.pop(context); // Close loading dialog
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('No stewards available for recovery')),
           );
+        }
+        if (mounted) {
+          setState(() {
+            _isInitiating = false;
+          });
         }
         return;
       }
@@ -149,7 +225,7 @@ class RecoverySection extends ConsumerWidget {
 
       final recoveryService = ref.read(recoveryServiceProvider);
       final recoveryRequest = await recoveryService.initiateRecovery(
-        lockboxId,
+        widget.lockboxId,
         initiatorPubkey: currentPubkey,
         keyHolderPubkeys: keyHolderPubkeys,
         threshold: firstShard.threshold,
@@ -191,9 +267,15 @@ class RecoverySection extends ConsumerWidget {
       }
 
       if (context.mounted) {
+        // Close loading dialog before navigating
+        Navigator.pop(context);
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Recovery request initiated and sent')),
         );
+
+        // Invalidate recovery status to refresh UI
+        ref.invalidate(recoveryStatusProvider(widget.lockboxId));
 
         // Navigate to recovery status screen
         if (context.mounted) {
@@ -210,9 +292,16 @@ class RecoverySection extends ConsumerWidget {
     } catch (e) {
       Log.error('Error initiating recovery', e);
       if (context.mounted) {
+        Navigator.pop(context); // Close loading dialog
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: $e')),
         );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isInitiating = false;
+        });
       }
     }
   }

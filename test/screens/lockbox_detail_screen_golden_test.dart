@@ -239,6 +239,7 @@ void main() {
               hasActiveRecovery: false,
               canRecover: false,
               activeRecoveryRequest: null,
+              isInitiator: false,
             ));
           }),
         ],
@@ -299,6 +300,7 @@ void main() {
               hasActiveRecovery: true,
               canRecover: true, // Has enough approvals
               activeRecoveryRequest: recoveryRequest,
+              isInitiator: true, // testPubkey is the initiator
             ));
           }),
         ],
@@ -348,6 +350,7 @@ void main() {
               hasActiveRecovery: false,
               canRecover: false,
               activeRecoveryRequest: null,
+              isInitiator: false,
             ));
           }),
         ],
@@ -375,7 +378,7 @@ void main() {
     testGoldens('shard holder - in recovery', (tester) async {
       final recoveryRequest = createTestRecoveryRequest(
         lockboxId: 'test-lockbox',
-        initiatorPubkey: otherPubkey, // Different initiator
+        initiatorPubkey: testPubkey, // testPubkey (shard holder) is the initiator
         status: RecoveryRequestStatus.inProgress,
         responses: {
           testPubkey: createTestRecoveryResponse(pubkey: testPubkey, approved: true),
@@ -407,6 +410,7 @@ void main() {
               hasActiveRecovery: true,
               canRecover: false, // Not enough approvals yet
               activeRecoveryRequest: recoveryRequest,
+              isInitiator: true, // testPubkey is the initiator
             ));
           }),
         ],
@@ -454,6 +458,7 @@ void main() {
               hasActiveRecovery: false,
               canRecover: false,
               activeRecoveryRequest: null,
+              isInitiator: false,
             ));
           }),
         ],
@@ -504,6 +509,7 @@ void main() {
               hasActiveRecovery: false,
               canRecover: false,
               activeRecoveryRequest: null,
+              isInitiator: false,
             ));
           }),
         ],

@@ -112,6 +112,8 @@ class _RecoveryStatusScreenState extends ConsumerState<RecoveryStatusScreen> {
                     RecoveryKeyHoldersWidget(recoveryRequestId: widget.recoveryRequestId),
                     const SizedBox(height: 16),
                     if (request.status.isActive) _buildCancelButton(),
+                    if (request.status == RecoveryRequestStatus.completed)
+                      _buildExitRecoveryButton(),
                   ],
                 ),
               );
@@ -120,6 +122,78 @@ class _RecoveryStatusScreenState extends ConsumerState<RecoveryStatusScreen> {
         },
       ),
     );
+  }
+
+  Widget _buildExitRecoveryButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        onPressed: _exitRecoveryMode,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Theme.of(context).primaryColor,
+          foregroundColor: Colors.white,
+        ),
+        icon: const Icon(Icons.exit_to_app),
+        label: const Text('Exit Recovery Mode'),
+      ),
+    );
+  }
+
+  Future<void> _exitRecoveryMode() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Exit Recovery Mode'),
+        content: const Text(
+          'This will archive the recovery request and delete the recovered content and recovery shards. '
+          'Your own share of the vault will be preserved.\n\n'
+          'Are you sure you want to exit recovery mode?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).primaryColor,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Exit Recovery Mode'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        // Get lockboxId before exiting recovery mode
+        final request =
+            await ref.read(recoveryServiceProvider).getRecoveryRequest(widget.recoveryRequestId);
+        final lockboxId = request?.lockboxId;
+
+        await ref.read(recoveryServiceProvider).exitRecoveryMode(widget.recoveryRequestId);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Exited recovery mode successfully')),
+          );
+          // Invalidate providers to refresh the UI
+          ref.invalidate(recoveryRequestByIdProvider(widget.recoveryRequestId));
+          if (lockboxId != null) {
+            ref.invalidate(lockboxProvider(lockboxId));
+          }
+          Navigator.pop(context);
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: $e')),
+          );
+        }
+      }
+    }
   }
 
   Widget _buildCancelButton() {

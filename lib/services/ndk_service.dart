@@ -20,6 +20,7 @@ class RecoveryResponseEvent {
   final String senderPubkey;
   final bool approved;
   final ShardData? shardData;
+  final String? nostrEventId;
 
   RecoveryResponseEvent({
     required this.recoveryRequestId,
@@ -27,6 +28,7 @@ class RecoveryResponseEvent {
     required this.senderPubkey,
     required this.approved,
     this.shardData,
+    this.nostrEventId,
   });
 }
 
@@ -325,6 +327,7 @@ class NdkService {
         senderPubkey: senderPubkey,
         approved: approved,
         shardData: shardData,
+        nostrEventId: event.id,
       );
       _recoveryResponseController.add(responseEvent);
 

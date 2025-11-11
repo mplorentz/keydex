@@ -10,6 +10,7 @@ import '../providers/lockbox_provider.dart';
 import '../utils/invite_code_utils.dart';
 import 'backup_service.dart';
 import 'ndk_service.dart';
+import 'lockbox_share_service.dart';
 import 'logger.dart';
 
 /// Provider for RecoveryService
@@ -19,7 +20,8 @@ final Provider<RecoveryService> recoveryServiceProvider = Provider<RecoveryServi
   final backupService = ref.read(backupServiceProvider);
   // Use ref.read() to break circular dependency with NdkService
   final NdkService ndkService = ref.read(ndkServiceProvider);
-  final service = RecoveryService(repository, backupService, ndkService);
+  final lockboxShareService = ref.read(lockboxShareServiceProvider);
+  final service = RecoveryService(repository, backupService, ndkService, lockboxShareService);
 
   // Clean up streams when disposed
   ref.onDispose(() {
@@ -35,6 +37,7 @@ class RecoveryService {
   final LockboxRepository repository;
   final BackupService backupService;
   final NdkService _ndkService;
+  final LockboxShareService _lockboxShareService;
 
   static const String _viewedNotificationIdsKey = 'viewed_recovery_notification_ids';
 
@@ -49,7 +52,12 @@ class RecoveryService {
   final _recoveryRequestController = StreamController<RecoveryRequest>.broadcast();
   Stream<RecoveryRequest> get recoveryRequestStream => _recoveryRequestController.stream;
 
-  RecoveryService(this.repository, this.backupService, this._ndkService) {
+  RecoveryService(
+    this.repository,
+    this.backupService,
+    this._ndkService,
+    this._lockboxShareService,
+  ) {
     _loadViewedNotificationIds();
     _setupNdkStreamListeners();
   }
@@ -79,6 +87,7 @@ class RecoveryService {
             responseEvent.senderPubkey,
             responseEvent.approved,
             shardData: responseEvent.shardData,
+            nostrEventId: responseEvent.nostrEventId,
           );
         } catch (e) {
           Log.error('Error processing recovery response from stream', e);
@@ -162,6 +171,7 @@ class RecoveryService {
 
   /// Initiate recovery for a lockbox
   /// Returns the created recovery request
+  /// Throws an exception if the user already has an active recovery request for this lockbox
   Future<RecoveryRequest> initiateRecovery(
     String lockboxId, {
     required String initiatorPubkey,
@@ -170,6 +180,18 @@ class RecoveryService {
     Duration? expirationDuration,
   }) async {
     await initialize();
+
+    // Check if user already has an active recovery request for this lockbox
+    final existingRequests = await repository.getRecoveryRequestsForLockbox(lockboxId);
+    final hasActiveRequest = existingRequests.any(
+      (r) => r.initiatorPubkey == initiatorPubkey && r.status.isActive,
+    );
+
+    if (hasActiveRequest) {
+      throw StateError(
+        'You already have an active recovery request for this lockbox. Please manage your existing recovery request.',
+      );
+    }
 
     // Create recovery request
     // Generate cryptographically secure request ID
@@ -215,6 +237,7 @@ class RecoveryService {
 
   /// Add an incoming recovery request (received via Nostr)
   /// This is different from initiateRecovery which creates a new request
+  /// Since events are immutable, we skip processing if the request already exists locally
   Future<void> addIncomingRecoveryRequest(RecoveryRequest request) async {
     await initialize();
 
@@ -223,25 +246,15 @@ class RecoveryService {
     final existingRequest = existingRequests.where((r) => r.id == request.id).firstOrNull;
 
     if (existingRequest != null) {
-      // Don't overwrite requests in terminal states (cancelled, completed, failed)
-      if (existingRequest.status.isTerminal) {
-        Log.info(
-            'Ignoring incoming recovery request ${request.id} - already in terminal state: ${existingRequest.status.name}');
-        return;
-      }
-
-      // Update existing request in lockbox
-      await repository.updateRecoveryRequestInLockbox(
-        request.lockboxId,
-        request.id,
-        request,
-      );
-      Log.info('Updated existing recovery request ${request.id}');
-    } else {
-      // Add new request to lockbox
-      await repository.addRecoveryRequestToLockbox(request.lockboxId, request);
-      Log.info('Added incoming recovery request ${request.id}');
+      // Since events are immutable, skip processing if we already have this request locally
+      Log.info(
+          'Ignoring incoming recovery request ${request.id} - already exists locally (status: ${existingRequest.status.name})');
+      return;
     }
+
+    // Add new request to lockbox
+    await repository.addRecoveryRequestToLockbox(request.lockboxId, request);
+    Log.info('Added incoming recovery request ${request.id}');
 
     // Emit notification update
     await _emitNotificationUpdate();
@@ -315,11 +328,13 @@ class RecoveryService {
   }
 
   /// Respond to a recovery request (from a key holder)
+  /// Since events are immutable, we skip processing if the response already exists
   Future<void> respondToRecoveryRequest(
     String recoveryRequestId,
     String responderPubkey,
     bool approved, {
     ShardData? shardData,
+    String? nostrEventId,
   }) async {
     await initialize();
 
@@ -329,6 +344,23 @@ class RecoveryService {
       throw ArgumentError('Recovery request not found: $recoveryRequestId');
     }
 
+    // Check if response already exists for this pubkey
+    final existingResponse = request.keyHolderResponses[responderPubkey];
+    if (existingResponse != null) {
+      // Check if this is a duplicate by comparing nostrEventId if provided
+      if (nostrEventId != null && existingResponse.nostrEventId == nostrEventId) {
+        Log.info(
+            'Ignoring duplicate recovery response for request $recoveryRequestId from $responderPubkey (nostrEventId: $nostrEventId)');
+        return;
+      }
+      // If response already exists and has respondedAt, skip processing (immutable event)
+      if (existingResponse.respondedAt != null) {
+        Log.info(
+            'Ignoring recovery response for request $recoveryRequestId from $responderPubkey - response already exists');
+        return;
+      }
+    }
+
     // Update the response
     final updatedResponses = Map<String, RecoveryResponse>.from(request.keyHolderResponses);
     updatedResponses[responderPubkey] = RecoveryResponse(
@@ -336,6 +368,7 @@ class RecoveryService {
       approved: approved,
       respondedAt: DateTime.now(),
       shardData: shardData,
+      nostrEventId: nostrEventId,
     );
 
     // Update request status
@@ -434,8 +467,11 @@ class RecoveryService {
     }
   }
 
-  /// Cancel a recovery request
-  Future<void> cancelRecoveryRequest(String recoveryRequestId) async {
+  /// Helper method to update recovery request status
+  Future<void> _updateRecoveryRequestStatus(
+    String recoveryRequestId,
+    RecoveryRequestStatus status,
+  ) async {
     await initialize();
 
     // Get the request from lockbox repository (source of truth)
@@ -445,7 +481,7 @@ class RecoveryService {
     }
 
     final updatedRequest = request.copyWith(
-      status: RecoveryRequestStatus.cancelled,
+      status: status,
     );
 
     // Update in lockbox (single source of truth)
@@ -455,7 +491,53 @@ class RecoveryService {
       updatedRequest,
     );
 
-    Log.info('Cancelled recovery request $recoveryRequestId');
+    Log.info('Updated recovery request $recoveryRequestId status to ${status.displayName}');
+  }
+
+  /// Cancel a recovery request
+  Future<void> cancelRecoveryRequest(String recoveryRequestId) async {
+    await _updateRecoveryRequestStatus(recoveryRequestId, RecoveryRequestStatus.cancelled);
+
+    // Delete all recovery shards for this recovery request
+    // Note: User's own shard is stored separately in _cachedShardData (keyed by lockboxId)
+    // and won't be affected by removeRecoveryShards() which only deletes recovery shards
+    // (keyed by recoveryRequestId)
+    await _lockboxShareService.removeRecoveryShards(recoveryRequestId);
+    Log.info('Deleted recovery shards for cancelled recovery request $recoveryRequestId');
+  }
+
+  /// Exit recovery mode after successful recovery
+  /// Archives the recovery request, deletes recovered content and recovery shards,
+  /// while preserving the user's own key holder shard
+  Future<void> exitRecoveryMode(String recoveryRequestId) async {
+    await initialize();
+
+    // Get the request from lockbox repository (source of truth)
+    final request = await getRecoveryRequest(recoveryRequestId);
+    if (request == null) {
+      throw ArgumentError('Recovery request not found: $recoveryRequestId');
+    }
+
+    // Update recovery request status to archived
+    await _updateRecoveryRequestStatus(recoveryRequestId, RecoveryRequestStatus.archived);
+
+    // Delete recovered content from lockbox (set to null)
+    final lockbox = await repository.getLockbox(request.lockboxId);
+    if (lockbox != null) {
+      await repository.saveLockbox(
+        lockbox.copyWith(content: null),
+      );
+      Log.info('Deleted recovered content from lockbox ${request.lockboxId}');
+    }
+
+    // Delete all recovery shards for this recovery request
+    // Note: User's own shard is stored separately in _cachedShardData (keyed by lockboxId)
+    // and won't be affected by removeRecoveryShards() which only deletes recovery shards
+    // (keyed by recoveryRequestId)
+    await _lockboxShareService.removeRecoveryShards(recoveryRequestId);
+    Log.info('Deleted recovery shards for recovery request $recoveryRequestId');
+
+    Log.info('Exited recovery mode for recovery request $recoveryRequestId');
   }
 
   /// Check if recovery is possible for a lockbox

@@ -1,9 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
-import 'dart:async';
 import 'package:keydex/models/lockbox.dart';
 import 'package:keydex/models/recovery_request.dart';
 import 'package:keydex/models/shard_data.dart';
@@ -13,11 +13,12 @@ import 'package:keydex/services/recovery_service.dart';
 import 'package:keydex/services/backup_service.dart';
 import 'package:keydex/services/shard_distribution_service.dart';
 import 'package:keydex/services/ndk_service.dart';
+import 'package:keydex/services/lockbox_share_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'recovery_service_test.mocks.dart';
 
-@GenerateMocks([BackupService, ShardDistributionService, NdkService])
+@GenerateMocks([BackupService, ShardDistributionService, NdkService, LockboxShareService])
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -31,6 +32,7 @@ void main() {
     late LockboxRepository repository;
     late BackupService backupService;
     late NdkService ndkService;
+    late LockboxShareService lockboxShareService;
     late RecoveryService recoveryService;
     const testKeyHolder1 = 'fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321';
     const testKeyHolder2 = 'abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdef1234';
@@ -86,6 +88,7 @@ void main() {
       // Create mocks for circular dependency
       final mockBackupService = MockBackupService();
       final mockNdkService = MockNdkService();
+      final mockLockboxShareService = MockLockboxShareService();
 
       // Stub the streams that RecoveryService accesses in its constructor
       when(mockNdkService.recoveryRequestStream)
@@ -95,7 +98,8 @@ void main() {
 
       backupService = mockBackupService;
       ndkService = mockNdkService;
-      recoveryService = RecoveryService(repository, backupService, ndkService);
+      lockboxShareService = mockLockboxShareService;
+      recoveryService = RecoveryService(repository, backupService, ndkService, lockboxShareService);
       await recoveryService.clearAll();
       await repository.clearAll();
 
@@ -341,7 +345,7 @@ void main() {
         lockboxId: testLockboxId,
         lockboxName: 'Recovered Lockbox',
         peers: [
-          {'name': 'Peer 1', 'pubkey': testKeyHolder1}
+          {'name': 'Key Holder 1', 'pubkey': testKeyHolder1}
         ],
       );
 

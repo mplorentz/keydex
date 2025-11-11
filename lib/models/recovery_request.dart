@@ -8,6 +8,7 @@ enum RecoveryRequestStatus {
   completed, // Recovery successful, content reassembled
   failed, // Recovery failed (insufficient shares or timeout)
   cancelled, // Request cancelled by user
+  archived, // Recovery completed and user exited recovery mode
 }
 
 /// Recovery response status enum
@@ -34,6 +35,8 @@ extension RecoveryRequestStatusExtension on RecoveryRequestStatus {
         return 'Failed';
       case RecoveryRequestStatus.cancelled:
         return 'Cancelled';
+      case RecoveryRequestStatus.archived:
+        return 'Archived';
     }
   }
 
@@ -46,7 +49,8 @@ extension RecoveryRequestStatusExtension on RecoveryRequestStatus {
   bool get isTerminal {
     return this == RecoveryRequestStatus.completed ||
         this == RecoveryRequestStatus.failed ||
-        this == RecoveryRequestStatus.cancelled;
+        this == RecoveryRequestStatus.cancelled ||
+        this == RecoveryRequestStatus.archived;
   }
 }
 
