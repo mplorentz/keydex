@@ -62,6 +62,7 @@ class MockBackupService extends _i1.Mock implements _i3.BackupService {
       ({
         String? contentHash,
         DateTime createdAt,
+        String? instructions,
         List<
             ({
               DateTime? acknowledgedAt,
@@ -103,6 +104,7 @@ class MockBackupService extends _i1.Mock implements _i3.BackupService {
             })>?
         keyHolders,
     required List<String>? relays,
+    String? instructions,
     String? contentHash,
   }) =>
       (super.noSuchMethod(
@@ -115,6 +117,7 @@ class MockBackupService extends _i1.Mock implements _i3.BackupService {
             #totalKeys: totalKeys,
             #keyHolders: keyHolders,
             #relays: relays,
+            #instructions: instructions,
             #contentHash: contentHash,
           },
         ),
@@ -122,6 +125,7 @@ class MockBackupService extends _i1.Mock implements _i3.BackupService {
             ({
               String? contentHash,
               DateTime createdAt,
+              String? instructions,
               List<
                   ({
                     DateTime? acknowledgedAt,
@@ -157,10 +161,12 @@ class MockBackupService extends _i1.Mock implements _i3.BackupService {
                 #totalKeys: totalKeys,
                 #keyHolders: keyHolders,
                 #relays: relays,
+                #instructions: instructions,
                 #contentHash: contentHash,
               },
             ),
           ),
+          instructions: null,
           keyHolders: <({
             DateTime? acknowledgedAt,
             String? acknowledgmentEventId,
@@ -186,6 +192,7 @@ class MockBackupService extends _i1.Mock implements _i3.BackupService {
                 #totalKeys: totalKeys,
                 #keyHolders: keyHolders,
                 #relays: relays,
+                #instructions: instructions,
                 #contentHash: contentHash,
               },
             ),
@@ -201,6 +208,7 @@ class MockBackupService extends _i1.Mock implements _i3.BackupService {
                 #totalKeys: totalKeys,
                 #keyHolders: keyHolders,
                 #relays: relays,
+                #instructions: instructions,
                 #contentHash: contentHash,
               },
             ),
@@ -217,6 +225,7 @@ class MockBackupService extends _i1.Mock implements _i3.BackupService {
                 #totalKeys: totalKeys,
                 #keyHolders: keyHolders,
                 #relays: relays,
+                #instructions: instructions,
                 #contentHash: contentHash,
               },
             ),
@@ -229,6 +238,7 @@ class MockBackupService extends _i1.Mock implements _i3.BackupService {
           ({
             String? contentHash,
             DateTime createdAt,
+            String? instructions,
             List<
                 ({
                   DateTime? acknowledgedAt,
@@ -258,6 +268,7 @@ class MockBackupService extends _i1.Mock implements _i3.BackupService {
       ({
         String? contentHash,
         DateTime createdAt,
+        String? instructions,
         List<
             ({
               DateTime? acknowledgedAt,
@@ -289,6 +300,7 @@ class MockBackupService extends _i1.Mock implements _i3.BackupService {
             ({
               String? contentHash,
               DateTime createdAt,
+              String? instructions,
               List<
                   ({
                     DateTime? acknowledgedAt,
@@ -316,6 +328,7 @@ class MockBackupService extends _i1.Mock implements _i3.BackupService {
           ({
             String? contentHash,
             DateTime createdAt,
+            String? instructions,
             List<
                 ({
                   DateTime? acknowledgedAt,
@@ -346,6 +359,7 @@ class MockBackupService extends _i1.Mock implements _i3.BackupService {
           ({
             String? contentHash,
             DateTime createdAt,
+            String? instructions,
             List<
                 ({
                   DateTime? acknowledgedAt,
@@ -378,6 +392,7 @@ class MockBackupService extends _i1.Mock implements _i3.BackupService {
                 ({
                   String? contentHash,
                   DateTime createdAt,
+                  String? instructions,
                   List<
                       ({
                         DateTime? acknowledgedAt,
@@ -403,6 +418,7 @@ class MockBackupService extends _i1.Mock implements _i3.BackupService {
                 })>>.value(<({
           String? contentHash,
           DateTime createdAt,
+          String? instructions,
           List<
               ({
                 DateTime? acknowledgedAt,
@@ -431,6 +447,7 @@ class MockBackupService extends _i1.Mock implements _i3.BackupService {
               ({
                 String? contentHash,
                 DateTime createdAt,
+                String? instructions,
                 List<
                     ({
                       DateTime? acknowledgedAt,
@@ -460,6 +477,7 @@ class MockBackupService extends _i1.Mock implements _i3.BackupService {
           ({
             String? contentHash,
             DateTime createdAt,
+            String? instructions,
             List<
                 ({
                   DateTime? acknowledgedAt,
@@ -508,6 +526,7 @@ class MockBackupService extends _i1.Mock implements _i3.BackupService {
           ({
             int createdAt,
             String creatorPubkey,
+            String? instructions,
             bool? isReceived,
             String? lockboxId,
             String? lockboxName,
@@ -531,6 +550,7 @@ class MockBackupService extends _i1.Mock implements _i3.BackupService {
     required String? lockboxName,
     required List<Map<String, String>>? peers,
     String? ownerName,
+    String? instructions,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -545,6 +565,7 @@ class MockBackupService extends _i1.Mock implements _i3.BackupService {
             #lockboxName: lockboxName,
             #peers: peers,
             #ownerName: ownerName,
+            #instructions: instructions,
           },
         ),
         returnValue: _i4.Future<
@@ -552,6 +573,7 @@ class MockBackupService extends _i1.Mock implements _i3.BackupService {
                 ({
                   int createdAt,
                   String creatorPubkey,
+                  String? instructions,
                   bool? isReceived,
                   String? lockboxId,
                   String? lockboxName,
@@ -569,6 +591,7 @@ class MockBackupService extends _i1.Mock implements _i3.BackupService {
                 })>>.value(<({
           int createdAt,
           String creatorPubkey,
+          String? instructions,
           bool? isReceived,
           String? lockboxId,
           String? lockboxName,
@@ -589,6 +612,7 @@ class MockBackupService extends _i1.Mock implements _i3.BackupService {
               ({
                 int createdAt,
                 String creatorPubkey,
+                String? instructions,
                 bool? isReceived,
                 String? lockboxId,
                 String? lockboxName,
@@ -611,6 +635,7 @@ class MockBackupService extends _i1.Mock implements _i3.BackupService {
                   ({
                     int createdAt,
                     String creatorPubkey,
+                    String? instructions,
                     bool? isReceived,
                     String? lockboxId,
                     String? lockboxName,
@@ -698,6 +723,7 @@ class MockBackupService extends _i1.Mock implements _i3.BackupService {
       ({
         String? contentHash,
         DateTime createdAt,
+        String? instructions,
         List<
             ({
               DateTime? acknowledgedAt,
@@ -739,6 +765,7 @@ class MockBackupService extends _i1.Mock implements _i3.BackupService {
             })>?
         keyHolders,
     required List<String>? relays,
+    String? instructions,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -750,12 +777,14 @@ class MockBackupService extends _i1.Mock implements _i3.BackupService {
             #totalKeys: totalKeys,
             #keyHolders: keyHolders,
             #relays: relays,
+            #instructions: instructions,
           },
         ),
         returnValue: _i4.Future<
             ({
               String? contentHash,
               DateTime createdAt,
+              String? instructions,
               List<
                   ({
                     DateTime? acknowledgedAt,
@@ -791,9 +820,11 @@ class MockBackupService extends _i1.Mock implements _i3.BackupService {
                 #totalKeys: totalKeys,
                 #keyHolders: keyHolders,
                 #relays: relays,
+                #instructions: instructions,
               },
             ),
           ),
+          instructions: null,
           keyHolders: <({
             DateTime? acknowledgedAt,
             String? acknowledgmentEventId,
@@ -819,6 +850,7 @@ class MockBackupService extends _i1.Mock implements _i3.BackupService {
                 #totalKeys: totalKeys,
                 #keyHolders: keyHolders,
                 #relays: relays,
+                #instructions: instructions,
               },
             ),
           ),
@@ -833,6 +865,7 @@ class MockBackupService extends _i1.Mock implements _i3.BackupService {
                 #totalKeys: totalKeys,
                 #keyHolders: keyHolders,
                 #relays: relays,
+                #instructions: instructions,
               },
             ),
           ),
@@ -848,6 +881,7 @@ class MockBackupService extends _i1.Mock implements _i3.BackupService {
                 #totalKeys: totalKeys,
                 #keyHolders: keyHolders,
                 #relays: relays,
+                #instructions: instructions,
               },
             ),
           ),
@@ -859,6 +893,7 @@ class MockBackupService extends _i1.Mock implements _i3.BackupService {
           ({
             String? contentHash,
             DateTime createdAt,
+            String? instructions,
             List<
                 ({
                   DateTime? acknowledgedAt,
@@ -888,6 +923,7 @@ class MockBackupService extends _i1.Mock implements _i3.BackupService {
       ({
         String? contentHash,
         DateTime createdAt,
+        String? instructions,
         List<
             ({
               DateTime? acknowledgedAt,
@@ -910,42 +946,19 @@ class MockBackupService extends _i1.Mock implements _i3.BackupService {
         _i6.BackupStatus status,
         int threshold,
         int totalKeys
-      })> createAndDistributeBackup({
-    required String? lockboxId,
-    required int? threshold,
-    required int? totalKeys,
-    required List<
-            ({
-              DateTime? acknowledgedAt,
-              String? acknowledgmentEventId,
-              String? giftWrapEventId,
-              String id,
-              String? inviteCode,
-              String? keyShare,
-              DateTime? lastSeen,
-              String? name,
-              String? pubkey,
-              _i5.KeyHolderStatus status
-            })>?
-        keyHolders,
-    required List<String>? relays,
-  }) =>
+      })> createAndDistributeBackup(
+          {required String? lockboxId}) =>
       (super.noSuchMethod(
         Invocation.method(
           #createAndDistributeBackup,
           [],
-          {
-            #lockboxId: lockboxId,
-            #threshold: threshold,
-            #totalKeys: totalKeys,
-            #keyHolders: keyHolders,
-            #relays: relays,
-          },
+          {#lockboxId: lockboxId},
         ),
         returnValue: _i4.Future<
             ({
               String? contentHash,
               DateTime createdAt,
+              String? instructions,
               List<
                   ({
                     DateTime? acknowledgedAt,
@@ -975,15 +988,10 @@ class MockBackupService extends _i1.Mock implements _i3.BackupService {
             Invocation.method(
               #createAndDistributeBackup,
               [],
-              {
-                #lockboxId: lockboxId,
-                #threshold: threshold,
-                #totalKeys: totalKeys,
-                #keyHolders: keyHolders,
-                #relays: relays,
-              },
+              {#lockboxId: lockboxId},
             ),
           ),
+          instructions: null,
           keyHolders: <({
             DateTime? acknowledgedAt,
             String? acknowledgmentEventId,
@@ -1003,13 +1011,7 @@ class MockBackupService extends _i1.Mock implements _i3.BackupService {
             Invocation.method(
               #createAndDistributeBackup,
               [],
-              {
-                #lockboxId: lockboxId,
-                #threshold: threshold,
-                #totalKeys: totalKeys,
-                #keyHolders: keyHolders,
-                #relays: relays,
-              },
+              {#lockboxId: lockboxId},
             ),
           ),
           lockboxId: _i7.dummyValue<String>(
@@ -1017,13 +1019,7 @@ class MockBackupService extends _i1.Mock implements _i3.BackupService {
             Invocation.method(
               #createAndDistributeBackup,
               [],
-              {
-                #lockboxId: lockboxId,
-                #threshold: threshold,
-                #totalKeys: totalKeys,
-                #keyHolders: keyHolders,
-                #relays: relays,
-              },
+              {#lockboxId: lockboxId},
             ),
           ),
           relays: <String>[],
@@ -1032,13 +1028,7 @@ class MockBackupService extends _i1.Mock implements _i3.BackupService {
             Invocation.method(
               #createAndDistributeBackup,
               [],
-              {
-                #lockboxId: lockboxId,
-                #threshold: threshold,
-                #totalKeys: totalKeys,
-                #keyHolders: keyHolders,
-                #relays: relays,
-              },
+              {#lockboxId: lockboxId},
             ),
           ),
           status: _i6.BackupStatus.pending,
@@ -1049,6 +1039,7 @@ class MockBackupService extends _i1.Mock implements _i3.BackupService {
           ({
             String? contentHash,
             DateTime createdAt,
+            String? instructions,
             List<
                 ({
                   DateTime? acknowledgedAt,
@@ -1100,6 +1091,7 @@ class MockShardDistributionService extends _i1.Mock
     required ({
       String? contentHash,
       DateTime createdAt,
+      String? instructions,
       List<
           ({
             DateTime? acknowledgedAt,
@@ -1127,6 +1119,7 @@ class MockShardDistributionService extends _i1.Mock
             ({
               int createdAt,
               String creatorPubkey,
+              String? instructions,
               bool? isReceived,
               String? lockboxId,
               String? lockboxName,

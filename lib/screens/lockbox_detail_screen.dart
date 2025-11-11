@@ -8,6 +8,7 @@ import '../widgets/recovery_section.dart';
 import '../widgets/row_button.dart';
 import '../widgets/lockbox_metadata_section.dart';
 import '../widgets/key_holder_list.dart';
+import '../widgets/instructions_dialog.dart';
 import '../services/backup_service.dart';
 import 'backup_config_screen.dart';
 import 'edit_lockbox_screen.dart';
@@ -118,16 +119,25 @@ class LockboxDetailScreen extends ConsumerWidget {
                 ],
               ),
             ),
-          // Lockbox Metadata Section
-          LockboxMetadataSection(lockboxId: lockbox.id),
-          // Key Holder List (extends to edges)
-          KeyHolderList(lockboxId: lockbox.id),
-          // Fill remaining space with same color as KeyHolderList
+          // Scrollable content
           Expanded(
-            child: Container(
-              color: const Color(0xFF666f62),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Lockbox Metadata Section
+                  LockboxMetadataSection(lockboxId: lockbox.id),
+                  // Key Holder List (extends to edges)
+                  KeyHolderList(lockboxId: lockbox.id),
+                ],
+              ),
             ),
           ),
+          // Fixed buttons at bottom
+          // View Instructions Button (only show for stewards)
+          if (_isSteward(context, ref, lockbox)) ...[
+            _buildViewInstructionsButton(context, ref, lockbox),
+          ],
           // Edit Lockbox Button (only show if user owns the lockbox)
           if (_isOwned(context, ref, lockbox)) ...[
             RowButton(
@@ -161,7 +171,7 @@ class LockboxDetailScreen extends ConsumerWidget {
             // Generate and Distribute Keys Button - show when all invited key holders have accepted
             _buildGenerateAndDistributeButton(context, ref, lockbox),
           ],
-          // Recovery Section
+          // Recovery Section (fixed at bottom)
           RecoverySection(lockboxId: lockbox.id),
         ],
       ),
@@ -296,10 +306,6 @@ class LockboxDetailScreen extends ConsumerWidget {
       final backupService = ref.read(backupServiceProvider);
       await backupService.createAndDistributeBackup(
         lockboxId: lockbox.id,
-        threshold: config.threshold,
-        totalKeys: config.totalKeys,
-        keyHolders: config.keyHolders,
-        relays: config.relays,
       );
 
       if (context.mounted) {
@@ -333,6 +339,45 @@ class LockboxDetailScreen extends ConsumerWidget {
       data: (currentPubkey) => currentPubkey != null && lockbox.isOwned(currentPubkey),
       loading: () => false,
       error: (_, __) => false,
+    );
+  }
+
+  bool _isSteward(BuildContext context, WidgetRef ref, Lockbox lockbox) {
+    final currentPubkeyAsync = ref.watch(currentPublicKeyProvider);
+    return currentPubkeyAsync.when(
+      data: (currentPubkey) {
+        if (currentPubkey == null) return false;
+        // Steward is a key holder who is not the owner
+        if (lockbox.isOwned(currentPubkey)) return false;
+        // Check if user has shards (is a key holder)
+        return lockbox.shards.isNotEmpty;
+      },
+      loading: () => false,
+      error: (_, __) => false,
+    );
+  }
+
+  String? _getInstructions(Lockbox lockbox) {
+    if (lockbox.shards.isNotEmpty) {
+      return lockbox.shards.first.instructions;
+    }
+    return null;
+  }
+
+  Widget _buildViewInstructionsButton(BuildContext context, WidgetRef ref, Lockbox lockbox) {
+    final instructions = _getInstructions(lockbox);
+    // Only show button if instructions exist
+    if (instructions == null || instructions.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return RowButton(
+      onPressed: () {
+        InstructionsDialog.show(context, instructions);
+      },
+      icon: Icons.info_outline,
+      text: 'View Instructions',
+      backgroundColor: const Color(0xFF6f7a69),
     );
   }
 

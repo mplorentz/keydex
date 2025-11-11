@@ -182,6 +182,7 @@ class MockLockboxRepository extends _i1.Mock implements _i5.LockboxRepository {
     ({
       String? contentHash,
       DateTime createdAt,
+      String? instructions,
       List<
           ({
             DateTime? acknowledgedAt,
@@ -223,6 +224,7 @@ class MockLockboxRepository extends _i1.Mock implements _i5.LockboxRepository {
       ({
         String? contentHash,
         DateTime createdAt,
+        String? instructions,
         List<
             ({
               DateTime? acknowledgedAt,
@@ -254,6 +256,7 @@ class MockLockboxRepository extends _i1.Mock implements _i5.LockboxRepository {
             ({
               String? contentHash,
               DateTime createdAt,
+              String? instructions,
               List<
                   ({
                     DateTime? acknowledgedAt,
@@ -281,6 +284,7 @@ class MockLockboxRepository extends _i1.Mock implements _i5.LockboxRepository {
           ({
             String? contentHash,
             DateTime createdAt,
+            String? instructions,
             List<
                 ({
                   DateTime? acknowledgedAt,
@@ -335,6 +339,7 @@ class MockLockboxRepository extends _i1.Mock implements _i5.LockboxRepository {
     ({
       int createdAt,
       String creatorPubkey,
+      String? instructions,
       bool? isReceived,
       String? lockboxId,
       String? lockboxName,
@@ -369,6 +374,7 @@ class MockLockboxRepository extends _i1.Mock implements _i5.LockboxRepository {
           ({
             int createdAt,
             String creatorPubkey,
+            String? instructions,
             bool? isReceived,
             String? lockboxId,
             String? lockboxName,
@@ -393,6 +399,7 @@ class MockLockboxRepository extends _i1.Mock implements _i5.LockboxRepository {
                 ({
                   int createdAt,
                   String creatorPubkey,
+                  String? instructions,
                   bool? isReceived,
                   String? lockboxId,
                   String? lockboxName,
@@ -410,6 +417,7 @@ class MockLockboxRepository extends _i1.Mock implements _i5.LockboxRepository {
                 })>>.value(<({
           int createdAt,
           String creatorPubkey,
+          String? instructions,
           bool? isReceived,
           String? lockboxId,
           String? lockboxName,
@@ -430,6 +438,7 @@ class MockLockboxRepository extends _i1.Mock implements _i5.LockboxRepository {
               ({
                 int createdAt,
                 String creatorPubkey,
+                String? instructions,
                 bool? isReceived,
                 String? lockboxId,
                 String? lockboxName,
@@ -573,6 +582,7 @@ class MockShardDistributionService extends _i1.Mock
     required ({
       String? contentHash,
       DateTime createdAt,
+      String? instructions,
       List<
           ({
             DateTime? acknowledgedAt,
@@ -600,6 +610,7 @@ class MockShardDistributionService extends _i1.Mock
             ({
               int createdAt,
               String creatorPubkey,
+              String? instructions,
               bool? isReceived,
               String? lockboxId,
               String? lockboxName,

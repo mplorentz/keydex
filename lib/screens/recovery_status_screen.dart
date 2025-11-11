@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/recovery_request.dart';
 import '../providers/recovery_provider.dart';
+import '../providers/lockbox_provider.dart';
 import '../services/recovery_service.dart';
 import '../widgets/recovery_metadata_widget.dart';
 import '../widgets/recovery_progress_widget.dart';
@@ -50,20 +51,71 @@ class _RecoveryStatusScreenState extends ConsumerState<RecoveryStatusScreen> {
             return const Center(child: Text('Recovery request not found'));
           }
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                RecoveryMetadataWidget(recoveryRequestId: widget.recoveryRequestId),
-                const SizedBox(height: 16),
-                RecoveryProgressWidget(recoveryRequestId: widget.recoveryRequestId),
-                const SizedBox(height: 16),
-                RecoveryKeyHoldersWidget(recoveryRequestId: widget.recoveryRequestId),
-                const SizedBox(height: 16),
-                if (request.status.isActive) _buildCancelButton(),
-              ],
-            ),
+          // Get lockbox to extract instructions
+          final lockboxAsync = ref.watch(lockboxProvider(request.lockboxId));
+
+          return lockboxAsync.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (error, stack) => Center(child: Text('Error loading lockbox: $error')),
+            data: (lockbox) {
+              // Get instructions from lockbox
+              String? instructions;
+              if (lockbox != null) {
+                // First try to get from backupConfig
+                if (lockbox.backupConfig?.instructions != null &&
+                    lockbox.backupConfig!.instructions!.isNotEmpty) {
+                  instructions = lockbox.backupConfig!.instructions;
+                } else if (lockbox.shards.isNotEmpty) {
+                  // Fallback to shard data
+                  instructions = lockbox.shards.first.instructions;
+                }
+              }
+
+              return SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    RecoveryMetadataWidget(recoveryRequestId: widget.recoveryRequestId),
+                    const SizedBox(height: 16),
+                    // Instructions section
+                    if (instructions != null && instructions.isNotEmpty) ...[
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(Icons.info_outline, color: Theme.of(context).primaryColor),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Steward Instructions',
+                                    style: Theme.of(context).textTheme.titleMedium,
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                instructions,
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                    RecoveryProgressWidget(recoveryRequestId: widget.recoveryRequestId),
+                    const SizedBox(height: 16),
+                    RecoveryKeyHoldersWidget(recoveryRequestId: widget.recoveryRequestId),
+                    const SizedBox(height: 16),
+                    if (request.status.isActive) _buildCancelButton(),
+                  ],
+                ),
+              );
+            },
           );
         },
       ),
