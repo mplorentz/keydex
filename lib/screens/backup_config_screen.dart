@@ -203,41 +203,6 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Instructions Section
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Instructions for Stewards',
-                            style: Theme.of(context).textTheme.headlineSmall,
-                          ),
-                          const SizedBox(height: 16),
-                          TextField(
-                            controller: _instructionsController,
-                            decoration: const InputDecoration(
-                              labelText: 'Instructions',
-                              hintText:
-                                  'Write here instructions for stewards e.g. under what circumstances they should open the vault?',
-                              border: OutlineInputBorder(),
-                              alignLabelWithHint: true,
-                            ),
-                            maxLines: null,
-                            minLines: 3,
-                            onChanged: (_) {
-                              setState(() {
-                                _hasUnsavedChanges = true;
-                              });
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
                   // Unified Stewards Section
                   Card(
                     child: Padding(
@@ -306,6 +271,41 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                             ..._keyHolders.map(
                               (holder) => _buildKeyHolderListItem(holder),
                             ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Instructions Section
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Instructions for Stewards',
+                            style: Theme.of(context).textTheme.headlineSmall,
+                          ),
+                          const SizedBox(height: 16),
+                          TextField(
+                            controller: _instructionsController,
+                            decoration: const InputDecoration(
+                              labelText: 'Instructions',
+                              hintText:
+                                  'Write here instructions for stewards e.g. under what circumstances they should open the vault?',
+                              border: OutlineInputBorder(),
+                              alignLabelWithHint: true,
+                            ),
+                            maxLines: null,
+                            minLines: 3,
+                            onChanged: (_) {
+                              setState(() {
+                                _hasUnsavedChanges = true;
+                              });
+                            },
+                          ),
                         ],
                       ),
                     ),
