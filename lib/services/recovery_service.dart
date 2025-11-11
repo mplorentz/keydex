@@ -170,6 +170,7 @@ class RecoveryService {
 
   /// Initiate recovery for a lockbox
   /// Returns the created recovery request
+  /// Throws an exception if the user already has an active recovery request for this lockbox
   Future<RecoveryRequest> initiateRecovery(
     String lockboxId, {
     required String initiatorPubkey,
@@ -178,6 +179,18 @@ class RecoveryService {
     Duration? expirationDuration,
   }) async {
     await initialize();
+
+    // Check if user already has an active recovery request for this lockbox
+    final existingRequests = await repository.getRecoveryRequestsForLockbox(lockboxId);
+    final hasActiveRequest = existingRequests.any(
+      (r) => r.initiatorPubkey == initiatorPubkey && r.status.isActive,
+    );
+
+    if (hasActiveRequest) {
+      throw StateError(
+        'You already have an active recovery request for this lockbox. Please manage your existing recovery request.',
+      );
+    }
 
     // Create recovery request
     // Generate cryptographically secure request ID

@@ -3,6 +3,7 @@ import '../models/recovery_request.dart';
 import '../models/recovery_status.dart' as recovery_status;
 import 'lockbox_provider.dart';
 import '../services/recovery_service.dart';
+import 'key_provider.dart';
 
 /// Provider for recovery status of a specific lockbox
 /// This provides information about whether recovery is available and active recovery requests
@@ -10,6 +11,7 @@ final recoveryStatusProvider =
     Provider.family<AsyncValue<RecoveryStatus>, String>((ref, lockboxId) {
   // Watch the lockbox async value and transform it to recovery status
   final lockboxAsync = ref.watch(lockboxProvider(lockboxId));
+  final currentPubkeyAsync = ref.watch(currentPublicKeyProvider);
 
   return lockboxAsync.when(
     data: (lockbox) {
@@ -18,6 +20,7 @@ final recoveryStatusProvider =
           hasActiveRecovery: false,
           canRecover: false,
           activeRecoveryRequest: null,
+          isInitiator: false,
         ));
       }
 
@@ -36,10 +39,17 @@ final recoveryStatusProvider =
       final canRecover = manageableRequest != null &&
           manageableRequest.approvedCount >= manageableRequest.threshold;
 
+      // Check if current user is the initiator
+      final currentPubkey = currentPubkeyAsync.value;
+      final isInitiator = manageableRequest != null &&
+          currentPubkey != null &&
+          manageableRequest.initiatorPubkey == currentPubkey;
+
       return AsyncValue.data(RecoveryStatus(
         hasActiveRecovery: manageableRequest != null,
         canRecover: canRecover,
         activeRecoveryRequest: manageableRequest,
+        isInitiator: isInitiator,
       ));
     },
     loading: () => const AsyncValue.loading(),
@@ -52,11 +62,13 @@ class RecoveryStatus {
   final bool hasActiveRecovery;
   final bool canRecover;
   final RecoveryRequest? activeRecoveryRequest;
+  final bool isInitiator;
 
   const RecoveryStatus({
     required this.hasActiveRecovery,
     required this.canRecover,
     required this.activeRecoveryRequest,
+    required this.isInitiator,
   });
 }
 
