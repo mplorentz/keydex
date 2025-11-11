@@ -45,6 +45,7 @@ class BackupService {
     required int totalKeys,
     required List<KeyHolder> keyHolders,
     required List<String> relays,
+    String? instructions,
     String? contentHash,
   }) async {
     // Validate inputs
@@ -70,6 +71,7 @@ class BackupService {
       totalKeys: totalKeys,
       keyHolders: keyHolders,
       relays: relays,
+      instructions: instructions,
       contentHash: contentHash,
     );
 
@@ -120,6 +122,7 @@ class BackupService {
     required String lockboxName,
     required List<Map<String, String>> peers,
     String? ownerName,
+    String? instructions,
   }) async {
     try {
       // Validate inputs
@@ -160,6 +163,7 @@ class BackupService {
           lockboxName: lockboxName,
           peers: peers,
           ownerName: ownerName,
+          instructions: instructions,
         );
         Log.debug(shardData.toString());
         shardDataList.add(shardData);
@@ -299,6 +303,7 @@ class BackupService {
     required int totalKeys,
     required List<KeyHolder> keyHolders,
     required List<String> relays,
+    String? instructions,
   }) async {
     // Delete existing config if present (allows overwrite)
     final existingConfig = await _repository.getBackupConfig(lockboxId);
@@ -314,6 +319,7 @@ class BackupService {
       totalKeys: totalKeys,
       keyHolders: keyHolders,
       relays: relays,
+      instructions: instructions,
     );
 
     // Sync relays to RelayScanService and ensure scanning is started
@@ -333,19 +339,13 @@ class BackupService {
   /// High-level method to create and distribute a backup
   ///
   /// This orchestrates the entire backup creation flow:
-  /// 1. Loads lockbox content
-  /// 2. Deletes existing backup configuration if one exists
-  /// 3. Creates new backup configuration
-  /// 4. Generates Shamir shares
-  /// 5. Distributes shares to key holders via Nostr
+  /// 1. Loads lockbox and backup configuration
+  /// 2. Generates Shamir shares
+  /// 3. Distributes shares to key holders via Nostr
   ///
   /// Throws exception if any step fails
   Future<BackupConfig> createAndDistributeBackup({
     required String lockboxId,
-    required int threshold,
-    required int totalKeys,
-    required List<KeyHolder> keyHolders,
-    required List<String> relays,
   }) async {
     try {
       // Step 1: Load lockbox content
@@ -359,7 +359,17 @@ class BackupService {
       }
       Log.info('Loaded lockbox content for backup: $lockboxId');
 
-      // Step 2: Get creator's Nostr key pair
+      // Step 2: Load backup configuration
+      final config = await _repository.getBackupConfig(lockboxId);
+      if (config == null) {
+        throw Exception('Backup configuration not found for lockbox: $lockboxId');
+      }
+      if (config.keyHolders.isEmpty) {
+        throw Exception('No stewards configured in backup configuration');
+      }
+      Log.info('Loaded backup configuration');
+
+      // Step 3: Get creator's Nostr key pair
       final creatorKeyPair = await _loginService.getStoredNostrKey();
       final creatorPubkey = creatorKeyPair?.publicKey;
       final creatorPrivkey = creatorKeyPair?.privateKey;
@@ -368,18 +378,8 @@ class BackupService {
       }
       Log.info('Retrieved creator key pair');
 
-      // Step 3: Create backup configuration (may delete existing config)
-      final config = await saveBackupConfig(
-        lockboxId: lockboxId,
-        threshold: threshold,
-        totalKeys: totalKeys,
-        keyHolders: keyHolders,
-        relays: relays,
-      );
-      Log.info('Created backup configuration');
-
-      // Validate all key holders have pubkeys before distributing
-      final keyHoldersWithoutPubkeys = keyHolders.where((kh) => kh.pubkey == null).toList();
+      // Step 4: Validate all key holders have pubkeys before distributing
+      final keyHoldersWithoutPubkeys = config.keyHolders.where((kh) => kh.pubkey == null).toList();
       if (keyHoldersWithoutPubkeys.isNotEmpty) {
         final names = keyHoldersWithoutPubkeys.map((kh) => kh.name ?? kh.id).join(', ');
         throw ArgumentError(
@@ -390,7 +390,7 @@ class BackupService {
       // Step 5: Generate Shamir shares
       // Note: peers list excludes the creator - recipients need to know OTHER key holders
       // Build peers list with name and pubkey maps
-      final peers = keyHolders
+      final peers = config.keyHolders
           .where((kh) => kh.pubkey != null && kh.pubkey != creatorPubkey)
           .map((kh) => {
                 'name': kh.name ?? 'Unknown',
@@ -399,13 +399,14 @@ class BackupService {
           .toList();
       final shards = await generateShamirShares(
         content: content,
-        threshold: threshold,
-        totalShards: totalKeys,
+        threshold: config.threshold,
+        totalShards: config.totalKeys,
         creatorPubkey: creatorPubkey,
         lockboxId: lockbox.id,
         lockboxName: lockbox.name,
         peers: peers,
         ownerName: lockbox.ownerName,
+        instructions: config.instructions,
       );
       Log.info('Generated ${shards.length} Shamir shares');
 

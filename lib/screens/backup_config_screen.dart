@@ -38,6 +38,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
 
   // Invitation link generation state
   final TextEditingController _inviteeNameController = TextEditingController();
+  final TextEditingController _instructionsController = TextEditingController();
   // Map to track invitation links by invitee name
   final Map<String, InvitationLink> _invitationLinksByInviteeName = {};
   bool _isGeneratingInvitation = false;
@@ -51,6 +52,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
   @override
   void dispose() {
     _inviteeNameController.dispose();
+    _instructionsController.dispose();
     super.dispose();
   }
 
@@ -67,6 +69,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
           _keyHolders.addAll(existingConfig.keyHolders);
           _relays.clear();
           _relays.addAll(existingConfig.relays);
+          _instructionsController.text = existingConfig.instructions ?? '';
           _isLoading = false;
           _hasUnsavedChanges = false;
         });
@@ -194,6 +197,41 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                               'Total Keys: ${_keyHolders.length} (automatically set)',
                               style: Theme.of(context).textTheme.bodyMedium,
                             ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Instructions Section
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Instructions for Stewards',
+                            style: Theme.of(context).textTheme.headlineSmall,
+                          ),
+                          const SizedBox(height: 16),
+                          TextField(
+                            controller: _instructionsController,
+                            decoration: const InputDecoration(
+                              labelText: 'Instructions',
+                              hintText:
+                                  'Write here instructions for stewards e.g. under what circumstances they should open the vault?',
+                              border: OutlineInputBorder(),
+                              alignLabelWithHint: true,
+                            ),
+                            maxLines: null,
+                            minLines: 3,
+                            onChanged: (_) {
+                              setState(() {
+                                _hasUnsavedChanges = true;
+                              });
+                            },
+                          ),
                         ],
                       ),
                     ),
@@ -968,6 +1006,9 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
         totalKeys: totalKeys,
         keyHolders: _keyHolders,
         relays: _relays,
+        instructions: _instructionsController.text.trim().isEmpty
+            ? null
+            : _instructionsController.text.trim(),
       );
 
       if (mounted) {

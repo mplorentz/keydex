@@ -22,6 +22,7 @@ typedef ShardData = ({
       Map<String,
           String>>? peers, // List of maps with 'name' and 'pubkey' for OTHER key holders (excludes creatorPubkey)
   String? ownerName, // Name of the vault owner (creator)
+  String? instructions, // Instructions for stewards
   String? recipientPubkey,
   bool? isReceived,
   DateTime? receivedAt,
@@ -41,6 +42,7 @@ ShardData createShardData({
   String? lockboxName,
   List<Map<String, String>>? peers,
   String? ownerName,
+  String? instructions,
   String? recipientPubkey,
   bool? isReceived,
   DateTime? receivedAt,
@@ -98,6 +100,7 @@ ShardData createShardData({
     lockboxName: lockboxName,
     peers: peers,
     ownerName: ownerName,
+    instructions: instructions,
     recipientPubkey: recipientPubkey,
     isReceived: isReceived,
     receivedAt: receivedAt,
@@ -125,6 +128,7 @@ ShardData copyShardData(
   String? lockboxName,
   List<Map<String, String>>? peers,
   String? ownerName,
+  String? instructions,
   String? recipientPubkey,
   bool? isReceived,
   DateTime? receivedAt,
@@ -143,6 +147,7 @@ ShardData copyShardData(
     lockboxName: lockboxName ?? shardData.lockboxName,
     peers: peers ?? shardData.peers,
     ownerName: ownerName ?? shardData.ownerName,
+    instructions: instructions ?? shardData.instructions,
     recipientPubkey: recipientPubkey ?? shardData.recipientPubkey,
     isReceived: isReceived ?? shardData.isReceived,
     receivedAt: receivedAt ?? shardData.receivedAt,
@@ -237,6 +242,7 @@ Map<String, dynamic> shardDataToJson(ShardData shardData) {
     if (shardData.lockboxName != null) 'lockboxName': shardData.lockboxName,
     if (shardData.peers != null) 'peers': shardData.peers,
     if (shardData.ownerName != null) 'ownerName': shardData.ownerName,
+    if (shardData.instructions != null) 'instructions': shardData.instructions,
     if (shardData.recipientPubkey != null) 'recipientPubkey': shardData.recipientPubkey,
     if (shardData.isReceived != null) 'isReceived': shardData.isReceived,
     if (shardData.receivedAt != null) 'receivedAt': shardData.receivedAt!.toIso8601String(),
@@ -261,6 +267,7 @@ ShardData shardDataFromJson(Map<String, dynamic> json) {
         ? (json['peers'] as List).map((e) => Map<String, String>.from(e as Map)).toList()
         : null,
     ownerName: json['ownerName'] as String?,
+    instructions: json['instructions'] as String?,
     recipientPubkey: json['recipientPubkey'] as String?,
     isReceived: json['isReceived'] as bool?,
     receivedAt: json['receivedAt'] != null ? DateTime.parse(json['receivedAt'] as String) : null,

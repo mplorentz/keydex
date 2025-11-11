@@ -217,6 +217,19 @@ class _RecoveryRequestDetailScreenState extends ConsumerState<RecoveryRequestDet
       }
     }
 
+    // Get instructions from lockbox
+    String? instructions;
+    if (lockbox != null) {
+      // First try to get from backupConfig
+      if (lockbox.backupConfig?.instructions != null &&
+          lockbox.backupConfig!.instructions!.isNotEmpty) {
+        instructions = lockbox.backupConfig!.instructions;
+      } else if (lockbox.shards.isNotEmpty) {
+        // Fallback to shard data
+        instructions = lockbox.shards.first.instructions;
+      }
+    }
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -337,6 +350,36 @@ class _RecoveryRequestDetailScreenState extends ConsumerState<RecoveryRequestDet
             ),
           ),
           const SizedBox(height: 16),
+
+          // Instructions section
+          if (instructions != null && instructions.isNotEmpty) ...[
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.info_outline, color: Theme.of(context).primaryColor),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Steward Instructions',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      instructions,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
 
           // Stewards summary
           Card(
