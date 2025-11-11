@@ -19,6 +19,7 @@ class _EditLockboxScreenState extends ConsumerState<EditLockboxScreen>
     with LockboxContentSaveMixin {
   final _nameController = TextEditingController();
   final _contentController = TextEditingController();
+  final _ownerNameController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   Lockbox? _lockbox;
 
@@ -36,6 +37,7 @@ class _EditLockboxScreenState extends ConsumerState<EditLockboxScreen>
         _lockbox = lockbox;
         _nameController.text = lockbox.name;
         _contentController.text = lockbox.content ?? '';
+        _ownerNameController.text = lockbox.ownerName ?? '';
       });
     }
   }
@@ -44,6 +46,7 @@ class _EditLockboxScreenState extends ConsumerState<EditLockboxScreen>
   void dispose() {
     _nameController.dispose();
     _contentController.dispose();
+    _ownerNameController.dispose();
     super.dispose();
   }
 
@@ -71,6 +74,7 @@ class _EditLockboxScreenState extends ConsumerState<EditLockboxScreen>
         formKey: _formKey,
         nameController: _nameController,
         contentController: _contentController,
+        ownerNameController: _ownerNameController,
         contentHintText: 'Enter your sensitive text here...',
       ),
     );
@@ -82,6 +86,9 @@ class _EditLockboxScreenState extends ConsumerState<EditLockboxScreen>
       name: _nameController.text,
       content: _contentController.text,
       lockboxId: widget.lockboxId,
+      ownerName: _ownerNameController.text.trim().isEmpty
+          ? null
+          : _ownerNameController.text.trim(),
     );
 
     if (savedId != null && mounted) {

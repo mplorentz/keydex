@@ -38,7 +38,6 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
 
   // Invitation link generation state
   final TextEditingController _inviteeNameController = TextEditingController();
-  final TextEditingController _ownerNameController = TextEditingController();
   // Map to track invitation links by invitee name
   final Map<String, InvitationLink> _invitationLinksByInviteeName = {};
   bool _isGeneratingInvitation = false;
@@ -52,7 +51,6 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
   @override
   void dispose() {
     _inviteeNameController.dispose();
-    _ownerNameController.dispose();
     super.dispose();
   }
 
@@ -69,7 +67,6 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
           _keyHolders.addAll(existingConfig.keyHolders);
           _relays.clear();
           _relays.addAll(existingConfig.relays);
-          _ownerNameController.text = existingConfig.ownerName ?? '';
           _isLoading = false;
           _hasUnsavedChanges = false;
         });
@@ -218,22 +215,6 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                                 style: Theme.of(context).textTheme.headlineSmall,
                               ),
                             ],
-                          ),
-                          const SizedBox(height: 16),
-
-                          // Owner Name Input Section
-                          TextField(
-                            controller: _ownerNameController,
-                            decoration: const InputDecoration(
-                              labelText: "Your name",
-                              hintText: 'Enter your name as the vault owner',
-                              border: OutlineInputBorder(),
-                            ),
-                            onChanged: (_) {
-                              setState(() {
-                                _hasUnsavedChanges = true;
-                              });
-                            },
                           ),
                           const SizedBox(height: 16),
 
@@ -987,8 +968,6 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
         totalKeys: totalKeys,
         keyHolders: _keyHolders,
         relays: _relays,
-        ownerName:
-            _ownerNameController.text.trim().isEmpty ? null : _ownerNameController.text.trim(),
       );
 
       if (mounted) {

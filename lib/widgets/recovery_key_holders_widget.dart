@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/recovery_request.dart';
 import '../models/lockbox.dart';
+import '../models/key_holder.dart';
 import '../providers/recovery_provider.dart';
 import '../providers/lockbox_provider.dart';
 
@@ -101,40 +102,61 @@ class RecoveryKeyHoldersWidget extends ConsumerWidget {
   List<_KeyHolderInfo> _extractKeyHolders(Lockbox? lockbox, RecoveryRequest request) {
     if (lockbox == null) return [];
 
-    // Get pubkeys from backupConfig if available
-    List<String> keyHolderPubkeys = [];
+    // Get key holders with names from backupConfig if available
     if (lockbox.backupConfig?.keyHolders.isNotEmpty == true) {
-      keyHolderPubkeys = lockbox.backupConfig!.keyHolders
-          .where((kh) => kh.pubkey != null)
-          .map((kh) => kh.pubkey!)
-          .toList();
-    } else if (lockbox.shards.isNotEmpty) {
-      // Fallback: use peers from shards
-      final firstShard = lockbox.shards.first;
-      if (firstShard.peers != null) {
-        // Peers is now a list of maps with 'name' and 'pubkey'
-        keyHolderPubkeys = firstShard.peers!
-            .map((peer) => peer['pubkey'])
-            .where((p) => p != null)
-            .cast<String>()
-            .toList();
-      }
-      // Also include owner if ownerName is present
-      if (firstShard.ownerName != null) {
-        keyHolderPubkeys.add(firstShard.creatorPubkey);
-      }
+      return lockbox.backupConfig!.keyHolders.where((kh) => kh.pubkey != null).map((kh) {
+        final response = request.keyHolderResponses[kh.pubkey];
+        return _KeyHolderInfo(
+          pubkey: kh.pubkey!,
+          name: kh.displayName,
+          response: response,
+        );
+      }).toList();
     }
 
-    if (keyHolderPubkeys.isEmpty) return [];
+    // Fallback: use peers from shards
+    if (lockbox.shards.isNotEmpty) {
+      final firstShard = lockbox.shards.first;
+      final keyHolders = <_KeyHolderInfo>[];
 
-    // Create info for each key holder
-    return keyHolderPubkeys.map((pubkey) {
-      final response = request.keyHolderResponses[pubkey];
-      return _KeyHolderInfo(
-        pubkey: pubkey,
-        response: response,
-      );
-    }).toList();
+      // Add owner if ownerName is present
+      if (lockbox.ownerName != null) {
+        final response = request.keyHolderResponses[firstShard.creatorPubkey];
+        keyHolders.add(_KeyHolderInfo(
+          pubkey: firstShard.creatorPubkey,
+          name: lockbox.ownerName,
+          response: response,
+        ));
+      } else if (firstShard.ownerName != null) {
+        // Fallback to shard ownerName
+        final response = request.keyHolderResponses[firstShard.creatorPubkey];
+        keyHolders.add(_KeyHolderInfo(
+          pubkey: firstShard.creatorPubkey,
+          name: firstShard.ownerName,
+          response: response,
+        ));
+      }
+
+      // Add peers (key holders) - now a list of maps with name and pubkey
+      if (firstShard.peers != null) {
+        for (final peer in firstShard.peers!) {
+          final peerPubkey = peer['pubkey'];
+          final peerName = peer['name'];
+          if (peerPubkey == null) continue;
+
+          final response = request.keyHolderResponses[peerPubkey];
+          keyHolders.add(_KeyHolderInfo(
+            pubkey: peerPubkey,
+            name: peerName,
+            response: response,
+          ));
+        }
+      }
+
+      return keyHolders;
+    }
+
+    return [];
   }
 
   Widget _buildKeyHolderItem(_KeyHolderInfo info) {
@@ -164,12 +186,23 @@ class RecoveryKeyHoldersWidget extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '${info.pubkey.substring(0, 16)}...',
+                  info.name ?? '${info.pubkey.substring(0, 16)}...',
                   style: const TextStyle(
-                    fontFamily: 'monospace',
-                    fontSize: 12,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
+                if (info.name != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    '${info.pubkey.substring(0, 16)}...',
+                    style: TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 11,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 4),
                 Row(
                   children: [
@@ -254,10 +287,12 @@ class RecoveryKeyHoldersWidget extends ConsumerWidget {
 /// Internal data class for key holder info
 class _KeyHolderInfo {
   final String pubkey;
+  final String? name;
   final RecoveryResponse? response;
 
   _KeyHolderInfo({
     required this.pubkey,
+    this.name,
     this.response,
   });
 }

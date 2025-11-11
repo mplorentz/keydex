@@ -297,6 +297,7 @@ class LockboxShareService {
           // Update it with shard data and name from ShardData if available
           final updatedLockbox = existingLockbox.copyWith(
             name: shardData.lockboxName ?? existingLockbox.name,
+            ownerName: shardData.ownerName ?? existingLockbox.ownerName,
             // createdAt stays the same (from invitation)
             // ownerPubkey stays the same (from invitation)
             // shards will be added via addShardToLockbox below
@@ -318,6 +319,7 @@ class LockboxShareService {
         content: null, // No decrypted content yet - we only have a shard
         createdAt: DateTime.fromMillisecondsSinceEpoch(shardData.createdAt * 1000),
         ownerPubkey: shardData.creatorPubkey, // Owner is the creator of the shard
+        ownerName: shardData.ownerName, // Set owner name from shard data
       );
 
       await repository.addLockbox(lockbox);

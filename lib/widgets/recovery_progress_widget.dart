@@ -195,14 +195,14 @@ class RecoveryProgressWidget extends ConsumerWidget {
       if (firstShard.peers != null) {
         // Peers is now a list of maps, count them
         var count = firstShard.peers!.length;
-        // Also count owner if ownerName is present
-        if (firstShard.ownerName != null) {
+        // Also count owner if ownerName is present (from lockbox or shard)
+        if (lockbox.ownerName != null || firstShard.ownerName != null) {
           count++;
         }
         return count;
       }
       // If no peers but ownerName is present, count owner
-      if (firstShard.ownerName != null) {
+      if (lockbox.ownerName != null || firstShard.ownerName != null) {
         return 1;
       }
     }

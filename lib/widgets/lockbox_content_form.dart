@@ -5,6 +5,7 @@ class LockboxContentForm extends StatelessWidget {
   final GlobalKey<FormState> formKey;
   final TextEditingController nameController;
   final TextEditingController contentController;
+  final TextEditingController ownerNameController;
   final String? nameHintText;
   final String? contentHintText;
 
@@ -13,6 +14,7 @@ class LockboxContentForm extends StatelessWidget {
     required this.formKey,
     required this.nameController,
     required this.contentController,
+    required this.ownerNameController,
     this.nameHintText = 'Give your lockbox a memorable name',
     this.contentHintText =
         'Enter your sensitive text here...\n\nThis content will be encrypted and stored securely.',
@@ -28,6 +30,7 @@ class LockboxContentForm extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             TextFormField(
               controller: nameController,
@@ -45,6 +48,16 @@ class LockboxContentForm extends StatelessWidget {
               },
             ),
             const SizedBox(height: 16),
+            TextFormField(
+              controller: ownerNameController,
+              decoration: const InputDecoration(
+                labelText: "Your name",
+                hintText: 'Enter your name as the vault owner',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.person_outline),
+              ),
+            ),
+            const SizedBox(height: 16),
             Text(
               'Vault Contents',
               style: TextStyle(
@@ -54,7 +67,8 @@ class LockboxContentForm extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            Expanded(
+            SizedBox(
+              height: 200,
               child: TextFormField(
                 controller: contentController,
                 decoration: InputDecoration(

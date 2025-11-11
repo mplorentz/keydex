@@ -45,7 +45,6 @@ class BackupService {
     required int totalKeys,
     required List<KeyHolder> keyHolders,
     required List<String> relays,
-    String? ownerName,
     String? contentHash,
   }) async {
     // Validate inputs
@@ -71,7 +70,6 @@ class BackupService {
       totalKeys: totalKeys,
       keyHolders: keyHolders,
       relays: relays,
-      ownerName: ownerName,
       contentHash: contentHash,
     );
 
@@ -301,7 +299,6 @@ class BackupService {
     required int totalKeys,
     required List<KeyHolder> keyHolders,
     required List<String> relays,
-    String? ownerName,
   }) async {
     // Delete existing config if present (allows overwrite)
     final existingConfig = await _repository.getBackupConfig(lockboxId);
@@ -317,7 +314,6 @@ class BackupService {
       totalKeys: totalKeys,
       keyHolders: keyHolders,
       relays: relays,
-      ownerName: ownerName,
     );
 
     // Sync relays to RelayScanService and ensure scanning is started
@@ -350,7 +346,6 @@ class BackupService {
     required int totalKeys,
     required List<KeyHolder> keyHolders,
     required List<String> relays,
-    String? ownerName,
   }) async {
     try {
       // Step 1: Load lockbox content
@@ -380,7 +375,6 @@ class BackupService {
         totalKeys: totalKeys,
         keyHolders: keyHolders,
         relays: relays,
-        ownerName: ownerName,
       );
       Log.info('Created backup configuration');
 
@@ -411,7 +405,7 @@ class BackupService {
         lockboxId: lockbox.id,
         lockboxName: lockbox.name,
         peers: peers,
-        ownerName: ownerName ?? config.ownerName,
+        ownerName: lockbox.ownerName,
       );
       Log.info('Generated ${shards.length} Shamir shares');
 
