@@ -87,6 +87,7 @@ class RecoveryService {
             responseEvent.senderPubkey,
             responseEvent.approved,
             shardData: responseEvent.shardData,
+            nostrEventId: responseEvent.nostrEventId,
           );
         } catch (e) {
           Log.error('Error processing recovery response from stream', e);
@@ -236,6 +237,7 @@ class RecoveryService {
 
   /// Add an incoming recovery request (received via Nostr)
   /// This is different from initiateRecovery which creates a new request
+  /// Since events are immutable, we skip processing if the request already exists locally
   Future<void> addIncomingRecoveryRequest(RecoveryRequest request) async {
     await initialize();
 
@@ -244,25 +246,15 @@ class RecoveryService {
     final existingRequest = existingRequests.where((r) => r.id == request.id).firstOrNull;
 
     if (existingRequest != null) {
-      // Don't overwrite requests in terminal states (cancelled, completed, failed)
-      if (existingRequest.status.isTerminal) {
-        Log.info(
-            'Ignoring incoming recovery request ${request.id} - already in terminal state: ${existingRequest.status.name}');
-        return;
-      }
-
-      // Update existing request in lockbox
-      await repository.updateRecoveryRequestInLockbox(
-        request.lockboxId,
-        request.id,
-        request,
-      );
-      Log.info('Updated existing recovery request ${request.id}');
-    } else {
-      // Add new request to lockbox
-      await repository.addRecoveryRequestToLockbox(request.lockboxId, request);
-      Log.info('Added incoming recovery request ${request.id}');
+      // Since events are immutable, skip processing if we already have this request locally
+      Log.info(
+          'Ignoring incoming recovery request ${request.id} - already exists locally (status: ${existingRequest.status.name})');
+      return;
     }
+
+    // Add new request to lockbox
+    await repository.addRecoveryRequestToLockbox(request.lockboxId, request);
+    Log.info('Added incoming recovery request ${request.id}');
 
     // Emit notification update
     await _emitNotificationUpdate();
@@ -336,11 +328,13 @@ class RecoveryService {
   }
 
   /// Respond to a recovery request (from a key holder)
+  /// Since events are immutable, we skip processing if the response already exists
   Future<void> respondToRecoveryRequest(
     String recoveryRequestId,
     String responderPubkey,
     bool approved, {
     ShardData? shardData,
+    String? nostrEventId,
   }) async {
     await initialize();
 
@@ -350,6 +344,23 @@ class RecoveryService {
       throw ArgumentError('Recovery request not found: $recoveryRequestId');
     }
 
+    // Check if response already exists for this pubkey
+    final existingResponse = request.keyHolderResponses[responderPubkey];
+    if (existingResponse != null) {
+      // Check if this is a duplicate by comparing nostrEventId if provided
+      if (nostrEventId != null && existingResponse.nostrEventId == nostrEventId) {
+        Log.info(
+            'Ignoring duplicate recovery response for request $recoveryRequestId from $responderPubkey (nostrEventId: $nostrEventId)');
+        return;
+      }
+      // If response already exists and has respondedAt, skip processing (immutable event)
+      if (existingResponse.respondedAt != null) {
+        Log.info(
+            'Ignoring recovery response for request $recoveryRequestId from $responderPubkey - response already exists');
+        return;
+      }
+    }
+
     // Update the response
     final updatedResponses = Map<String, RecoveryResponse>.from(request.keyHolderResponses);
     updatedResponses[responderPubkey] = RecoveryResponse(
@@ -357,6 +368,7 @@ class RecoveryService {
       approved: approved,
       respondedAt: DateTime.now(),
       shardData: shardData,
+      nostrEventId: nostrEventId,
     );
 
     // Update request status

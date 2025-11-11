@@ -1,3 +1,4 @@
+import '../services/logger.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/recovery_request.dart';
 import '../models/recovery_status.dart' as recovery_status;
@@ -26,13 +27,16 @@ final recoveryStatusProvider =
 
       // Get active OR completed recovery requests
       // Completed requests need to be manageable so users can click "Recover Lockbox"
+      // Sort by requestedAt descending to get the most recent request first
       RecoveryRequest? manageableRequest;
-      try {
-        manageableRequest = lockbox.recoveryRequests.firstWhere(
-          (r) => r.status.isActive || r.status == RecoveryRequestStatus.completed,
-        );
-      } catch (e) {
-        // No manageable request found
+      final manageableRequests = lockbox.recoveryRequests
+          .where((r) => r.status.isActive || r.status == RecoveryRequestStatus.completed)
+          .toList();
+
+      if (manageableRequests.isNotEmpty) {
+        // Sort by requestedAt descending (most recent first)
+        manageableRequests.sort((a, b) => b.requestedAt.compareTo(a.requestedAt));
+        manageableRequest = manageableRequests.first;
       }
 
       // Check if we can recover (has sufficient shards)
