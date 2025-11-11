@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/recovery_request.dart';
+import '../models/lockbox.dart';
+import '../models/key_holder.dart';
 import '../services/recovery_service.dart';
 import '../services/logger.dart';
+import '../providers/lockbox_provider.dart';
 import 'recovery_request_detail_screen.dart';
 
 /// Overlay widget for displaying recovery request notifications
@@ -160,53 +163,128 @@ class _RecoveryNotificationOverlayState extends ConsumerState<RecoveryNotificati
   }
 
   Widget _buildNotificationItem(RecoveryRequest request) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: Colors.orange[100],
-          child: const Icon(Icons.lock_open, color: Colors.orange),
+    final lockboxAsync = ref.watch(lockboxProvider(request.lockboxId));
+
+    return lockboxAsync.when(
+      loading: () => const Card(
+        margin: EdgeInsets.only(bottom: 8),
+        child: ListTile(
+          leading: CircularProgressIndicator(strokeWidth: 2),
+          title: Text('Loading...'),
         ),
-        title: const Text(
-          'Recovery Request',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Vault ID: ${request.lockboxId.substring(0, 8)}...',
-              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-            ),
-            Text(
-              'From: ${request.initiatorPubkey.substring(0, 16)}...',
-              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-            ),
-            Text(
-              _formatDateTime(request.requestedAt),
-              style: TextStyle(fontSize: 11, color: Colors.grey[500]),
-            ),
-          ],
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.close, size: 20),
-              onPressed: () => _dismissNotification(request),
-              tooltip: 'Dismiss',
-            ),
-            IconButton(
-              icon: const Icon(Icons.arrow_forward, size: 20),
-              onPressed: () => _viewNotification(request),
-              color: Theme.of(context).primaryColor,
-              tooltip: 'View',
-            ),
-          ],
-        ),
-        onTap: () => _viewNotification(request),
       ),
+      error: (error, stack) => const Card(
+        margin: EdgeInsets.only(bottom: 8),
+        child: ListTile(
+          leading: Icon(Icons.error, color: Colors.red),
+          title: Text('Error loading vault'),
+        ),
+      ),
+      data: (lockbox) {
+        final vaultName = lockbox?.name ?? 'Unknown Vault';
+        final initiatorName = _getInitiatorName(lockbox, request.initiatorPubkey);
+
+        return Card(
+          margin: const EdgeInsets.only(bottom: 8),
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundColor: Colors.orange[100],
+              child: const Icon(Icons.lock_open, color: Colors.orange),
+            ),
+            title: const Text(
+              'Recovery Request',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      'From: ',
+                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                    ),
+                    Expanded(
+                      child: Text(
+                        initiatorName ?? request.initiatorPubkey,
+                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                    ),
+                  ],
+                ),
+                Text(
+                  'Vault: $vaultName',
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+                Text(
+                  _formatDateTime(request.requestedAt),
+                  style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                ),
+              ],
+            ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.close, size: 20),
+                  onPressed: () => _dismissNotification(request),
+                  tooltip: 'Dismiss',
+                ),
+                IconButton(
+                  icon: const Icon(Icons.arrow_forward, size: 20),
+                  onPressed: () => _viewNotification(request),
+                  color: Theme.of(context).primaryColor,
+                  tooltip: 'View',
+                ),
+              ],
+            ),
+            onTap: () => _viewNotification(request),
+          ),
+        );
+      },
     );
+  }
+
+  String? _getInitiatorName(Lockbox? lockbox, String initiatorPubkey) {
+    if (lockbox == null) return null;
+
+    // First check lockbox ownerName
+    if (lockbox.ownerPubkey == initiatorPubkey) {
+      return lockbox.ownerName;
+    }
+
+    // If not found and we have shards, check shard data
+    if (lockbox.shards.isNotEmpty) {
+      final firstShard = lockbox.shards.first;
+      // Check if initiator is the owner
+      if (firstShard.creatorPubkey == initiatorPubkey) {
+        return firstShard.ownerName ?? lockbox.ownerName;
+      } else if (firstShard.peers != null) {
+        // Check if initiator is in peers
+        for (final peer in firstShard.peers!) {
+          if (peer['pubkey'] == initiatorPubkey) {
+            return peer['name'];
+          }
+        }
+      }
+    }
+
+    // Also check backupConfig
+    if (lockbox.backupConfig != null) {
+      try {
+        final keyHolder =
+            lockbox.backupConfig!.keyHolders.firstWhere((kh) => kh.pubkey == initiatorPubkey);
+        return keyHolder.displayName;
+      } catch (e) {
+        // Key holder not found in backupConfig
+      }
+    }
+
+    return null;
   }
 
   String _formatDateTime(DateTime dateTime) {
