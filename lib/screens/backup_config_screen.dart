@@ -292,7 +292,6 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                           TextField(
                             controller: _instructionsController,
                             decoration: const InputDecoration(
-                              labelText: 'Instructions',
                               hintText:
                                   'Write here instructions for stewards e.g. under what circumstances they should open the vault?',
                               border: OutlineInputBorder(),
