@@ -7,6 +7,7 @@ import '../services/lockbox_share_service.dart';
 import '../services/recovery_service.dart';
 import '../services/relay_scan_service.dart';
 import '../services/logger.dart';
+import '../screens/keydex_gallery_screen.dart';
 
 /// Debug information sheet widget
 class DebugInfoSheet extends ConsumerWidget {
@@ -184,6 +185,27 @@ class DebugInfoSheet extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 24),
+          // View Gallery button
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                Navigator.pop(context); // Close the debug sheet first
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const KeydexGallery(),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+              icon: const Icon(Icons.palette),
+              label: const Text('View Design Gallery'),
+            ),
+          ),
+          const SizedBox(height: 12),
           // Clear all data button
           SizedBox(
             width: double.infinity,
