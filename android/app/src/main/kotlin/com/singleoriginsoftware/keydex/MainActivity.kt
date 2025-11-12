@@ -1,5 +1,6 @@
-package com.example.keydex
+package com.singleoriginsoftware.keydex
 
 import io.flutter.embedding.android.FlutterActivity
 
 class MainActivity: FlutterActivity()
+
