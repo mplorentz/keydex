@@ -180,3 +180,46 @@ final confirmationData = {
 - See NIP-40 for full specification details
 
 **Note:** When publishing events, you do NOT need to manually add expiration tags. They are automatically included by the publishing functions.
+
+## UI Design and Theming
+
+### Design Guide
+**IMPORTANT**: When working on UI components, screens, or styling, ALWAYS reference `DESIGN_GUIDE.md` for:
+- Color palette and usage rules
+- Typography system
+- Component patterns
+- Layout guidelines
+- Visual style principles
+
+### When to Reference DESIGN_GUIDE.md
+Read the design guide when:
+- Creating new screens or pages
+- Building new widgets or components
+- Styling existing components
+- Adding buttons or actions
+- Working with forms or lists
+- Choosing colors or fonts
+- Implementing layouts
+- Making any visual design decisions
+
+### The Orange Rule (Most Important!)
+**Orange `#DC714E` appears ONLY on RowButton components** (primary actions at bottom of screen)
+- Never use orange for regular buttons, borders, highlights, icons, or text
+- When multiple actions are needed, use `RowButtonStack` with gradient (only bottom button is orange)
+- All other UI elements use Navy-Ink `#243036` or Umber `#7A4A2F`
+
+### Active Theme
+The app uses the **keydex2 theme** defined in `lib/widgets/theme.dart`
+- Professional, muted palette inspired by ledgers and terminals
+- Minimal rounding (4pt for fields, 12pt for buttons)
+- Flat design with no unnecessary shadows
+- Confident typography (Archivo for titles, OpenSans for body)
+
+### Quick Design References
+- **Primary Action**: Use `RowButton` widget (orange, full-width, at bottom)
+- **Multiple Actions**: Use `RowButtonStack` widget (gradient with orange at bottom)
+- **Forms**: Match scaffold background, subtle borders, minimal fill
+- **Lists**: Edge-to-edge, no borders, no card wrappers
+- **AppBar**: Large (40pt), left-aligned, 100pt toolbar height
+
+**Remember**: Check DESIGN_GUIDE.md for complete details before implementing any UI changes.
