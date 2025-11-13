@@ -137,8 +137,8 @@ final ThemeData keydex2 = ThemeData(
     outline: const Color(0xFF7F8571),
     // Used by components that reference surface containers
     surfaceContainerHighest: const Color(0xFF8A917E),
-    // Errors tuned to feel flat and readable
-    error: const Color(0xFFD95C5C),
+    // Errors: use Material's standard error color (matches keydexTheme)
+    error: const Color(0xFFBA1A1A),
     onError: const Color(0xFFFDFFF0),
   ),
   // Keep it flat by removing tint; borderless, lower rounding like list screen
@@ -184,7 +184,7 @@ final ThemeData keydex2 = ThemeData(
     ),
     errorBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(4),
-      borderSide: const BorderSide(color: Color(0xFFD95C5C), width: 1),
+      borderSide: const BorderSide(color: Color(0xFFBA1A1A), width: 1),
     ),
     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
     hintStyle: const TextStyle(
