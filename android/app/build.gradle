@@ -5,14 +5,8 @@ plugins {
     id "dev.flutter.flutter-gradle-plugin"
 }
 
-def keystorePropertiesFile = rootProject.file("key.properties")
-def keystoreProperties = new Properties()
-if (keystorePropertiesFile.exists()) {
-    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
-}
-
 android {
-    namespace = "com.singleoriginsoftware.keydex"
+    namespace = "com.example.keydex"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -26,7 +20,8 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.singleoriginsoftware.keydex"
+        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+        applicationId = "com.example.keydex"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
@@ -35,25 +30,11 @@ android {
         versionName = flutter.versionName
     }
 
-    signingConfigs {
-        release {
-            // Release signing will be configured via key.properties file
-            // See: https://docs.flutter.dev/deployment/android#signing-the-app
-            // Copy android/key.properties.example to android/key.properties and fill in your values
-            if (keystorePropertiesFile.exists()) {
-                keyAlias keystoreProperties['keyAlias']
-                keyPassword keystoreProperties['keyPassword']
-                storeFile file(keystoreProperties['storeFile'])
-                storePassword keystoreProperties['storePassword']
-            }
-        }
-    }
-
     buildTypes {
         release {
-            signingConfig = signingConfigs.release
-            minifyEnabled = false
-            shrinkResources = false
+            // TODO: Add your own signing config for the release build.
+            // Signing with the debug keys for now, so `flutter run --release` works.
+            signingConfig = signingConfigs.debug
         }
     }
 }

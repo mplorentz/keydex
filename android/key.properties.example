@@ -1,9 +1,0 @@
-# Android Release Signing Configuration
-# Copy this file to key.properties and fill in your actual values
-# DO NOT commit key.properties to version control!
-
-storePassword=your_keystore_password
-keyPassword=your_key_password
-keyAlias=your_key_alias
-storeFile=../path/to/your/keystore.jks
-
