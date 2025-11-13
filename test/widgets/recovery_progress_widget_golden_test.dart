@@ -9,7 +9,6 @@ import 'package:keydex/models/key_holder.dart';
 import 'package:keydex/providers/recovery_provider.dart';
 import 'package:keydex/providers/lockbox_provider.dart';
 import 'package:keydex/widgets/recovery_progress_widget.dart';
-import 'package:keydex/widgets/theme.dart';
 import '../helpers/golden_test_helpers.dart';
 
 void main() {
@@ -53,19 +52,14 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const RecoveryProgressWidget(recoveryRequestId: 'test-request'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: Scaffold(body: child),
-          ),
-        ),
+        container: container,
         surfaceSize: const Size(375, 300),
+        useScaffold: true,
+        waitForSettle: false,
       );
-
-      await tester.pump();
 
       await screenMatchesGoldenWithoutSettle<RecoveryProgressWidget>(
         tester,
@@ -84,19 +78,13 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const RecoveryProgressWidget(recoveryRequestId: 'test-request'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: Scaffold(body: child),
-          ),
-        ),
+        container: container,
         surfaceSize: const Size(375, 300),
+        useScaffold: true,
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'recovery_progress_widget_error');
 
@@ -133,19 +121,13 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const RecoveryProgressWidget(recoveryRequestId: 'test-request'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: Scaffold(body: child),
-          ),
-        ),
+        container: container,
         surfaceSize: const Size(375, 400),
+        useScaffold: true,
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'recovery_progress_widget_low_progress');
 
@@ -187,19 +169,13 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const RecoveryProgressWidget(recoveryRequestId: 'test-request'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: Scaffold(body: child),
-          ),
-        ),
+        container: container,
         surfaceSize: const Size(375, 500),
+        useScaffold: true,
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'recovery_progress_widget_threshold_met');
 
@@ -241,19 +217,13 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const RecoveryProgressWidget(recoveryRequestId: 'test-request'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: Scaffold(body: child),
-          ),
-        ),
+        container: container,
         surfaceSize: const Size(375, 500),
+        useScaffold: true,
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'recovery_progress_widget_completed');
 

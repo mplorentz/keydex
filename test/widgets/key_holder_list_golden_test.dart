@@ -7,7 +7,6 @@ import 'package:keydex/models/shard_data.dart';
 import 'package:keydex/providers/lockbox_provider.dart';
 import 'package:keydex/providers/key_provider.dart';
 import 'package:keydex/widgets/key_holder_list.dart';
-import 'package:keydex/widgets/theme.dart';
 import 'dart:async';
 import '../helpers/golden_test_helpers.dart';
 
@@ -72,19 +71,14 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const KeyHolderList(lockboxId: 'test-lockbox'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: Scaffold(body: child),
-          ),
-        ),
+        container: container,
         surfaceSize: const Size(375, 200),
+        useScaffold: true,
+        waitForSettle: false,
       );
-
-      await tester.pump();
 
       await screenMatchesGoldenWithoutSettle<KeyHolderList>(
         tester,
@@ -104,19 +98,13 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const KeyHolderList(lockboxId: 'test-lockbox'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: Scaffold(body: child),
-          ),
-        ),
+        container: container,
         surfaceSize: const Size(375, 200),
+        useScaffold: true,
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'key_holder_list_error');
 
@@ -137,19 +125,13 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const KeyHolderList(lockboxId: 'test-lockbox'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: Scaffold(body: child),
-          ),
-        ),
+        container: container,
         surfaceSize: const Size(375, 300),
+        useScaffold: true,
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'key_holder_list_empty');
 
@@ -180,19 +162,13 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const KeyHolderList(lockboxId: 'test-lockbox'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: Scaffold(body: child),
-          ),
-        ),
+        container: container,
         surfaceSize: const Size(375, 300),
+        useScaffold: true,
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'key_holder_list_single');
 
@@ -224,19 +200,13 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const KeyHolderList(lockboxId: 'test-lockbox'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: Scaffold(body: child),
-          ),
-        ),
+        container: container,
         surfaceSize: const Size(375, 400),
+        useScaffold: true,
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'key_holder_list_multiple');
 
@@ -267,19 +237,13 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const KeyHolderList(lockboxId: 'test-lockbox'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: Scaffold(body: child),
-          ),
-        ),
+        container: container,
         surfaceSize: const Size(375, 350),
+        useScaffold: true,
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'key_holder_list_with_owner');
 
@@ -310,19 +274,13 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const KeyHolderList(lockboxId: 'test-lockbox'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: Scaffold(body: child),
-          ),
-        ),
+        container: container,
         surfaceSize: const Size(375, 350),
+        useScaffold: true,
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'key_holder_list_without_owner');
 
@@ -352,19 +310,14 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const KeyHolderList(lockboxId: 'test-lockbox'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: Scaffold(body: child),
-          ),
-        ),
+        container: container,
         surfaceSize: const Size(375, 200),
+        useScaffold: true,
+        waitForSettle: false,
       );
-
-      await tester.pump();
 
       await screenMatchesGoldenWithoutSettle<KeyHolderList>(
         tester,

@@ -11,7 +11,6 @@ import 'package:keydex/models/key_holder_status.dart';
 import 'package:keydex/providers/lockbox_provider.dart';
 import 'package:keydex/screens/backup_config_screen.dart';
 import 'package:keydex/services/login_service.dart';
-import 'package:keydex/widgets/theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../helpers/golden_test_helpers.dart';
 
@@ -113,20 +112,12 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const BackupConfigScreen(lockboxId: 'test-lockbox'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
-        ),
-        surfaceSize: const Size(375, 667), // iPhone SE size
+        container: container,
+        waitForSettle: false, // Loading state
       );
-
-      // Capture the loading state
-      await tester.pump();
 
       await screenMatchesGoldenWithoutSettle<BackupConfigScreen>(
         tester,
@@ -146,20 +137,12 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const BackupConfigScreen(lockboxId: 'test-lockbox'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
-        ),
+        container: container,
         surfaceSize: const Size(375, 1000), // Taller to show full form
       );
-
-      // Wait for async loading to complete
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'backup_config_screen_empty');
 
@@ -195,19 +178,12 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const BackupConfigScreen(lockboxId: 'test-lockbox'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
-        ),
+        container: container,
         surfaceSize: const Size(375, 1200), // Taller to show all key holders
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'backup_config_screen_manual_key_holders');
 
@@ -241,19 +217,12 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const BackupConfigScreen(lockboxId: 'test-lockbox'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
-        ),
+        container: container,
         surfaceSize: const Size(375, 1200),
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'backup_config_screen_invited_key_holders');
 
@@ -292,19 +261,12 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const BackupConfigScreen(lockboxId: 'test-lockbox'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
-        ),
+        container: container,
         surfaceSize: const Size(375, 1200),
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'backup_config_screen_mixed_key_holders');
 
@@ -338,19 +300,12 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const BackupConfigScreen(lockboxId: 'test-lockbox'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
-        ),
+        container: container,
         surfaceSize: const Size(375, 1000),
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'backup_config_screen_multiple_relays');
 
@@ -397,12 +352,9 @@ void main() {
 
       await tester.pumpDeviceBuilder(
         builder,
-        wrapper: (child) => UncontrolledProviderScope(
+        wrapper: (child) => goldenMaterialAppWrapperWithProviders(
+          child: child,
           container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
         ),
       );
 

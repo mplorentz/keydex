@@ -9,7 +9,7 @@ import 'package:keydex/providers/lockbox_provider.dart';
 import 'package:keydex/providers/key_provider.dart';
 import 'package:keydex/providers/recovery_provider.dart';
 import 'package:keydex/screens/lockbox_detail_screen.dart';
-import 'package:keydex/widgets/theme.dart';
+import '../helpers/golden_test_helpers.dart';
 
 void main() {
   // Sample test data
@@ -95,21 +95,13 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const LockboxDetailScreen(lockboxId: 'test-lockbox'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
-        ),
-        surfaceSize:
-            const Size(375, 1200), // Further increased height to prevent overflow // iPhone SE size
+        container: container,
+        surfaceSize: const Size(375, 1200), // Further increased height to prevent overflow
+        waitForSettle: false, // Loading state has infinite animations
       );
-
-      // Use pump instead of pumpAndSettle for loading state to avoid timeout
-      await tester.pump();
 
       await screenMatchesGolden(tester, 'lockbox_detail_screen_loading');
 
@@ -126,19 +118,12 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const LockboxDetailScreen(lockboxId: 'test-lockbox'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
-        ),
+        container: container,
         surfaceSize: const Size(375, 1000), // Increased height to handle overflow
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'lockbox_detail_screen_error');
 
@@ -155,19 +140,12 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const LockboxDetailScreen(lockboxId: 'test-lockbox'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
-        ),
+        container: container,
         surfaceSize: const Size(375, 1000), // Increased height to handle overflow
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'lockbox_detail_screen_not_found');
 
@@ -194,19 +172,12 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const LockboxDetailScreen(lockboxId: 'test-lockbox'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
-        ),
+        container: container,
         surfaceSize: const Size(375, 1000), // Increased height to handle overflow
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'lockbox_detail_screen_owner_no_backup');
 
@@ -245,19 +216,12 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const LockboxDetailScreen(lockboxId: 'test-lockbox'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
-        ),
+        container: container,
         surfaceSize: const Size(375, 1000), // Increased height to handle overflow
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'lockbox_detail_screen_owner_backup_no_recovery');
 
@@ -306,19 +270,12 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const LockboxDetailScreen(lockboxId: 'test-lockbox'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
-        ),
+        container: container,
         surfaceSize: const Size(375, 1000), // Increased height to handle overflow
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'lockbox_detail_screen_owner_in_recovery');
 
@@ -356,19 +313,12 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const LockboxDetailScreen(lockboxId: 'test-lockbox'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
-        ),
+        container: container,
         surfaceSize: const Size(375, 1000), // Increased height to handle overflow
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'lockbox_detail_screen_shard_holder_no_recovery');
 
@@ -416,19 +366,12 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const LockboxDetailScreen(lockboxId: 'test-lockbox'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
-        ),
+        container: container,
         surfaceSize: const Size(375, 1000), // Increased height to handle overflow
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'lockbox_detail_screen_shard_holder_in_recovery');
 
@@ -464,19 +407,12 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const LockboxDetailScreen(lockboxId: 'test-lockbox'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
-        ),
+        container: container,
         surfaceSize: const Size(375, 1000), // Increased height to handle overflow
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'lockbox_detail_screen_awaiting_key');
 
@@ -527,12 +463,9 @@ void main() {
 
       await tester.pumpDeviceBuilder(
         builder,
-        wrapper: (child) => UncontrolledProviderScope(
+        wrapper: (child) => goldenMaterialAppWrapperWithProviders(
+          child: child,
           container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
         ),
       );
 
