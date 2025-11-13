@@ -116,7 +116,7 @@ final keydexTheme = ThemeData(
 /// Keydex v2 theme (terminal-adjacent, ledger vibes, flat, confident type)
 final ThemeData keydex2 = ThemeData(
   // Background slightly lighter / less green than 0xFFC1C4B1
-  scaffoldBackgroundColor: const Color(0xFFD5D8C7),
+  scaffoldBackgroundColor: const Color(0xFFc1c4b1),
   primaryColor: const Color(0xFFDC714E), // Accent for RowButton, etc.
   // Material 3 color scheme with explicit roles
   // Use an inky neutral as the seed so harmonized roles align with the ledger palette.
@@ -129,7 +129,7 @@ final ThemeData keydex2 = ThemeData(
     secondary: const Color(0xFF7A4A2F), // Umber as secondary
     onSecondary: const Color(0xFFFDFFF0),
     // Calm, ledger-like olive/sage neutrals
-    surface: const Color(0xFFD9DDCC),
+    surface: const Color(0xFFc1c4b1),
     onSurface: const Color(0xFF21271C),
     // Match old keydexTheme chip background for icon container in lists
     surfaceContainer: const Color(0xFF464D41),
@@ -143,7 +143,7 @@ final ThemeData keydex2 = ThemeData(
   ),
   // Keep it flat by removing tint; borderless, lower rounding like list screen
   cardTheme: const CardThemeData(
-    color: Color(0xFFD9DDCC),
+    color: Color(0xFFc1c4b1), // Match scaffold background
     surfaceTintColor: Colors.transparent,
     elevation: 0,
     margin: EdgeInsets.zero,
@@ -152,12 +152,15 @@ final ThemeData keydex2 = ThemeData(
     ),
   ),
   appBarTheme: const AppBarTheme(
-    backgroundColor: Color(0xFFD5D8C7),
+    backgroundColor: Color(0xFFc1c4b1),
     foregroundColor: Color(0xFF21271C),
     elevation: 0,
+    toolbarHeight: 100.0, // Increased height for more vertical spacing
+    titleSpacing: 32.0, // Double the default spacing
+    leadingWidth: 32.0,
     titleTextStyle: TextStyle(
-      fontSize: 28,
-      fontWeight: FontWeight.w700,
+      fontSize: 40,
+      fontWeight: FontWeight.w500,
       fontFamily: 'Archivo',
       color: Color(0xFF21271C),
     ),
@@ -165,11 +168,8 @@ final ThemeData keydex2 = ThemeData(
   // Inputs: preserve outlined borders and fill tone from v1 that you liked
   inputDecorationTheme: InputDecorationTheme(
     filled: true,
-    fillColor: const Color(0xFFDDE1CE),
-    // Label colors
-    labelStyle: const TextStyle(color: Color(0xFF7F8571), fontFamily: 'OpenSans'),
-    floatingLabelStyle: const TextStyle(
-        color: Color(0xFF7F8571), fontFamily: 'OpenSans', fontWeight: FontWeight.w600),
+    fillColor: const Color(0xFFc1c4b1), // Match scaffold background
+    // No explicit label styles - use theme defaults like keydexTheme
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(4), // match lockbox_create_screen
       borderSide: const BorderSide(color: Color(0xFF7F8571), width: 1),
@@ -187,7 +187,10 @@ final ThemeData keydex2 = ThemeData(
       borderSide: const BorderSide(color: Color(0xFFD95C5C), width: 1),
     ),
     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-    hintStyle: const TextStyle(color: Color(0xFF5D695E), fontFamily: 'OpenSans'),
+    hintStyle: const TextStyle(
+      color: Color.fromRGBO(103, 111, 98, 0.6), // Match keydexTheme hint style
+      fontFamily: 'Archivo',
+    ),
     errorStyle: const TextStyle(fontFamily: 'OpenSans', fontSize: 12),
   ),
   // Text selection and cursor (highlight when selecting text)
@@ -249,7 +252,7 @@ final ThemeData keydex2 = ThemeData(
   ),
   // Menus: flat with ledger paper feel
   popupMenuTheme: const PopupMenuThemeData(
-    color: Color(0xFFDDE1CE),
+    color: Color(0xFFc1c4b1),
     textStyle: TextStyle(color: Color(0xFF172018), fontFamily: 'OpenSans'),
     surfaceTintColor: Colors.transparent,
   ),
@@ -272,7 +275,7 @@ final ThemeData keydex2 = ThemeData(
     headlineMedium:
         TextStyle(fontFamily: 'Archivo', fontWeight: FontWeight.w600, color: Color(0xFF21271C)),
     headlineSmall:
-        TextStyle(fontFamily: 'Archivo', fontWeight: FontWeight.w600, color: Color(0xFF21271C)),
+        TextStyle(fontFamily: 'Archivo', fontWeight: FontWeight.w500, color: Color(0xFF21271C)),
     // Body content
     bodyLarge: TextStyle(
         fontFamily: 'OpenSans',
@@ -285,7 +288,7 @@ final ThemeData keydex2 = ThemeData(
         fontWeight: FontWeight.w400,
         fontSize: 14,
         height: 20 / 14,
-        color: Color(0xFF5D695E)),
+        color: Color(0xFF21271C)),
     bodySmall: TextStyle(
         fontFamily: 'OpenSans',
         fontWeight: FontWeight.w400,
@@ -306,7 +309,7 @@ final ThemeData keydex2 = ThemeData(
     titleLarge: TextStyle(
         fontFamily: 'Archivo',
         fontWeight: FontWeight.w600,
-        fontSize: 18,
+        fontSize: 22,
         height: 24 / 18,
         color: Color(0xFF21271C)),
     titleMedium:

@@ -117,7 +117,7 @@ class DebugInfoSheet extends ConsumerWidget {
               Icon(
                 Icons.bug_report,
                 size: 24,
-                color: theme.colorScheme.secondary,
+                color: theme.colorScheme.primary,
               ),
               const SizedBox(width: 12),
               Text(
@@ -271,7 +271,7 @@ class _KeyDisplay extends StatelessWidget {
           icon: Icon(
             Icons.copy,
             size: 16,
-            color: Theme.of(context).colorScheme.secondary,
+            color: Theme.of(context).colorScheme.primary,
           ),
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(),

@@ -42,6 +42,8 @@ class KeydexGallery extends StatelessWidget {
                 const SizedBox(height: 24),
                 Text('Form', style: Theme.of(context).textTheme.headlineSmall),
                 const SizedBox(height: 8),
+                const Text("Here is some explanatory body text for a field."),
+                const SizedBox(height: 8),
                 const TextField(decoration: InputDecoration(labelText: 'Vault name')),
                 const SizedBox(height: 12),
                 const Row(
@@ -128,12 +130,16 @@ class KeydexGallery extends StatelessWidget {
   }
 
   Widget _icon(BuildContext context) => Container(
-        width: 28,
-        height: 28,
+        width: 48,
+        height: 48,
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surfaceContainer,
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Icon(Icons.lock_outline, size: 18, color: Theme.of(context).scaffoldBackgroundColor),
+        child: Icon(
+          Icons.lock_outline,
+          color: Theme.of(context).scaffoldBackgroundColor,
+          size: 24,
+        ),
       );
 }
