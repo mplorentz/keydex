@@ -10,6 +10,7 @@ import '../models/invitation_link.dart';
 import '../services/backup_service.dart';
 import '../services/invitation_service.dart';
 import '../providers/lockbox_provider.dart';
+import '../widgets/row_button_stack.dart';
 
 /// Backup configuration screen for setting up distributed backup
 ///
@@ -139,252 +140,242 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
           title: const Text('Backup Configuration'),
           centerTitle: false,
         ),
-        body: ScrollConfiguration(
-          behavior: const ScrollBehavior().copyWith(scrollbars: false),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 0),
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Threshold and Total Keys Configuration
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Backup Settings', style: Theme.of(context).textTheme.headlineSmall),
-                          const SizedBox(height: 16),
-                          Text('Threshold: $_threshold (minimum keys needed)'),
-                          Slider(
-                            value: _threshold.toDouble().clamp(
-                                  LockboxBackupConstraints.minThreshold.toDouble(),
-                                  (_keyHolders.isEmpty
+        body: Column(
+          children: [
+            Expanded(
+              child: ScrollConfiguration(
+                behavior: const ScrollBehavior().copyWith(scrollbars: false),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 0),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Threshold and Total Keys Configuration
+                        Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Backup Settings',
+                                    style: Theme.of(context).textTheme.headlineSmall),
+                                const SizedBox(height: 16),
+                                Text('Threshold: $_threshold (minimum keys needed)'),
+                                Slider(
+                                  value: _threshold.toDouble().clamp(
+                                        LockboxBackupConstraints.minThreshold.toDouble(),
+                                        (_keyHolders.isEmpty
+                                            ? LockboxBackupConstraints.maxTotalKeys.toDouble()
+                                            : _keyHolders.length.toDouble()),
+                                      ),
+                                  min: LockboxBackupConstraints.minThreshold.toDouble(),
+                                  max: _keyHolders.isEmpty
                                       ? LockboxBackupConstraints.maxTotalKeys.toDouble()
-                                      : _keyHolders.length.toDouble()),
+                                      : _keyHolders.length.toDouble(),
+                                  divisions: (_keyHolders.isEmpty
+                                                  ? LockboxBackupConstraints.maxTotalKeys
+                                                  : _keyHolders.length) -
+                                              LockboxBackupConstraints.minThreshold >
+                                          0
+                                      ? (_keyHolders.isEmpty
+                                              ? LockboxBackupConstraints.maxTotalKeys
+                                              : _keyHolders.length) -
+                                          LockboxBackupConstraints.minThreshold
+                                      : null,
+                                  onChanged: _keyHolders.isEmpty
+                                      ? null
+                                      : (value) {
+                                          setState(() {
+                                            _threshold = value.round();
+                                            _hasUnsavedChanges = true;
+                                          });
+                                        },
                                 ),
-                            min: LockboxBackupConstraints.minThreshold.toDouble(),
-                            max: _keyHolders.isEmpty
-                                ? LockboxBackupConstraints.maxTotalKeys.toDouble()
-                                : _keyHolders.length.toDouble(),
-                            divisions: (_keyHolders.isEmpty
-                                            ? LockboxBackupConstraints.maxTotalKeys
-                                            : _keyHolders.length) -
-                                        LockboxBackupConstraints.minThreshold >
-                                    0
-                                ? (_keyHolders.isEmpty
-                                        ? LockboxBackupConstraints.maxTotalKeys
-                                        : _keyHolders.length) -
-                                    LockboxBackupConstraints.minThreshold
-                                : null,
-                            onChanged: _keyHolders.isEmpty
-                                ? null
-                                : (value) {
+                                if (_keyHolders.isEmpty)
+                                  Text(
+                                    'Add stewards to configure threshold',
+                                    style: Theme.of(context).textTheme.bodySmall,
+                                  )
+                                else
+                                  Text(
+                                    'Total Keys: ${_keyHolders.length} (automatically set)',
+                                    style: Theme.of(context).textTheme.bodyMedium,
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Unified Stewards Section
+                        Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'Stewards (${_keyHolders.length})',
+                                      style: Theme.of(context).textTheme.headlineSmall,
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+
+                                // Add Steward Input Section
+                                TextField(
+                                  controller: _inviteeNameController,
+                                  decoration: const InputDecoration(
+                                    labelText: "Enter steward's name",
+                                    hintText: 'Enter name for the invitee',
+                                    border: OutlineInputBorder(),
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: ElevatedButton.icon(
+                                        onPressed: (_isGeneratingInvitation || _relays.isEmpty)
+                                            ? null
+                                            : _generateInvitationLink,
+                                        icon: _isGeneratingInvitation
+                                            ? const SizedBox(
+                                                width: 16,
+                                                height: 16,
+                                                child: CircularProgressIndicator(strokeWidth: 2),
+                                              )
+                                            : const Icon(Icons.link),
+                                        label: Text(_isGeneratingInvitation
+                                            ? 'Generating...'
+                                            : 'Generate Invitation Link'),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: OutlinedButton.icon(
+                                        onPressed: _addKeyHolderManually,
+                                        icon: const Icon(Icons.person_add),
+                                        label: const Text('Add Manually'),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+
+                                // Stewards List
+                                if (_keyHolders.isEmpty)
+                                  const Text(
+                                    'No stewards added yet. Add trusted contacts to distribute backup keys.',
+                                  )
+                                else
+                                  ..._keyHolders.map(
+                                    (holder) => _buildKeyHolderListItem(holder),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Instructions Section
+                        Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Instructions for Stewards',
+                                  style: Theme.of(context).textTheme.headlineSmall,
+                                ),
+                                const SizedBox(height: 16),
+                                TextField(
+                                  controller: _instructionsController,
+                                  decoration: const InputDecoration(
+                                    hintText:
+                                        'Write here instructions for stewards e.g. under what circumstances they should open the vault?',
+                                    border: OutlineInputBorder(),
+                                    alignLabelWithHint: true,
+                                  ),
+                                  maxLines: null,
+                                  minLines: 3,
+                                  onChanged: (_) {
                                     setState(() {
-                                      _threshold = value.round();
                                       _hasUnsavedChanges = true;
                                     });
                                   },
-                          ),
-                          if (_keyHolders.isEmpty)
-                            Text(
-                              'Add stewards to configure threshold',
-                              style: Theme.of(context).textTheme.bodySmall,
-                            )
-                          else
-                            Text(
-                              'Total Keys: ${_keyHolders.length} (automatically set)',
-                              style: Theme.of(context).textTheme.bodyMedium,
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Unified Stewards Section
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Stewards (${_keyHolders.length})',
-                                style: Theme.of(context).textTheme.headlineSmall,
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-
-                          // Add Steward Input Section
-                          TextField(
-                            controller: _inviteeNameController,
-                            decoration: const InputDecoration(
-                              labelText: "Enter steward's name",
-                              hintText: 'Enter name for the invitee',
-                              border: OutlineInputBorder(),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: ElevatedButton.icon(
-                                  onPressed: (_isGeneratingInvitation || _relays.isEmpty)
-                                      ? null
-                                      : _generateInvitationLink,
-                                  icon: _isGeneratingInvitation
-                                      ? const SizedBox(
-                                          width: 16,
-                                          height: 16,
-                                          child: CircularProgressIndicator(strokeWidth: 2),
-                                        )
-                                      : const Icon(Icons.link),
-                                  label: Text(_isGeneratingInvitation
-                                      ? 'Generating...'
-                                      : 'Generate Invitation Link'),
                                 ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: OutlinedButton.icon(
-                                  onPressed: _addKeyHolderManually,
-                                  icon: const Icon(Icons.person_add),
-                                  label: const Text('Add Manually'),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-
-                          // Stewards List
-                          if (_keyHolders.isEmpty)
-                            const Text(
-                              'No stewards added yet. Add trusted contacts to distribute backup keys.',
-                            )
-                          else
-                            ..._keyHolders.map(
-                              (holder) => _buildKeyHolderListItem(holder),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Instructions Section
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Instructions for Stewards',
-                            style: Theme.of(context).textTheme.headlineSmall,
-                          ),
-                          const SizedBox(height: 16),
-                          TextField(
-                            controller: _instructionsController,
-                            decoration: const InputDecoration(
-                              hintText:
-                                  'Write here instructions for stewards e.g. under what circumstances they should open the vault?',
-                              border: OutlineInputBorder(),
-                              alignLabelWithHint: true,
-                            ),
-                            maxLines: null,
-                            minLines: 3,
-                            onChanged: (_) {
-                              setState(() {
-                                _hasUnsavedChanges = true;
-                              });
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Relay Configuration
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Nostr Relays', style: Theme.of(context).textTheme.headlineSmall),
-                          const SizedBox(height: 16),
-                          ..._relays.map(
-                            (relay) => ListTile(
-                              leading: const Icon(Icons.cloud),
-                              title: Text(relay),
-                              trailing: IconButton(
-                                icon: const Icon(Icons.remove_circle),
-                                onPressed: () {
-                                  if (_relays.length > 1) {
-                                    setState(() {
-                                      _relays.remove(relay);
-                                      _hasUnsavedChanges = true;
-                                    });
-                                  }
-                                },
-                              ),
+                              ],
                             ),
                           ),
-                          ElevatedButton.icon(
-                            onPressed: _addRelay,
-                            icon: const Icon(Icons.add),
-                            label: const Text('Add Relay'),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Action Buttons
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: _handleCancel,
-                          child: const Text('Cancel'),
                         ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: _canCreateBackup() && !_isCreating ? _saveBackup : null,
-                          child: _isCreating
-                              ? const Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    SizedBox(
-                                      width: 16,
-                                      height: 16,
-                                      child: CircularProgressIndicator(strokeWidth: 2),
+                        const SizedBox(height: 16),
+
+                        // Relay Configuration
+                        Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Nostr Relays',
+                                    style: Theme.of(context).textTheme.headlineSmall),
+                                const SizedBox(height: 16),
+                                ..._relays.map(
+                                  (relay) => ListTile(
+                                    leading: const Icon(Icons.cloud),
+                                    title: Text(relay),
+                                    trailing: IconButton(
+                                      icon: const Icon(Icons.remove_circle),
+                                      onPressed: () {
+                                        if (_relays.length > 1) {
+                                          setState(() {
+                                            _relays.remove(relay);
+                                            _hasUnsavedChanges = true;
+                                          });
+                                        }
+                                      },
                                     ),
-                                    SizedBox(width: 8),
-                                    Text('Saving...'),
-                                  ],
-                                )
-                              : const Text('Save'),
+                                  ),
+                                ),
+                                ElevatedButton.icon(
+                                  onPressed: _addRelay,
+                                  icon: const Icon(Icons.add),
+                                  label: const Text('Add Relay'),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
-                    ],
+
+                        const SizedBox(height: 16), // Bottom padding inside scroll view
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 16), // Bottom padding inside scroll view
-                ],
+                ),
               ),
             ),
-          ),
+            // Fixed action buttons at bottom
+            RowButtonStack(
+              buttons: [
+                RowButtonConfig(
+                  onPressed: _handleCancel,
+                  icon: Icons.close,
+                  text: 'Cancel',
+                ),
+                RowButtonConfig(
+                  onPressed: _canCreateBackup() && !_isCreating ? _saveBackup : () {},
+                  icon: _isCreating ? Icons.hourglass_empty : Icons.save,
+                  text: _isCreating ? 'Saving...' : 'Save',
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );

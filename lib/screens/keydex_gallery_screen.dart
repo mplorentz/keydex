@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:keydex/widgets/row_button.dart';
+import '../widgets/row_button_stack.dart';
 import '../widgets/theme.dart';
 
 class KeydexGallery extends StatelessWidget {
@@ -117,10 +117,36 @@ class KeydexGallery extends StatelessWidget {
               ],
             ),
             bottomNavigationBar: SafeArea(
-              child: RowButton(
-                onPressed: () {},
-                icon: Icons.add,
-                text: 'Create Vault',
+              child: RowButtonStack(
+                buttons: [
+                  RowButtonConfig(
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('First action')),
+                      );
+                    },
+                    icon: Icons.download,
+                    text: 'Import',
+                  ),
+                  RowButtonConfig(
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Second action')),
+                      );
+                    },
+                    icon: Icons.settings,
+                    text: 'Settings',
+                  ),
+                  RowButtonConfig(
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Primary action')),
+                      );
+                    },
+                    icon: Icons.add,
+                    text: 'Create Vault',
+                  ),
+                ],
               ),
             ),
           );
