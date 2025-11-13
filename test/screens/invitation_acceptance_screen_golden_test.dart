@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_toolkit/golden_toolkit.dart';
@@ -9,7 +8,6 @@ import 'package:keydex/models/invitation_status.dart';
 import 'package:keydex/providers/invitation_provider.dart';
 import 'package:keydex/providers/key_provider.dart';
 import 'package:keydex/screens/invitation_acceptance_screen.dart';
-import 'package:keydex/widgets/theme.dart';
 import '../helpers/golden_test_helpers.dart';
 
 void main() {
@@ -58,20 +56,12 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const InvitationAcceptanceScreen(inviteCode: 'test-code'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
-        ),
-        surfaceSize: const Size(375, 667), // iPhone SE size
+        container: container,
+        waitForSettle: false, // Loading state
       );
-
-      // Don't pumpAndSettle - just capture the loading state
-      await tester.pump();
 
       await screenMatchesGoldenWithoutSettle<InvitationAcceptanceScreen>(
         tester,
@@ -91,19 +81,11 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const InvitationAcceptanceScreen(inviteCode: 'test-code'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
-        ),
-        surfaceSize: const Size(375, 667),
+        container: container,
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'invitation_acceptance_screen_error');
 
@@ -120,19 +102,11 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const InvitationAcceptanceScreen(inviteCode: 'invalid-code'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
-        ),
-        surfaceSize: const Size(375, 667),
+        container: container,
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'invitation_acceptance_screen_not_found');
 
@@ -155,19 +129,11 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const InvitationAcceptanceScreen(inviteCode: 'active-code'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
-        ),
-        surfaceSize: const Size(375, 667),
+        container: container,
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'invitation_acceptance_screen_active_logged_in');
 
@@ -190,19 +156,11 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const InvitationAcceptanceScreen(inviteCode: 'active-code-2'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
-        ),
-        surfaceSize: const Size(375, 667),
+        container: container,
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'invitation_acceptance_screen_active_no_name');
 
@@ -230,19 +188,11 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const InvitationAcceptanceScreen(inviteCode: 'active-code-3'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
-        ),
-        surfaceSize: const Size(375, 667),
+        container: container,
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'invitation_acceptance_screen_active_multiple_relays');
 
@@ -265,19 +215,11 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const InvitationAcceptanceScreen(inviteCode: 'active-code-4'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
-        ),
-        surfaceSize: const Size(375, 667),
+        container: container,
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'invitation_acceptance_screen_active_not_logged_in');
 
@@ -306,20 +248,12 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const InvitationAcceptanceScreen(inviteCode: 'active-code-5'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
-        ),
-        surfaceSize: const Size(375, 667),
+        container: container,
+        waitForSettle: false, // Loading state
       );
-
-      // Capture the loading state for checking account
-      await tester.pump();
 
       await screenMatchesGoldenWithoutSettle<InvitationAcceptanceScreen>(
         tester,
@@ -347,19 +281,11 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const InvitationAcceptanceScreen(inviteCode: 'active-code-6'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
-        ),
-        surfaceSize: const Size(375, 667),
+        container: container,
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'invitation_acceptance_screen_active_account_error');
 
@@ -384,19 +310,11 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const InvitationAcceptanceScreen(inviteCode: 'redeemed-code'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
-        ),
-        surfaceSize: const Size(375, 667),
+        container: container,
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'invitation_acceptance_screen_redeemed');
 
@@ -419,19 +337,11 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const InvitationAcceptanceScreen(inviteCode: 'denied-code'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
-        ),
-        surfaceSize: const Size(375, 667),
+        container: container,
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'invitation_acceptance_screen_denied');
 
@@ -454,19 +364,11 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const InvitationAcceptanceScreen(inviteCode: 'invalidated-code'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
-        ),
-        surfaceSize: const Size(375, 667),
+        container: container,
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'invitation_acceptance_screen_invalidated');
 
@@ -489,19 +391,11 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const InvitationAcceptanceScreen(inviteCode: 'error-code'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
-        ),
-        surfaceSize: const Size(375, 667),
+        container: container,
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'invitation_acceptance_screen_error_status');
 
@@ -541,12 +435,9 @@ void main() {
 
       await tester.pumpDeviceBuilder(
         builder,
-        wrapper: (child) => UncontrolledProviderScope(
+        wrapper: (child) => goldenMaterialAppWrapperWithProviders(
+          child: child,
           container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
         ),
       );
 

@@ -7,7 +7,6 @@ import 'package:keydex/models/shard_data.dart';
 import 'package:keydex/providers/lockbox_provider.dart';
 import 'package:keydex/providers/key_provider.dart';
 import 'package:keydex/widgets/lockbox_metadata_section.dart';
-import 'package:keydex/widgets/theme.dart';
 import '../helpers/golden_test_helpers.dart';
 
 void main() {
@@ -34,10 +33,11 @@ void main() {
       creatorPubkey: testPubkey,
       lockboxId: lockboxId,
       lockboxName: lockboxName,
-      peers: peers ?? [
-        {'name': 'Peer 1', 'pubkey': otherPubkey},
-        {'name': 'Peer 2', 'pubkey': thirdPubkey},
-      ],
+      peers: peers ??
+          [
+            {'name': 'Peer 1', 'pubkey': otherPubkey},
+            {'name': 'Peer 2', 'pubkey': thirdPubkey},
+          ],
       recipientPubkey: recipientPubkey,
       isReceived: true,
       receivedAt: DateTime.now().subtract(const Duration(hours: 1)),
@@ -69,19 +69,14 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const LockboxMetadataSection(lockboxId: 'test-lockbox'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: Scaffold(body: child),
-          ),
-        ),
+        container: container,
         surfaceSize: const Size(375, 200),
+        useScaffold: true,
+        waitForSettle: false,
       );
-
-      await tester.pump();
 
       await screenMatchesGoldenWithoutSettle<LockboxMetadataSection>(
         tester,
@@ -101,19 +96,13 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const LockboxMetadataSection(lockboxId: 'test-lockbox'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: Scaffold(body: child),
-          ),
-        ),
+        container: container,
         surfaceSize: const Size(375, 200),
+        useScaffold: true,
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'lockbox_metadata_section_error');
 
@@ -141,19 +130,13 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const LockboxMetadataSection(lockboxId: 'test-lockbox'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: Scaffold(body: child),
-          ),
-        ),
+        container: container,
         surfaceSize: const Size(375, 200),
+        useScaffold: true,
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'lockbox_metadata_section_owner');
 
@@ -181,19 +164,13 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const LockboxMetadataSection(lockboxId: 'test-lockbox'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: Scaffold(body: child),
-          ),
-        ),
+        container: container,
         surfaceSize: const Size(375, 250),
+        useScaffold: true,
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'lockbox_metadata_section_key_holder');
 
@@ -214,19 +191,13 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const LockboxMetadataSection(lockboxId: 'test-lockbox'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: Scaffold(body: child),
-          ),
-        ),
+        container: container,
         surfaceSize: const Size(375, 200),
+        useScaffold: true,
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'lockbox_metadata_section_key_holder_no_shards');
 
@@ -256,19 +227,14 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const LockboxMetadataSection(lockboxId: 'test-lockbox'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: Scaffold(body: child),
-          ),
-        ),
+        container: container,
         surfaceSize: const Size(375, 200),
+        useScaffold: true,
+        waitForSettle: false,
       );
-
-      await tester.pump();
 
       await screenMatchesGolden(tester, 'lockbox_metadata_section_user_loading');
 

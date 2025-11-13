@@ -1,42 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_toolkit/golden_toolkit.dart';
 import 'package:keydex/screens/lockbox_create_screen.dart';
-import 'package:keydex/widgets/theme.dart';
+import '../helpers/golden_test_helpers.dart';
 
 void main() {
   group('LockboxCreateScreen Golden Tests', () {
     testGoldens('empty state - no input', (tester) async {
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const LockboxCreateScreen(),
-        wrapper: (child) => ProviderScope(
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
-        ),
-        surfaceSize: const Size(375, 667), // iPhone SE size
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'lockbox_create_screen_empty');
     });
 
     testGoldens('filled state - with content', (tester) async {
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const LockboxCreateScreen(),
-        wrapper: (child) => ProviderScope(
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
-        ),
-        surfaceSize: const Size(375, 667),
       );
-
-      await tester.pumpAndSettle();
 
       // Fill in the name field (first TextFormField)
       await tester.enterText(
@@ -56,18 +39,10 @@ void main() {
     });
 
     testGoldens('validation errors - empty name', (tester) async {
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const LockboxCreateScreen(),
-        wrapper: (child) => ProviderScope(
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
-        ),
-        surfaceSize: const Size(375, 667),
       );
-
-      await tester.pumpAndSettle();
 
       // Tap the Next button without entering any data
       await tester.tap(find.text('Next'));
@@ -77,18 +52,10 @@ void main() {
     });
 
     testGoldens('validation errors - content too long', (tester) async {
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const LockboxCreateScreen(),
-        wrapper: (child) => ProviderScope(
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
-        ),
-        surfaceSize: const Size(375, 667),
       );
-
-      await tester.pumpAndSettle();
 
       // Fill in the name field (first TextFormField)
       await tester.enterText(
@@ -126,30 +93,17 @@ void main() {
 
       await tester.pumpDeviceBuilder(
         builder,
-        wrapper: (child) => ProviderScope(
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
-        ),
+        wrapper: goldenMaterialAppWrapper,
       );
 
       await screenMatchesGolden(tester, 'lockbox_create_screen_multiple_devices');
     });
 
     testGoldens('filled content with character count', (tester) async {
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const LockboxCreateScreen(),
-        wrapper: (child) => ProviderScope(
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
-        ),
-        surfaceSize: const Size(375, 667),
       );
-
-      await tester.pumpAndSettle();
 
       // Fill in the name field (first TextFormField)
       await tester.enterText(

@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -10,7 +9,7 @@ import 'package:keydex/models/shard_data.dart';
 import 'package:keydex/providers/key_provider.dart';
 import 'package:keydex/providers/lockbox_provider.dart';
 import 'package:keydex/screens/lockbox_list_screen.dart';
-import 'package:keydex/widgets/theme.dart';
+import '../helpers/golden_test_helpers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -127,20 +126,12 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const LockboxListScreen(),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
-        ),
+        container: container,
         surfaceSize: const Size(375, 667), // iPhone SE size
       );
-
-      // Wait for all animations and async operations
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'lockbox_list_screen_empty');
 
@@ -162,19 +153,11 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const LockboxListScreen(),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
-        ),
-        surfaceSize: const Size(375, 667),
+        container: container,
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'lockbox_list_screen_error');
 
@@ -191,19 +174,11 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const LockboxListScreen(),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
-        ),
-        surfaceSize: const Size(375, 667),
+        container: container,
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'lockbox_list_screen_single_owned');
 
@@ -220,19 +195,11 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const LockboxListScreen(),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
-        ),
-        surfaceSize: const Size(375, 667),
+        container: container,
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'lockbox_list_screen_single_key_holder');
 
@@ -249,19 +216,11 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const LockboxListScreen(),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
-        ),
-        surfaceSize: const Size(375, 667),
+        container: container,
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'lockbox_list_screen_single_awaiting_key');
 
@@ -278,19 +237,11 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const LockboxListScreen(),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
-        ),
-        surfaceSize: const Size(375, 667),
+        container: container,
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'lockbox_list_screen_multiple');
 
@@ -320,12 +271,9 @@ void main() {
 
       await tester.pumpDeviceBuilder(
         builder,
-        wrapper: (child) => UncontrolledProviderScope(
+        wrapper: (child) => goldenMaterialAppWrapperWithProviders(
+          child: child,
           container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: child,
-          ),
         ),
       );
 

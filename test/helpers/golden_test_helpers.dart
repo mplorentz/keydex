@@ -1,5 +1,8 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter/widgets.dart';
+import 'package:golden_toolkit/golden_toolkit.dart';
+import 'package:keydex/widgets/theme.dart';
 
 /// Matches a golden file without calling `pumpAndSettle()`.
 ///
@@ -64,4 +67,176 @@ Future<void> screenMatchesGoldenWithoutSettleWithFinder(
     finder,
     matchesGoldenFile('goldens/$goldenName.png'),
   );
+}
+
+/// Creates a MaterialApp wrapper with keydex2 theme for golden tests.
+///
+/// This is the standard wrapper for golden tests that don't need Riverpod providers.
+/// It wraps the child widget in a MaterialApp with the keydex2 theme applied.
+///
+/// Usage:
+/// ```dart
+/// await tester.pumpWidgetBuilder(
+///   const MyWidget(),
+///   wrapper: goldenMaterialAppWrapper,
+/// );
+/// ```
+Widget Function(Widget) get goldenMaterialAppWrapper => (Widget child) => MaterialApp(
+      theme: keydex2,
+      home: child,
+    );
+
+/// Creates a MaterialApp wrapper with keydex2 theme and ProviderContainer for golden tests.
+///
+/// This wrapper includes Riverpod provider support via UncontrolledProviderScope.
+/// Use this when your widget needs access to Riverpod providers.
+///
+/// Usage:
+/// ```dart
+/// final container = ProviderContainer(overrides: [...]);
+/// await tester.pumpWidgetBuilder(
+///   const MyWidget(),
+///   wrapper: (child) => goldenMaterialAppWrapperWithProviders(
+///     child: child,
+///     container: container,
+///   ),
+/// );
+/// container.dispose();
+/// ```
+///
+/// Parameters:
+/// - [child] - The widget to wrap
+/// - [container] - The ProviderContainer with any necessary overrides
+Widget goldenMaterialAppWrapperWithProviders({
+  required Widget child,
+  required ProviderContainer container,
+}) {
+  return UncontrolledProviderScope(
+    container: container,
+    child: MaterialApp(
+      theme: keydex2,
+      home: child,
+    ),
+  );
+}
+
+/// Creates a MaterialApp wrapper with keydex2 theme, ProviderContainer, and Scaffold for golden tests.
+///
+/// This wrapper includes Riverpod provider support and wraps the child in a Scaffold.
+/// Use this when your widget needs providers and should be displayed in a Scaffold context.
+///
+/// Usage:
+/// ```dart
+/// final container = ProviderContainer(overrides: [...]);
+/// await tester.pumpWidgetBuilder(
+///   const MyWidget(),
+///   wrapper: (child) => goldenMaterialAppWrapperWithProvidersAndScaffold(
+///     child: child,
+///     container: container,
+///   ),
+/// );
+/// container.dispose();
+/// ```
+///
+/// Parameters:
+/// - [child] - The widget to wrap
+/// - [container] - The ProviderContainer with any necessary overrides
+Widget goldenMaterialAppWrapperWithProvidersAndScaffold({
+  required Widget child,
+  required ProviderContainer container,
+}) {
+  return UncontrolledProviderScope(
+    container: container,
+    child: MaterialApp(
+      theme: keydex2,
+      home: Scaffold(body: child),
+    ),
+  );
+}
+
+/// Pumps a widget for golden testing with automatic MaterialApp and theme setup.
+///
+/// This is a high-level helper that wraps `pumpWidgetBuilder` and automatically
+/// handles MaterialApp wrapping with the keydex2 theme. It simplifies common
+/// golden test setup by abstracting away the wrapper creation.
+///
+/// Usage without providers:
+/// ```dart
+/// await pumpGoldenWidget(
+///   tester,
+///   const MyWidget(),
+///   surfaceSize: Size(375, 667),
+/// );
+/// ```
+///
+/// Usage with providers:
+/// ```dart
+/// final container = ProviderContainer(overrides: [...]);
+/// await pumpGoldenWidget(
+///   tester,
+///   const MyWidget(),
+///   container: container,
+///   surfaceSize: Size(375, 667),
+/// );
+/// container.dispose();
+/// ```
+///
+/// Usage for loading states (without waiting for settle):
+/// ```dart
+/// await pumpGoldenWidget(
+///   tester,
+///   const MyWidget(),
+///   waitForSettle: false,
+/// );
+/// await screenMatchesGoldenWithoutSettle<MyWidget>(tester, 'my_widget_loading');
+/// ```
+///
+/// Parameters:
+/// - [tester] - The widget tester instance
+/// - [widget] - The widget to test
+/// - [container] - Optional ProviderContainer for Riverpod providers
+/// - [surfaceSize] - Optional surface size (defaults to iPhone SE: 375x667)
+/// - [useScaffold] - Whether to wrap widget in Scaffold (defaults to false)
+/// - [waitForSettle] - Whether to wait for animations to settle (defaults to true).
+///   Set to false for loading states with infinite animations like CircularProgressIndicator.
+Future<void> pumpGoldenWidget(
+  WidgetTester tester,
+  Widget widget, {
+  ProviderContainer? container,
+  Size? surfaceSize,
+  bool useScaffold = false,
+  bool waitForSettle = true,
+}) async {
+  const defaultSize = Size(375, 667); // iPhone SE size
+  final effectiveSize = surfaceSize ?? defaultSize;
+
+  Widget Function(Widget) wrapper;
+  if (container != null) {
+    if (useScaffold) {
+      wrapper = (child) => goldenMaterialAppWrapperWithProvidersAndScaffold(
+            child: child,
+            container: container,
+          );
+    } else {
+      wrapper = (child) => goldenMaterialAppWrapperWithProviders(
+            child: child,
+            container: container,
+          );
+    }
+  } else {
+    wrapper = goldenMaterialAppWrapper;
+  }
+
+  await tester.pumpWidgetBuilder(
+    widget,
+    wrapper: wrapper,
+    surfaceSize: effectiveSize,
+  );
+
+  // Wait for animations to settle, or just pump once for loading states
+  if (waitForSettle) {
+    await tester.pumpAndSettle();
+  } else {
+    await tester.pump();
+  }
 }

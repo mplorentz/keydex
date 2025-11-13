@@ -5,7 +5,6 @@ import 'package:golden_toolkit/golden_toolkit.dart';
 import 'package:keydex/models/recovery_request.dart';
 import 'package:keydex/providers/recovery_provider.dart';
 import 'package:keydex/widgets/recovery_metadata_widget.dart';
-import 'package:keydex/widgets/theme.dart';
 import '../helpers/golden_test_helpers.dart';
 
 void main() {
@@ -41,19 +40,14 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const RecoveryMetadataWidget(recoveryRequestId: 'test-request'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: Scaffold(body: child),
-          ),
-        ),
+        container: container,
         surfaceSize: const Size(375, 200),
+        useScaffold: true,
+        waitForSettle: false,
       );
-
-      await tester.pump();
 
       await screenMatchesGoldenWithoutSettle<RecoveryMetadataWidget>(
         tester,
@@ -72,19 +66,13 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const RecoveryMetadataWidget(recoveryRequestId: 'test-request'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: Scaffold(body: child),
-          ),
-        ),
+        container: container,
         surfaceSize: const Size(375, 200),
+        useScaffold: true,
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'recovery_metadata_widget_error');
 
@@ -104,19 +92,13 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const RecoveryMetadataWidget(recoveryRequestId: 'test-request'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: Scaffold(body: child),
-          ),
-        ),
+        container: container,
         surfaceSize: const Size(375, 250),
+        useScaffold: true,
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'recovery_metadata_widget_pending');
 
@@ -136,19 +118,13 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const RecoveryMetadataWidget(recoveryRequestId: 'test-request'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: Scaffold(body: child),
-          ),
-        ),
+        container: container,
         surfaceSize: const Size(375, 250),
+        useScaffold: true,
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'recovery_metadata_widget_in_progress');
 
@@ -168,19 +144,13 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const RecoveryMetadataWidget(recoveryRequestId: 'test-request'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: Scaffold(body: child),
-          ),
-        ),
+        container: container,
         surfaceSize: const Size(375, 250),
+        useScaffold: true,
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'recovery_metadata_widget_completed');
 
@@ -201,19 +171,13 @@ void main() {
         ],
       );
 
-      await tester.pumpWidgetBuilder(
+      await pumpGoldenWidget(
+        tester,
         const RecoveryMetadataWidget(recoveryRequestId: 'test-request'),
-        wrapper: (child) => UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            theme: keydexTheme,
-            home: Scaffold(body: child),
-          ),
-        ),
+        container: container,
         surfaceSize: const Size(375, 250),
+        useScaffold: true,
       );
-
-      await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'recovery_metadata_widget_expired');
 
