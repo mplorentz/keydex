@@ -11,6 +11,8 @@ Auto-generated from all feature plans. Last updated: 2025-09-22
 - FlutterSecureStorage for local data, Nostr relays for distributed shares (003-lockbox-recovery)
 - Dart 3.5.3, Flutter 3.35.0 (004-invitation-links)
 - SharedPreferences for invitation code tracking, FlutterSecureStorage for sensitive data (004-invitation-links)
+- Dart 3.5.3+ with Flutter 3.35.0 + flutter_riverpod (2.6.1), ndk (0.5.1 with Blossom support), ntcdcrypto (0.4.0), flutter_secure_storage (9.2.2), shared_preferences (2.5.3) (005-file-support)
+- Local storage via SharedPreferences for metadata, FlutterSecureStorage for sensitive data, Blossom servers for encrypted file blobs (005-file-support)
 
 ## Project Structure
 ```
@@ -25,9 +27,9 @@ tests/
 Dart 3.0+ with Flutter 3.16+: Follow standard conventions
 
 ## Recent Changes
+- 005-file-support: Added Dart 3.5.3+ with Flutter 3.35.0 + flutter_riverpod (2.6.1), ndk (0.5.1 with Blossom support), ntcdcrypto (0.4.0), flutter_secure_storage (9.2.2), shared_preferences (2.5.3)
 - 004-invitation-links: Added Dart 3.5.3, Flutter 3.35.0
 - 003-lockbox-recovery: Added Dart 3.0+ with Flutter 3.16+ + Flutter, NDK (Nostr), flutter_secure_storage, crypto
-- 002-distributed-backup-of: Added Dart 3.0+ / Flutter 3.16+ + Flutter, ndk (Nostr protocol), ntcdcrypto (Shamir's Secret Sharing)
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->
