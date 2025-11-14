@@ -5,6 +5,8 @@ import '../providers/lockbox_provider.dart';
 import '../widgets/lockbox_metadata_section.dart';
 import '../widgets/key_holder_list.dart';
 import '../widgets/lockbox_detail_button_stack.dart';
+import '../widgets/lockbox_file_list.dart';
+import '../widgets/file_distribution_status.dart';
 
 /// Detail/view screen for displaying a lockbox
 class LockboxDetailScreen extends ConsumerWidget {
@@ -120,6 +122,25 @@ class LockboxDetailScreen extends ConsumerWidget {
                 children: [
                   // Lockbox Metadata Section
                   LockboxMetadataSection(lockboxId: lockbox.id),
+                  // Files Section (T034)
+                  if (lockbox.files.isNotEmpty) ...[
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Files',
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                          const SizedBox(height: 8),
+                          LockboxFileList(files: lockbox.files),
+                        ],
+                      ),
+                    ),
+                    // Distribution Status (T036)
+                    FileDistributionStatusWidget(lockboxId: lockbox.id),
+                  ],
                   // Key Holder List (extends to edges)
                   KeyHolderList(lockboxId: lockbox.id),
                 ],

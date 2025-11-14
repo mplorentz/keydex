@@ -1,41 +1,39 @@
 import 'package:flutter/material.dart';
+import '../models/lockbox_file.dart';
 
-/// Stub dialog for file replacement
-/// TODO: Implement file replacement dialog with file picker and confirmation
+/// Dialog for confirming file replacement
 class FileReplacementDialog extends StatelessWidget {
-  final String fileName; // TODO: Use LockboxFile model when created
+  final LockboxFile existingFile;
 
   const FileReplacementDialog({
     super.key,
-    required this.fileName,
+    required this.existingFile,
   });
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Replace File'),
-      content: Text('Replace $fileName?'),
+      title: const Text('Replace File?'),
+      content: Text(
+        'A file named "${existingFile.name}" already exists. Do you want to replace it with the new file?',
+      ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(false),
           child: const Text('Cancel'),
         ),
-        TextButton(
-          onPressed: () {
-            // TODO: Implement file picker and replacement logic
-            Navigator.of(context).pop(true);
-          },
+        FilledButton(
+          onPressed: () => Navigator.of(context).pop(true),
           child: const Text('Replace'),
         ),
       ],
     );
   }
 
-  static Future<bool?> show(BuildContext context, String fileName) {
+  static Future<bool?> show(BuildContext context, LockboxFile existingFile) {
     return showDialog<bool>(
       context: context,
-      builder: (context) => FileReplacementDialog(fileName: fileName),
+      builder: (context) => FileReplacementDialog(existingFile: existingFile),
     );
   }
 }
-

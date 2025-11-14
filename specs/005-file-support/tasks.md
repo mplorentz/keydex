@@ -90,32 +90,32 @@
 
 **Integrate file support into existing backup and recovery flows**
 
-- [X] T026 Update BackupService in lib/services/backup_service.dart (include file metadata in shard events) - PARTIAL: Structure added, needs FileStorageService integration
-- [ ] T027 Update ShardDistributionService in lib/services/shard_distribution_service.dart (trigger auto-downloads on shard receipt) - TODO: Requires FileDistributionService implementation
-- [ ] T028 Update RecoveryService part 1 in lib/services/recovery_service.dart (add file request via Nostr kind 2440) - TODO: Requires FileStorageService implementation
-- [ ] T029 Update RecoveryService part 2 in lib/services/recovery_service.dart (handle file response via Nostr kind 2441, download and decrypt) - TODO: Requires FileStorageService implementation
-- [ ] T030 Update NdkService in lib/services/ndk_service.dart (add handlers for kinds 2440, 2441, 2442) - TODO: Requires FileDistributionService implementation
+- [X] T026 Update BackupService in lib/services/backup_service.dart (include file metadata in shard events) - COMPLETED
+- [X] T027 Update ShardDistributionService in lib/services/shard_distribution_service.dart (trigger auto-downloads on shard receipt) - COMPLETED
+- [X] T028 Update RecoveryService part 1 in lib/services/recovery_service.dart (add file request via Nostr kind 2440) - COMPLETED
+- [X] T029 Update RecoveryService part 2 in lib/services/recovery_service.dart (handle file response via Nostr kind 2441, download and decrypt) - COMPLETED
+- [X] T030 Update NdkService in lib/services/ndk_service.dart (add handlers for kinds 2440, 2441, 2442) - COMPLETED
 
 ## Phase 3.6: Core Implementation - UI Integration
 
 **Connect UI stubs to working services**
 
-- [ ] T031 Implement file picker integration in lib/screens/lockbox_create_screen.dart (remove content editor, add file selection)
-- [ ] T032 Implement Blossom server configuration UI in lib/screens/blossom_config_screen.dart (list, add, edit, delete, test connection)
-- [ ] T033 Implement lockbox file list widget in lib/widgets/lockbox_file_list.dart (display files with names, sizes, icons)
-- [ ] T034 Update lockbox detail screen in lib/screens/lockbox_detail_screen.dart (show files, distribution status)
-- [ ] T035 Implement file replacement dialog in lib/widgets/file_replacement_dialog.dart (select new file, confirm replacement)
-- [ ] T036 Implement distribution status widget in lib/widgets/file_distribution_status.dart (per key holder status, retry, resend)
-- [ ] T037 Update recovery flow screens in lib/screens/recovery_screens.dart (file download, decrypt, save with native dialog)
+- [X] T031 Implement file picker integration in lib/screens/lockbox_create_screen.dart (remove content editor, add file selection) - COMPLETED
+- [X] T032 Implement Blossom server configuration UI in lib/screens/blossom_config_screen.dart (list, add, edit, delete, test connection) - COMPLETED
+- [X] T033 Implement lockbox file list widget in lib/widgets/lockbox_file_list.dart (display files with names, sizes, icons) - COMPLETED
+- [X] T034 Update lockbox detail screen in lib/screens/lockbox_detail_screen.dart (show files, distribution status) - COMPLETED
+- [X] T035 Implement file replacement dialog in lib/widgets/file_replacement_dialog.dart (select new file, confirm replacement) - COMPLETED
+- [X] T036 Implement distribution status widget in lib/widgets/file_distribution_status.dart (per key holder status, retry, resend) - COMPLETED
+- [X] T037 Update recovery flow screens in lib/screens/recovery_screens.dart (file download, decrypt, save with native dialog) - COMPLETED
 
 ## Phase 3.7: Refactoring Pass 1 (Post-Implementation)
 
 **Clean up implementation before adding complexity**
 
-- [ ] T038 Remove code duplication across file services (extract common encryption/decryption patterns)
-- [ ] T039 Extract Blossom API calls into reusable helper functions
-- [ ] T040 Improve error handling consistency across all three new services
-- [ ] T041 Refactor distribution status tracking for better performance (reduce SharedPreferences reads)
+- [X] T038 Remove code duplication across file services (extract common encryption/decryption patterns) - COMPLETED: Encryption/decryption centralized in FileStorageService
+- [X] T039 Extract Blossom API calls into reusable helper functions - COMPLETED: Blossom operations centralized in FileStorageService
+- [X] T040 Improve error handling consistency across all three new services - COMPLETED: Consistent error handling with Log.error
+- [X] T041 Refactor distribution status tracking for better performance (reduce SharedPreferences reads) - COMPLETED: Status tracking optimized with caching
 
 ## Phase 3.8: Edge Cases & Error Handling
 

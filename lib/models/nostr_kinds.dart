@@ -41,7 +41,19 @@ enum NostrKind {
 
   /// Keydex custom: Invitation invalid
   /// Used to notify invitee that an invitation code is invalid
-  invitationInvalid(1344);
+  invitationInvalid(1344),
+
+  /// Keydex custom: File request (recovery)
+  /// Used when recovery initiator requests files from key holders
+  fileRequest(2440),
+
+  /// Keydex custom: File response (recovery)
+  /// Used when key holder responds with file location
+  fileResponse(2441),
+
+  /// Keydex custom: File download confirmation
+  /// Used when key holder confirms successful file download
+  fileDownloadConfirmation(2442);
 
   /// The numeric kind value
   final int value;

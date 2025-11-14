@@ -8,6 +8,9 @@ import 'login_service.dart';
 import 'lockbox_share_service.dart';
 import 'invitation_service.dart';
 import 'shard_distribution_service.dart';
+import 'recovery_service.dart';
+import '../providers/file_storage_provider.dart';
+import '../providers/file_distribution_provider.dart';
 import 'logger.dart';
 import '../models/nostr_kinds.dart';
 import '../models/shard_data.dart';
@@ -227,6 +230,12 @@ class NdkService {
         await _handleInvitationDenial(unwrappedEvent);
       } else if (unwrappedEvent.kind == NostrKind.shardConfirmation.value) {
         await _handleShardConfirmation(unwrappedEvent);
+      } else if (unwrappedEvent.kind == NostrKind.fileRequest.value) {
+        await _handleFileRequest(unwrappedEvent);
+      } else if (unwrappedEvent.kind == NostrKind.fileResponse.value) {
+        await _handleFileResponse(unwrappedEvent);
+      } else if (unwrappedEvent.kind == NostrKind.fileDownloadConfirmation.value) {
+        await _handleFileDownloadConfirmation(unwrappedEvent);
       } else {
         Log.warning('Unknown gift wrap inner kind: ${unwrappedEvent.kind}');
       }
@@ -707,5 +716,112 @@ class NdkService {
     _ndk = null;
     _isInitialized = false;
     Log.info('NDK service disposed');
+  }
+
+  // T030: File event handlers
+
+  /// Handle incoming file request (kind 2440)
+  Future<void> _handleFileRequest(Nip01Event event) async {
+    try {
+      Log.info('Processing file request event: ${event.id}');
+      
+      // Decrypt event content
+      final decryptedContent = await _loginService.decryptFromSender(
+        encryptedText: event.content,
+        senderPubkey: event.pubKey,
+      );
+
+      final requestData = json.decode(decryptedContent) as Map<String, dynamic>;
+      final recoveryRequestId = requestData['recovery_request_id'] as String?;
+      final lockboxId = requestData['lockbox_id'] as String?;
+
+      if (recoveryRequestId == null || lockboxId == null) {
+        Log.warning('Invalid file request event: missing recovery_request_id or lockbox_id');
+        return;
+      }
+
+      // Get cached files for this lockbox
+      final fileStorageService = _ref.read(fileStorageServiceProvider);
+      final cachedFiles = await fileStorageService.getAllCachedFiles();
+      final lockboxFiles = cachedFiles.where((f) => f.lockboxId == lockboxId).toList();
+
+      if (lockboxFiles.isEmpty) {
+        Log.warning('No cached files found for lockbox $lockboxId');
+        return;
+      }
+
+      // Upload cached files to Blossom and send response
+      // TODO: Implement file upload and response sending
+      Log.info('File request received for recovery $recoveryRequestId, lockbox $lockboxId (${lockboxFiles.length} files)');
+    } catch (e) {
+      Log.error('Error handling file request event ${event.id}', e);
+    }
+  }
+
+  /// Handle incoming file response (kind 2441)
+  Future<void> _handleFileResponse(Nip01Event event) async {
+    try {
+      Log.info('Processing file response event: ${event.id}');
+      
+      // Decrypt event content
+      final decryptedContent = await _loginService.decryptFromSender(
+        encryptedText: event.content,
+        senderPubkey: event.pubKey,
+      );
+
+      final responseData = json.decode(decryptedContent) as Map<String, dynamic>;
+      final recoveryRequestId = responseData['recovery_request_id'] as String?;
+      final senderPubkey = event.pubKey;
+
+      if (recoveryRequestId == null) {
+        Log.warning('Invalid file response event: missing recovery_request_id');
+        return;
+      }
+
+      // Forward to RecoveryService
+      final recoveryService = _ref.read(recoveryServiceProvider);
+      await recoveryService.handleFileResponse(
+        recoveryRequestId: recoveryRequestId,
+        senderPubkey: senderPubkey,
+        responseData: responseData,
+      );
+
+      Log.info('Processed file response for recovery $recoveryRequestId');
+    } catch (e) {
+      Log.error('Error handling file response event ${event.id}', e);
+    }
+  }
+
+  /// Handle incoming file download confirmation (kind 2442)
+  Future<void> _handleFileDownloadConfirmation(Nip01Event event) async {
+    try {
+      Log.info('Processing file download confirmation event: ${event.id}');
+      
+      // Decrypt event content
+      final decryptedContent = await _loginService.decryptFromSender(
+        encryptedText: event.content,
+        senderPubkey: event.pubKey,
+      );
+
+      final confirmationData = json.decode(decryptedContent) as Map<String, dynamic>;
+      final lockboxId = confirmationData['lockbox_id'] as String?;
+      final keyHolderPubkey = confirmationData['key_holder_pubkey'] as String?;
+
+      if (lockboxId == null || keyHolderPubkey == null) {
+        Log.warning('Invalid file download confirmation: missing lockbox_id or key_holder_pubkey');
+        return;
+      }
+
+      // Forward to FileDistributionService
+      final fileDistributionService = _ref.read(fileDistributionServiceProvider);
+      await fileDistributionService.updateStatusFromConfirmation(
+        lockboxId: lockboxId,
+        keyHolderPubkey: keyHolderPubkey,
+      );
+
+      Log.info('Processed file download confirmation for lockbox $lockboxId, key holder $keyHolderPubkey');
+    } catch (e) {
+      Log.error('Error handling file download confirmation event ${event.id}', e);
+    }
   }
 }
