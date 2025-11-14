@@ -36,7 +36,7 @@ class _EditLockboxScreenState extends ConsumerState<EditLockboxScreen>
       setState(() {
         _lockbox = lockbox;
         _nameController.text = lockbox.name;
-        _contentController.text = lockbox.content ?? '';
+        _contentController.text = ''; // Content field removed, files used instead
         _ownerNameController.text = lockbox.ownerName ?? '';
       });
     }

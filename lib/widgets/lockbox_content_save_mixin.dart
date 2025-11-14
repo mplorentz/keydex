@@ -12,7 +12,7 @@ mixin LockboxContentSaveMixin<T extends ConsumerStatefulWidget> on ConsumerState
   Future<String?> saveLockbox({
     required GlobalKey<FormState> formKey,
     required String name,
-    required String content,
+    String? content, // Deprecated: kept for backward compatibility, ignored
     String? lockboxId, // null for create, value for update
     String? ownerName,
   }) async {
@@ -23,12 +23,12 @@ mixin LockboxContentSaveMixin<T extends ConsumerStatefulWidget> on ConsumerState
 
       if (lockboxId == null) {
         // Create new lockbox
-        final lockbox = await _createNewLockbox(name, content, ownerName);
+        final lockbox = await _createNewLockbox(name, ownerName);
         await repository.addLockbox(lockbox);
         return lockbox.id;
       } else {
         // Update existing lockbox
-        await repository.updateLockbox(lockboxId, name, content);
+        await repository.updateLockbox(lockboxId, name);
         // Also update ownerName if provided
         if (ownerName != null) {
           final existingLockbox = await repository.getLockbox(lockboxId);
@@ -45,7 +45,7 @@ mixin LockboxContentSaveMixin<T extends ConsumerStatefulWidget> on ConsumerState
   }
 
   /// Create a new lockbox with the current user's public key
-  Future<Lockbox> _createNewLockbox(String name, String content, String? ownerName) async {
+  Future<Lockbox> _createNewLockbox(String name, String? ownerName) async {
     final loginService = ref.read(loginServiceProvider);
     final currentPubkey = await loginService.getCurrentPublicKey();
     if (currentPubkey == null) {
@@ -59,7 +59,7 @@ mixin LockboxContentSaveMixin<T extends ConsumerStatefulWidget> on ConsumerState
     return Lockbox(
       id: lockboxId,
       name: name.trim(),
-      content: content,
+      files: const [], // Start with empty files list
       createdAt: DateTime.now(),
       ownerPubkey: currentPubkey,
       ownerName: ownerName?.trim().isEmpty == true ? null : ownerName?.trim(),

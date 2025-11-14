@@ -290,9 +290,9 @@ class LockboxShareService {
       // Check if lockbox already exists
       final existingLockbox = await repository.getLockbox(lockboxId);
       if (existingLockbox != null) {
-        // Lockbox exists - check if it's a stub (no shards, no content)
+        // Lockbox exists - check if it's a stub (no shards, no files)
         // If stub, update it with shard data
-        if (existingLockbox.shards.isEmpty && existingLockbox.content == null) {
+        if (existingLockbox.shards.isEmpty && existingLockbox.files.isEmpty) {
           // This is a stub lockbox created when invitation was accepted
           // Update it with shard data and name from ShardData if available
           final updatedLockbox = existingLockbox.copyWith(

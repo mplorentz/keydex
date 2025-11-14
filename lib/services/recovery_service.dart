@@ -525,7 +525,7 @@ class RecoveryService {
     final lockbox = await repository.getLockbox(request.lockboxId);
     if (lockbox != null) {
       await repository.saveLockbox(
-        lockbox.copyWith(content: null),
+        lockbox.copyWith(files: const []),
       );
       Log.info('Deleted recovered content from lockbox ${request.lockboxId}');
     }

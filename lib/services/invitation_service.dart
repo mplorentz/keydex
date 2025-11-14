@@ -338,7 +338,7 @@ class InvitationService {
       final lockboxStub = Lockbox(
         id: invitation.lockboxId,
         name: invitation.lockboxName,
-        content: null, // No content yet - waiting for shard
+        files: const [], // No files yet - waiting for shard
         createdAt: invitation.createdAt,
         ownerPubkey: invitation.ownerPubkey,
         shards: [], // No shards yet - awaiting key distribution
