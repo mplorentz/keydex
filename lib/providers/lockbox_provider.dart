@@ -290,14 +290,13 @@ class LockboxRepository {
   }
 
   /// Update an existing lockbox
-  Future<void> updateLockbox(String id, String name, String content) async {
+  Future<void> updateLockbox(String id, String name) async {
     await initialize();
     final index = _cachedLockboxes!.indexWhere((lb) => lb.id == id);
     if (index != -1) {
       final existingLockbox = _cachedLockboxes![index];
       _cachedLockboxes![index] = existingLockbox.copyWith(
         name: name,
-        content: content,
       );
       await _saveLockboxes();
     }

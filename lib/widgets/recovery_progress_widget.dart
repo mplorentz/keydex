@@ -3,7 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/lockbox.dart';
 import '../providers/recovery_provider.dart';
 import '../providers/lockbox_provider.dart';
+import '../providers/file_storage_provider.dart';
 import '../services/recovery_service.dart';
+import 'dart:typed_data';
+import '../services/file_storage_service.dart';
 
 /// Widget for displaying recovery progress and status
 class RecoveryProgressWidget extends ConsumerWidget {
@@ -262,36 +265,94 @@ class RecoveryProgressWidget extends ConsumerWidget {
     try {
       // Perform the recovery
       final service = ref.read(recoveryServiceProvider);
-      final content = await service.performRecovery(recoveryRequestId);
+      final recoveryRequest = await service.getRecoveryRequest(recoveryRequestId);
+      if (recoveryRequest == null) {
+        throw Exception('Recovery request not found');
+      }
+
+      final lockbox = ref.read(lockboxProvider(recoveryRequest.lockboxId)).value;
+      if (lockbox == null) {
+        throw Exception('Lockbox not found');
+      }
+
+      // Perform recovery (reconstructs secret/encryption key)
+      final secret = await service.performRecovery(recoveryRequestId);
 
       if (context.mounted) {
-        // Show the recovered content in a dialog
-        await showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Vault Recovered!'),
-            content: SingleChildScrollView(
-              child: SelectableText(
-                content,
-                style: const TextStyle(fontFamily: 'monospace'),
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Close'),
-              ),
-            ],
-          ),
-        );
+        // T037: Handle file-based lockboxes
+        if (lockbox.files.isNotEmpty) {
+          // Convert secret to encryption key
+          final encryptionKey = _secretToEncryptionKey(secret);
+          final fileStorageService = ref.read(fileStorageServiceProvider);
 
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Vault successfully recovered!'),
-              backgroundColor: Colors.green,
+          // Download and save each file
+          int savedCount = 0;
+          for (final file in lockbox.files) {
+            try {
+              final decryptedBytes = await fileStorageService.downloadAndDecryptFile(
+                blossomUrl: file.blossomUrl,
+                blossomHash: file.blossomHash,
+                encryptionKey: Uint8List.fromList(encryptionKey),
+              );
+
+              final saved = await fileStorageService.saveFile(
+                fileBytes: decryptedBytes,
+                suggestedName: file.name,
+                mimeType: file.mimeType,
+              );
+
+              if (saved) {
+                savedCount++;
+              }
+            } catch (e) {
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Error saving ${file.name}: $e'),
+                    backgroundColor: Colors.orange,
+                  ),
+                );
+              }
+            }
+          }
+
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Recovery complete! Saved $savedCount of ${lockbox.files.length} file(s)'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
+        } else {
+          // Text-based lockbox - show content in dialog
+          await showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Vault Recovered!'),
+              content: SingleChildScrollView(
+                child: SelectableText(
+                  secret,
+                  style: const TextStyle(fontFamily: 'monospace'),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Close'),
+                ),
+              ],
             ),
           );
+
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Vault successfully recovered!'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
         }
       }
     } catch (e) {
@@ -304,5 +365,26 @@ class RecoveryProgressWidget extends ConsumerWidget {
         );
       }
     }
+  }
+
+  /// Convert secret string to 32-byte encryption key
+  List<int> _secretToEncryptionKey(String secret) {
+    // If secret is hex, decode it
+    if (secret.length == 64 && RegExp(r'^[0-9a-fA-F]+$').hasMatch(secret)) {
+      final bytes = <int>[];
+      for (int i = 0; i < 64; i += 2) {
+        bytes.add(int.parse(secret.substring(i, i + 2), radix: 16));
+      }
+      return bytes;
+    }
+    // Otherwise, use first 32 bytes of UTF-8 encoding
+    final utf8Bytes = secret.codeUnits;
+    if (utf8Bytes.length >= 32) {
+      return utf8Bytes.sublist(0, 32);
+    }
+    // Pad with zeros if needed
+    final key = List<int>.filled(32, 0);
+    key.setRange(0, utf8Bytes.length, utf8Bytes);
+    return key;
   }
 }

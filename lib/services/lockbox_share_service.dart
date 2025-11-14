@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/shard_data.dart';
 import '../models/lockbox.dart';
 import '../providers/lockbox_provider.dart';
+import '../providers/file_distribution_provider.dart';
 import 'logger.dart';
 import 'ndk_service.dart';
 import '../models/nostr_kinds.dart';
@@ -15,6 +16,7 @@ final lockboxShareServiceProvider = Provider<LockboxShareService>((ref) {
   return LockboxShareService(
     repository,
     () => ref.read(ndkServiceProvider),
+    ref,
   );
 });
 
@@ -26,8 +28,9 @@ final lockboxShareServiceProvider = Provider<LockboxShareService>((ref) {
 class LockboxShareService {
   final LockboxRepository repository;
   final NdkService Function() _getNdkService;
+  final Ref _ref;
 
-  LockboxShareService(this.repository, this._getNdkService);
+  LockboxShareService(this.repository, this._getNdkService, this._ref);
   static const String _shardDataKey = 'lockbox_shard_data';
   static const String _recoveryShardDataKey = 'recovery_shard_data';
 
@@ -206,6 +209,23 @@ class LockboxShareService {
     // Store the shard first
     await addLockboxShare(lockboxId, shardData);
 
+    // T027: Trigger auto-download of files if shard contains file metadata
+    if (shardData.blossomUrls != null &&
+        shardData.fileHashes != null &&
+        shardData.fileNames != null) {
+      try {
+        final fileDistributionService = _ref.read(fileDistributionServiceProvider);
+        await fileDistributionService.autoDownloadFiles(
+          shardData: shardData,
+          lockboxId: lockboxId,
+        );
+        Log.info('Triggered auto-download of files for lockbox $lockboxId');
+      } catch (e) {
+        Log.error('Error triggering file auto-download for lockbox $lockboxId', e);
+        // Don't fail shard processing if file download fails - will retry later
+      }
+    }
+
     // Send shard confirmation event after successfully storing the shard
     // This is required for invitation flow - the owner needs to know the invitee received the shard
     try {
@@ -290,9 +310,9 @@ class LockboxShareService {
       // Check if lockbox already exists
       final existingLockbox = await repository.getLockbox(lockboxId);
       if (existingLockbox != null) {
-        // Lockbox exists - check if it's a stub (no shards, no content)
+        // Lockbox exists - check if it's a stub (no shards, no files)
         // If stub, update it with shard data
-        if (existingLockbox.shards.isEmpty && existingLockbox.content == null) {
+        if (existingLockbox.shards.isEmpty && existingLockbox.files.isEmpty) {
           // This is a stub lockbox created when invitation was accepted
           // Update it with shard data and name from ShardData if available
           final updatedLockbox = existingLockbox.copyWith(
@@ -316,7 +336,7 @@ class LockboxShareService {
       final lockbox = Lockbox(
         id: lockboxId,
         name: lockboxName,
-        content: null, // No decrypted content yet - we only have a shard
+        files: const [], // No files yet - we only have a shard
         createdAt: DateTime.fromMillisecondsSinceEpoch(shardData.createdAt * 1000),
         ownerPubkey: shardData.creatorPubkey, // Owner is the creator of the shard
         ownerName: shardData.ownerName, // Set owner name from shard data

@@ -201,10 +201,10 @@ class LockboxDetailButtonStack extends ConsumerWidget {
       return;
     }
 
-    if (lockbox.content == null) {
+    if (lockbox.files.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Cannot backup: lockbox content is not available'),
+          content: Text('Cannot backup: lockbox has no files'),
           backgroundColor: Colors.red,
         ),
       );

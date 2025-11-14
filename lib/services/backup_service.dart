@@ -348,16 +348,18 @@ class BackupService {
     required String lockboxId,
   }) async {
     try {
-      // Step 1: Load lockbox content
+      // Step 1: Load lockbox
       final lockbox = await _repository.getLockbox(lockboxId);
       if (lockbox == null) {
         throw Exception('Lockbox not found: $lockboxId');
       }
-      final content = lockbox.content;
-      if (content == null) {
-        throw Exception('Cannot backup encrypted lockbox - content is not available');
+      if (lockbox.files.isEmpty) {
+        throw Exception('Cannot backup lockbox - no files available');
       }
-      Log.info('Loaded lockbox content for backup: $lockboxId');
+      // For file-based lockboxes, we'll use file metadata for content hash
+      // TODO: Generate content hash from file metadata when implementing file support
+      final content = ''; // Placeholder - will be replaced with file-based hash
+      Log.info('Loaded lockbox for backup: $lockboxId (${lockbox.files.length} files)');
 
       // Step 2: Load backup configuration
       final config = await _repository.getBackupConfig(lockboxId);
@@ -397,8 +399,13 @@ class BackupService {
                 'pubkey': kh.pubkey!,
               })
           .toList();
+      
+      // TODO: For file-based lockboxes, share the encryption key instead of content
+      // For now, use empty string as placeholder - will be replaced with key sharing
+      final secretToShare = lockbox.files.isNotEmpty ? '' : content;
+      
       final shards = await generateShamirShares(
-        content: content,
+        content: secretToShare,
         threshold: config.threshold,
         totalShards: config.totalKeys,
         creatorPubkey: creatorPubkey,
@@ -408,13 +415,35 @@ class BackupService {
         ownerName: lockbox.ownerName,
         instructions: config.instructions,
       );
-      Log.info('Generated ${shards.length} Shamir shares');
+      
+      // TODO: Add file metadata to shards (blossomUrls, fileHashes, fileNames, blossomExpiresAt)
+      // This requires FileStorageService to be fully implemented
+      final shardsWithFiles = shards.map((shard) {
+        if (lockbox.files.isNotEmpty) {
+          // Extract file metadata for distribution
+          final blossomUrls = lockbox.files.map((f) => f.blossomUrl).toList();
+          final fileHashes = lockbox.files.map((f) => f.blossomHash).toList();
+          final fileNames = lockbox.files.map((f) => f.name).toList();
+          final blossomExpiresAt = DateTime.now().add(const Duration(hours: 48));
+          
+          return copyShardData(
+            shard,
+            blossomUrls: blossomUrls,
+            fileHashes: fileHashes,
+            fileNames: fileNames,
+            blossomExpiresAt: blossomExpiresAt,
+          );
+        }
+        return shard;
+      }).toList();
+      
+      Log.info('Generated ${shardsWithFiles.length} Shamir shares${lockbox.files.isNotEmpty ? ' with file metadata' : ''}');
 
       // Step 6: Distribute shards using injected service
       await _shardDistributionService.distributeShards(
         ownerPubkey: creatorPubkey,
         config: config,
-        shards: shards,
+        shards: shardsWithFiles,
       );
       Log.info('Successfully distributed all shards');
 

@@ -1,6 +1,7 @@
 import 'shard_data.dart';
 import 'recovery_request.dart';
 import 'backup_config.dart';
+import 'lockbox_file.dart';
 
 /// Backup configuration constraints
 class LockboxBackupConstraints {
@@ -25,11 +26,11 @@ enum LockboxState {
   awaitingKey, // Invitee has accepted invitation but hasn't received shard yet
 }
 
-/// Data model for a secure lockbox containing encrypted text content
+/// Data model for a secure lockbox containing encrypted files
 class Lockbox {
   final String id;
   final String name;
-  final String? content; // Nullable - null when content is not decrypted
+  final List<LockboxFile> files; // Files stored in this lockbox (replaces content)
   final DateTime createdAt;
   final String ownerPubkey; // Hex format, 64 characters
   final String? ownerName; // Name of the vault owner
@@ -40,7 +41,7 @@ class Lockbox {
   Lockbox({
     required this.id,
     required this.name,
-    required this.content,
+    this.files = const [],
     required this.createdAt,
     required this.ownerPubkey,
     this.ownerName,
@@ -51,22 +52,34 @@ class Lockbox {
 
   /// Get the state of this lockbox based on priority:
   /// 1. Recovery (if has active recovery request)
-  /// 2. Owned (if has decrypted content)
-  /// 3. Key holder (if has shards but no content)
-  /// 4. Awaiting key (if no content and no shards - invitee waiting for shard)
+  /// 2. Owned (if has files - owner has decrypted access)
+  /// 3. Key holder (if has shards but no files locally)
+  /// 4. Awaiting key (if no files and no shards - invitee waiting for shard)
   LockboxState get state {
     if (hasActiveRecovery) {
       return LockboxState.recovery;
     }
-    if (content != null) {
+    if (files.isNotEmpty) {
       return LockboxState.owned;
     }
     if (shards.isNotEmpty) {
       return LockboxState.keyHolder;
     }
-    // No content and no shards - invitee is awaiting key distribution
+    // No files and no shards - invitee is awaiting key distribution
     return LockboxState.awaitingKey;
   }
+
+  /// Get total size of all files in bytes
+  int get totalSizeBytes => files.fold(0, (sum, file) => sum + file.sizeBytes);
+
+  /// Check if lockbox is within size limit (1GB)
+  bool get isWithinSizeLimit => totalSizeBytes <= 1073741824;
+
+  /// Get remaining bytes before hitting size limit
+  int get remainingBytes => 1073741824 - totalSizeBytes;
+
+  /// Check if a file of given size can be added
+  bool canAddFile(int fileSizeBytes) => totalSizeBytes + fileSizeBytes <= 1073741824;
 
   /// Check if the given hex key is the owner of this lockbox
   bool isOwned(String hexKey) => ownerPubkey == hexKey;
@@ -93,7 +106,7 @@ class Lockbox {
     return {
       'id': id,
       'name': name,
-      'content': content,
+      'files': files.map((file) => file.toJson()).toList(),
       'createdAt': createdAt.toIso8601String(),
       'ownerPubkey': ownerPubkey,
       if (ownerName != null) 'ownerName': ownerName,
@@ -108,7 +121,11 @@ class Lockbox {
     return Lockbox(
       id: json['id'] as String,
       name: json['name'] as String,
-      content: json['content'] as String?,
+      files: json['files'] != null
+          ? (json['files'] as List)
+              .map((fileJson) => LockboxFile.fromJson(fileJson as Map<String, dynamic>))
+              .toList()
+          : [],
       createdAt: DateTime.parse(json['createdAt'] as String),
       ownerPubkey: json['ownerPubkey'] as String,
       ownerName: json['ownerName'] as String?,
@@ -132,7 +149,7 @@ class Lockbox {
   Lockbox copyWith({
     String? id,
     String? name,
-    String? content,
+    List<LockboxFile>? files,
     DateTime? createdAt,
     String? ownerPubkey,
     String? ownerName,
@@ -143,7 +160,7 @@ class Lockbox {
     return Lockbox(
       id: id ?? this.id,
       name: name ?? this.name,
-      content: content ?? this.content,
+      files: files ?? this.files,
       createdAt: createdAt ?? this.createdAt,
       ownerPubkey: ownerPubkey ?? this.ownerPubkey,
       ownerName: ownerName ?? this.ownerName,
