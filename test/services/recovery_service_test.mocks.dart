@@ -537,8 +537,12 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
   _i5.Future<
       List<
           ({
+            DateTime? blossomExpiresAt,
+            List<String>? blossomUrls,
             int createdAt,
             String creatorPubkey,
+            List<String>? fileHashes,
+            List<String>? fileNames,
             String? instructions,
             bool? isReceived,
             String? lockboxId,
@@ -584,8 +588,12 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
         returnValue: _i5.Future<
             List<
                 ({
+                  DateTime? blossomExpiresAt,
+                  List<String>? blossomUrls,
                   int createdAt,
                   String creatorPubkey,
+                  List<String>? fileHashes,
+                  List<String>? fileNames,
                   String? instructions,
                   bool? isReceived,
                   String? lockboxId,
@@ -602,8 +610,12 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
                   int threshold,
                   int totalShards
                 })>>.value(<({
+          DateTime? blossomExpiresAt,
+          List<String>? blossomUrls,
           int createdAt,
           String creatorPubkey,
+          List<String>? fileHashes,
+          List<String>? fileNames,
           String? instructions,
           bool? isReceived,
           String? lockboxId,
@@ -623,8 +635,12 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
       ) as _i5.Future<
           List<
               ({
+                DateTime? blossomExpiresAt,
+                List<String>? blossomUrls,
                 int createdAt,
                 String creatorPubkey,
+                List<String>? fileHashes,
+                List<String>? fileNames,
                 String? instructions,
                 bool? isReceived,
                 String? lockboxId,
@@ -646,8 +662,12 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
   _i5.Future<String> reconstructFromShares(
           {required List<
                   ({
+                    DateTime? blossomExpiresAt,
+                    List<String>? blossomUrls,
                     int createdAt,
                     String creatorPubkey,
+                    List<String>? fileHashes,
+                    List<String>? fileNames,
                     String? instructions,
                     bool? isReceived,
                     String? lockboxId,
@@ -1130,8 +1150,12 @@ class MockShardDistributionService extends _i1.Mock
     })? config,
     required List<
             ({
+              DateTime? blossomExpiresAt,
+              List<String>? blossomUrls,
               int createdAt,
               String creatorPubkey,
+              List<String>? fileHashes,
+              List<String>? fileNames,
               String? instructions,
               bool? isReceived,
               String? lockboxId,
@@ -1492,8 +1516,12 @@ class MockLockboxShareService extends _i1.Mock
   _i5.Future<
       List<
           ({
+            DateTime? blossomExpiresAt,
+            List<String>? blossomUrls,
             int createdAt,
             String creatorPubkey,
+            List<String>? fileHashes,
+            List<String>? fileNames,
             String? instructions,
             bool? isReceived,
             String? lockboxId,
@@ -1517,8 +1545,12 @@ class MockLockboxShareService extends _i1.Mock
         returnValue: _i5.Future<
             List<
                 ({
+                  DateTime? blossomExpiresAt,
+                  List<String>? blossomUrls,
                   int createdAt,
                   String creatorPubkey,
+                  List<String>? fileHashes,
+                  List<String>? fileNames,
                   String? instructions,
                   bool? isReceived,
                   String? lockboxId,
@@ -1535,8 +1567,12 @@ class MockLockboxShareService extends _i1.Mock
                   int threshold,
                   int totalShards
                 })>>.value(<({
+          DateTime? blossomExpiresAt,
+          List<String>? blossomUrls,
           int createdAt,
           String creatorPubkey,
+          List<String>? fileHashes,
+          List<String>? fileNames,
           String? instructions,
           bool? isReceived,
           String? lockboxId,
@@ -1556,8 +1592,12 @@ class MockLockboxShareService extends _i1.Mock
       ) as _i5.Future<
           List<
               ({
+                DateTime? blossomExpiresAt,
+                List<String>? blossomUrls,
                 int createdAt,
                 String creatorPubkey,
+                List<String>? fileHashes,
+                List<String>? fileNames,
                 String? instructions,
                 bool? isReceived,
                 String? lockboxId,
@@ -1578,8 +1618,12 @@ class MockLockboxShareService extends _i1.Mock
   @override
   _i5.Future<
       ({
+        DateTime? blossomExpiresAt,
+        List<String>? blossomUrls,
         int createdAt,
         String creatorPubkey,
+        List<String>? fileHashes,
+        List<String>? fileNames,
         String? instructions,
         bool? isReceived,
         String? lockboxId,
@@ -1602,8 +1646,12 @@ class MockLockboxShareService extends _i1.Mock
         ),
         returnValue: _i5.Future<
             ({
+              DateTime? blossomExpiresAt,
+              List<String>? blossomUrls,
               int createdAt,
               String creatorPubkey,
+              List<String>? fileHashes,
+              List<String>? fileNames,
               String? instructions,
               bool? isReceived,
               String? lockboxId,
@@ -1622,8 +1670,12 @@ class MockLockboxShareService extends _i1.Mock
             })?>.value(),
       ) as _i5.Future<
           ({
+            DateTime? blossomExpiresAt,
+            List<String>? blossomUrls,
             int createdAt,
             String creatorPubkey,
+            List<String>? fileHashes,
+            List<String>? fileNames,
             String? instructions,
             bool? isReceived,
             String? lockboxId,
@@ -1644,8 +1696,12 @@ class MockLockboxShareService extends _i1.Mock
   @override
   _i5.Future<
       ({
+        DateTime? blossomExpiresAt,
+        List<String>? blossomUrls,
         int createdAt,
         String creatorPubkey,
+        List<String>? fileHashes,
+        List<String>? fileNames,
         String? instructions,
         bool? isReceived,
         String? lockboxId,
@@ -1668,8 +1724,12 @@ class MockLockboxShareService extends _i1.Mock
         ),
         returnValue: _i5.Future<
             ({
+              DateTime? blossomExpiresAt,
+              List<String>? blossomUrls,
               int createdAt,
               String creatorPubkey,
+              List<String>? fileHashes,
+              List<String>? fileNames,
               String? instructions,
               bool? isReceived,
               String? lockboxId,
@@ -1688,8 +1748,12 @@ class MockLockboxShareService extends _i1.Mock
             })?>.value(),
       ) as _i5.Future<
           ({
+            DateTime? blossomExpiresAt,
+            List<String>? blossomUrls,
             int createdAt,
             String creatorPubkey,
+            List<String>? fileHashes,
+            List<String>? fileNames,
             String? instructions,
             bool? isReceived,
             String? lockboxId,
@@ -1711,8 +1775,12 @@ class MockLockboxShareService extends _i1.Mock
   _i5.Future<void> addLockboxShare(
     String? lockboxId,
     ({
+      DateTime? blossomExpiresAt,
+      List<String>? blossomUrls,
       int createdAt,
       String creatorPubkey,
+      List<String>? fileHashes,
+      List<String>? fileNames,
       String? instructions,
       bool? isReceived,
       String? lockboxId,
@@ -1746,8 +1814,12 @@ class MockLockboxShareService extends _i1.Mock
   _i5.Future<void> processLockboxShare(
     String? lockboxId,
     ({
+      DateTime? blossomExpiresAt,
+      List<String>? blossomUrls,
       int createdAt,
       String creatorPubkey,
+      List<String>? fileHashes,
+      List<String>? fileNames,
       String? instructions,
       bool? isReceived,
       String? lockboxId,
@@ -1843,8 +1915,12 @@ class MockLockboxShareService extends _i1.Mock
   _i5.Future<
       List<
           ({
+            DateTime? blossomExpiresAt,
+            List<String>? blossomUrls,
             int createdAt,
             String creatorPubkey,
+            List<String>? fileHashes,
+            List<String>? fileNames,
             String? instructions,
             bool? isReceived,
             String? lockboxId,
@@ -1868,8 +1944,12 @@ class MockLockboxShareService extends _i1.Mock
         returnValue: _i5.Future<
             List<
                 ({
+                  DateTime? blossomExpiresAt,
+                  List<String>? blossomUrls,
                   int createdAt,
                   String creatorPubkey,
+                  List<String>? fileHashes,
+                  List<String>? fileNames,
                   String? instructions,
                   bool? isReceived,
                   String? lockboxId,
@@ -1886,8 +1966,12 @@ class MockLockboxShareService extends _i1.Mock
                   int threshold,
                   int totalShards
                 })>>.value(<({
+          DateTime? blossomExpiresAt,
+          List<String>? blossomUrls,
           int createdAt,
           String creatorPubkey,
+          List<String>? fileHashes,
+          List<String>? fileNames,
           String? instructions,
           bool? isReceived,
           String? lockboxId,
@@ -1907,8 +1991,12 @@ class MockLockboxShareService extends _i1.Mock
       ) as _i5.Future<
           List<
               ({
+                DateTime? blossomExpiresAt,
+                List<String>? blossomUrls,
                 int createdAt,
                 String creatorPubkey,
+                List<String>? fileHashes,
+                List<String>? fileNames,
                 String? instructions,
                 bool? isReceived,
                 String? lockboxId,
@@ -1988,8 +2076,12 @@ class MockLockboxShareService extends _i1.Mock
   _i5.Future<void> addRecoveryShard(
     String? recoveryRequestId,
     ({
+      DateTime? blossomExpiresAt,
+      List<String>? blossomUrls,
       int createdAt,
       String creatorPubkey,
+      List<String>? fileHashes,
+      List<String>? fileNames,
       String? instructions,
       bool? isReceived,
       String? lockboxId,
@@ -2023,8 +2115,12 @@ class MockLockboxShareService extends _i1.Mock
   _i5.Future<
       List<
           ({
+            DateTime? blossomExpiresAt,
+            List<String>? blossomUrls,
             int createdAt,
             String creatorPubkey,
+            List<String>? fileHashes,
+            List<String>? fileNames,
             String? instructions,
             bool? isReceived,
             String? lockboxId,
@@ -2049,8 +2145,12 @@ class MockLockboxShareService extends _i1.Mock
         returnValue: _i5.Future<
             List<
                 ({
+                  DateTime? blossomExpiresAt,
+                  List<String>? blossomUrls,
                   int createdAt,
                   String creatorPubkey,
+                  List<String>? fileHashes,
+                  List<String>? fileNames,
                   String? instructions,
                   bool? isReceived,
                   String? lockboxId,
@@ -2067,8 +2167,12 @@ class MockLockboxShareService extends _i1.Mock
                   int threshold,
                   int totalShards
                 })>>.value(<({
+          DateTime? blossomExpiresAt,
+          List<String>? blossomUrls,
           int createdAt,
           String creatorPubkey,
+          List<String>? fileHashes,
+          List<String>? fileNames,
           String? instructions,
           bool? isReceived,
           String? lockboxId,
@@ -2088,8 +2192,12 @@ class MockLockboxShareService extends _i1.Mock
       ) as _i5.Future<
           List<
               ({
+                DateTime? blossomExpiresAt,
+                List<String>? blossomUrls,
                 int createdAt,
                 String creatorPubkey,
+                List<String>? fileHashes,
+                List<String>? fileNames,
                 String? instructions,
                 bool? isReceived,
                 String? lockboxId,

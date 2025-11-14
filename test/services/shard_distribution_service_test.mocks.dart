@@ -924,8 +924,12 @@ class MockLockboxRepository extends _i1.Mock implements _i7.LockboxRepository {
   _i4.Future<void> addShardToLockbox(
     String? lockboxId,
     ({
+      DateTime? blossomExpiresAt,
+      List<String>? blossomUrls,
       int createdAt,
       String creatorPubkey,
+      List<String>? fileHashes,
+      List<String>? fileNames,
       String? instructions,
       bool? isReceived,
       String? lockboxId,
@@ -959,8 +963,12 @@ class MockLockboxRepository extends _i1.Mock implements _i7.LockboxRepository {
   _i4.Future<
       List<
           ({
+            DateTime? blossomExpiresAt,
+            List<String>? blossomUrls,
             int createdAt,
             String creatorPubkey,
+            List<String>? fileHashes,
+            List<String>? fileNames,
             String? instructions,
             bool? isReceived,
             String? lockboxId,
@@ -984,8 +992,12 @@ class MockLockboxRepository extends _i1.Mock implements _i7.LockboxRepository {
         returnValue: _i4.Future<
             List<
                 ({
+                  DateTime? blossomExpiresAt,
+                  List<String>? blossomUrls,
                   int createdAt,
                   String creatorPubkey,
+                  List<String>? fileHashes,
+                  List<String>? fileNames,
                   String? instructions,
                   bool? isReceived,
                   String? lockboxId,
@@ -1002,8 +1014,12 @@ class MockLockboxRepository extends _i1.Mock implements _i7.LockboxRepository {
                   int threshold,
                   int totalShards
                 })>>.value(<({
+          DateTime? blossomExpiresAt,
+          List<String>? blossomUrls,
           int createdAt,
           String creatorPubkey,
+          List<String>? fileHashes,
+          List<String>? fileNames,
           String? instructions,
           bool? isReceived,
           String? lockboxId,
@@ -1023,8 +1039,12 @@ class MockLockboxRepository extends _i1.Mock implements _i7.LockboxRepository {
       ) as _i4.Future<
           List<
               ({
+                DateTime? blossomExpiresAt,
+                List<String>? blossomUrls,
                 int createdAt,
                 String creatorPubkey,
+                List<String>? fileHashes,
+                List<String>? fileNames,
                 String? instructions,
                 bool? isReceived,
                 String? lockboxId,

@@ -423,6 +423,10 @@ void main() {
         receivedAt: null,
         nostrEventId: null,
         relayUrls: null,
+        blossomUrls: null,
+        fileHashes: null,
+        fileNames: null,
+        blossomExpiresAt: null,
       );
 
       expect(shardData.ageInSeconds, greaterThanOrEqualTo(3600));
@@ -449,6 +453,10 @@ void main() {
         receivedAt: null,
         nostrEventId: null,
         relayUrls: null,
+        blossomUrls: null,
+        fileHashes: null,
+        fileNames: null,
+        blossomExpiresAt: null,
       );
 
       expect(shardData.ageInHours, greaterThanOrEqualTo(2.0));
@@ -475,6 +483,10 @@ void main() {
         receivedAt: null,
         nostrEventId: null,
         relayUrls: null,
+        blossomUrls: null,
+        fileHashes: null,
+        fileNames: null,
+        blossomExpiresAt: null,
       );
 
       expect(shardData.isRecent, isTrue);
@@ -501,6 +513,10 @@ void main() {
         receivedAt: null,
         nostrEventId: null,
         relayUrls: null,
+        blossomUrls: null,
+        fileHashes: null,
+        fileNames: null,
+        blossomExpiresAt: null,
       );
 
       expect(shardData.isRecent, isFalse);

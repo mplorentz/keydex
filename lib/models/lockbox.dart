@@ -1,6 +1,7 @@
 import 'shard_data.dart';
 import 'recovery_request.dart';
 import 'backup_config.dart';
+import 'lockbox_file.dart';
 
 /// Backup configuration constraints
 class LockboxBackupConstraints {
@@ -25,11 +26,12 @@ enum LockboxState {
   awaitingKey, // Invitee has accepted invitation but hasn't received shard yet
 }
 
-/// Data model for a secure lockbox containing encrypted text content
+/// Data model for a secure lockbox containing encrypted files
 class Lockbox {
   final String id;
   final String name;
-  final String? content; // Nullable - null when content is not decrypted
+  final String? content; // Deprecated - kept for backward compatibility
+  final List<LockboxFile> files; // NEW: Replaces content field
   final DateTime createdAt;
   final String ownerPubkey; // Hex format, 64 characters
   final String? ownerName; // Name of the vault owner
@@ -40,14 +42,41 @@ class Lockbox {
   Lockbox({
     required this.id,
     required this.name,
-    required this.content,
+    this.content, // Deprecated
+    this.files = const [],
     required this.createdAt,
     required this.ownerPubkey,
     this.ownerName,
     this.shards = const [],
     this.recoveryRequests = const [],
     this.backupConfig,
-  });
+  }) {
+    _validate();
+  }
+
+  void _validate() {
+    // Validate file size limit (1GB total)
+    if (totalSizeBytes > 1073741824) {
+      throw ArgumentError('Total file size cannot exceed 1GB');
+    }
+    // Validate unique file IDs
+    final fileIds = files.map((f) => f.id).toSet();
+    if (fileIds.length != files.length) {
+      throw ArgumentError('All files must have unique IDs within the lockbox');
+    }
+  }
+
+  /// Computed property: total size of all files in bytes
+  int get totalSizeBytes => files.fold(0, (sum, file) => sum + file.sizeBytes);
+
+  /// Check if within size limit
+  bool get isWithinSizeLimit => totalSizeBytes <= 1073741824; // 1GB
+
+  /// Get remaining bytes before hitting limit
+  int get remainingBytes => 1073741824 - totalSizeBytes;
+
+  /// Check if a file can be added without exceeding limit
+  bool canAddFile(int fileSizeBytes) => totalSizeBytes + fileSizeBytes <= 1073741824;
 
   /// Get the state of this lockbox based on priority:
   /// 1. Recovery (if has active recovery request)
@@ -93,7 +122,8 @@ class Lockbox {
     return {
       'id': id,
       'name': name,
-      'content': content,
+      if (content != null) 'content': content, // Deprecated but kept for compatibility
+      'files': files.map((file) => file.toJson()).toList(),
       'createdAt': createdAt.toIso8601String(),
       'ownerPubkey': ownerPubkey,
       if (ownerName != null) 'ownerName': ownerName,
@@ -108,7 +138,12 @@ class Lockbox {
     return Lockbox(
       id: json['id'] as String,
       name: json['name'] as String,
-      content: json['content'] as String?,
+      content: json['content'] as String?, // Deprecated
+      files: json['files'] != null
+          ? (json['files'] as List)
+              .map((fileJson) => LockboxFile.fromJson(fileJson as Map<String, dynamic>))
+              .toList()
+          : [],
       createdAt: DateTime.parse(json['createdAt'] as String),
       ownerPubkey: json['ownerPubkey'] as String,
       ownerName: json['ownerName'] as String?,
@@ -133,6 +168,7 @@ class Lockbox {
     String? id,
     String? name,
     String? content,
+    List<LockboxFile>? files,
     DateTime? createdAt,
     String? ownerPubkey,
     String? ownerName,
@@ -144,6 +180,7 @@ class Lockbox {
       id: id ?? this.id,
       name: name ?? this.name,
       content: content ?? this.content,
+      files: files ?? this.files,
       createdAt: createdAt ?? this.createdAt,
       ownerPubkey: ownerPubkey ?? this.ownerPubkey,
       ownerName: ownerName ?? this.ownerName,
