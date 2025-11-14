@@ -662,7 +662,7 @@ class RecoveryService {
     }
 
     Log.info('Successfully recovered lockbox ${request.lockboxId} from $recoveryRequestId');
-    return content;
+    return secret;
   }
 
   /// Get key holder responses for a recovery request
