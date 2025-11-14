@@ -592,14 +592,14 @@ class RecoveryService {
     // Reconstruct the lockbox content from the shards
     final content = await backupService.reconstructFromShares(shares: shards);
 
-    // Update the lockbox with recovered content
+    // Update the lockbox name (content/files handled separately in file-based model)
     final lockbox = await repository.getLockbox(request.lockboxId);
     if (lockbox != null) {
       await repository.updateLockbox(
         request.lockboxId,
         lockbox.name,
-        content,
       );
+      // TODO: Update lockbox with recovered files when FileStorageService is implemented
     }
 
     // Update the recovery request status to completed

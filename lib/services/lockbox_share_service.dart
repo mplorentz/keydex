@@ -316,7 +316,7 @@ class LockboxShareService {
       final lockbox = Lockbox(
         id: lockboxId,
         name: lockboxName,
-        content: null, // No decrypted content yet - we only have a shard
+        files: const [], // No files yet - we only have a shard
         createdAt: DateTime.fromMillisecondsSinceEpoch(shardData.createdAt * 1000),
         ownerPubkey: shardData.creatorPubkey, // Owner is the creator of the shard
         ownerName: shardData.ownerName, // Set owner name from shard data
