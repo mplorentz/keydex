@@ -84,7 +84,7 @@ class RelayScanService {
       if (kDebugMode && (_cachedRelays == null || _cachedRelays!.isEmpty)) {
         const localhostRelay = RelayConfiguration(
           id: 'localhost-debug',
-          url: 'ws://localhost:10547',
+          url: 'wss://dev.keydex.app',
           name: 'Localhost (Debug)',
           isEnabled: true,
           isTrusted: false,

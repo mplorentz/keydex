@@ -32,7 +32,7 @@ class BackupConfigScreen extends ConsumerStatefulWidget {
 class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
   int _threshold = LockboxBackupConstraints.defaultThreshold;
   final List<KeyHolder> _keyHolders = [];
-  final List<String> _relays = ['ws://localhost:10547'];
+  final List<String> _relays = ['wss://dev.keydex.app'];
   bool _isCreating = false;
   bool _isLoading = true;
   bool _hasUnsavedChanges = false;
