@@ -47,6 +47,7 @@ mixin LockboxContentSaveMixin<T extends ConsumerStatefulWidget> on ConsumerState
         final willChange = contentChanged || nameChanged || ownerNameChanged;
 
         if (willChange) {
+          if (!mounted) return null;
           final shouldAutoDistributeResult =
               await BackupDistributionHelper.showRegenerationAlertIfNeeded(
             context: context,
