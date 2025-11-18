@@ -423,6 +423,7 @@ void main() {
         receivedAt: null,
         nostrEventId: null,
         relayUrls: null,
+        distributionVersion: null,
       );
 
       expect(shardData.ageInSeconds, greaterThanOrEqualTo(3600));
@@ -449,6 +450,7 @@ void main() {
         receivedAt: null,
         nostrEventId: null,
         relayUrls: null,
+        distributionVersion: null,
       );
 
       expect(shardData.ageInHours, greaterThanOrEqualTo(2.0));
@@ -475,6 +477,7 @@ void main() {
         receivedAt: null,
         nostrEventId: null,
         relayUrls: null,
+        distributionVersion: null,
       );
 
       expect(shardData.isRecent, isTrue);
@@ -501,6 +504,7 @@ void main() {
         receivedAt: null,
         nostrEventId: null,
         relayUrls: null,
+        distributionVersion: null,
       );
 
       expect(shardData.isRecent, isFalse);

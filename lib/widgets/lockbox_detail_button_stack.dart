@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/lockbox.dart';
-import '../models/key_holder_status.dart';
+import '../models/backup_config.dart';
 import '../providers/lockbox_provider.dart';
 import '../providers/key_provider.dart';
 import '../providers/recovery_provider.dart';
@@ -90,7 +90,7 @@ class LockboxDetailButtonStack extends ConsumerWidget {
                         text: 'Update Vault Contents',
                       ));
 
-                      // Backup Configuration Section
+                      // Recovery Plan Section
                       buttons.add(RowButtonConfig(
                         onPressed: () {
                           Navigator.push(
@@ -103,28 +103,31 @@ class LockboxDetailButtonStack extends ConsumerWidget {
                           );
                         },
                         icon: Icons.settings,
-                        text: 'Backup Settings',
+                        text: 'Recovery Plan',
                       ));
 
-                      // Generate and Distribute Keys Button - show when all invited key holders have accepted
+                      // Distribute Keys Button - shown when distribution is needed
                       if (currentLockbox != null) {
                         final backupConfig = currentLockbox.backupConfig;
                         if (backupConfig != null && backupConfig.keyHolders.isNotEmpty) {
-                          final keyHolders = backupConfig.keyHolders;
-                          final hasInvitedKeyHolders =
-                              keyHolders.any((kh) => kh.status == KeyHolderStatus.invited);
-                          final allAccepted = keyHolders.every((kh) =>
-                              kh.status == KeyHolderStatus.awaitingKey ||
-                              kh.status == KeyHolderStatus.holdingKey);
-                          final hasAwaitingKeyHolders =
-                              keyHolders.any((kh) => kh.status == KeyHolderStatus.awaitingKey);
+                          final needsDistribution =
+                              backupConfig.needsRedistribution || backupConfig.hasVersionMismatch;
 
-                          if (!hasInvitedKeyHolders && allAccepted && hasAwaitingKeyHolders) {
+                          if (!backupConfig.canDistribute) {
+                            // Show "Waiting for stewards" button (disabled)
+                            final pendingCount = backupConfig.pendingInvitationsCount;
                             buttons.add(RowButtonConfig(
-                              onPressed: () =>
-                                  _generateAndDistributeKeys(context, ref, currentLockbox),
-                              icon: Icons.vpn_key,
-                              text: 'Generate and Distribute Keys',
+                              onPressed: null, // Disabled
+                              icon: Icons.hourglass_empty,
+                              text:
+                                  'Waiting for $pendingCount Steward${pendingCount > 1 ? 's' : ''}',
+                            ));
+                          } else if (needsDistribution) {
+                            // Show "Distribute Keys" button (enabled)
+                            buttons.add(RowButtonConfig(
+                              onPressed: () => _distributeKeys(context, ref, currentLockbox),
+                              icon: Icons.send,
+                              text: 'Distribute Keys',
                             ));
                           }
                         }
@@ -178,12 +181,11 @@ class LockboxDetailButtonStack extends ConsumerWidget {
     return null;
   }
 
-  Future<void> _generateAndDistributeKeys(
-      BuildContext context, WidgetRef ref, Lockbox lockbox) async {
+  Future<void> _distributeKeys(BuildContext context, WidgetRef ref, Lockbox lockbox) async {
     if (lockbox.backupConfig == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Backup configuration not found'),
+          content: Text('Recovery plan not found'),
           backgroundColor: Colors.orange,
         ),
       );
@@ -194,7 +196,7 @@ class LockboxDetailButtonStack extends ConsumerWidget {
     if (config.keyHolders.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('No stewards configured'),
+          content: Text('No stewards in recovery plan'),
           backgroundColor: Colors.orange,
         ),
       );
@@ -204,22 +206,34 @@ class LockboxDetailButtonStack extends ConsumerWidget {
     if (lockbox.content == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Cannot backup: lockbox content is not available'),
+          content: Text('Cannot backup: vault content is not available'),
           backgroundColor: Colors.red,
         ),
       );
       return;
     }
 
+    // Determine if this is initial distribution or redistribution
+    final isRedistribution = config.lastRedistribution != null;
+    final title = isRedistribution ? 'Redistribute Keys?' : 'Distribute Keys?';
+    final action = isRedistribution ? 'Redistribute' : 'Distribute';
+
+    // Build warning message for redistribution
+    String contentMessage = 'This will generate ${config.totalKeys} key shares '
+        'and distribute them to ${config.keyHolders.length} steward${config.keyHolders.length > 1 ? 's' : ''}.\n\n'
+        'Threshold: ${config.threshold} (minimum keys needed for recovery)';
+
+    if (isRedistribution) {
+      contentMessage += '\n\n⚠️ This will invalidate previously distributed keys. '
+          'All stewards will receive new keys.';
+    }
+
     // Show confirmation dialog
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Generate and Distribute Keys?'),
-        content: Text(
-          'This will generate ${config.totalKeys} key shares and distribute them to ${config.keyHolders.length} stewards.\n\n'
-          'Threshold: ${config.threshold} (minimum keys needed for recovery)',
-        ),
+        title: Text(title),
+        content: Text(contentMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -227,7 +241,7 @@ class LockboxDetailButtonStack extends ConsumerWidget {
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Generate & Distribute'),
+            child: Text(action),
           ),
         ],
       ),
@@ -245,7 +259,7 @@ class LockboxDetailButtonStack extends ConsumerWidget {
           children: [
             CircularProgressIndicator(),
             SizedBox(width: 16),
-            Text('Generating and distributing keys...'),
+            Expanded(child: Text('Distributing keys...')),
           ],
         ),
       ),
@@ -261,7 +275,7 @@ class LockboxDetailButtonStack extends ConsumerWidget {
         Navigator.pop(context); // Close loading dialog
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Keys generated and distributed successfully!'),
+            content: Text('Keys distributed successfully!'),
             backgroundColor: Colors.green,
           ),
         );
@@ -272,10 +286,34 @@ class LockboxDetailButtonStack extends ConsumerWidget {
     } catch (e) {
       if (context.mounted) {
         Navigator.pop(context); // Close loading dialog
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to generate and distribute keys: $e'),
-            backgroundColor: Colors.red,
+
+        // Show detailed error with option to retry later
+        await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Distribution Failed'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Failed to distribute keys. Your backup configuration has been saved, but keys were not sent to stewards.',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 12),
+                Text('Error: $e'),
+                const SizedBox(height: 12),
+                const Text(
+                  'You can retry distribution later from this screen. The "Distribute Keys" button will remain available.',
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
           ),
         );
       }
@@ -348,14 +386,24 @@ class LockboxDetailButtonStack extends ConsumerWidget {
         return;
       }
 
-      // Get the first shard to extract peers info
-      final firstShard = shards.first;
-      Log.debug('First shard: $firstShard');
+      // Select the shard with the highest distributionVersion (most recent)
+      // If versions are equal or null, use the most recent createdAt timestamp
+      final selectedShard = shards.reduce((a, b) {
+        final aVersion = a.distributionVersion ?? 0;
+        final bVersion = b.distributionVersion ?? 0;
+        if (aVersion != bVersion) {
+          return aVersion > bVersion ? a : b;
+        }
+        // If versions are equal, use createdAt timestamp
+        return a.createdAt > b.createdAt ? a : b;
+      });
+      Log.debug(
+          'Selected shard with distributionVersion ${selectedShard.distributionVersion} for recovery');
 
       // Use peers list for recovery
       final keyHolderPubkeys = <String>[];
-      if (firstShard.peers != null) {
-        for (final peer in firstShard.peers!) {
+      if (selectedShard.peers != null) {
+        for (final peer in selectedShard.peers!) {
           final pubkey = peer['pubkey'];
           if (pubkey != null) {
             keyHolderPubkeys.add(pubkey);
@@ -381,7 +429,7 @@ class LockboxDetailButtonStack extends ConsumerWidget {
         lockboxId,
         initiatorPubkey: currentPubkey,
         keyHolderPubkeys: keyHolderPubkeys,
-        threshold: firstShard.threshold,
+        threshold: selectedShard.threshold,
       );
 
       // Get relays and send recovery request via Nostr

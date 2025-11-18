@@ -227,6 +227,8 @@ class NdkService {
         await _handleInvitationDenial(unwrappedEvent);
       } else if (unwrappedEvent.kind == NostrKind.shardConfirmation.value) {
         await _handleShardConfirmation(unwrappedEvent);
+      } else if (unwrappedEvent.kind == NostrKind.keyHolderRemoved.value) {
+        await _handleKeyHolderRemoved(unwrappedEvent);
       } else {
         Log.warning('Unknown gift wrap inner kind: ${unwrappedEvent.kind}');
       }
@@ -373,6 +375,19 @@ class NdkService {
       Log.info('Successfully processed shard confirmation event: ${event.id}');
     } catch (e) {
       Log.error('Error handling shard confirmation event ${event.id}', e);
+    }
+  }
+
+  /// Handle incoming key holder removed event (kind 1345)
+  Future<void> _handleKeyHolderRemoved(Nip01Event event) async {
+    try {
+      Log.info('Processing key holder removed event: ${event.id}');
+      Log.debug('Key holder removed event tags: ${event.tags}');
+      final lockboxShareService = _ref.read(lockboxShareServiceProvider);
+      await lockboxShareService.processKeyHolderRemoval(event: event);
+      Log.info('Successfully processed key holder removed event: ${event.id}');
+    } catch (e) {
+      Log.error('Error handling key holder removed event ${event.id}', e);
     }
   }
 

@@ -17,6 +17,7 @@ enum RecoveryResponseStatus {
   approved, // Key holder approved and shared key
   denied, // Key holder denied the request
   timeout, // No response within timeout period
+  error, // Error processing response (e.g., version mismatch)
 }
 
 /// Extension methods for RecoveryRequestStatus
@@ -66,6 +67,8 @@ extension RecoveryResponseStatusExtension on RecoveryResponseStatus {
         return 'Denied';
       case RecoveryResponseStatus.timeout:
         return 'Timeout';
+      case RecoveryResponseStatus.error:
+        return 'Error';
     }
   }
 
@@ -81,6 +84,7 @@ class RecoveryResponse {
   final DateTime? respondedAt;
   final ShardData? shardData; // Actual shard data for reassembly (if approved)
   final String? nostrEventId;
+  final String? errorMessage; // Error message if status is error
 
   const RecoveryResponse({
     required this.pubkey,
@@ -88,6 +92,7 @@ class RecoveryResponse {
     this.respondedAt,
     this.shardData,
     this.nostrEventId,
+    this.errorMessage,
   });
 
   /// Validate the recovery response
@@ -112,6 +117,7 @@ class RecoveryResponse {
 
   /// Status helper for backwards compatibility
   RecoveryResponseStatus get status {
+    if (errorMessage != null) return RecoveryResponseStatus.error;
     if (respondedAt == null) return RecoveryResponseStatus.pending;
     return approved ? RecoveryResponseStatus.approved : RecoveryResponseStatus.denied;
   }
@@ -124,6 +130,7 @@ class RecoveryResponse {
       'respondedAt': respondedAt?.toIso8601String(),
       'shardData': shardData != null ? shardDataToJson(shardData!) : null,
       'nostrEventId': nostrEventId,
+      'errorMessage': errorMessage,
     };
   }
 
@@ -138,6 +145,7 @@ class RecoveryResponse {
           ? shardDataFromJson(json['shardData'] as Map<String, dynamic>)
           : null,
       nostrEventId: json['nostrEventId'] as String?,
+      errorMessage: json['errorMessage'] as String?,
     );
   }
 
@@ -147,6 +155,7 @@ class RecoveryResponse {
     DateTime? respondedAt,
     ShardData? shardData,
     String? nostrEventId,
+    String? errorMessage,
   }) {
     return RecoveryResponse(
       pubkey: pubkey ?? this.pubkey,
@@ -154,6 +163,7 @@ class RecoveryResponse {
       respondedAt: respondedAt ?? this.respondedAt,
       shardData: shardData ?? this.shardData,
       nostrEventId: nostrEventId ?? this.nostrEventId,
+      errorMessage: errorMessage ?? this.errorMessage,
     );
   }
 
@@ -174,6 +184,7 @@ class RecoveryRequest {
   final DateTime? expiresAt;
   final int threshold; // Shamir threshold needed for recovery
   final Map<String, RecoveryResponse> keyHolderResponses; // pubkey -> response
+  final String? errorMessage; // Error message if status is failed
 
   const RecoveryRequest({
     required this.id,
@@ -185,6 +196,7 @@ class RecoveryRequest {
     this.nostrEventId,
     this.expiresAt,
     this.keyHolderResponses = const {},
+    this.errorMessage,
   });
 
   /// Validate the recovery request
@@ -250,6 +262,7 @@ class RecoveryRequest {
       'keyHolderResponses': keyHolderResponses.map(
         (key, value) => MapEntry(key, value.toJson()),
       ),
+      'errorMessage': errorMessage,
     };
   }
 
@@ -278,6 +291,7 @@ class RecoveryRequest {
       nostrEventId: json['nostrEventId'] as String?,
       expiresAt: json['expiresAt'] != null ? DateTime.parse(json['expiresAt'] as String) : null,
       keyHolderResponses: responses,
+      errorMessage: json['errorMessage'] as String?,
     );
   }
 
@@ -291,6 +305,7 @@ class RecoveryRequest {
     String? nostrEventId,
     DateTime? expiresAt,
     Map<String, RecoveryResponse>? keyHolderResponses,
+    String? errorMessage,
   }) {
     return RecoveryRequest(
       id: id ?? this.id,
@@ -302,6 +317,7 @@ class RecoveryRequest {
       nostrEventId: nostrEventId ?? this.nostrEventId,
       expiresAt: expiresAt ?? this.expiresAt,
       keyHolderResponses: keyHolderResponses ?? this.keyHolderResponses,
+      errorMessage: errorMessage ?? this.errorMessage,
     );
   }
 

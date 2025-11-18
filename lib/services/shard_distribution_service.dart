@@ -57,10 +57,11 @@ class ShardDistributionService {
         }
 
         try {
-          // Update shard with relay URLs from backup config for confirmation events
+          // Update shard with relay URLs and distribution version from backup config
           final shardWithRelays = copyShardData(
             shard,
             relayUrls: config.relays,
+            distributionVersion: config.distributionVersion,
           );
 
           // Create shard data JSON
@@ -209,10 +210,11 @@ class ShardDistributionService {
       throw Exception('No key pair available. Cannot process shard confirmation event.');
     }
 
-    // Extract lockbox ID and shard index from tags
+    // Extract lockbox ID, shard index, and distribution version from tags
     // All confirmation data is stored in tags (no content)
     final lockboxId = _extractTagValue(event.tags, 'lockbox_id');
     final shardIndexStr = _extractTagValue(event.tags, 'shard_index');
+    final distributionVersionStr = _extractTagValue(event.tags, 'distribution_version');
 
     if (lockboxId == null) {
       throw ArgumentError('Missing lockbox_id tag in shard confirmation event');
@@ -227,6 +229,9 @@ class ShardDistributionService {
       throw ArgumentError('Invalid shard index in shard confirmation event: $shardIndexStr');
     }
 
+    final distributionVersion =
+        distributionVersionStr != null ? int.tryParse(distributionVersionStr) : null;
+
     // Update key holder status
     final keyHolderPubkey = event.pubKey;
     await _repository.updateKeyHolderStatus(
@@ -235,6 +240,7 @@ class ShardDistributionService {
       status: KeyHolderStatus.holdingKey,
       acknowledgedAt: DateTime.now(),
       acknowledgmentEventId: event.id,
+      acknowledgedDistributionVersion: distributionVersion,
     );
 
     Log.info(

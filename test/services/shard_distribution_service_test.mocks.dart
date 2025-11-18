@@ -769,10 +769,12 @@ class MockLockboxRepository extends _i1.Mock implements _i7.LockboxRepository {
     ({
       String? contentHash,
       DateTime createdAt,
+      int distributionVersion,
       String? instructions,
       List<
           ({
             DateTime? acknowledgedAt,
+            int? acknowledgedDistributionVersion,
             String? acknowledgmentEventId,
             String? giftWrapEventId,
             String id,
@@ -811,10 +813,12 @@ class MockLockboxRepository extends _i1.Mock implements _i7.LockboxRepository {
       ({
         String? contentHash,
         DateTime createdAt,
+        int distributionVersion,
         String? instructions,
         List<
             ({
               DateTime? acknowledgedAt,
+              int? acknowledgedDistributionVersion,
               String? acknowledgmentEventId,
               String? giftWrapEventId,
               String id,
@@ -843,10 +847,12 @@ class MockLockboxRepository extends _i1.Mock implements _i7.LockboxRepository {
             ({
               String? contentHash,
               DateTime createdAt,
+              int distributionVersion,
               String? instructions,
               List<
                   ({
                     DateTime? acknowledgedAt,
+                    int? acknowledgedDistributionVersion,
                     String? acknowledgmentEventId,
                     String? giftWrapEventId,
                     String id,
@@ -871,10 +877,12 @@ class MockLockboxRepository extends _i1.Mock implements _i7.LockboxRepository {
           ({
             String? contentHash,
             DateTime createdAt,
+            int distributionVersion,
             String? instructions,
             List<
                 ({
                   DateTime? acknowledgedAt,
+                  int? acknowledgedDistributionVersion,
                   String? acknowledgmentEventId,
                   String? giftWrapEventId,
                   String id,
@@ -903,6 +911,7 @@ class MockLockboxRepository extends _i1.Mock implements _i7.LockboxRepository {
     required _i9.KeyHolderStatus? status,
     DateTime? acknowledgedAt,
     String? acknowledgmentEventId,
+    int? acknowledgedDistributionVersion,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -914,6 +923,7 @@ class MockLockboxRepository extends _i1.Mock implements _i7.LockboxRepository {
             #status: status,
             #acknowledgedAt: acknowledgedAt,
             #acknowledgmentEventId: acknowledgmentEventId,
+            #acknowledgedDistributionVersion: acknowledgedDistributionVersion,
           },
         ),
         returnValue: _i4.Future<void>.value(),
@@ -926,6 +936,7 @@ class MockLockboxRepository extends _i1.Mock implements _i7.LockboxRepository {
     ({
       int createdAt,
       String creatorPubkey,
+      int? distributionVersion,
       String? instructions,
       bool? isReceived,
       String? lockboxId,
@@ -961,6 +972,7 @@ class MockLockboxRepository extends _i1.Mock implements _i7.LockboxRepository {
           ({
             int createdAt,
             String creatorPubkey,
+            int? distributionVersion,
             String? instructions,
             bool? isReceived,
             String? lockboxId,
@@ -986,6 +998,7 @@ class MockLockboxRepository extends _i1.Mock implements _i7.LockboxRepository {
                 ({
                   int createdAt,
                   String creatorPubkey,
+                  int? distributionVersion,
                   String? instructions,
                   bool? isReceived,
                   String? lockboxId,
@@ -1004,6 +1017,7 @@ class MockLockboxRepository extends _i1.Mock implements _i7.LockboxRepository {
                 })>>.value(<({
           int createdAt,
           String creatorPubkey,
+          int? distributionVersion,
           String? instructions,
           bool? isReceived,
           String? lockboxId,
@@ -1025,6 +1039,7 @@ class MockLockboxRepository extends _i1.Mock implements _i7.LockboxRepository {
               ({
                 int createdAt,
                 String creatorPubkey,
+                int? distributionVersion,
                 String? instructions,
                 bool? isReceived,
                 String? lockboxId,

@@ -134,6 +134,7 @@ class InvitationSendingService {
     required int shardIndex,
     required String ownerPubkey, // Hex format
     required List<String> relayUrls,
+    int? distributionVersion,
   }) async {
     try {
       final currentPubkey = await ndkService.getCurrentPubkey();
@@ -157,16 +158,23 @@ class InvitationSendingService {
           'Sending shard confirmation event for lockbox: ${lockboxId.substring(0, 8)}..., shard: $shardIndex');
 
       // Publish using NdkService
+      final tags = [
+        ['d', 'shard_confirmation_${lockboxId}_$shardIndex'],
+        ['lockbox_id', lockboxId],
+        ['shard_index', shardIndex.toString()],
+      ];
+
+      // Include distribution version if provided
+      if (distributionVersion != null) {
+        tags.add(['distribution_version', distributionVersion.toString()]);
+      }
+
       return await ndkService.publishEncryptedEvent(
         content: confirmationJson,
         kind: NostrKind.shardConfirmation.value,
         recipientPubkey: ownerPubkey,
         relays: relayUrls,
-        tags: [
-          ['d', 'shard_confirmation_${lockboxId}_$shardIndex'],
-          ['lockbox_id', lockboxId],
-          ['shard_index', shardIndex.toString()],
-        ],
+        tags: tags,
       );
     } catch (e) {
       Log.error('Error sending shard confirmation event', e);
@@ -277,6 +285,58 @@ class InvitationSendingService {
       );
     } catch (e) {
       Log.error('Error sending invitation invalid event', e);
+      return null;
+    }
+  }
+
+  /// Creates and publishes key holder removed event
+  ///
+  /// Creates removal event payload.
+  /// Encrypts using NIP-44.
+  /// Creates Nostr event (kind 1345).
+  /// Signs with lockbox owner's private key.
+  /// Publishes to relays.
+  /// Returns event ID, or null if publishing fails.
+  Future<String?> sendKeyHolderRemovalEvent({
+    required String lockboxId,
+    required String removedKeyHolderPubkey, // Hex format
+    required List<String> relayUrls,
+  }) async {
+    try {
+      final currentPubkey = await ndkService.getCurrentPubkey();
+      if (currentPubkey == null) {
+        Log.error('No key pair available for sending key holder removal event');
+        return null;
+      }
+
+      // Create key holder removal event payload
+      final removalData = {
+        'type': 'key_holder_removed',
+        'lockbox_id': lockboxId,
+        'removed_pubkey': removedKeyHolderPubkey,
+        'owner_pubkey': currentPubkey,
+        'removed_at': DateTime.now().toIso8601String(),
+      };
+
+      final removalJson = json.encode(removalData);
+
+      Log.warning(
+          'Sending key holder removal event for lockbox: ${lockboxId.substring(0, 8)}..., removed: ${removedKeyHolderPubkey.substring(0, 8)}...');
+
+      // Publish using NdkService
+      return await ndkService.publishEncryptedEvent(
+        content: removalJson,
+        kind: NostrKind.keyHolderRemoved.value,
+        recipientPubkey: removedKeyHolderPubkey,
+        relays: relayUrls,
+        tags: [
+          ['d', 'key_holder_removed_${lockboxId}_$removedKeyHolderPubkey'],
+          ['lockbox_id', lockboxId],
+          ['removed_pubkey', removedKeyHolderPubkey],
+        ],
+      );
+    } catch (e) {
+      Log.error('Error sending key holder removal event', e);
       return null;
     }
   }

@@ -65,10 +65,10 @@ extension InvitationLinkExtension on InvitationLink {
 
   /// Generates an invitation URL from this InvitationLink
   ///
-  /// Format: https://keydex.app/invite/{inviteCode}?lockbox={lockboxId}&name={lockboxName}&owner={ownerPubkey}&relays={relayUrls}
+  /// Format: keydex://keydex.app/invite/{inviteCode}?lockbox={lockboxId}&name={lockboxName}&owner={ownerPubkey}&relays={relayUrls}
   /// Relay URLs are comma-separated and URL-encoded.
   String toUrl() {
-    final baseUrl = 'https://keydex.app/invite/$inviteCode';
+    final baseUrl = 'keydex://keydex.app/invite/$inviteCode';
     final params = <String>[];
 
     params.add('lockbox=${Uri.encodeComponent(lockboxId)}');

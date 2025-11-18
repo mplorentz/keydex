@@ -36,6 +36,9 @@ class Lockbox {
   final List<ShardData> shards; // List of shards (single as key holder, multiple during recovery)
   final List<RecoveryRequest> recoveryRequests; // Embedded recovery requests
   final BackupConfig? backupConfig; // Optional backup configuration
+  final bool isArchived; // Whether this lockbox is archived
+  final DateTime? archivedAt; // When the lockbox was archived
+  final String? archivedReason; // Reason for archiving
 
   Lockbox({
     required this.id,
@@ -47,6 +50,9 @@ class Lockbox {
     this.shards = const [],
     this.recoveryRequests = const [],
     this.backupConfig,
+    this.isArchived = false,
+    this.archivedAt,
+    this.archivedReason,
   });
 
   /// Get the state of this lockbox based on priority:
@@ -100,6 +106,9 @@ class Lockbox {
       'shards': shards.map((shard) => shardDataToJson(shard)).toList(),
       'recoveryRequests': recoveryRequests.map((request) => request.toJson()).toList(),
       'backupConfig': backupConfig != null ? backupConfigToJson(backupConfig!) : null,
+      'isArchived': isArchived,
+      if (archivedAt != null) 'archivedAt': archivedAt!.toIso8601String(),
+      if (archivedReason != null) 'archivedReason': archivedReason,
     };
   }
 
@@ -125,6 +134,9 @@ class Lockbox {
       backupConfig: json['backupConfig'] != null
           ? backupConfigFromJson(json['backupConfig'] as Map<String, dynamic>)
           : null,
+      isArchived: json['isArchived'] as bool? ?? false,
+      archivedAt: json['archivedAt'] != null ? DateTime.parse(json['archivedAt'] as String) : null,
+      archivedReason: json['archivedReason'] as String?,
     );
   }
 
@@ -139,6 +151,9 @@ class Lockbox {
     List<ShardData>? shards,
     List<RecoveryRequest>? recoveryRequests,
     BackupConfig? backupConfig,
+    bool? isArchived,
+    DateTime? archivedAt,
+    String? archivedReason,
   }) {
     return Lockbox(
       id: id ?? this.id,
@@ -150,6 +165,9 @@ class Lockbox {
       shards: shards ?? this.shards,
       recoveryRequests: recoveryRequests ?? this.recoveryRequests,
       backupConfig: backupConfig ?? this.backupConfig,
+      isArchived: isArchived ?? this.isArchived,
+      archivedAt: archivedAt ?? this.archivedAt,
+      archivedReason: archivedReason ?? this.archivedReason,
     );
   }
 

@@ -806,7 +806,8 @@ class InvitationService {
         // Check if this key holder needs status update (e.g., was invited, now accepting)
         final existingHolder = existingByPubkey.first;
         if (existingHolder.status == KeyHolderStatus.invited ||
-            existingHolder.status == KeyHolderStatus.awaitingKey) {
+            existingHolder.status == KeyHolderStatus.awaitingKey ||
+            existingHolder.status == KeyHolderStatus.awaitingNewKey) {
           // Status is already appropriate or will be updated elsewhere
           Log.debug(
               'Key holder $pubkey already exists in backup config with status ${existingHolder.status}');

@@ -252,6 +252,8 @@ class RecoveryKeyHoldersWidget extends ConsumerWidget {
         return Icons.cancel;
       case RecoveryResponseStatus.timeout:
         return Icons.timer_off;
+      case RecoveryResponseStatus.error:
+        return Icons.error;
     }
   }
 
@@ -265,6 +267,8 @@ class RecoveryKeyHoldersWidget extends ConsumerWidget {
         return Colors.red;
       case RecoveryResponseStatus.timeout:
         return Colors.grey;
+      case RecoveryResponseStatus.error:
+        return Colors.red;
     }
   }
 

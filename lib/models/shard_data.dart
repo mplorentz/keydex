@@ -28,6 +28,7 @@ typedef ShardData = ({
   DateTime? receivedAt,
   String? nostrEventId,
   List<String>? relayUrls, // Relay URLs from backup config for sending confirmations
+  int? distributionVersion, // Version tracking for redistribution detection (nullable for backward compatibility)
 });
 
 /// Create a new ShardData with validation
@@ -48,6 +49,7 @@ ShardData createShardData({
   DateTime? receivedAt,
   String? nostrEventId,
   List<String>? relayUrls,
+  int? distributionVersion,
 }) {
   if (shard.isEmpty) {
     throw ArgumentError('Shard cannot be empty');
@@ -106,6 +108,7 @@ ShardData createShardData({
     receivedAt: receivedAt,
     nostrEventId: nostrEventId,
     relayUrls: relayUrls,
+    distributionVersion: distributionVersion,
   );
 }
 
@@ -134,6 +137,7 @@ ShardData copyShardData(
   DateTime? receivedAt,
   String? nostrEventId,
   List<String>? relayUrls,
+  int? distributionVersion,
 }) {
   return (
     shard: shard ?? shardData.shard,
@@ -153,6 +157,7 @@ ShardData copyShardData(
     receivedAt: receivedAt ?? shardData.receivedAt,
     nostrEventId: nostrEventId ?? shardData.nostrEventId,
     relayUrls: relayUrls ?? shardData.relayUrls,
+    distributionVersion: distributionVersion ?? shardData.distributionVersion,
   );
 }
 
@@ -248,6 +253,7 @@ Map<String, dynamic> shardDataToJson(ShardData shardData) {
     if (shardData.receivedAt != null) 'receivedAt': shardData.receivedAt!.toIso8601String(),
     if (shardData.nostrEventId != null) 'nostrEventId': shardData.nostrEventId,
     if (shardData.relayUrls != null) 'relayUrls': shardData.relayUrls,
+    if (shardData.distributionVersion != null) 'distributionVersion': shardData.distributionVersion,
   };
 }
 
@@ -273,6 +279,7 @@ ShardData shardDataFromJson(Map<String, dynamic> json) {
     receivedAt: json['receivedAt'] != null ? DateTime.parse(json['receivedAt'] as String) : null,
     nostrEventId: json['nostrEventId'] as String?,
     relayUrls: json['relayUrls'] != null ? List<String>.from(json['relayUrls'] as List) : null,
+    distributionVersion: json['distributionVersion'] as int?,
   );
 }
 

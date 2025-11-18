@@ -21,6 +21,7 @@ typedef BackupConfig = ({
   DateTime? lastRedistribution,
   String? contentHash,
   BackupStatus status,
+  int distributionVersion, // Version tracking for redistribution detection
 });
 
 /// Create a new BackupConfig with validation
@@ -84,6 +85,7 @@ BackupConfig createBackupConfig({
     lastRedistribution: null,
     contentHash: contentHash,
     status: BackupStatus.pending,
+    distributionVersion: 0, // Initialize to version 0
   );
 }
 
@@ -103,6 +105,7 @@ BackupConfig copyBackupConfig(
   DateTime? lastRedistribution,
   String? contentHash,
   BackupStatus? status,
+  int? distributionVersion,
 }) {
   return (
     lockboxId: lockboxId ?? config.lockboxId,
@@ -118,6 +121,7 @@ BackupConfig copyBackupConfig(
     lastRedistribution: lastRedistribution ?? config.lastRedistribution,
     contentHash: contentHash ?? config.contentHash,
     status: status ?? config.status,
+    distributionVersion: distributionVersion ?? config.distributionVersion,
   );
 }
 
@@ -173,6 +177,58 @@ extension BackupConfigExtension on BackupConfig {
   bool get isReady {
     return status == BackupStatus.active && acknowledgedKeyHoldersCount >= threshold;
   }
+
+  /// Check if all key holders are ready for distribution (have pubkeys)
+  bool get canDistribute {
+    return keyHolders.every((h) => h.pubkey != null);
+  }
+
+  /// Get the number of key holders still pending (invited but not accepted)
+  int get pendingInvitationsCount {
+    return keyHolders.where((h) => h.status == KeyHolderStatus.invited && h.pubkey == null).length;
+  }
+
+  /// Check if redistribution is needed (config changed but not redistributed)
+  bool get needsRedistribution {
+    // Never distributed
+    if (lastRedistribution == null) {
+      return status == BackupStatus.pending || status == BackupStatus.active;
+    }
+
+    // Config updated after last redistribution
+    return lastUpdated.isAfter(lastRedistribution!);
+  }
+
+  /// Check if there are version mismatches with key holders
+  bool get hasVersionMismatch {
+    return keyHolders.any((h) =>
+        h.acknowledgedDistributionVersion != null &&
+        h.acknowledgedDistributionVersion != distributionVersion);
+  }
+
+  /// Check if config parameters differ from another config
+  /// Compares threshold, relays, instructions, and key holder IDs (not status/acknowledgments)
+  bool configParamsDifferFrom(BackupConfig other) {
+    if (threshold != other.threshold) return true;
+    if (!_areRelaysEqual(relays, other.relays)) return true;
+    if (instructions != other.instructions) return true;
+
+    // Compare key holder IDs (not full key holders, since status may differ)
+    final thisIds = keyHolders.map((h) => h.id).toSet();
+    final otherIds = other.keyHolders.map((h) => h.id).toSet();
+    if (thisIds.length != otherIds.length) return true;
+    if (!thisIds.containsAll(otherIds)) return true;
+
+    return false;
+  }
+
+  /// Helper to compare relay lists
+  bool _areRelaysEqual(List<String> list1, List<String> list2) {
+    if (list1.length != list2.length) return false;
+    final set1 = Set<String>.from(list1);
+    final set2 = Set<String>.from(list2);
+    return set1.containsAll(set2) && set2.containsAll(set1);
+  }
 }
 
 /// Convert to JSON for storage
@@ -191,6 +247,7 @@ Map<String, dynamic> backupConfigToJson(BackupConfig config) {
     'lastRedistribution': config.lastRedistribution?.toIso8601String(),
     'contentHash': config.contentHash,
     'status': config.status.name,
+    'distributionVersion': config.distributionVersion,
   };
 }
 
@@ -219,6 +276,8 @@ BackupConfig backupConfigFromJson(Map<String, dynamic> json) {
       (s) => s.name == json['status'],
       orElse: () => BackupStatus.pending,
     ),
+    distributionVersion:
+        json['distributionVersion'] as int? ?? 1, // Default to 1 for backward compatibility
   );
 }
 
