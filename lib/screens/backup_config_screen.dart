@@ -1030,40 +1030,6 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
   Future<void> _saveBackup() async {
     if (!_canCreateBackup()) return;
 
-<<<<<<< HEAD
-=======
-    // Check if shards have been distributed and show warning
-    final hasDistributed = await _hasDistributedShards();
-    if (!mounted) return;
-    if (hasDistributed) {
-      final shouldContinue = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Warning: Keys Already Distributed'),
-          content: const Text(
-            'Saving these changes will invalidate the distributed keys and require redistribution. Continue?',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Continue'),
-            ),
-          ],
-        ),
-      );
-
-      if (shouldContinue != true) return;
-    }
-
-    setState(() {
-      _isCreating = true;
-    });
-
->>>>>>> improve-backup-config-ui
     try {
       final backupService = ref.read(backupServiceProvider);
       final repository = ref.read(lockboxRepositoryProvider);
@@ -1184,15 +1150,6 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
             ),
           );
         }
-<<<<<<< HEAD
-=======
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Recovery plan saved successfully!'),
-            backgroundColor: Colors.green,
-          ),
-        );
->>>>>>> improve-backup-config-ui
       }
     } catch (e) {
       if (mounted) {
