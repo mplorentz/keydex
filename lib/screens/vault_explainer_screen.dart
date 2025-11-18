@@ -41,8 +41,7 @@ class VaultExplainerScreen extends StatelessWidget {
                     context,
                     number: '1',
                     title: 'Adding contents',
-                    description:
-                        'attach files that you want to back up.',
+                    description: 'attach files that you want to back up.',
                   ),
                   const SizedBox(height: 16),
                   // Step 2
@@ -128,6 +127,7 @@ class VaultExplainerScreen extends StatelessWidget {
               number,
               style: textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
+                color: theme.scaffoldBackgroundColor,
               ),
             ),
           ),
@@ -154,4 +154,3 @@ class VaultExplainerScreen extends StatelessWidget {
     );
   }
 }
-
