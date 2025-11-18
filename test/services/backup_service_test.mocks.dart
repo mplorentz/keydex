@@ -337,8 +337,12 @@ class MockLockboxRepository extends _i1.Mock implements _i5.LockboxRepository {
   _i6.Future<void> addShardToLockbox(
     String? lockboxId,
     ({
+      DateTime? blossomExpiresAt,
+      List<String>? blossomUrls,
       int createdAt,
       String creatorPubkey,
+      List<String>? fileHashes,
+      List<String>? fileNames,
       String? instructions,
       bool? isReceived,
       String? lockboxId,
@@ -372,8 +376,12 @@ class MockLockboxRepository extends _i1.Mock implements _i5.LockboxRepository {
   _i6.Future<
       List<
           ({
+            DateTime? blossomExpiresAt,
+            List<String>? blossomUrls,
             int createdAt,
             String creatorPubkey,
+            List<String>? fileHashes,
+            List<String>? fileNames,
             String? instructions,
             bool? isReceived,
             String? lockboxId,
@@ -397,8 +405,12 @@ class MockLockboxRepository extends _i1.Mock implements _i5.LockboxRepository {
         returnValue: _i6.Future<
             List<
                 ({
+                  DateTime? blossomExpiresAt,
+                  List<String>? blossomUrls,
                   int createdAt,
                   String creatorPubkey,
+                  List<String>? fileHashes,
+                  List<String>? fileNames,
                   String? instructions,
                   bool? isReceived,
                   String? lockboxId,
@@ -415,8 +427,12 @@ class MockLockboxRepository extends _i1.Mock implements _i5.LockboxRepository {
                   int threshold,
                   int totalShards
                 })>>.value(<({
+          DateTime? blossomExpiresAt,
+          List<String>? blossomUrls,
           int createdAt,
           String creatorPubkey,
+          List<String>? fileHashes,
+          List<String>? fileNames,
           String? instructions,
           bool? isReceived,
           String? lockboxId,
@@ -436,8 +452,12 @@ class MockLockboxRepository extends _i1.Mock implements _i5.LockboxRepository {
       ) as _i6.Future<
           List<
               ({
+                DateTime? blossomExpiresAt,
+                List<String>? blossomUrls,
                 int createdAt,
                 String creatorPubkey,
+                List<String>? fileHashes,
+                List<String>? fileNames,
                 String? instructions,
                 bool? isReceived,
                 String? lockboxId,
@@ -608,8 +628,12 @@ class MockShardDistributionService extends _i1.Mock
     })? config,
     required List<
             ({
+              DateTime? blossomExpiresAt,
+              List<String>? blossomUrls,
               int createdAt,
               String creatorPubkey,
+              List<String>? fileHashes,
+              List<String>? fileNames,
               String? instructions,
               bool? isReceived,
               String? lockboxId,

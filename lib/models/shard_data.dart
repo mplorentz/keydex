@@ -7,6 +7,7 @@ import '../services/logger.dart';
 /// and stored in the ShardEvent for distribution to key holders.
 ///
 /// Extended with optional recovery metadata for lockbox recovery feature.
+/// Extended with file support metadata for P2P ephemeral file distribution.
 typedef ShardData = ({
   String shard,
   int threshold,
@@ -28,6 +29,11 @@ typedef ShardData = ({
   DateTime? receivedAt,
   String? nostrEventId,
   List<String>? relayUrls, // Relay URLs from backup config for sending confirmations
+  // File support metadata (optional fields)
+  List<String>? blossomUrls, // List of Blossom URLs for file retrieval (temporary)
+  List<String>? fileHashes, // List of SHA-256 hashes (matches blossomUrls)
+  List<String>? fileNames, // List of original filenames for display
+  DateTime? blossomExpiresAt, // When files will be deleted from Blossom (~48hrs)
 });
 
 /// Create a new ShardData with validation
@@ -48,6 +54,10 @@ ShardData createShardData({
   DateTime? receivedAt,
   String? nostrEventId,
   List<String>? relayUrls,
+  List<String>? blossomUrls,
+  List<String>? fileHashes,
+  List<String>? fileNames,
+  DateTime? blossomExpiresAt,
 }) {
   if (shard.isEmpty) {
     throw ArgumentError('Shard cannot be empty');
@@ -88,6 +98,26 @@ ShardData createShardData({
     }
   }
 
+  // Validate file metadata if provided
+  if (blossomUrls != null || fileHashes != null || fileNames != null) {
+    if (blossomUrls == null || fileHashes == null || fileNames == null) {
+      throw ArgumentError('If any file field is present, all must be present (blossomUrls, fileHashes, fileNames)');
+    }
+    if (blossomUrls.length != fileHashes.length || fileHashes.length != fileNames.length) {
+      throw ArgumentError('All file arrays must have the same length');
+    }
+    for (final hash in fileHashes) {
+      if (hash.length != 64 || !_isHexString(hash)) {
+        throw ArgumentError('All file hashes must be valid SHA-256 hex (64 characters): $hash');
+      }
+    }
+    for (final url in blossomUrls) {
+      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        throw ArgumentError('All Blossom URLs must be HTTP or HTTPS: $url');
+      }
+    }
+  }
+
   return (
     shard: shard,
     threshold: threshold,
@@ -106,6 +136,10 @@ ShardData createShardData({
     receivedAt: receivedAt,
     nostrEventId: nostrEventId,
     relayUrls: relayUrls,
+    blossomUrls: blossomUrls,
+    fileHashes: fileHashes,
+    fileNames: fileNames,
+    blossomExpiresAt: blossomExpiresAt,
   );
 }
 
@@ -134,6 +168,10 @@ ShardData copyShardData(
   DateTime? receivedAt,
   String? nostrEventId,
   List<String>? relayUrls,
+  List<String>? blossomUrls,
+  List<String>? fileHashes,
+  List<String>? fileNames,
+  DateTime? blossomExpiresAt,
 }) {
   return (
     shard: shard ?? shardData.shard,
@@ -153,6 +191,10 @@ ShardData copyShardData(
     receivedAt: receivedAt ?? shardData.receivedAt,
     nostrEventId: nostrEventId ?? shardData.nostrEventId,
     relayUrls: relayUrls ?? shardData.relayUrls,
+    blossomUrls: blossomUrls ?? shardData.blossomUrls,
+    fileHashes: fileHashes ?? shardData.fileHashes,
+    fileNames: fileNames ?? shardData.fileNames,
+    blossomExpiresAt: blossomExpiresAt ?? shardData.blossomExpiresAt,
   );
 }
 
@@ -248,6 +290,11 @@ Map<String, dynamic> shardDataToJson(ShardData shardData) {
     if (shardData.receivedAt != null) 'receivedAt': shardData.receivedAt!.toIso8601String(),
     if (shardData.nostrEventId != null) 'nostrEventId': shardData.nostrEventId,
     if (shardData.relayUrls != null) 'relayUrls': shardData.relayUrls,
+    if (shardData.blossomUrls != null) 'blossomUrls': shardData.blossomUrls,
+    if (shardData.fileHashes != null) 'fileHashes': shardData.fileHashes,
+    if (shardData.fileNames != null) 'fileNames': shardData.fileNames,
+    if (shardData.blossomExpiresAt != null)
+      'blossomExpiresAt': shardData.blossomExpiresAt!.toIso8601String(),
   };
 }
 
@@ -273,6 +320,13 @@ ShardData shardDataFromJson(Map<String, dynamic> json) {
     receivedAt: json['receivedAt'] != null ? DateTime.parse(json['receivedAt'] as String) : null,
     nostrEventId: json['nostrEventId'] as String?,
     relayUrls: json['relayUrls'] != null ? List<String>.from(json['relayUrls'] as List) : null,
+    blossomUrls:
+        json['blossomUrls'] != null ? List<String>.from(json['blossomUrls'] as List) : null,
+    fileHashes: json['fileHashes'] != null ? List<String>.from(json['fileHashes'] as List) : null,
+    fileNames: json['fileNames'] != null ? List<String>.from(json['fileNames'] as List) : null,
+    blossomExpiresAt: json['blossomExpiresAt'] != null
+        ? DateTime.parse(json['blossomExpiresAt'] as String)
+        : null,
   );
 }
 
