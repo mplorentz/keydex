@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
@@ -17,14 +16,21 @@ import 'package:keydex/services/lockbox_share_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'recovery_service_test.mocks.dart';
+import '../helpers/secure_storage_mock.dart';
 
 @GenerateMocks([BackupService, ShardDistributionService, NdkService, LockboxShareService])
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  const MethodChannel secureStorageChannel =
-      MethodChannel('plugins.it_nomads.com/flutter_secure_storage');
-  final Map<String, String> secureStore = {};
+  final secureStorageMock = SecureStorageMock();
+
+  setUpAll(() {
+    secureStorageMock.setUpAll();
+  });
+
+  tearDownAll(() {
+    secureStorageMock.tearDownAll();
+  });
 
   group('RecoveryService - Nostr Event Payload Validation', () {
     late String testCreatorPubkey;
@@ -39,41 +45,8 @@ void main() {
     const testLockboxId = 'lockbox-test-123';
 
     setUp(() async {
-      secureStore.clear();
+      secureStorageMock.clear();
       SharedPreferences.setMockInitialValues({});
-
-      // Mock secure storage
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(secureStorageChannel, (MethodCall call) async {
-        switch (call.method) {
-          case 'write':
-            final String key = (call.arguments as Map)['key'] as String;
-            final String? value = (call.arguments as Map)['value'] as String?;
-            if (value == null) {
-              secureStore.remove(key);
-            } else {
-              secureStore[key] = value;
-            }
-            return null;
-          case 'read':
-            final String key = (call.arguments as Map)['key'] as String;
-            return secureStore[key];
-          case 'readAll':
-            return Map<String, String>.from(secureStore);
-          case 'delete':
-            final String key = (call.arguments as Map)['key'] as String;
-            secureStore.remove(key);
-            return null;
-          case 'deleteAll':
-            secureStore.clear();
-            return null;
-          case 'containsKey':
-            final String key = (call.arguments as Map)['key'] as String;
-            return secureStore.containsKey(key);
-          default:
-            return null;
-        }
-      });
 
       loginService = LoginService();
       await loginService.clearStoredKeys();

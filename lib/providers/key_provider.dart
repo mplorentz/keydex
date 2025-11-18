@@ -20,3 +20,11 @@ final currentPublicKeyBech32Provider = FutureProvider<String?>((ref) async {
   final loginService = ref.watch(loginServiceProvider);
   return await loginService.getCurrentPublicKeyBech32();
 });
+
+/// FutureProvider that checks if user is logged in (has a stored private key)
+/// Returns true if a key exists, false otherwise
+final isLoggedInProvider = FutureProvider<bool>((ref) async {
+  final loginService = ref.watch(loginServiceProvider);
+  final keyPair = await loginService.getStoredNostrKey();
+  return keyPair != null;
+});

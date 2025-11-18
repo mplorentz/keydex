@@ -1,0 +1,41 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../main.dart';
+import '../providers/key_provider.dart';
+import '../services/deep_link_service.dart';
+import '../services/relay_scan_service.dart';
+
+/// Initializes app services (deep linking and relay scanning).
+/// Optionally initializes a key if one doesn't exist.
+///
+/// Parameters:
+/// - [ref] - WidgetRef to access providers
+/// - [initializeKeyIfNeeded] - If true, generates a key if none exists (default: false)
+///
+/// Returns the initialized key pair if [initializeKeyIfNeeded] is true, null otherwise.
+Future<void> initializeAppServices(
+  WidgetRef ref, {
+  bool initializeKeyIfNeeded = false,
+}) async {
+  // Optionally initialize key if needed (e.g., during onboarding)
+  if (initializeKeyIfNeeded) {
+    final loginService = ref.read(loginServiceProvider);
+    await loginService.initializeKey();
+  }
+
+  // Initialize deep linking
+  final deepLinkService = ref.read(deepLinkServiceProvider);
+  deepLinkService.setNavigatorKey(navigatorKey);
+  await deepLinkService.initializeDeepLinking();
+
+  // Initialize relay scanning service
+  // This will auto-start scanning if there are enabled relays
+  final relayScanService = ref.read(relayScanServiceProvider);
+  await relayScanService.initialize();
+
+  // Invalidate key-related providers to trigger rebuild (e.g., after onboarding)
+  if (initializeKeyIfNeeded) {
+    ref.invalidate(currentPublicKeyProvider);
+    ref.invalidate(currentPublicKeyBech32Provider);
+    ref.invalidate(isLoggedInProvider);
+  }
+}

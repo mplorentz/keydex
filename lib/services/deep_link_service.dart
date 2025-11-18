@@ -115,7 +115,7 @@ class DeepLinkService {
   Future<void> _processLink(Uri uri) async {
     // Check if this looks like an invitation link before attempting to parse
     // Silently ignore non-invitation URLs (e.g., root path on web startup)
-    if (uri.pathSegments.isEmpty || 
+    if (uri.pathSegments.isEmpty ||
         (uri.pathSegments.isNotEmpty && uri.pathSegments[0] != 'invite')) {
       Log.debug('Ignoring non-invitation URL: $uri');
       return;
@@ -190,8 +190,8 @@ class DeepLinkService {
     try {
       // Validate scheme: https or keydex
       if (uri.scheme != 'https' && uri.scheme != 'keydex' && uri.scheme != 'http') {
-        throw InvalidInvitationLinkException(
-            uri.toString(), 'Unsupported URL scheme: ${uri.scheme}. Expected https:// or keydex://');
+        throw InvalidInvitationLinkException(uri.toString(),
+            'Unsupported URL scheme: ${uri.scheme}. Expected https:// or keydex://');
       }
 
       // Validate host: keydex.app (for Universal Links) or keydex.app (for custom scheme)
@@ -205,8 +205,8 @@ class DeepLinkService {
       // Extract invite code from path: /invite/{code}
       final pathSegments = uri.pathSegments;
       if (pathSegments.length != 2 || pathSegments[0] != 'invite') {
-        throw InvalidInvitationLinkException(uri.toString(),
-            'Invalid path format: ${uri.path}. Expected format: /invite/{code}');
+        throw InvalidInvitationLinkException(
+            uri.toString(), 'Invalid path format: ${uri.path}. Expected format: /invite/{code}');
       }
 
       final inviteCode = pathSegments[1];
@@ -223,8 +223,8 @@ class DeepLinkService {
       }
 
       if (!isValidHexPubkey(ownerPubkey)) {
-        throw InvalidInvitationLinkException(
-            uri.toString(), 'Invalid owner pubkey format: $ownerPubkey (must be 64 hex characters)');
+        throw InvalidInvitationLinkException(uri.toString(),
+            'Invalid owner pubkey format: $ownerPubkey (must be 64 hex characters)');
       }
 
       // Extract lockboxId from query params
@@ -283,8 +283,7 @@ class DeepLinkService {
       rethrow;
     } catch (e) {
       Log.error('Error parsing invitation link: $uri', e);
-      throw InvalidInvitationLinkException(
-          uri.toString(), 'Failed to parse invitation link: $e');
+      throw InvalidInvitationLinkException(uri.toString(), 'Failed to parse invitation link: $e');
     }
   }
 }

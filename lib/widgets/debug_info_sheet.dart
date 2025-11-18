@@ -63,6 +63,7 @@ class DebugInfoSheet extends ConsumerWidget {
       // Invalidate the cached key providers so they'll re-fetch
       ref.invalidate(currentPublicKeyProvider);
       ref.invalidate(currentPublicKeyBech32Provider);
+      ref.invalidate(isLoggedInProvider);
 
       Log.info('All app data cleared successfully');
 
@@ -80,6 +81,7 @@ class DebugInfoSheet extends ConsumerWidget {
       ref.invalidate(lockboxListProvider);
       ref.invalidate(currentPublicKeyProvider);
       ref.invalidate(currentPublicKeyBech32Provider);
+      ref.invalidate(isLoggedInProvider);
     } catch (e) {
       Log.error('Error clearing all data', e);
       if (!context.mounted) return;

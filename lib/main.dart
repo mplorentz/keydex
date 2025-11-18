@@ -2,10 +2,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'providers/key_provider.dart';
-import 'services/deep_link_service.dart';
 import 'services/logger.dart';
-import 'services/relay_scan_service.dart';
 import 'screens/lockbox_list_screen.dart';
+import 'screens/onboarding_screen.dart';
+import 'utils/app_initialization.dart';
 import 'widgets/theme.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
@@ -38,19 +38,15 @@ class _KeydexAppState extends ConsumerState<KeydexApp> {
 
   Future<void> _initializeApp() async {
     try {
-      // Initialize the Nostr key on app launch
+      // Check if user has a key - if yes, initialize services
       final loginService = ref.read(loginServiceProvider);
-      await loginService.initializeKey();
+      final existingKey = await loginService.getStoredNostrKey();
 
-      // Initialize deep linking
-      final deepLinkService = ref.read(deepLinkServiceProvider);
-      deepLinkService.setNavigatorKey(navigatorKey);
-      await deepLinkService.initializeDeepLinking();
-
-      // Initialize relay scanning service
-      // This will auto-start scanning if there are enabled relays
-      final relayScanService = ref.read(relayScanServiceProvider);
-      await relayScanService.initialize();
+      if (existingKey != null) {
+        // User is logged in - initialize services
+        await initializeAppServices(ref);
+      }
+      // If no key exists, we'll show onboarding screen
 
       if (mounted) {
         setState(() {
@@ -70,6 +66,9 @@ class _KeydexAppState extends ConsumerState<KeydexApp> {
 
   @override
   Widget build(BuildContext context) {
+    // Watch login state to determine which screen to show
+    final isLoggedInAsync = ref.watch(isLoggedInProvider);
+
     return MaterialApp(
       navigatorKey: navigatorKey,
       title: 'Keydex Lockbox',
@@ -79,7 +78,12 @@ class _KeydexAppState extends ConsumerState<KeydexApp> {
           ? const _InitializingScreen()
           : _initError != null
               ? _ErrorScreen(error: _initError!)
-              : const LockboxListScreen(),
+              : isLoggedInAsync.when(
+                  data: (isLoggedIn) =>
+                      isLoggedIn ? const LockboxListScreen() : const OnboardingScreen(),
+                  loading: () => const _InitializingScreen(),
+                  error: (_, __) => const LockboxListScreen(), // Fallback to main screen on error
+                ),
     );
   }
 }
