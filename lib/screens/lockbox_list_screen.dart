@@ -6,6 +6,7 @@ import '../widgets/debug_info_sheet.dart';
 import 'lockbox_create_screen.dart';
 import 'relay_management_screen.dart';
 import 'recovery_notification_overlay.dart';
+import 'vault_explainer_screen.dart';
 import '../widgets/lockbox_card.dart';
 
 /// Main list screen showing all lockboxes
@@ -146,7 +147,7 @@ class LockboxListScreen extends ConsumerWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const LockboxCreateScreen(),
+                  builder: (context) => const VaultExplainerScreen(),
                   fullscreenDialog: true,
                 ),
               );
