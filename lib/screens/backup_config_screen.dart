@@ -750,10 +750,6 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
   Widget _buildKeyHolderListItem(KeyHolder holder) {
     final invitation = holder.name != null ? _invitationLinksByInviteeName[holder.name] : null;
     final isInvited = holder.status == KeyHolderStatus.invited;
-    final isMostRecentInvitation = invitation != null &&
-        _invitationLinksByInviteeName.values
-            .where((inv) => inv.createdAt.isAfter(invitation.createdAt))
-            .isEmpty;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
