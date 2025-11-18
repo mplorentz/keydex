@@ -1,55 +1,25 @@
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:keydex/services/login_service.dart';
+import '../helpers/secure_storage_mock.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  const MethodChannel secureStorageChannel =
-      MethodChannel('plugins.it_nomads.com/flutter_secure_storage');
+  final secureStorageMock = SecureStorageMock();
 
-  final Map<String, String> secureStore = {};
+  setUpAll(() {
+    secureStorageMock.setUpAll();
+  });
+
+  tearDownAll(() {
+    secureStorageMock.tearDownAll();
+  });
 
   setUp(() async {
-    // Reset in-memory stores
-    secureStore.clear();
+    secureStorageMock.clear();
     SharedPreferences.setMockInitialValues({});
-
-    // Mock flutter_secure_storage platform channel
-    // This simulates secure writes/reads in memory for tests
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(secureStorageChannel, (MethodCall call) async {
-      switch (call.method) {
-        case 'write':
-          final String key = (call.arguments as Map)['key'] as String;
-          final String? value = (call.arguments as Map)['value'] as String?;
-          if (value == null) {
-            secureStore.remove(key);
-          } else {
-            secureStore[key] = value;
-          }
-          return null;
-        case 'read':
-          final String key = (call.arguments as Map)['key'] as String;
-          return secureStore[key];
-        case 'readAll':
-          return Map<String, String>.from(secureStore);
-        case 'delete':
-          final String key = (call.arguments as Map)['key'] as String;
-          secureStore.remove(key);
-          return null;
-        case 'deleteAll':
-          secureStore.clear();
-          return null;
-        case 'containsKey':
-          final String key = (call.arguments as Map)['key'] as String;
-          return secureStore.containsKey(key);
-        default:
-          return null;
-      }
-    });
 
     final loginService = LoginService();
     await loginService.clearStoredKeys();
@@ -72,8 +42,8 @@ void main() {
 
     // Ensure underlying secure storage contains the value
     // The service uses 'nostr_private_key' as the key
-    expect(secureStore.containsKey('nostr_private_key'), isTrue);
-    expect(secureStore['nostr_private_key']!.isNotEmpty, isTrue);
+    expect(secureStorageMock.store.containsKey('nostr_private_key'), isTrue);
+    expect(secureStorageMock.store['nostr_private_key']!.isNotEmpty, isTrue);
 
     // Reset cache to force a storage read path
     loginService.resetCacheForTest();
