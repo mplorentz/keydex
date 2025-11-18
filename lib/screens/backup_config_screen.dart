@@ -39,6 +39,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
   bool _hasUnsavedChanges = false;
   bool _isEditingExistingPlan = false; // Track if we're editing an existing plan
   bool _thresholdManuallyChanged = false; // Track if user manually changed threshold
+  bool _showAdvancedSettings = false; // Track if advanced settings are visible
 
   // Instructions controller
   final TextEditingController _instructionsController = TextEditingController();
@@ -168,6 +169,15 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Recovery Plan Overview
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
+                          child: Text(
+                            'Your recovery plan details how your vault can be opened and by whom.',
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                        ),
+
                         // Stewards Section
                         Card(
                           child: Padding(
@@ -292,42 +302,60 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        // Relay Configuration
-                        Card(
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Nostr Relays',
-                                    style: Theme.of(context).textTheme.headlineSmall),
-                                const SizedBox(height: 16),
-                                ..._relays.map(
-                                  (relay) => ListTile(
-                                    leading: const Icon(Icons.cloud),
-                                    title: Text(relay),
-                                    trailing: IconButton(
-                                      icon: const Icon(Icons.remove_circle),
-                                      onPressed: () {
-                                        if (_relays.length > 1) {
-                                          setState(() {
-                                            _relays.remove(relay);
-                                            _hasUnsavedChanges = true;
-                                          });
-                                        }
-                                      },
+                        // Advanced Configuration Toggle
+                        TextButton.icon(
+                          onPressed: () {
+                            setState(() {
+                              _showAdvancedSettings = !_showAdvancedSettings;
+                            });
+                          },
+                          icon: Icon(
+                            _showAdvancedSettings ? Icons.expand_more : Icons.chevron_right,
+                          ),
+                          label: Text(_showAdvancedSettings
+                              ? 'Hide Advanced Configuration'
+                              : 'Show Advanced Configuration'),
+                        ),
+
+                        // Relay Configuration (Advanced)
+                        if (_showAdvancedSettings) ...[
+                          const SizedBox(height: 8),
+                          Card(
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Relay Servers',
+                                      style: Theme.of(context).textTheme.headlineSmall),
+                                  const SizedBox(height: 16),
+                                  ..._relays.map(
+                                    (relay) => ListTile(
+                                      leading: const Icon(Icons.cloud),
+                                      title: Text(relay),
+                                      trailing: IconButton(
+                                        icon: const Icon(Icons.remove_circle),
+                                        onPressed: () {
+                                          if (_relays.length > 1) {
+                                            setState(() {
+                                              _relays.remove(relay);
+                                              _hasUnsavedChanges = true;
+                                            });
+                                          }
+                                        },
+                                      ),
                                     ),
                                   ),
-                                ),
-                                ElevatedButton.icon(
-                                  onPressed: _addRelay,
-                                  icon: const Icon(Icons.add),
-                                  label: const Text('Add Relay'),
-                                ),
-                              ],
+                                  ElevatedButton.icon(
+                                    onPressed: _addRelay,
+                                    icon: const Icon(Icons.add),
+                                    label: const Text('Add Relay'),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
+                        ],
 
                         const SizedBox(height: 16), // Bottom padding inside scroll view
                       ],
@@ -791,23 +819,6 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (isMostRecentInvitation)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      margin: const EdgeInsets.only(bottom: 8),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primaryContainer,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        'Most Recent',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.onPrimaryContainer,
-                        ),
-                      ),
-                    ),
                   Row(
                     children: [
                       Expanded(
@@ -1030,9 +1041,9 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
       final shouldContinue = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Warning: Shards Already Distributed'),
+          title: const Text('Warning: Keys Already Distributed'),
           content: const Text(
-            'Saving these changes will invalidate the distributed shards and require redistribution. Continue?',
+            'Saving these changes will invalidate the distributed keys and require redistribution. Continue?',
           ),
           actions: [
             TextButton(
