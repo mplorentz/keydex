@@ -90,7 +90,7 @@ class LockboxDetailButtonStack extends ConsumerWidget {
                         text: 'Update Vault Contents',
                       ));
 
-                      // Backup Configuration Section
+                      // Recovery Plan Section
                       buttons.add(RowButtonConfig(
                         onPressed: () {
                           Navigator.push(
@@ -103,7 +103,7 @@ class LockboxDetailButtonStack extends ConsumerWidget {
                           );
                         },
                         icon: Icons.settings,
-                        text: 'Backup Settings',
+                        text: 'Recovery Plan',
                       ));
 
                       // Distribute Keys Button - shown when distribution is needed
@@ -132,31 +132,55 @@ class LockboxDetailButtonStack extends ConsumerWidget {
                           }
                         }
                       }
-                    }
 
-                    // Recovery buttons - show "Manage Recovery" if user initiated active recovery
-                    if (recoveryStatus.hasActiveRecovery && recoveryStatus.isInitiator) {
+                      // Practice Recovery Button (only for owners)
                       buttons.add(RowButtonConfig(
-                        onPressed: () async {
-                          await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => RecoveryStatusScreen(
-                                recoveryRequestId: recoveryStatus.activeRecoveryRequest!.id,
-                              ),
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text('Practice Recovery'),
+                              content: const Text('todo'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text('OK'),
+                                ),
+                              ],
                             ),
                           );
                         },
-                        icon: Icons.visibility,
-                        text: 'Manage Recovery',
+                        icon: Icons.school,
+                        text: 'Practice Recovery',
                       ));
-                    } else {
-                      // Show "Initiate Recovery" if no active recovery or user didn't initiate it
-                      buttons.add(RowButtonConfig(
-                        onPressed: () => _initiateRecovery(context, ref, lockboxId),
-                        icon: Icons.restore,
-                        text: 'Initiate Recovery',
-                      ));
+                    }
+
+                    // Recovery buttons - only show for stewards (not owners, since owners already have contents)
+                    if (!isOwned) {
+                      // Show "Manage Recovery" if user initiated active recovery
+                      if (recoveryStatus.hasActiveRecovery && recoveryStatus.isInitiator) {
+                        buttons.add(RowButtonConfig(
+                          onPressed: () async {
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => RecoveryStatusScreen(
+                                  recoveryRequestId: recoveryStatus.activeRecoveryRequest!.id,
+                                ),
+                              ),
+                            );
+                          },
+                          icon: Icons.visibility,
+                          text: 'Manage Recovery',
+                        ));
+                      } else {
+                        // Show "Initiate Recovery" if no active recovery or user didn't initiate it
+                        buttons.add(RowButtonConfig(
+                          onPressed: () => _initiateRecovery(context, ref, lockboxId),
+                          icon: Icons.restore,
+                          text: 'Initiate Recovery',
+                        ));
+                      }
                     }
 
                     if (buttons.isEmpty) {
@@ -185,7 +209,7 @@ class LockboxDetailButtonStack extends ConsumerWidget {
     if (lockbox.backupConfig == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Backup configuration not found'),
+          content: Text('Recovery plan not found'),
           backgroundColor: Colors.orange,
         ),
       );
@@ -196,7 +220,7 @@ class LockboxDetailButtonStack extends ConsumerWidget {
     if (config.keyHolders.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('No stewards configured'),
+          content: Text('No stewards in recovery plan'),
           backgroundColor: Colors.orange,
         ),
       );

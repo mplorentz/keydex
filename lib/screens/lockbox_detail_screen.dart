@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/lockbox.dart';
 import '../providers/lockbox_provider.dart';
-import '../widgets/lockbox_metadata_section.dart';
 import '../widgets/key_holder_list.dart';
 import '../widgets/lockbox_detail_button_stack.dart';
+import '../widgets/lockbox_status_banner.dart';
 
 /// Detail/view screen for displaying a lockbox
 class LockboxDetailScreen extends ConsumerWidget {
@@ -91,38 +91,20 @@ class LockboxDetailScreen extends ConsumerWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Status banner for awaitingKey state
-          if (lockbox.state == LockboxState.awaitingKey)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16.0),
-              color: Colors.orange.withValues(alpha: 0.1),
-              child: Row(
-                children: [
-                  const Icon(Icons.hourglass_empty, color: Colors.orange, size: 20),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      'Waiting for owner to distribute keys. You\'ve accepted the invitation and are ready to receive your key share.',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.orange.shade900,
-                          ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          // Status banner showing recovery readiness
+          LockboxStatusBanner(lockbox: lockbox),
           // Scrollable content
           Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Lockbox Metadata Section
-                  LockboxMetadataSection(lockboxId: lockbox.id),
-                  // Key Holder List (extends to edges)
-                  KeyHolderList(lockboxId: lockbox.id),
-                ],
+            child: Container(
+              color: const Color(0xFF666f62),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Key Holder List (extends to edges)
+                    KeyHolderList(lockboxId: lockbox.id),
+                  ],
+                ),
               ),
             ),
           ),
