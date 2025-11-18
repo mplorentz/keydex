@@ -113,6 +113,14 @@ class DeepLinkService {
   /// Parses the link and routes to appropriate handler.
   /// Currently only handles invitation links.
   Future<void> _processLink(Uri uri) async {
+    // Check if this looks like an invitation link before attempting to parse
+    // Silently ignore non-invitation URLs (e.g., root path on web startup)
+    if (uri.pathSegments.isEmpty || 
+        (uri.pathSegments.isNotEmpty && uri.pathSegments[0] != 'invite')) {
+      Log.debug('Ignoring non-invitation URL: $uri');
+      return;
+    }
+
     try {
       final linkData = parseInvitationLink(uri);
       if (linkData == null) {
