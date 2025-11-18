@@ -4,12 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import '../models/key_holder.dart';
 import '../models/key_holder_status.dart';
-import '../models/backup_status.dart';
+import '../models/backup_config.dart';
 import '../models/lockbox.dart';
 import '../models/invitation_link.dart';
 import '../services/backup_service.dart';
 import '../services/invitation_service.dart';
+import '../services/invitation_sending_service.dart';
 import '../providers/lockbox_provider.dart';
+import '../utils/backup_distribution_helper.dart';
 import '../widgets/row_button_stack.dart';
 
 /// Backup configuration screen for setting up distributed backup
@@ -824,6 +826,26 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
       }
     }
 
+    // If key holder has accepted (has pubkey), send removal event
+    if (holder.pubkey != null) {
+      try {
+        final repository = ref.read(lockboxRepositoryProvider);
+        final config = await repository.getBackupConfig(widget.lockboxId);
+        if (config != null && config.relays.isNotEmpty) {
+          final invitationSendingService = ref.read(invitationSendingServiceProvider);
+          await invitationSendingService.sendKeyHolderRemovalEvent(
+            lockboxId: widget.lockboxId,
+            removedKeyHolderPubkey: holder.pubkey!,
+            relayUrls: config.relays,
+          );
+          debugPrint('Sent removal event for key holder ${holder.pubkey}');
+        }
+      } catch (e) {
+        debugPrint('Error sending removal event: $e');
+        // Continue with removal even if event sending fails
+      }
+    }
+
     setState(() {
       _keyHolders.remove(holder);
       if (holder.name != null) {
@@ -926,95 +948,129 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
     }
   }
 
-  Future<bool> _hasDistributedShards() async {
-    try {
-      final repository = ref.read(lockboxRepositoryProvider);
-      final lockbox = await repository.getLockbox(widget.lockboxId);
-      if (lockbox == null) return false;
-
-      final backupConfig = lockbox.backupConfig;
-      if (backupConfig == null) return false;
-
-      // Check if backup status is active (shards distributed)
-      if (backupConfig.status == BackupStatus.active) {
-        return true;
-      }
-
-      // Check if any key holder has a giftWrapEventId (shard distributed)
-      return backupConfig.keyHolders.any((kh) => kh.giftWrapEventId != null);
-    } catch (e) {
-      debugPrint('Error checking distributed shards: $e');
-      return false;
-    }
-  }
-
   Future<void> _saveBackup() async {
     if (!_canCreateBackup()) return;
 
-    // Check if shards have been distributed and show warning
-    final hasDistributed = await _hasDistributedShards();
-    if (!mounted) return;
-    if (hasDistributed) {
-      final shouldContinue = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Warning: Shards Already Distributed'),
-          content: const Text(
-            'Saving these changes will invalidate the distributed shards and require redistribution. Continue?',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Continue'),
-            ),
-          ],
-        ),
-      );
-
-      if (shouldContinue != true) return;
-    }
-
-    setState(() {
-      _isCreating = true;
-    });
-
     try {
       final backupService = ref.read(backupServiceProvider);
+      final repository = ref.read(lockboxRepositoryProvider);
 
-      // Use actual key holders count for totalKeys
-      final totalKeys = _keyHolders.length;
+      // Check if this is the first save or an update
+      final existingConfig = await repository.getBackupConfig(widget.lockboxId);
+      final isNewConfig = existingConfig == null;
 
-      // Create/recreate the backup configuration (without distributing shares)
-      // Shares can be distributed later once all invites are confirmed
-      await backupService.saveBackupConfig(
-        lockboxId: widget.lockboxId,
-        threshold: _threshold,
-        totalKeys: totalKeys,
-        keyHolders: _keyHolders,
-        relays: _relays,
-        instructions: _instructionsController.text.trim().isEmpty
-            ? null
-            : _instructionsController.text.trim(),
-      );
+      // Check if we need to show the regeneration alert
+      // Show alert if config will change AND we've already distributed keys to at least one key holder
+      // (i.e., at least one key holder has a pubkey, meaning they've received keys)
+      bool shouldAutoDistribute = false;
+      if (!isNewConfig) {
+        // Create temporary config from UI state to compare with existing config
+        final uiConfig = copyBackupConfig(
+          existingConfig,
+          threshold: _threshold,
+          keyHolders: _keyHolders,
+          relays: _relays,
+          instructions: _instructionsController.text.trim().isEmpty
+              ? null
+              : _instructionsController.text.trim(),
+        );
+
+        // Check if config parameters will change (will increment version)
+        final configWillChange = existingConfig.configParamsDifferFrom(uiConfig);
+
+        // Show alert if needed and get user confirmation
+        if (!mounted) return;
+        final shouldAutoDistributeResult =
+            await BackupDistributionHelper.showRegenerationAlertIfNeeded(
+          context: context,
+          backupConfig: existingConfig,
+          willChange: configWillChange,
+          mounted: mounted,
+        );
+
+        if (shouldAutoDistributeResult == false) {
+          // User cancelled or widget disposed, don't save changes
+          return;
+        }
+
+        if (shouldAutoDistributeResult == true) {
+          shouldAutoDistribute = true;
+        }
+      }
+
+      setState(() {
+        _isCreating = true;
+      });
+
+      if (isNewConfig) {
+        // First time: use saveBackupConfig to create the config
+        await backupService.saveBackupConfig(
+          lockboxId: widget.lockboxId,
+          threshold: _threshold,
+          totalKeys: _keyHolders.length,
+          keyHolders: _keyHolders,
+          relays: _relays,
+          instructions: _instructionsController.text.trim().isEmpty
+              ? null
+              : _instructionsController.text.trim(),
+        );
+      } else {
+        // Update: use mergeBackupConfig to preserve RSVP updates
+        await backupService.mergeBackupConfig(
+          lockboxId: widget.lockboxId,
+          threshold: _threshold,
+          keyHolders: _keyHolders,
+          relays: _relays,
+          instructions: _instructionsController.text.trim().isEmpty
+              ? null
+              : _instructionsController.text.trim(),
+        );
+      }
+
+      // If user confirmed, auto-distribute
+      if (shouldAutoDistribute) {
+        // Reload config to get updated version
+        final updatedConfig = await repository.getBackupConfig(widget.lockboxId);
+        if (updatedConfig != null && updatedConfig.canDistribute) {
+          try {
+            await backupService.createAndDistributeBackup(lockboxId: widget.lockboxId);
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Keys regenerated and distributed successfully!'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            }
+          } catch (e) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Failed to distribute keys: $e'),
+                  backgroundColor: Colors.orange,
+                ),
+              );
+            }
+          }
+        }
+      }
 
       if (mounted) {
         setState(() {
           _hasUnsavedChanges = false;
         });
 
-        if (mounted) {
-          Navigator.pop(context, true);
+        // Navigate to lockbox detail screen
+        Navigator.pop(context, true);
+
+        if (!shouldAutoDistribute) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Backup configuration saved successfully!'),
+              backgroundColor: Colors.green,
+            ),
+          );
         }
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Backup configuration saved successfully!'),
-            backgroundColor: Colors.green,
-          ),
-        );
       }
     } catch (e) {
       if (mounted) {

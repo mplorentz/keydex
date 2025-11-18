@@ -20,6 +20,7 @@ void main() {
         giftWrapEventId: null,
         acknowledgedAt: null,
         acknowledgmentEventId: null,
+        acknowledgedDistributionVersion: null,
       );
     }
 

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 /// A full-width button with an icon and text in a row layout
 class RowButton extends StatelessWidget {
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed; // Nullable for disabled state
   final IconData icon;
   final String text;
   final Color? backgroundColor;
@@ -26,35 +26,45 @@ class RowButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final effectiveBackgroundColor = backgroundColor ?? theme.primaryColor;
-    final effectiveForegroundColor = foregroundColor ?? const Color.fromARGB(255, 253, 255, 240);
+    final isDisabled = onPressed == null;
+
+    // Muted colors for disabled state
+    final effectiveBackgroundColor = isDisabled
+        ? const Color(0xFF3a3f36) // Darker muted color
+        : (backgroundColor ?? theme.primaryColor);
+    final effectiveForegroundColor = isDisabled
+        ? const Color(0xFF7a7f76) // Muted gray
+        : (foregroundColor ?? const Color.fromARGB(255, 253, 255, 240));
 
     return InkWell(
       onTap: onPressed,
-      child: Container(
-        width: double.infinity,
-        padding: padding,
-        decoration: BoxDecoration(
-          color: effectiveBackgroundColor,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Icon(
-              icon,
-              color: effectiveForegroundColor,
-              size: iconSize,
-            ),
-            const SizedBox(width: 12),
-            Text(
-              text,
-              style: textStyle ??
-                  theme.textTheme.titleLarge?.copyWith(
-                    color: effectiveForegroundColor,
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-          ],
+      child: Opacity(
+        opacity: isDisabled ? 0.6 : 1.0,
+        child: Container(
+          width: double.infinity,
+          padding: padding,
+          decoration: BoxDecoration(
+            color: effectiveBackgroundColor,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Icon(
+                icon,
+                color: effectiveForegroundColor,
+                size: iconSize,
+              ),
+              const SizedBox(width: 12),
+              Text(
+                text,
+                style: textStyle ??
+                    theme.textTheme.titleLarge?.copyWith(
+                      color: effectiveForegroundColor,
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+            ],
+          ),
         ),
       ),
     );

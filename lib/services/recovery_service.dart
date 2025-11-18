@@ -436,7 +436,19 @@ class RecoveryService {
       if (shards.isEmpty) {
         throw ArgumentError('No shard data found for lockbox ${request.lockboxId}');
       }
-      shardData = shards.first;
+      // Select the shard with the highest distributionVersion (most recent)
+      // If versions are equal or null, use the most recent createdAt timestamp
+      shardData = shards.reduce((a, b) {
+        final aVersion = a.distributionVersion ?? 0;
+        final bVersion = b.distributionVersion ?? 0;
+        if (aVersion != bVersion) {
+          return aVersion > bVersion ? a : b;
+        }
+        // If versions are equal, use createdAt timestamp
+        return a.createdAt > b.createdAt ? a : b;
+      });
+      Log.info(
+          'Selected shard with distributionVersion ${shardData.distributionVersion} for recovery request $recoveryRequestId');
     }
 
     // Submit response locally

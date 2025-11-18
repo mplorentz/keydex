@@ -1,12 +1,13 @@
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ndk/ndk.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/shard_data.dart';
 import '../models/lockbox.dart';
+import '../models/nostr_kinds.dart';
 import '../providers/lockbox_provider.dart';
 import 'logger.dart';
 import 'ndk_service.dart';
-import '../models/nostr_kinds.dart';
 
 /// Provider for LockboxShareService
 /// This service depends on LockboxRepository for shard management
@@ -532,5 +533,66 @@ class LockboxShareService {
     _cachedShardData = null;
     _cachedRecoveryShards = null;
     await initialize();
+  }
+
+  /// Process a key holder removal event
+  ///
+  /// When a key holder receives a removal event, they should:
+  /// 1. Archive the lockbox (set isArchived=true, archivedAt=now, archivedReason="Removed by owner")
+  /// 2. Delete their shard for that lockbox
+  /// 3. Save the updated lockbox
+  Future<void> processKeyHolderRemoval({required Nip01Event event}) async {
+    try {
+      // Validate event kind
+      if (event.kind != NostrKind.keyHolderRemoved.value) {
+        throw ArgumentError(
+            'Invalid event kind: expected ${NostrKind.keyHolderRemoved.value}, got ${event.kind}');
+      }
+
+      // Parse the removal data from the unwrapped content (already decrypted by NDK)
+      Map<String, dynamic> payload;
+      try {
+        Log.debug('Key holder removed event content: ${event.content}');
+        payload = json.decode(event.content) as Map<String, dynamic>;
+        Log.debug('Key holder removed event payload keys: ${payload.keys.toList()}');
+      } catch (e) {
+        Log.error('Error parsing key holder removed event JSON', e);
+        throw Exception(
+            'Failed to parse key holder removed event content. The event may be corrupted or encrypted incorrectly: $e');
+      }
+
+      // Extract lockbox ID from payload
+      final lockboxId = payload['lockbox_id'] as String?;
+      if (lockboxId == null || lockboxId.isEmpty) {
+        throw ArgumentError('Missing lockbox_id in key holder removed event payload');
+      }
+
+      Log.info('Processing key holder removal for lockbox: ${lockboxId.substring(0, 8)}...');
+
+      // Get the lockbox
+      final lockbox = await repository.getLockbox(lockboxId);
+      if (lockbox == null) {
+        Log.warning('Lockbox $lockboxId not found - may have already been deleted');
+        return;
+      }
+
+      // Archive the lockbox
+      final archivedLockbox = lockbox.copyWith(
+        isArchived: true,
+        archivedAt: DateTime.now(),
+        archivedReason: 'Removed by owner',
+      );
+      await repository.saveLockbox(archivedLockbox);
+      Log.info('Archived lockbox $lockboxId');
+
+      // Delete the shard for this lockbox
+      await removeLockboxShare(lockboxId);
+      Log.info('Removed shard for archived lockbox $lockboxId');
+
+      Log.info('Successfully processed key holder removal for lockbox $lockboxId');
+    } catch (e) {
+      Log.error('Error processing key holder removal event ${event.id}', e);
+      rethrow;
+    }
   }
 }

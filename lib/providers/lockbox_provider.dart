@@ -362,6 +362,7 @@ class LockboxRepository {
     required KeyHolderStatus status,
     DateTime? acknowledgedAt,
     String? acknowledgmentEventId,
+    int? acknowledgedDistributionVersion,
   }) async {
     await initialize();
 
@@ -387,6 +388,7 @@ class LockboxRepository {
       status: status,
       acknowledgedAt: acknowledgedAt,
       acknowledgmentEventId: acknowledgmentEventId,
+      acknowledgedDistributionVersion: acknowledgedDistributionVersion,
     );
 
     final updatedConfig = copyBackupConfig(backupConfig, keyHolders: updatedHolders);

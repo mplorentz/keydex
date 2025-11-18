@@ -3,7 +3,7 @@ import 'row_button.dart';
 
 /// Configuration for a single button in the stack
 class RowButtonConfig {
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed; // Nullable for disabled buttons
   final IconData icon;
   final String text;
 
@@ -54,16 +54,16 @@ class RowButtonStack extends StatelessWidget {
     }
 
     final colors = <Color>[];
-    
+
     // Primary orange at bottom (last button)
     const primaryOrange = Color(0xFFdc714e);
-    
+
     // Dark olive-sage base color
     const baseColor = Color(0xFF474d42);
-    
+
     // Lightest version (for top button) - lighter than base
     const lightestColor = Color(0xFF6f7568);
-    
+
     for (int i = 0; i < count; i++) {
       if (i == count - 1) {
         // Bottom button is always orange
