@@ -114,15 +114,18 @@ class LockboxDetailScreen extends ConsumerWidget {
             ),
           // Scrollable content
           Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Lockbox Metadata Section
-                  LockboxMetadataSection(lockboxId: lockbox.id),
-                  // Key Holder List (extends to edges)
-                  KeyHolderList(lockboxId: lockbox.id),
-                ],
+            child: Container(
+              color: const Color(0xFF666f62),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Lockbox Metadata Section
+                    LockboxMetadataSection(lockboxId: lockbox.id),
+                    // Key Holder List (extends to edges)
+                    KeyHolderList(lockboxId: lockbox.id),
+                  ],
+                ),
               ),
             ),
           ),
