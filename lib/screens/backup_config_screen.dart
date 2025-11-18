@@ -11,6 +11,7 @@ import '../services/backup_service.dart';
 import '../services/invitation_service.dart';
 import '../providers/lockbox_provider.dart';
 import '../widgets/row_button_stack.dart';
+import '../widgets/recovery_rules_widget.dart';
 
 /// Recovery plan screen for setting up distributed backup
 ///
@@ -36,6 +37,8 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
   bool _isCreating = false;
   bool _isLoading = true;
   bool _hasUnsavedChanges = false;
+  bool _isEditingExistingPlan = false; // Track if we're editing an existing plan
+  bool _thresholdManuallyChanged = false; // Track if user manually changed threshold
 
   // Invitation link generation state
   final TextEditingController _inviteeNameController = TextEditingController();
@@ -57,6 +60,20 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
     super.dispose();
   }
 
+  /// Calculate default threshold based on steward count for new plans
+  int _calculateDefaultThreshold(int stewardCount) {
+    if (stewardCount == 0) {
+      return LockboxBackupConstraints.minThreshold;
+    } else if (stewardCount == 1) {
+      return 1;
+    } else if (stewardCount == 2) {
+      return 2;
+    } else {
+      // For 3+ stewards, default to n-1
+      return stewardCount - 1;
+    }
+  }
+
   /// Load existing recovery plan if one exists
   Future<void> _loadExistingConfig() async {
     try {
@@ -73,6 +90,8 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
           _instructionsController.text = existingConfig.instructions ?? '';
           _isLoading = false;
           _hasUnsavedChanges = false;
+          _isEditingExistingPlan = true; // We're editing an existing plan
+          _thresholdManuallyChanged = true; // Existing plan means threshold was already set
         });
 
         // Load existing invitations and match them to key holders
@@ -81,6 +100,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
         if (mounted) {
           setState(() {
             _isLoading = false;
+            _isEditingExistingPlan = false; // We're creating a new plan
           });
         }
       }
@@ -151,63 +171,6 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Threshold and Total Keys Configuration
-                        Card(
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Recovery Settings',
-                                    style: Theme.of(context).textTheme.headlineSmall),
-                                const SizedBox(height: 16),
-                                Text('Threshold: $_threshold (minimum keys needed)'),
-                                Slider(
-                                  value: _threshold.toDouble().clamp(
-                                        LockboxBackupConstraints.minThreshold.toDouble(),
-                                        (_keyHolders.isEmpty
-                                            ? LockboxBackupConstraints.maxTotalKeys.toDouble()
-                                            : _keyHolders.length.toDouble()),
-                                      ),
-                                  min: LockboxBackupConstraints.minThreshold.toDouble(),
-                                  max: _keyHolders.isEmpty
-                                      ? LockboxBackupConstraints.maxTotalKeys.toDouble()
-                                      : _keyHolders.length.toDouble(),
-                                  divisions: (_keyHolders.isEmpty
-                                                  ? LockboxBackupConstraints.maxTotalKeys
-                                                  : _keyHolders.length) -
-                                              LockboxBackupConstraints.minThreshold >
-                                          0
-                                      ? (_keyHolders.isEmpty
-                                              ? LockboxBackupConstraints.maxTotalKeys
-                                              : _keyHolders.length) -
-                                          LockboxBackupConstraints.minThreshold
-                                      : null,
-                                  onChanged: _keyHolders.isEmpty
-                                      ? null
-                                      : (value) {
-                                          setState(() {
-                                            _threshold = value.round();
-                                            _hasUnsavedChanges = true;
-                                          });
-                                        },
-                                ),
-                                if (_keyHolders.isEmpty)
-                                  Text(
-                                    'Add stewards to set up recovery',
-                                    style: Theme.of(context).textTheme.bodySmall,
-                                  )
-                                else
-                                  Text(
-                                    'Total Keys: ${_keyHolders.length} (automatically set)',
-                                    style: Theme.of(context).textTheme.bodyMedium,
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-
                         // Unified Stewards Section
                         Card(
                           child: Padding(
@@ -279,6 +242,20 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                               ],
                             ),
                           ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Recovery Rules Section
+                        RecoveryRulesWidget(
+                          threshold: _threshold,
+                          stewardCount: _keyHolders.length,
+                          onThresholdChanged: (newThreshold) {
+                            setState(() {
+                              _threshold = newThreshold;
+                              _thresholdManuallyChanged = true; // Mark as manually changed
+                              _hasUnsavedChanges = true;
+                            });
+                          },
                         ),
                         const SizedBox(height: 16),
 
@@ -511,9 +488,14 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
           _keyHolders.add(invitedKeyHolder);
           _invitationLinksByInviteeName[inviteeName] = invitation;
           _inviteeNameController.clear();
-          // Ensure threshold doesn't exceed the number of stewards
-          if (_threshold > _keyHolders.length) {
-            _threshold = _keyHolders.length;
+          // Apply default threshold logic for new plans (only if not manually changed)
+          if (!_isEditingExistingPlan && !_thresholdManuallyChanged) {
+            _threshold = _calculateDefaultThreshold(_keyHolders.length);
+          } else {
+            // Ensure threshold doesn't exceed the number of stewards when editing
+            if (_threshold > _keyHolders.length) {
+              _threshold = _keyHolders.length;
+            }
           }
           _hasUnsavedChanges = true;
         });
@@ -617,9 +599,14 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
         setState(() {
           _keyHolders.add(keyHolder);
           _inviteeNameController.clear();
-          // Ensure threshold doesn't exceed the number of stewards
-          if (_threshold > _keyHolders.length) {
-            _threshold = _keyHolders.length;
+          // Apply default threshold logic for new plans (only if not manually changed)
+          if (!_isEditingExistingPlan && !_thresholdManuallyChanged) {
+            _threshold = _calculateDefaultThreshold(_keyHolders.length);
+          } else {
+            // Ensure threshold doesn't exceed the number of stewards when editing
+            if (_threshold > _keyHolders.length) {
+              _threshold = _keyHolders.length;
+            }
           }
           _hasUnsavedChanges = true;
         });
@@ -830,11 +817,16 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
         _invitationLinksByInviteeName.remove(holder.name);
       }
 
-      // Ensure threshold doesn't exceed the number of stewards
-      if (_keyHolders.isEmpty) {
-        _threshold = LockboxBackupConstraints.minThreshold;
-      } else if (_threshold > _keyHolders.length) {
-        _threshold = _keyHolders.length;
+      // Apply default threshold logic for new plans when removing stewards (only if not manually changed)
+      if (!_isEditingExistingPlan && !_thresholdManuallyChanged) {
+        _threshold = _calculateDefaultThreshold(_keyHolders.length);
+      } else {
+        // Ensure threshold doesn't exceed the number of stewards when editing
+        if (_keyHolders.isEmpty) {
+          _threshold = LockboxBackupConstraints.minThreshold;
+        } else if (_threshold > _keyHolders.length) {
+          _threshold = _keyHolders.length;
+        }
       }
 
       _hasUnsavedChanges = true;
