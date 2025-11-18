@@ -12,9 +12,9 @@ import '../services/invitation_service.dart';
 import '../providers/lockbox_provider.dart';
 import '../widgets/row_button_stack.dart';
 
-/// Backup configuration screen for setting up distributed backup
+/// Recovery plan screen for setting up distributed backup
 ///
-/// This screen allows users to configure backup settings including:
+/// This screen allows users to set up their recovery plan including:
 /// - Threshold and total number of keys
 /// - Key holders (trusted contacts)
 /// - Nostr relay selection
@@ -57,7 +57,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
     super.dispose();
   }
 
-  /// Load existing backup configuration if one exists
+  /// Load existing recovery plan if one exists
   Future<void> _loadExistingConfig() async {
     try {
       final repository = ref.read(lockboxRepositoryProvider);
@@ -98,7 +98,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
     if (_isLoading) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Backup Configuration'),
+          title: const Text('Recovery Plan'),
           centerTitle: false,
         ),
         body: const Center(child: CircularProgressIndicator()),
@@ -137,7 +137,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Backup Configuration'),
+          title: const Text('Recovery Plan'),
           centerTitle: false,
         ),
         body: Column(
@@ -158,7 +158,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Backup Settings',
+                                Text('Recovery Settings',
                                     style: Theme.of(context).textTheme.headlineSmall),
                                 const SizedBox(height: 16),
                                 Text('Threshold: $_threshold (minimum keys needed)'),
@@ -194,7 +194,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                                 ),
                                 if (_keyHolders.isEmpty)
                                   Text(
-                                    'Add stewards to configure threshold',
+                                    'Add stewards to set up recovery',
                                     style: Theme.of(context).textTheme.bodySmall,
                                   )
                                 else
@@ -290,7 +290,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Instructions for Stewards',
+                                  'Recovery Instructions',
                                   style: Theme.of(context).textTheme.headlineSmall,
                                 ),
                                 const SizedBox(height: 16),
@@ -298,7 +298,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                                   controller: _instructionsController,
                                   decoration: const InputDecoration(
                                     hintText:
-                                        'Write here instructions for stewards e.g. under what circumstances they should open the vault?',
+                                        'Write recovery instructions for stewards e.g. under what circumstances they should help you recover access?',
                                     border: OutlineInputBorder(),
                                     alignLabelWithHint: true,
                                   ),
@@ -815,7 +815,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
           final invitationService = ref.read(invitationServiceProvider);
           await invitationService.invalidateInvitation(
             inviteCode: invitation.inviteCode,
-            reason: 'Steward removed from backup configuration',
+            reason: 'Steward removed from recovery plan',
           );
         } catch (e) {
           debugPrint('Error invalidating invitation: $e');
@@ -1011,7 +1011,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
         }
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Backup configuration saved successfully!'),
+            content: Text('Recovery plan saved successfully!'),
             backgroundColor: Colors.green,
           ),
         );
@@ -1019,7 +1019,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save backup: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text('Failed to save recovery plan: $e'), backgroundColor: Colors.red),
         );
       }
     } finally {

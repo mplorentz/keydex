@@ -90,7 +90,7 @@ class LockboxDetailButtonStack extends ConsumerWidget {
                         text: 'Change Contents',
                       ));
 
-                      // Backup Configuration Section
+                      // Recovery Plan Section
                       buttons.add(RowButtonConfig(
                         onPressed: () {
                           Navigator.push(
@@ -103,7 +103,7 @@ class LockboxDetailButtonStack extends ConsumerWidget {
                           );
                         },
                         icon: Icons.settings,
-                        text: 'Backup Settings',
+                        text: 'Recovery Plan',
                       ));
 
                       // Generate and Distribute Keys Button - show when all invited key holders have accepted
@@ -183,7 +183,7 @@ class LockboxDetailButtonStack extends ConsumerWidget {
     if (lockbox.backupConfig == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Backup configuration not found'),
+          content: Text('Recovery plan not found'),
           backgroundColor: Colors.orange,
         ),
       );
@@ -194,7 +194,7 @@ class LockboxDetailButtonStack extends ConsumerWidget {
     if (config.keyHolders.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('No stewards configured'),
+          content: Text('No stewards in recovery plan'),
           backgroundColor: Colors.orange,
         ),
       );
