@@ -40,12 +40,10 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
   bool _isEditingExistingPlan = false; // Track if we're editing an existing plan
   bool _thresholdManuallyChanged = false; // Track if user manually changed threshold
 
-  // Invitation link generation state
-  final TextEditingController _inviteeNameController = TextEditingController();
+  // Instructions controller
   final TextEditingController _instructionsController = TextEditingController();
   // Map to track invitation links by invitee name
   final Map<String, InvitationLink> _invitationLinksByInviteeName = {};
-  bool _isGeneratingInvitation = false;
 
   @override
   void initState() {
@@ -55,7 +53,6 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
 
   @override
   void dispose() {
-    _inviteeNameController.dispose();
     _instructionsController.dispose();
     super.dispose();
   }
@@ -171,74 +168,76 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Unified Stewards Section
+                        // Stewards Section
                         Card(
                           child: Padding(
                             padding: const EdgeInsets.all(16.0),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      'Stewards (${_keyHolders.length})',
-                                      style: Theme.of(context).textTheme.headlineSmall,
-                                    ),
-                                  ],
+                                Text(
+                                  'Stewards',
+                                  style: Theme.of(context).textTheme.headlineSmall,
                                 ),
-                                const SizedBox(height: 16),
-
-                                // Add Steward Input Section
-                                TextField(
-                                  controller: _inviteeNameController,
-                                  decoration: const InputDecoration(
-                                    labelText: "Enter steward's name",
-                                    hintText: 'Enter name for the invitee',
-                                    border: OutlineInputBorder(),
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: ElevatedButton.icon(
-                                        onPressed: (_isGeneratingInvitation || _relays.isEmpty)
-                                            ? null
-                                            : _generateInvitationLink,
-                                        icon: _isGeneratingInvitation
-                                            ? const SizedBox(
-                                                width: 16,
-                                                height: 16,
-                                                child: CircularProgressIndicator(strokeWidth: 2),
-                                              )
-                                            : const Icon(Icons.link),
-                                        label: Text(_isGeneratingInvitation
-                                            ? 'Generating...'
-                                            : 'Generate Invitation Link'),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: OutlinedButton.icon(
-                                        onPressed: _addKeyHolderManually,
-                                        icon: const Icon(Icons.person_add),
-                                        label: const Text('Add Manually'),
-                                      ),
-                                    ),
-                                  ],
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Stewards are trusted contacts who will help you recover access. Each steward receives one key to your vault.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
                                 ),
                                 const SizedBox(height: 16),
 
                                 // Stewards List
                                 if (_keyHolders.isEmpty)
-                                  const Text(
-                                    'No stewards added yet. Add trusted contacts to distribute backup keys.',
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 24.0),
+                                    child: Center(
+                                      child: Column(
+                                        children: [
+                                          Icon(
+                                            Icons.people_outline,
+                                            size: 48,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onSurface
+                                                .withValues(alpha: 0.5),
+                                          ),
+                                          const SizedBox(height: 16),
+                                          Text(
+                                            'No stewards yet',
+                                            style: Theme.of(context).textTheme.titleMedium,
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            'Add your first steward to get started',
+                                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .onSurface
+                                                      .withValues(alpha: 0.7),
+                                                ),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                                   )
                                 else
                                   ..._keyHolders.map(
                                     (holder) => _buildKeyHolderListItem(holder),
                                   ),
+
+                                // Add Steward Button
+                                const SizedBox(height: 16),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: ElevatedButton.icon(
+                                    onPressed: _showAddStewardDialog,
+                                    icon: const Icon(Icons.person_add),
+                                    label: Text(_keyHolders.isEmpty
+                                        ? 'Add Steward'
+                                        : 'Add Another Steward'),
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -429,22 +428,119 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
     }
   }
 
-  Future<void> _generateInvitationLink() async {
-    final inviteeName = _inviteeNameController.text.trim();
-    if (inviteeName.isEmpty) {
+  /// Shows dialog to select method for adding a steward
+  Future<void> _showAddStewardDialog() async {
+    if (_relays.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please enter an invitee name'),
+          content: Text('Please add at least one relay before adding a steward'),
           backgroundColor: Colors.orange,
         ),
       );
       return;
     }
 
-    if (_relays.isEmpty) {
+    final method = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Add Steward'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              'Choose how you want to add this steward:',
+              style: TextStyle(fontSize: 14),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () => Navigator.pop(context, 'invite'),
+              icon: const Icon(Icons.link),
+              label: const Text('Invite by Link'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.all(16),
+                alignment: Alignment.centerLeft,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Padding(
+              padding: EdgeInsets.only(left: 16, right: 16, bottom: 8),
+              child: Text(
+                'Send them a link they can use to join',
+                style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              onPressed: () => Navigator.pop(context, 'manual'),
+              icon: const Icon(Icons.person),
+              label: const Text('Add by Public Key'),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.all(16),
+                alignment: Alignment.centerLeft,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Padding(
+              padding: EdgeInsets.only(left: 16, right: 16),
+              child: Text(
+                'If they already have a Nostr account',
+                style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+
+    if (method == null || !mounted) return;
+
+    // Get steward name
+    final nameController = TextEditingController();
+    final nameResult = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(method == 'invite' ? 'Invite Steward' : 'Add Steward'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(
+                labelText: "Steward's name",
+                hintText: 'Enter name for this steward',
+                border: OutlineInputBorder(),
+              ),
+              autofocus: true,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Continue'),
+          ),
+        ],
+      ),
+    );
+
+    if (nameResult != true || !mounted) return;
+
+    final stewardName = nameController.text.trim();
+    if (stewardName.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please add at least one relay before generating an invitation'),
+          content: Text('Please enter a steward name'),
           backgroundColor: Colors.orange,
         ),
       );
@@ -452,22 +548,29 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
     }
 
     // Check if steward with this name already exists
-    if (_keyHolders.any((holder) => holder.name == inviteeName)) {
+    if (_keyHolders.any((holder) => holder.name == stewardName)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('A steward with the name "$inviteeName" already exists'),
+          content: Text('A steward with the name "$stewardName" already exists'),
           backgroundColor: Colors.orange,
         ),
       );
       return;
     }
 
+    if (method == 'invite') {
+      // Generate invitation link
+      await _generateInvitationLinkForName(stewardName);
+    } else {
+      // Add by public key
+      await _addKeyHolderByPublicKey(stewardName);
+    }
+  }
+
+  /// Generates invitation link for a steward with the given name
+  Future<void> _generateInvitationLinkForName(String inviteeName) async {
     // Limit to first 3 relays as per design
     final relayUrls = _relays.take(3).toList();
-
-    setState(() {
-      _isGeneratingInvitation = true;
-    });
 
     try {
       final invitationService = ref.read(invitationServiceProvider);
@@ -487,7 +590,6 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
         setState(() {
           _keyHolders.add(invitedKeyHolder);
           _invitationLinksByInviteeName[inviteeName] = invitation;
-          _inviteeNameController.clear();
           // Apply default threshold logic for new plans (only if not manually changed)
           if (!_isEditingExistingPlan && !_thresholdManuallyChanged) {
             _threshold = _calculateDefaultThreshold(_keyHolders.length);
@@ -522,38 +624,22 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
           ),
         );
       }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isGeneratingInvitation = false;
-        });
-      }
     }
   }
 
-  Future<void> _addKeyHolderManually() async {
-    final inviteeName = _inviteeNameController.text.trim();
-    if (inviteeName.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter an invitee name first'),
-          backgroundColor: Colors.orange,
-        ),
-      );
-      return;
-    }
-
+  /// Adds a steward by their public key
+  Future<void> _addKeyHolderByPublicKey(String stewardName) async {
     final npubController = TextEditingController();
 
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Add Steward Manually'),
+        title: const Text('Add Steward by Public Key'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Adding: $inviteeName',
+              'Adding: $stewardName',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: 16),
@@ -569,62 +655,66 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text('Add')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Add'),
+          ),
         ],
       ),
     );
 
-    if (result == true) {
+    if (result != true || !mounted) return;
+
+    try {
+      // Convert bech32 npub to hex pubkey
+      final npub = npubController.text.trim();
+      final decoded = Helpers.decodeBech32(npub);
+      if (decoded[0].isEmpty) {
+        throw Exception('Invalid npub format: $npub');
+      }
+
+      // Check if steward with this pubkey already exists
+      if (_keyHolders.any((holder) => holder.pubkey == decoded[0])) {
+        throw Exception('A steward with this public key already exists');
+      }
+
+      final keyHolder = createKeyHolder(
+        pubkey: decoded[0], // Hex format
+        name: stewardName,
+      );
+
       if (!mounted) return;
-      try {
-        // Convert bech32 npub to hex pubkey
-        final npub = npubController.text.trim();
-        final decoded = Helpers.decodeBech32(npub);
-        if (decoded[0].isEmpty) {
-          throw Exception('Invalid npub format: $npub');
-        }
-
-        // Check if steward with this pubkey already exists
-        if (_keyHolders.any((holder) => holder.pubkey == decoded[0])) {
-          throw Exception('A steward with this public key already exists');
-        }
-
-        final keyHolder = createKeyHolder(
-          pubkey: decoded[0], // Hex format
-          name: inviteeName,
-        );
-
-        if (!mounted) return;
-        setState(() {
-          _keyHolders.add(keyHolder);
-          _inviteeNameController.clear();
-          // Apply default threshold logic for new plans (only if not manually changed)
-          if (!_isEditingExistingPlan && !_thresholdManuallyChanged) {
-            _threshold = _calculateDefaultThreshold(_keyHolders.length);
-          } else {
-            // Ensure threshold doesn't exceed the number of stewards when editing
-            if (_threshold > _keyHolders.length) {
-              _threshold = _keyHolders.length;
-            }
+      setState(() {
+        _keyHolders.add(keyHolder);
+        // Apply default threshold logic for new plans (only if not manually changed)
+        if (!_isEditingExistingPlan && !_thresholdManuallyChanged) {
+          _threshold = _calculateDefaultThreshold(_keyHolders.length);
+        } else {
+          // Ensure threshold doesn't exceed the number of stewards when editing
+          if (_threshold > _keyHolders.length) {
+            _threshold = _keyHolders.length;
           }
-          _hasUnsavedChanges = true;
-        });
+        }
+        _hasUnsavedChanges = true;
+      });
 
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Steward added successfully!'),
-              backgroundColor: Colors.green,
-            ),
-          );
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Invalid steward: $e'), backgroundColor: Colors.red),
-          );
-        }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Steward added successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Invalid steward: $e'), backgroundColor: Colors.red),
+        );
       }
     }
   }
@@ -836,10 +926,6 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
   Future<void> _regenerateInvitationLink(KeyHolder holder, InvitationLink oldInvitation) async {
     if (holder.name == null) return;
 
-    setState(() {
-      _isGeneratingInvitation = true;
-    });
-
     try {
       final invitationService = ref.read(invitationServiceProvider);
 
@@ -878,12 +964,6 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
             backgroundColor: Colors.red,
           ),
         );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isGeneratingInvitation = false;
-        });
       }
     }
   }
