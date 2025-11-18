@@ -87,7 +87,7 @@ class LockboxDetailButtonStack extends ConsumerWidget {
                           );
                         },
                         icon: Icons.edit,
-                        text: 'Change Contents',
+                        text: 'Update Vault Contents',
                       ));
 
                       // Backup Configuration Section
