@@ -41,7 +41,11 @@ enum NostrKind {
 
   /// Keydex custom: Invitation invalid
   /// Used to notify invitee that an invitation code is invalid
-  invitationInvalid(1344);
+  invitationInvalid(1344),
+
+  /// Keydex custom: Key holder removed
+  /// Used to notify a key holder when they are removed from a backup config
+  keyHolderRemoved(1345);
 
   /// The numeric kind value
   final int value;
@@ -60,7 +64,7 @@ enum NostrKind {
 
   /// Check if this kind is a Keydex custom kind
   bool get isCustom {
-    return value >= 1337 && value <= 1344;
+    return value >= 1337 && value <= 1345;
   }
 
   /// Check if this kind is a standard NIP kind

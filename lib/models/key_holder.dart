@@ -20,6 +20,7 @@ typedef KeyHolder = ({
   String? giftWrapEventId,
   DateTime? acknowledgedAt,
   String? acknowledgmentEventId,
+  int? acknowledgedDistributionVersion, // Version tracking for redistribution detection (nullable for backward compatibility)
 });
 
 /// Create a new KeyHolder with validation
@@ -43,6 +44,7 @@ KeyHolder createKeyHolder({
     giftWrapEventId: null,
     acknowledgedAt: null,
     acknowledgmentEventId: null,
+    acknowledgedDistributionVersion: null,
   );
 }
 
@@ -63,6 +65,7 @@ KeyHolder createInvitedKeyHolder({
     giftWrapEventId: null,
     acknowledgedAt: null,
     acknowledgmentEventId: null,
+    acknowledgedDistributionVersion: null,
   );
 }
 
@@ -79,6 +82,7 @@ KeyHolder copyKeyHolder(
   String? giftWrapEventId,
   DateTime? acknowledgedAt,
   String? acknowledgmentEventId,
+  int? acknowledgedDistributionVersion,
 }) {
   return (
     id: id ?? holder.id,
@@ -91,6 +95,8 @@ KeyHolder copyKeyHolder(
     giftWrapEventId: giftWrapEventId ?? holder.giftWrapEventId,
     acknowledgedAt: acknowledgedAt ?? holder.acknowledgedAt,
     acknowledgmentEventId: acknowledgmentEventId ?? holder.acknowledgmentEventId,
+    acknowledgedDistributionVersion:
+        acknowledgedDistributionVersion ?? holder.acknowledgedDistributionVersion,
   );
 }
 
@@ -98,7 +104,9 @@ KeyHolder copyKeyHolder(
 extension KeyHolderExtension on KeyHolder {
   /// Check if this key holder is active
   bool get isActive {
-    return status == KeyHolderStatus.awaitingKey || status == KeyHolderStatus.holdingKey;
+    return status == KeyHolderStatus.awaitingKey ||
+        status == KeyHolderStatus.awaitingNewKey ||
+        status == KeyHolderStatus.holdingKey;
   }
 
   /// Check if this key holder has acknowledged receipt
@@ -164,6 +172,7 @@ Map<String, dynamic> keyHolderToJson(KeyHolder holder) {
     'giftWrapEventId': holder.giftWrapEventId,
     'acknowledgedAt': holder.acknowledgedAt?.toIso8601String(),
     'acknowledgmentEventId': holder.acknowledgmentEventId,
+    'acknowledgedDistributionVersion': holder.acknowledgedDistributionVersion,
   };
 }
 
@@ -184,6 +193,7 @@ KeyHolder keyHolderFromJson(Map<String, dynamic> json) {
     acknowledgedAt:
         json['acknowledgedAt'] != null ? DateTime.parse(json['acknowledgedAt'] as String) : null,
     acknowledgmentEventId: json['acknowledgmentEventId'] as String?,
+    acknowledgedDistributionVersion: json['acknowledgedDistributionVersion'] as int?,
   );
 }
 

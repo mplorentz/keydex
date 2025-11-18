@@ -109,7 +109,7 @@ class LockboxMetadataSection extends ConsumerWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'You hold a key to this lockbox',
+                      'You have a key to this vault',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),

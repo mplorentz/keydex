@@ -75,10 +75,12 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
       ({
         String? contentHash,
         DateTime createdAt,
+        int distributionVersion,
         String? instructions,
         List<
             ({
               DateTime? acknowledgedAt,
+              int? acknowledgedDistributionVersion,
               String? acknowledgmentEventId,
               String? giftWrapEventId,
               String id,
@@ -105,6 +107,7 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
     required List<
             ({
               DateTime? acknowledgedAt,
+              int? acknowledgedDistributionVersion,
               String? acknowledgmentEventId,
               String? giftWrapEventId,
               String id,
@@ -138,10 +141,12 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
             ({
               String? contentHash,
               DateTime createdAt,
+              int distributionVersion,
               String? instructions,
               List<
                   ({
                     DateTime? acknowledgedAt,
+                    int? acknowledgedDistributionVersion,
                     String? acknowledgmentEventId,
                     String? giftWrapEventId,
                     String id,
@@ -179,9 +184,11 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
               },
             ),
           ),
+          distributionVersion: 0,
           instructions: null,
           keyHolders: <({
             DateTime? acknowledgedAt,
+            int? acknowledgedDistributionVersion,
             String? acknowledgmentEventId,
             String? giftWrapEventId,
             String id,
@@ -251,10 +258,12 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
           ({
             String? contentHash,
             DateTime createdAt,
+            int distributionVersion,
             String? instructions,
             List<
                 ({
                   DateTime? acknowledgedAt,
+                  int? acknowledgedDistributionVersion,
                   String? acknowledgmentEventId,
                   String? giftWrapEventId,
                   String id,
@@ -281,10 +290,12 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
       ({
         String? contentHash,
         DateTime createdAt,
+        int distributionVersion,
         String? instructions,
         List<
             ({
               DateTime? acknowledgedAt,
+              int? acknowledgedDistributionVersion,
               String? acknowledgmentEventId,
               String? giftWrapEventId,
               String id,
@@ -313,10 +324,12 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
             ({
               String? contentHash,
               DateTime createdAt,
+              int distributionVersion,
               String? instructions,
               List<
                   ({
                     DateTime? acknowledgedAt,
+                    int? acknowledgedDistributionVersion,
                     String? acknowledgmentEventId,
                     String? giftWrapEventId,
                     String id,
@@ -341,10 +354,12 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
           ({
             String? contentHash,
             DateTime createdAt,
+            int distributionVersion,
             String? instructions,
             List<
                 ({
                   DateTime? acknowledgedAt,
+                  int? acknowledgedDistributionVersion,
                   String? acknowledgmentEventId,
                   String? giftWrapEventId,
                   String id,
@@ -372,10 +387,12 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
           ({
             String? contentHash,
             DateTime createdAt,
+            int distributionVersion,
             String? instructions,
             List<
                 ({
                   DateTime? acknowledgedAt,
+                  int? acknowledgedDistributionVersion,
                   String? acknowledgmentEventId,
                   String? giftWrapEventId,
                   String id,
@@ -405,10 +422,12 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
                 ({
                   String? contentHash,
                   DateTime createdAt,
+                  int distributionVersion,
                   String? instructions,
                   List<
                       ({
                         DateTime? acknowledgedAt,
+                        int? acknowledgedDistributionVersion,
                         String? acknowledgmentEventId,
                         String? giftWrapEventId,
                         String id,
@@ -431,10 +450,12 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
                 })>>.value(<({
           String? contentHash,
           DateTime createdAt,
+          int distributionVersion,
           String? instructions,
           List<
               ({
                 DateTime? acknowledgedAt,
+                int? acknowledgedDistributionVersion,
                 String? acknowledgmentEventId,
                 String? giftWrapEventId,
                 String id,
@@ -460,10 +481,12 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
               ({
                 String? contentHash,
                 DateTime createdAt,
+                int distributionVersion,
                 String? instructions,
                 List<
                     ({
                       DateTime? acknowledgedAt,
+                      int? acknowledgedDistributionVersion,
                       String? acknowledgmentEventId,
                       String? giftWrapEventId,
                       String id,
@@ -490,10 +513,12 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
           ({
             String? contentHash,
             DateTime createdAt,
+            int distributionVersion,
             String? instructions,
             List<
                 ({
                   DateTime? acknowledgedAt,
+                  int? acknowledgedDistributionVersion,
                   String? acknowledgmentEventId,
                   String? giftWrapEventId,
                   String id,
@@ -539,6 +564,7 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
           ({
             int createdAt,
             String creatorPubkey,
+            int? distributionVersion,
             String? instructions,
             bool? isReceived,
             String? lockboxId,
@@ -586,6 +612,7 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
                 ({
                   int createdAt,
                   String creatorPubkey,
+                  int? distributionVersion,
                   String? instructions,
                   bool? isReceived,
                   String? lockboxId,
@@ -604,6 +631,7 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
                 })>>.value(<({
           int createdAt,
           String creatorPubkey,
+          int? distributionVersion,
           String? instructions,
           bool? isReceived,
           String? lockboxId,
@@ -625,6 +653,7 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
               ({
                 int createdAt,
                 String creatorPubkey,
+                int? distributionVersion,
                 String? instructions,
                 bool? isReceived,
                 String? lockboxId,
@@ -648,6 +677,7 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
                   ({
                     int createdAt,
                     String creatorPubkey,
+                    int? distributionVersion,
                     String? instructions,
                     bool? isReceived,
                     String? lockboxId,
@@ -736,10 +766,215 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
       ({
         String? contentHash,
         DateTime createdAt,
+        int distributionVersion,
         String? instructions,
         List<
             ({
               DateTime? acknowledgedAt,
+              int? acknowledgedDistributionVersion,
+              String? acknowledgmentEventId,
+              String? giftWrapEventId,
+              String id,
+              String? inviteCode,
+              String? keyShare,
+              DateTime? lastSeen,
+              String? name,
+              String? pubkey,
+              _i6.KeyHolderStatus status
+            })> keyHolders,
+        DateTime? lastContentChange,
+        DateTime? lastRedistribution,
+        DateTime lastUpdated,
+        String lockboxId,
+        List<String> relays,
+        String specVersion,
+        _i7.BackupStatus status,
+        int threshold,
+        int totalKeys
+      })> mergeBackupConfig({
+    required String? lockboxId,
+    int? threshold,
+    List<
+            ({
+              DateTime? acknowledgedAt,
+              int? acknowledgedDistributionVersion,
+              String? acknowledgmentEventId,
+              String? giftWrapEventId,
+              String id,
+              String? inviteCode,
+              String? keyShare,
+              DateTime? lastSeen,
+              String? name,
+              String? pubkey,
+              _i6.KeyHolderStatus status
+            })>?
+        keyHolders,
+    List<String>? relays,
+    String? instructions,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #mergeBackupConfig,
+          [],
+          {
+            #lockboxId: lockboxId,
+            #threshold: threshold,
+            #keyHolders: keyHolders,
+            #relays: relays,
+            #instructions: instructions,
+          },
+        ),
+        returnValue: _i5.Future<
+            ({
+              String? contentHash,
+              DateTime createdAt,
+              int distributionVersion,
+              String? instructions,
+              List<
+                  ({
+                    DateTime? acknowledgedAt,
+                    int? acknowledgedDistributionVersion,
+                    String? acknowledgmentEventId,
+                    String? giftWrapEventId,
+                    String id,
+                    String? inviteCode,
+                    String? keyShare,
+                    DateTime? lastSeen,
+                    String? name,
+                    String? pubkey,
+                    _i6.KeyHolderStatus status
+                  })> keyHolders,
+              DateTime? lastContentChange,
+              DateTime? lastRedistribution,
+              DateTime lastUpdated,
+              String lockboxId,
+              List<String> relays,
+              String specVersion,
+              _i7.BackupStatus status,
+              int threshold,
+              int totalKeys
+            })>.value((
+          contentHash: null,
+          createdAt: _FakeDateTime_0(
+            this,
+            Invocation.method(
+              #mergeBackupConfig,
+              [],
+              {
+                #lockboxId: lockboxId,
+                #threshold: threshold,
+                #keyHolders: keyHolders,
+                #relays: relays,
+                #instructions: instructions,
+              },
+            ),
+          ),
+          distributionVersion: 0,
+          instructions: null,
+          keyHolders: <({
+            DateTime? acknowledgedAt,
+            int? acknowledgedDistributionVersion,
+            String? acknowledgmentEventId,
+            String? giftWrapEventId,
+            String id,
+            String? inviteCode,
+            String? keyShare,
+            DateTime? lastSeen,
+            String? name,
+            String? pubkey,
+            _i6.KeyHolderStatus status
+          })>[],
+          lastContentChange: null,
+          lastRedistribution: null,
+          lastUpdated: _FakeDateTime_0(
+            this,
+            Invocation.method(
+              #mergeBackupConfig,
+              [],
+              {
+                #lockboxId: lockboxId,
+                #threshold: threshold,
+                #keyHolders: keyHolders,
+                #relays: relays,
+                #instructions: instructions,
+              },
+            ),
+          ),
+          lockboxId: _i8.dummyValue<String>(
+            this,
+            Invocation.method(
+              #mergeBackupConfig,
+              [],
+              {
+                #lockboxId: lockboxId,
+                #threshold: threshold,
+                #keyHolders: keyHolders,
+                #relays: relays,
+                #instructions: instructions,
+              },
+            ),
+          ),
+          relays: <String>[],
+          specVersion: _i8.dummyValue<String>(
+            this,
+            Invocation.method(
+              #mergeBackupConfig,
+              [],
+              {
+                #lockboxId: lockboxId,
+                #threshold: threshold,
+                #keyHolders: keyHolders,
+                #relays: relays,
+                #instructions: instructions,
+              },
+            ),
+          ),
+          status: _i7.BackupStatus.pending,
+          threshold: 0,
+          totalKeys: 0
+        )),
+      ) as _i5.Future<
+          ({
+            String? contentHash,
+            DateTime createdAt,
+            int distributionVersion,
+            String? instructions,
+            List<
+                ({
+                  DateTime? acknowledgedAt,
+                  int? acknowledgedDistributionVersion,
+                  String? acknowledgmentEventId,
+                  String? giftWrapEventId,
+                  String id,
+                  String? inviteCode,
+                  String? keyShare,
+                  DateTime? lastSeen,
+                  String? name,
+                  String? pubkey,
+                  _i6.KeyHolderStatus status
+                })> keyHolders,
+            DateTime? lastContentChange,
+            DateTime? lastRedistribution,
+            DateTime lastUpdated,
+            String lockboxId,
+            List<String> relays,
+            String specVersion,
+            _i7.BackupStatus status,
+            int threshold,
+            int totalKeys
+          })>);
+
+  @override
+  _i5.Future<
+      ({
+        String? contentHash,
+        DateTime createdAt,
+        int distributionVersion,
+        String? instructions,
+        List<
+            ({
+              DateTime? acknowledgedAt,
+              int? acknowledgedDistributionVersion,
               String? acknowledgmentEventId,
               String? giftWrapEventId,
               String id,
@@ -766,6 +1001,7 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
     required List<
             ({
               DateTime? acknowledgedAt,
+              int? acknowledgedDistributionVersion,
               String? acknowledgmentEventId,
               String? giftWrapEventId,
               String id,
@@ -797,10 +1033,12 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
             ({
               String? contentHash,
               DateTime createdAt,
+              int distributionVersion,
               String? instructions,
               List<
                   ({
                     DateTime? acknowledgedAt,
+                    int? acknowledgedDistributionVersion,
                     String? acknowledgmentEventId,
                     String? giftWrapEventId,
                     String id,
@@ -837,9 +1075,11 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
               },
             ),
           ),
+          distributionVersion: 0,
           instructions: null,
           keyHolders: <({
             DateTime? acknowledgedAt,
+            int? acknowledgedDistributionVersion,
             String? acknowledgmentEventId,
             String? giftWrapEventId,
             String id,
@@ -906,10 +1146,12 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
           ({
             String? contentHash,
             DateTime createdAt,
+            int distributionVersion,
             String? instructions,
             List<
                 ({
                   DateTime? acknowledgedAt,
+                  int? acknowledgedDistributionVersion,
                   String? acknowledgmentEventId,
                   String? giftWrapEventId,
                   String id,
@@ -936,10 +1178,12 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
       ({
         String? contentHash,
         DateTime createdAt,
+        int distributionVersion,
         String? instructions,
         List<
             ({
               DateTime? acknowledgedAt,
+              int? acknowledgedDistributionVersion,
               String? acknowledgmentEventId,
               String? giftWrapEventId,
               String id,
@@ -971,10 +1215,12 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
             ({
               String? contentHash,
               DateTime createdAt,
+              int distributionVersion,
               String? instructions,
               List<
                   ({
                     DateTime? acknowledgedAt,
+                    int? acknowledgedDistributionVersion,
                     String? acknowledgmentEventId,
                     String? giftWrapEventId,
                     String id,
@@ -1004,9 +1250,11 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
               {#lockboxId: lockboxId},
             ),
           ),
+          distributionVersion: 0,
           instructions: null,
           keyHolders: <({
             DateTime? acknowledgedAt,
+            int? acknowledgedDistributionVersion,
             String? acknowledgmentEventId,
             String? giftWrapEventId,
             String id,
@@ -1052,10 +1300,12 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
           ({
             String? contentHash,
             DateTime createdAt,
+            int distributionVersion,
             String? instructions,
             List<
                 ({
                   DateTime? acknowledgedAt,
+                  int? acknowledgedDistributionVersion,
                   String? acknowledgmentEventId,
                   String? giftWrapEventId,
                   String id,
@@ -1104,10 +1354,12 @@ class MockShardDistributionService extends _i1.Mock
     required ({
       String? contentHash,
       DateTime createdAt,
+      int distributionVersion,
       String? instructions,
       List<
           ({
             DateTime? acknowledgedAt,
+            int? acknowledgedDistributionVersion,
             String? acknowledgmentEventId,
             String? giftWrapEventId,
             String id,
@@ -1132,6 +1384,7 @@ class MockShardDistributionService extends _i1.Mock
             ({
               int createdAt,
               String creatorPubkey,
+              int? distributionVersion,
               String? instructions,
               bool? isReceived,
               String? lockboxId,
@@ -1494,6 +1747,7 @@ class MockLockboxShareService extends _i1.Mock
           ({
             int createdAt,
             String creatorPubkey,
+            int? distributionVersion,
             String? instructions,
             bool? isReceived,
             String? lockboxId,
@@ -1519,6 +1773,7 @@ class MockLockboxShareService extends _i1.Mock
                 ({
                   int createdAt,
                   String creatorPubkey,
+                  int? distributionVersion,
                   String? instructions,
                   bool? isReceived,
                   String? lockboxId,
@@ -1537,6 +1792,7 @@ class MockLockboxShareService extends _i1.Mock
                 })>>.value(<({
           int createdAt,
           String creatorPubkey,
+          int? distributionVersion,
           String? instructions,
           bool? isReceived,
           String? lockboxId,
@@ -1558,6 +1814,7 @@ class MockLockboxShareService extends _i1.Mock
               ({
                 int createdAt,
                 String creatorPubkey,
+                int? distributionVersion,
                 String? instructions,
                 bool? isReceived,
                 String? lockboxId,
@@ -1580,6 +1837,7 @@ class MockLockboxShareService extends _i1.Mock
       ({
         int createdAt,
         String creatorPubkey,
+        int? distributionVersion,
         String? instructions,
         bool? isReceived,
         String? lockboxId,
@@ -1604,6 +1862,7 @@ class MockLockboxShareService extends _i1.Mock
             ({
               int createdAt,
               String creatorPubkey,
+              int? distributionVersion,
               String? instructions,
               bool? isReceived,
               String? lockboxId,
@@ -1624,6 +1883,7 @@ class MockLockboxShareService extends _i1.Mock
           ({
             int createdAt,
             String creatorPubkey,
+            int? distributionVersion,
             String? instructions,
             bool? isReceived,
             String? lockboxId,
@@ -1646,6 +1906,7 @@ class MockLockboxShareService extends _i1.Mock
       ({
         int createdAt,
         String creatorPubkey,
+        int? distributionVersion,
         String? instructions,
         bool? isReceived,
         String? lockboxId,
@@ -1670,6 +1931,7 @@ class MockLockboxShareService extends _i1.Mock
             ({
               int createdAt,
               String creatorPubkey,
+              int? distributionVersion,
               String? instructions,
               bool? isReceived,
               String? lockboxId,
@@ -1690,6 +1952,7 @@ class MockLockboxShareService extends _i1.Mock
           ({
             int createdAt,
             String creatorPubkey,
+            int? distributionVersion,
             String? instructions,
             bool? isReceived,
             String? lockboxId,
@@ -1713,6 +1976,7 @@ class MockLockboxShareService extends _i1.Mock
     ({
       int createdAt,
       String creatorPubkey,
+      int? distributionVersion,
       String? instructions,
       bool? isReceived,
       String? lockboxId,
@@ -1748,6 +2012,7 @@ class MockLockboxShareService extends _i1.Mock
     ({
       int createdAt,
       String creatorPubkey,
+      int? distributionVersion,
       String? instructions,
       bool? isReceived,
       String? lockboxId,
@@ -1845,6 +2110,7 @@ class MockLockboxShareService extends _i1.Mock
           ({
             int createdAt,
             String creatorPubkey,
+            int? distributionVersion,
             String? instructions,
             bool? isReceived,
             String? lockboxId,
@@ -1870,6 +2136,7 @@ class MockLockboxShareService extends _i1.Mock
                 ({
                   int createdAt,
                   String creatorPubkey,
+                  int? distributionVersion,
                   String? instructions,
                   bool? isReceived,
                   String? lockboxId,
@@ -1888,6 +2155,7 @@ class MockLockboxShareService extends _i1.Mock
                 })>>.value(<({
           int createdAt,
           String creatorPubkey,
+          int? distributionVersion,
           String? instructions,
           bool? isReceived,
           String? lockboxId,
@@ -1909,6 +2177,7 @@ class MockLockboxShareService extends _i1.Mock
               ({
                 int createdAt,
                 String creatorPubkey,
+                int? distributionVersion,
                 String? instructions,
                 bool? isReceived,
                 String? lockboxId,
@@ -1990,6 +2259,7 @@ class MockLockboxShareService extends _i1.Mock
     ({
       int createdAt,
       String creatorPubkey,
+      int? distributionVersion,
       String? instructions,
       bool? isReceived,
       String? lockboxId,
@@ -2025,6 +2295,7 @@ class MockLockboxShareService extends _i1.Mock
           ({
             int createdAt,
             String creatorPubkey,
+            int? distributionVersion,
             String? instructions,
             bool? isReceived,
             String? lockboxId,
@@ -2051,6 +2322,7 @@ class MockLockboxShareService extends _i1.Mock
                 ({
                   int createdAt,
                   String creatorPubkey,
+                  int? distributionVersion,
                   String? instructions,
                   bool? isReceived,
                   String? lockboxId,
@@ -2069,6 +2341,7 @@ class MockLockboxShareService extends _i1.Mock
                 })>>.value(<({
           int createdAt,
           String creatorPubkey,
+          int? distributionVersion,
           String? instructions,
           bool? isReceived,
           String? lockboxId,
@@ -2090,6 +2363,7 @@ class MockLockboxShareService extends _i1.Mock
               ({
                 int createdAt,
                 String creatorPubkey,
+                int? distributionVersion,
                 String? instructions,
                 bool? isReceived,
                 String? lockboxId,

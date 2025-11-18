@@ -6,6 +6,9 @@ enum KeyHolderStatus {
   /// Key share is being prepared for distribution OR invitation accepted, awaiting shard distribution
   awaitingKey,
 
+  /// Key holder has an old key but needs an updated one (after version increment)
+  awaitingNewKey,
+
   /// Shard received and confirmed (key holder is holding their key)
   holdingKey,
 
@@ -28,6 +31,8 @@ extension KeyHolderStatusExtension on KeyHolderStatus {
         return 'Invitation sent, awaiting acceptance';
       case KeyHolderStatus.awaitingKey:
         return 'Awaiting key share distribution';
+      case KeyHolderStatus.awaitingNewKey:
+        return 'Has old key, awaiting updated key share';
       case KeyHolderStatus.holdingKey:
         return 'Key holder has confirmed receipt of their key share';
       case KeyHolderStatus.inactive:
@@ -46,6 +51,8 @@ extension KeyHolderStatusExtension on KeyHolderStatus {
         return 'Invited';
       case KeyHolderStatus.awaitingKey:
         return 'Awaiting Key';
+      case KeyHolderStatus.awaitingNewKey:
+        return 'Awaiting New Key';
       case KeyHolderStatus.holdingKey:
         return 'Holding Key';
       case KeyHolderStatus.inactive:
@@ -59,7 +66,9 @@ extension KeyHolderStatusExtension on KeyHolderStatus {
 
   /// Check if the key holder is active (can participate in recovery)
   bool get isActive {
-    return this == KeyHolderStatus.awaitingKey || this == KeyHolderStatus.holdingKey;
+    return this == KeyHolderStatus.awaitingKey ||
+        this == KeyHolderStatus.awaitingNewKey ||
+        this == KeyHolderStatus.holdingKey;
   }
 
   /// Check if the key holder has confirmed receipt
@@ -69,7 +78,9 @@ extension KeyHolderStatusExtension on KeyHolderStatus {
 
   /// Check if the key holder is available for recovery
   bool get isAvailable {
-    return this == KeyHolderStatus.awaitingKey || this == KeyHolderStatus.holdingKey;
+    return this == KeyHolderStatus.awaitingKey ||
+        this == KeyHolderStatus.awaitingNewKey ||
+        this == KeyHolderStatus.holdingKey;
   }
 
   /// Check if the key holder is problematic
@@ -93,6 +104,8 @@ extension KeyHolderStatusExtension on KeyHolderStatus {
         return 'orange';
       case KeyHolderStatus.awaitingKey:
         return 'blue';
+      case KeyHolderStatus.awaitingNewKey:
+        return 'amber';
       case KeyHolderStatus.holdingKey:
         return 'green';
       case KeyHolderStatus.inactive:
@@ -111,6 +124,8 @@ extension KeyHolderStatusExtension on KeyHolderStatus {
         return 'mail_outline';
       case KeyHolderStatus.awaitingKey:
         return 'hourglass_empty';
+      case KeyHolderStatus.awaitingNewKey:
+        return 'update';
       case KeyHolderStatus.holdingKey:
         return 'check_circle';
       case KeyHolderStatus.inactive:

@@ -292,6 +292,207 @@ class BackupService {
     return config.acknowledgedKeyHoldersCount >= config.threshold;
   }
 
+  /// Merge backup configuration changes with existing config
+  ///
+  /// This method intelligently merges new configuration data with existing data:
+  /// - Key holders: Adds new ones, updates existing ones, preserves status/acknowledgments
+  /// - Threshold/relays/instructions: Updates if provided
+  /// - Increments distributionVersion if config params changed
+  /// - Preserves lastRedistribution timestamp
+  Future<BackupConfig> mergeBackupConfig({
+    required String lockboxId,
+    int? threshold,
+    List<KeyHolder>? keyHolders,
+    List<String>? relays,
+    String? instructions,
+  }) async {
+    // Load existing config
+    final existingConfig = await _repository.getBackupConfig(lockboxId);
+
+    if (existingConfig == null) {
+      throw ArgumentError('No existing backup configuration found for lockbox $lockboxId');
+    }
+
+    // Track if config parameters changed (requires redistribution)
+    bool configParamsChanged = false;
+
+    // Merge threshold
+    final newThreshold = threshold ?? existingConfig.threshold;
+    if (newThreshold != existingConfig.threshold) {
+      configParamsChanged = true;
+    }
+
+    // Merge relays
+    final newRelays = relays ?? existingConfig.relays;
+    if (relays != null && !_areRelaysEqual(relays, existingConfig.relays)) {
+      configParamsChanged = true;
+    }
+
+    // Merge instructions
+    final newInstructions = instructions ?? existingConfig.instructions;
+    if (instructions != null && instructions != existingConfig.instructions) {
+      configParamsChanged = true;
+    }
+
+    // Merge key holders (more complex)
+    List<KeyHolder> mergedKeyHolders;
+    if (keyHolders != null) {
+      mergedKeyHolders = _mergeKeyHolders(existingConfig.keyHolders, keyHolders);
+      // If key holder list changed, it requires redistribution
+      if (mergedKeyHolders.length != existingConfig.keyHolders.length) {
+        configParamsChanged = true;
+      }
+    } else {
+      mergedKeyHolders = existingConfig.keyHolders;
+    }
+
+    // Calculate new total keys based on merged key holders
+    final newTotalKeys = mergedKeyHolders.length;
+
+    // Increment distribution version if config changed
+    final newDistributionVersion = configParamsChanged
+        ? existingConfig.distributionVersion + 1
+        : existingConfig.distributionVersion;
+
+    // If distribution version incremented, reset all key holders with pubkeys to awaitingNewKey
+    // (preserve invited key holders without pubkeys)
+    final finalKeyHolders = newDistributionVersion > existingConfig.distributionVersion
+        ? mergedKeyHolders.map((holder) {
+            // Reset to awaitingNewKey if they have a pubkey and were holding a key
+            // Keep as awaitingKey if they were already awaiting (never received a key)
+            if (holder.pubkey != null && holder.status != KeyHolderStatus.invited) {
+              final newStatus = holder.status == KeyHolderStatus.holdingKey
+                  ? KeyHolderStatus.awaitingNewKey
+                  : KeyHolderStatus.awaitingKey;
+              return copyKeyHolder(
+                holder,
+                status: newStatus,
+                acknowledgedAt: null,
+                acknowledgmentEventId: null,
+                acknowledgedDistributionVersion: null,
+                keyShare: null,
+                giftWrapEventId: null,
+              );
+            }
+            return holder;
+          }).toList()
+        : mergedKeyHolders;
+
+    // Create merged config
+    final mergedConfig = copyBackupConfig(
+      existingConfig,
+      threshold: newThreshold,
+      totalKeys: newTotalKeys,
+      keyHolders: finalKeyHolders,
+      relays: newRelays,
+      instructions: newInstructions,
+      lastUpdated: DateTime.now(),
+      distributionVersion: newDistributionVersion,
+      // Preserve lastRedistribution - only updated when distribution succeeds
+    );
+
+    // Save merged config
+    await _repository.updateBackupConfig(lockboxId, mergedConfig);
+
+    // Sync relays to RelayScanService
+    try {
+      await _relayScanService.syncRelaysFromUrls(newRelays);
+      await _relayScanService.ensureScanningStarted();
+      Log.info('Synced ${newRelays.length} relay(s) to RelayScanService');
+    } catch (e) {
+      Log.error('Error syncing relays to RelayScanService', e);
+    }
+
+    Log.info(
+        'Merged backup configuration for lockbox $lockboxId (version: $newDistributionVersion)');
+    return mergedConfig;
+  }
+
+  /// Handle lockbox content change by incrementing distributionVersion
+  ///
+  /// When vault contents change, we need to increment the distribution version
+  /// and reset all key holders with pubkeys to awaitingKey status.
+  /// This ensures that new shards will be distributed on the next distribution.
+  Future<void> handleContentChange(String lockboxId) async {
+    final config = await _repository.getBackupConfig(lockboxId);
+    if (config == null) {
+      // No backup config exists, nothing to do
+      return;
+    }
+
+    // Increment distribution version
+    final newDistributionVersion = config.distributionVersion + 1;
+
+    // Reset all key holders with pubkeys to awaitingNewKey (if they were holding) or awaitingKey
+    final updatedKeyHolders = config.keyHolders.map((holder) {
+      // Reset to awaitingNewKey if they have a pubkey and were holding a key
+      // Keep as awaitingKey if they were already awaiting (never received a key)
+      if (holder.pubkey != null && holder.status != KeyHolderStatus.invited) {
+        final newStatus = holder.status == KeyHolderStatus.holdingKey
+            ? KeyHolderStatus.awaitingNewKey
+            : KeyHolderStatus.awaitingKey;
+        return copyKeyHolder(
+          holder,
+          status: newStatus,
+          acknowledgedAt: null,
+          acknowledgmentEventId: null,
+          acknowledgedDistributionVersion: null,
+          keyShare: null,
+          giftWrapEventId: null,
+        );
+      }
+      return holder;
+    }).toList();
+
+    // Update config with new version and reset key holders
+    final updatedConfig = copyBackupConfig(
+      config,
+      keyHolders: updatedKeyHolders,
+      distributionVersion: newDistributionVersion,
+      lastUpdated: DateTime.now(),
+      lastContentChange: DateTime.now(),
+    );
+
+    await _repository.updateBackupConfig(lockboxId, updatedConfig);
+    Log.info(
+        'Incremented distributionVersion to $newDistributionVersion for lockbox $lockboxId due to content change');
+  }
+
+  /// Helper to merge key holder lists
+  List<KeyHolder> _mergeKeyHolders(List<KeyHolder> existing, List<KeyHolder> updated) {
+    final merged = <KeyHolder>[];
+
+    // Add all updated key holders, preserving acknowledgments from existing
+    for (final updatedHolder in updated) {
+      // Find matching holder in existing list by id
+      final existingHolder = existing.where((h) => h.id == updatedHolder.id).firstOrNull;
+
+      if (existingHolder != null) {
+        // Preserve important fields from existing (status, acknowledgments, etc)
+        merged.add(copyKeyHolder(
+          updatedHolder,
+          status: existingHolder.status,
+          acknowledgedAt: existingHolder.acknowledgedAt,
+          acknowledgmentEventId: existingHolder.acknowledgmentEventId,
+          acknowledgedDistributionVersion: existingHolder.acknowledgedDistributionVersion,
+        ));
+      } else {
+        // New key holder
+        merged.add(updatedHolder);
+      }
+    }
+
+    return merged;
+  }
+
+  /// Helper to compare relay lists
+  bool _areRelaysEqual(List<String> list1, List<String> list2) {
+    if (list1.length != list2.length) return false;
+    final set1 = Set<String>.from(list1);
+    final set2 = Set<String>.from(list2);
+    return set1.containsAll(set2) && set2.containsAll(set1);
+  }
+
   /// Create or update backup configuration without distributing shares
   ///
   /// This allows saving the backup configuration before all key holders
@@ -378,12 +579,15 @@ class BackupService {
       }
       Log.info('Retrieved creator key pair');
 
-      // Step 4: Validate all key holders have pubkeys before distributing
-      final keyHoldersWithoutPubkeys = config.keyHolders.where((kh) => kh.pubkey == null).toList();
-      if (keyHoldersWithoutPubkeys.isNotEmpty) {
-        final names = keyHoldersWithoutPubkeys.map((kh) => kh.name ?? kh.id).join(', ');
-        throw ArgumentError(
-          'Cannot distribute backup: ${keyHoldersWithoutPubkeys.length} key holder(s) do not have a pubkey yet (invited but not accepted): $names',
+      // Step 4: Validate all key holders are ready for distribution
+      if (!config.canDistribute) {
+        final names = config.keyHolders
+            .where((kh) => kh.pubkey == null)
+            .map((kh) => kh.name ?? kh.id)
+            .join(', ');
+        throw StateError(
+          'Cannot distribute: ${config.pendingInvitationsCount} steward(s) '
+          'haven\'t accepted invitations yet: $names',
         );
       }
 
@@ -418,7 +622,18 @@ class BackupService {
       );
       Log.info('Successfully distributed all shards');
 
-      return config;
+      // Step 7: Update backup config with distribution timestamp and status
+      final now = DateTime.now();
+      final updatedConfig = copyBackupConfig(
+        config,
+        lastRedistribution: now,
+        lastUpdated: now,
+        status: BackupStatus.active,
+      );
+      await _repository.updateBackupConfig(lockboxId, updatedConfig);
+      Log.info('Updated backup config with redistribution timestamp');
+
+      return updatedConfig;
     } catch (e) {
       Log.error('Failed to create and distribute backup', e);
       rethrow;
