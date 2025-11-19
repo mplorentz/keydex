@@ -211,10 +211,10 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                                           Text(
                                             'Add your first steward to get started',
                                             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                              color: Theme.of(
-                                                context,
-                                              ).colorScheme.onSurface.withValues(alpha: 0.7),
-                                            ),
+                                                  color: Theme.of(
+                                                    context,
+                                                  ).colorScheme.onSurface.withValues(alpha: 0.7),
+                                                ),
                                             textAlign: TextAlign.center,
                                           ),
                                         ],
@@ -361,9 +361,15 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
               buttons: [
                 RowButtonConfig(onPressed: _handleCancel, icon: Icons.close, text: 'Cancel'),
                 RowButtonConfig(
-                  onPressed: _canCreateBackup() && !_isCreating ? _saveBackup : () {},
+                  onPressed: _canCreateBackup() && !_isCreating ? _saveBackup : null,
                   icon: _isCreating ? Icons.hourglass_empty : Icons.save,
-                  text: _isCreating ? 'Saving...' : 'Save',
+                  text: _isCreating
+                      ? 'Saving...'
+                      : _keyHolders.isEmpty
+                          ? 'Add Stewards to Save'
+                          : _relays.isEmpty
+                              ? 'Add Relays to Save'
+                              : 'Save',
                 ),
               ],
             ),
@@ -1012,11 +1018,11 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
         if (!mounted) return;
         final shouldAutoDistributeResult =
             await BackupDistributionHelper.showRegenerationAlertIfNeeded(
-              context: context,
-              backupConfig: existingConfig,
-              willChange: configWillChange,
-              mounted: mounted,
-            );
+          context: context,
+          backupConfig: existingConfig,
+          willChange: configWillChange,
+          mounted: mounted,
+        );
 
         if (shouldAutoDistributeResult == false) {
           // User cancelled or widget disposed, don't save changes

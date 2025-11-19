@@ -12,7 +12,7 @@ extension TopSnackBar on BuildContext {
       backgroundColor: snackBar.backgroundColor,
       behavior: SnackBarBehavior.floating,
       margin: EdgeInsets.only(
-        bottom: MediaQuery.of(this).size.height - 100, // Position at top
+        bottom: MediaQuery.of(this).size.height - 75, // Position at top
         left: 16,
         right: 16,
         top: 16,
@@ -35,9 +35,9 @@ extension TopSnackBar on BuildContext {
   }
 }
 
-/// Custom ScaffoldMessenger wrapper that positions SnackBars at the top
-/// This is a simple pass-through widget that doesn't interfere with Flutter's widget tree
-class TopSnackBarScaffoldMessenger extends StatelessWidget {
+/// Custom ScaffoldMessenger that positions SnackBars at the top of the screen
+/// This intercepts SnackBar calls and wraps them with margin to position at top
+class TopSnackBarScaffoldMessenger extends StatefulWidget {
   final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey;
   final Widget child;
 
@@ -48,8 +48,35 @@ class TopSnackBarScaffoldMessenger extends StatelessWidget {
   });
 
   @override
+  State<TopSnackBarScaffoldMessenger> createState() => _TopSnackBarScaffoldMessengerState();
+}
+
+class _TopSnackBarScaffoldMessengerState extends State<TopSnackBarScaffoldMessenger> {
+  @override
   Widget build(BuildContext context) {
-    // Just return the child - MaterialApp already handles ScaffoldMessenger via scaffoldMessengerKey
-    return child;
+    return ScaffoldMessenger(
+      key: widget.scaffoldMessengerKey,
+      child: Builder(
+        builder: (context) {
+          // Wrap child with a custom ScaffoldMessenger that intercepts SnackBar calls
+          return _TopSnackBarMessengerWrapper(
+            scaffoldMessengerKey: widget.scaffoldMessengerKey,
+            child: widget.child,
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _TopSnackBarMessengerWrapper extends StatelessWidget {
+  final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey;
+  final Widget child;
+
+  const _TopSnackBarMessengerWrapper({required this.scaffoldMessengerKey, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return ScaffoldMessenger(key: scaffoldMessengerKey, child: child);
   }
 }
