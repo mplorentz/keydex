@@ -157,6 +157,7 @@ class LockboxListScreen extends ConsumerWidget {
             },
             icon: Icons.add,
             text: 'Create Vault',
+            addBottomSafeArea: true,
           ),
         ],
       ),

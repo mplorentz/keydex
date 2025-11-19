@@ -92,6 +92,7 @@ class OnboardingScreen extends ConsumerWidget {
               },
               icon: Icons.arrow_forward,
               text: 'Get Started',
+              addBottomSafeArea: true,
             ),
           ],
         ),

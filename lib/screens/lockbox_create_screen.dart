@@ -55,6 +55,7 @@ class _LockboxCreateScreenState extends ConsumerState<LockboxCreateScreen>
             onPressed: () => _saveLockbox(),
             icon: Icons.arrow_forward,
             text: 'Next',
+            addBottomSafeArea: true,
           ),
         ],
       ),

@@ -96,6 +96,7 @@ class VaultExplainerScreen extends StatelessWidget {
             },
             icon: Icons.arrow_forward,
             text: 'Get Started',
+            addBottomSafeArea: true,
           ),
         ],
       ),

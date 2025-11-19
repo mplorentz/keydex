@@ -42,6 +42,7 @@ class RowButtonStack extends StatelessWidget {
             icon: buttons[i].icon,
             text: buttons[i].text,
             backgroundColor: colors[i],
+            addBottomSafeArea: i == buttons.length - 1, // Only add safe area to bottom button
           ),
       ],
     );

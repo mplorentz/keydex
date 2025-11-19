@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 
 /// A full-width button with an icon and text in a row layout
@@ -10,6 +11,7 @@ class RowButton extends StatelessWidget {
   final double? iconSize;
   final TextStyle? textStyle;
   final EdgeInsets? padding;
+  final bool addBottomSafeArea; // Whether to add bottom safe area padding on iOS
 
   const RowButton({
     super.key,
@@ -21,6 +23,7 @@ class RowButton extends StatelessWidget {
     this.iconSize = 24,
     this.textStyle,
     this.padding = const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+    this.addBottomSafeArea = false, // Default to false, set to true for bottom buttons
   });
 
   @override
@@ -36,13 +39,28 @@ class RowButton extends StatelessWidget {
         ? const Color(0xFF7a7f76) // Muted gray
         : (foregroundColor ?? const Color.fromARGB(255, 253, 255, 240));
 
+    // Add bottom safe area padding on iOS devices with home indicator
+    final bottomSafeArea = addBottomSafeArea && Platform.isIOS ? 8.0 : 0.0;
+
+    // Calculate effective padding with safe area
+    final effectivePadding = padding != null
+        ? padding!.copyWith(
+            bottom: padding!.bottom + bottomSafeArea,
+          )
+        : EdgeInsets.only(
+            top: 20,
+            bottom: 20 + bottomSafeArea,
+            left: 20,
+            right: 20,
+          );
+
     return InkWell(
       onTap: onPressed,
       child: Opacity(
         opacity: isDisabled ? 0.6 : 1.0,
         child: Container(
           width: double.infinity,
-          padding: padding,
+          padding: effectivePadding,
           decoration: BoxDecoration(
             color: effectiveBackgroundColor,
           ),
