@@ -104,7 +104,7 @@ class _RecoveryRequestDetailScreenState extends ConsumerState<RecoveryRequestDet
         title: const Text('Approve Recovery'),
         content: const Text(
           'Are you sure you want to approve this recovery request? '
-          'This will share your key shard with the requester.',
+          'This will share your key with the requester.',
         ),
         actions: [
           TextButton(
