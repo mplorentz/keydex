@@ -223,7 +223,7 @@ class _InvitationAcceptanceScreenState extends ConsumerState<InvitationAcceptanc
                 ],
 
                 // Lockbox name (if available)
-                if (invitation.lockboxName != null && invitation.lockboxName != 'Shared Lockbox') ...[
+                if (invitation.lockboxName != 'Shared Lockbox') ...[
                   Text(
                     'Lockbox',
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
@@ -232,7 +232,7 @@ class _InvitationAcceptanceScreenState extends ConsumerState<InvitationAcceptanc
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    invitation.lockboxName!,
+                    invitation.lockboxName,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           fontWeight: FontWeight.w500,
                         ),
@@ -271,7 +271,7 @@ class _InvitationAcceptanceScreenState extends ConsumerState<InvitationAcceptanc
         // Action Buttons
         if (!isTerminal)
           currentPubkeyAsync.when(
-            loading: () => RowButton(
+            loading: () => const RowButton(
               onPressed: null,
               icon: Icons.hourglass_empty,
               text: 'Checking account...',
