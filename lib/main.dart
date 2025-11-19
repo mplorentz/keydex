@@ -9,13 +9,12 @@ import 'utils/app_initialization.dart';
 import 'widgets/theme.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
+final _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
 void main() {
   runApp(
     // Wrap the entire app with ProviderScope to enable Riverpod
-    const ProviderScope(
-      child: KeydexApp(),
-    ),
+    const ProviderScope(child: KeydexApp()),
   );
 }
 
@@ -74,16 +73,17 @@ class _KeydexAppState extends ConsumerState<KeydexApp> {
       title: 'Keydex Lockbox',
       theme: keydex2,
       debugShowCheckedModeBanner: false,
+      scaffoldMessengerKey: _scaffoldMessengerKey,
       home: _isInitializing
           ? const _InitializingScreen()
           : _initError != null
-              ? _ErrorScreen(error: _initError!)
-              : isLoggedInAsync.when(
-                  data: (isLoggedIn) =>
-                      isLoggedIn ? const LockboxListScreen() : const OnboardingScreen(),
-                  loading: () => const _InitializingScreen(),
-                  error: (_, __) => const LockboxListScreen(), // Fallback to main screen on error
-                ),
+          ? _ErrorScreen(error: _initError!)
+          : isLoggedInAsync.when(
+              data: (isLoggedIn) =>
+                  isLoggedIn ? const LockboxListScreen() : const OnboardingScreen(),
+              loading: () => const _InitializingScreen(),
+              error: (_, __) => const LockboxListScreen(), // Fallback to main screen on error
+            ),
     );
   }
 }
@@ -99,24 +99,13 @@ class _InitializingScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const CircularProgressIndicator(
-              color: Color(0xFFf47331),
-            ),
+            const CircularProgressIndicator(color: Color(0xFFf47331)),
             const SizedBox(height: 24),
-            Text(
-              'Initializing Keydex...',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.grey[600],
-              ),
-            ),
+            Text('Initializing Keydex...', style: TextStyle(fontSize: 18, color: Colors.grey[600])),
             const SizedBox(height: 12),
             Text(
               'Setting up secure storage',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[500],
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey[500]),
             ),
           ],
         ),
@@ -140,27 +129,17 @@ class _ErrorScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.error_outline,
-                size: 64,
-                color: Colors.red[400],
-              ),
+              Icon(Icons.error_outline, size: 64, color: Colors.red[400]),
               const SizedBox(height: 24),
               const Text(
                 'Initialization Failed',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
               Text(
                 error,
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
-                ),
+                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
               ),
               const SizedBox(height: 24),
               ElevatedButton(

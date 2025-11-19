@@ -7,6 +7,7 @@ import '../services/lockbox_share_service.dart';
 import '../services/recovery_service.dart';
 import '../services/relay_scan_service.dart';
 import '../services/logger.dart';
+import '../utils/snackbar_helper.dart';
 import '../screens/keydex_gallery_screen.dart';
 
 /// Debug information sheet widget
@@ -30,10 +31,7 @@ class DebugInfoSheet extends ConsumerWidget {
           'This action cannot be undone!',
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
@@ -46,11 +44,8 @@ class DebugInfoSheet extends ConsumerWidget {
     if (confirmed != true || !context.mounted) return;
 
     try {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Clearing all data...'),
-          duration: Duration(seconds: 2),
-        ),
+      context.showTopSnackBar(
+        const SnackBar(content: Text('Clearing all data...'), duration: Duration(seconds: 2)),
       );
 
       // Clear all services using providers
@@ -69,7 +64,7 @@ class DebugInfoSheet extends ConsumerWidget {
 
       if (!context.mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
+      context.showTopSnackBar(
         const SnackBar(
           content: Text('All data cleared! App will restart...'),
           duration: Duration(seconds: 2),
@@ -86,11 +81,8 @@ class DebugInfoSheet extends ConsumerWidget {
       Log.error('Error clearing all data', e);
       if (!context.mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error clearing data: $e'),
-          backgroundColor: Colors.red,
-        ),
+      context.showTopSnackBar(
+        SnackBar(content: Text('Error clearing data: $e'), backgroundColor: Colors.red),
       );
     }
   }
@@ -116,17 +108,11 @@ class DebugInfoSheet extends ConsumerWidget {
         children: [
           Row(
             children: [
-              Icon(
-                Icons.bug_report,
-                size: 24,
-                color: theme.colorScheme.primary,
-              ),
+              Icon(Icons.bug_report, size: 24, color: theme.colorScheme.primary),
               const SizedBox(width: 12),
               Text(
                 'Debug Information',
-                style: textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
               const Spacer(),
               IconButton(
@@ -152,14 +138,8 @@ class DebugInfoSheet extends ConsumerWidget {
               children: [
                 // Bech32 key
                 publicKeyBech32Async.when(
-                  loading: () => Text(
-                    'Loading...',
-                    style: textTheme.bodySmall,
-                  ),
-                  error: (err, _) => Text(
-                    'Error: $err',
-                    style: textTheme.bodySmall,
-                  ),
+                  loading: () => Text('Loading...', style: textTheme.bodySmall),
+                  error: (err, _) => Text('Error: $err', style: textTheme.bodySmall),
                   data: (npub) => _KeyDisplay(
                     label: 'Npub (bech32):',
                     value: npub ?? 'Not available',
@@ -169,14 +149,8 @@ class DebugInfoSheet extends ConsumerWidget {
                 const SizedBox(height: 12),
                 // Hex key
                 publicKeyAsync.when(
-                  loading: () => Text(
-                    'Loading...',
-                    style: textTheme.bodySmall,
-                  ),
-                  error: (err, _) => Text(
-                    'Error: $err',
-                    style: textTheme.bodySmall,
-                  ),
+                  loading: () => Text('Loading...', style: textTheme.bodySmall),
+                  error: (err, _) => Text('Error: $err', style: textTheme.bodySmall),
                   data: (pubkey) => _KeyDisplay(
                     label: 'Public Key (hex):',
                     value: pubkey ?? 'Not available',
@@ -195,14 +169,10 @@ class DebugInfoSheet extends ConsumerWidget {
                 Navigator.pop(context); // Close the debug sheet first
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => const KeydexGallery(),
-                  ),
+                  MaterialPageRoute(builder: (context) => const KeydexGallery()),
                 );
               },
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
+              style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
               icon: const Icon(Icons.palette),
               label: const Text('View Design Gallery'),
             ),
@@ -234,11 +204,7 @@ class _KeyDisplay extends StatelessWidget {
   final String value;
   final String tooltipLabel;
 
-  const _KeyDisplay({
-    required this.label,
-    required this.value,
-    required this.tooltipLabel,
-  });
+  const _KeyDisplay({required this.label, required this.value, required this.tooltipLabel});
 
   @override
   Widget build(BuildContext context) {
@@ -250,19 +216,11 @@ class _KeyDisplay extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                label,
-                style: textTheme.labelSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              Text(label, style: textTheme.labelSmall?.copyWith(fontWeight: FontWeight.bold)),
               const SizedBox(height: 2),
               Text(
                 value,
-                style: textTheme.bodySmall?.copyWith(
-                  fontFamily: 'monospace',
-                  fontSize: 10,
-                ),
+                style: textTheme.bodySmall?.copyWith(fontFamily: 'monospace', fontSize: 10),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -270,11 +228,7 @@ class _KeyDisplay extends StatelessWidget {
           ),
         ),
         IconButton(
-          icon: Icon(
-            Icons.copy,
-            size: 16,
-            color: Theme.of(context).colorScheme.primary,
-          ),
+          icon: Icon(Icons.copy, size: 16, color: Theme.of(context).colorScheme.primary),
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(),
           onPressed: value != 'Not available' && value != 'Loading...'
@@ -288,7 +242,7 @@ class _KeyDisplay extends StatelessWidget {
 
   void _copyToClipboard(BuildContext context, String text, String label) {
     Clipboard.setData(ClipboardData(text: text));
-    ScaffoldMessenger.of(context).showSnackBar(
+    context.showTopSnackBar(
       SnackBar(
         content: Text('$label copied to clipboard'),
         duration: const Duration(seconds: 2),

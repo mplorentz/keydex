@@ -15,15 +15,13 @@ import '../services/logger.dart';
 import '../screens/backup_config_screen.dart';
 import '../screens/edit_lockbox_screen.dart';
 import '../screens/recovery_status_screen.dart';
+import '../utils/snackbar_helper.dart';
 
 /// Button stack widget for lockbox detail screen
 class LockboxDetailButtonStack extends ConsumerWidget {
   final String lockboxId;
 
-  const LockboxDetailButtonStack({
-    super.key,
-    required this.lockboxId,
-  });
+  const LockboxDetailButtonStack({super.key, required this.lockboxId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -42,7 +40,8 @@ class LockboxDetailButtonStack extends ConsumerWidget {
           error: (_, __) => const SizedBox.shrink(),
           data: (currentPubkey) {
             final isOwned = currentPubkey != null && lockbox.isOwned(currentPubkey);
-            final isSteward = currentPubkey != null &&
+            final isSteward =
+                currentPubkey != null &&
                 !lockbox.isOwned(currentPubkey) &&
                 lockbox.shards.isNotEmpty;
 
@@ -65,46 +64,50 @@ class LockboxDetailButtonStack extends ConsumerWidget {
                     if (isSteward) {
                       final instructions = _getInstructions(lockbox);
                       if (instructions != null && instructions.isNotEmpty) {
-                        buttons.add(RowButtonConfig(
-                          onPressed: () {
-                            InstructionsDialog.show(context, instructions);
-                          },
-                          icon: Icons.info_outline,
-                          text: 'View Instructions',
-                        ));
+                        buttons.add(
+                          RowButtonConfig(
+                            onPressed: () {
+                              InstructionsDialog.show(context, instructions);
+                            },
+                            icon: Icons.info_outline,
+                            text: 'View Instructions',
+                          ),
+                        );
                       }
                     }
 
                     // Edit Lockbox Button (only show if user owns the lockbox)
                     if (isOwned) {
-                      buttons.add(RowButtonConfig(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => EditLockboxScreen(lockboxId: lockboxId),
-                            ),
-                          );
-                        },
-                        icon: Icons.edit,
-                        text: 'Update Vault Contents',
-                      ));
+                      buttons.add(
+                        RowButtonConfig(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => EditLockboxScreen(lockboxId: lockboxId),
+                              ),
+                            );
+                          },
+                          icon: Icons.edit,
+                          text: 'Update Vault Contents',
+                        ),
+                      );
 
                       // Recovery Plan Section
-                      buttons.add(RowButtonConfig(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => BackupConfigScreen(
-                                lockboxId: lockboxId,
+                      buttons.add(
+                        RowButtonConfig(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => BackupConfigScreen(lockboxId: lockboxId),
                               ),
-                            ),
-                          );
-                        },
-                        icon: Icons.settings,
-                        text: 'Recovery Plan',
-                      ));
+                            );
+                          },
+                          icon: Icons.settings,
+                          text: 'Recovery Plan',
+                        ),
+                      );
 
                       // Distribute Keys Button - shown when distribution is needed
                       if (currentLockbox != null) {
@@ -116,70 +119,80 @@ class LockboxDetailButtonStack extends ConsumerWidget {
                           if (!backupConfig.canDistribute) {
                             // Show "Waiting for stewards" button (disabled)
                             final pendingCount = backupConfig.pendingInvitationsCount;
-                            buttons.add(RowButtonConfig(
-                              onPressed: null, // Disabled
-                              icon: Icons.hourglass_empty,
-                              text:
-                                  'Waiting for $pendingCount Steward${pendingCount > 1 ? 's' : ''}',
-                            ));
+                            buttons.add(
+                              RowButtonConfig(
+                                onPressed: null, // Disabled
+                                icon: Icons.hourglass_empty,
+                                text:
+                                    'Waiting for $pendingCount Steward${pendingCount > 1 ? 's' : ''}',
+                              ),
+                            );
                           } else if (needsDistribution) {
                             // Show "Distribute Keys" button (enabled)
-                            buttons.add(RowButtonConfig(
-                              onPressed: () => _distributeKeys(context, ref, currentLockbox),
-                              icon: Icons.send,
-                              text: 'Distribute Keys',
-                            ));
+                            buttons.add(
+                              RowButtonConfig(
+                                onPressed: () => _distributeKeys(context, ref, currentLockbox),
+                                icon: Icons.send,
+                                text: 'Distribute Keys',
+                              ),
+                            );
                           }
                         }
                       }
 
                       // Practice Recovery Button (only for owners)
-                      buttons.add(RowButtonConfig(
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                              title: const Text('Practice Recovery'),
-                              content: const Text('todo'),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(context),
-                                  child: const Text('OK'),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                        icon: Icons.school,
-                        text: 'Practice Recovery',
-                      ));
+                      buttons.add(
+                        RowButtonConfig(
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: const Text('Practice Recovery'),
+                                content: const Text('todo'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: const Text('OK'),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                          icon: Icons.school,
+                          text: 'Practice Recovery',
+                        ),
+                      );
                     }
 
                     // Recovery buttons - only show for stewards (not owners, since owners already have contents)
                     if (!isOwned) {
                       // Show "Manage Recovery" if user initiated active recovery
                       if (recoveryStatus.hasActiveRecovery && recoveryStatus.isInitiator) {
-                        buttons.add(RowButtonConfig(
-                          onPressed: () async {
-                            await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => RecoveryStatusScreen(
-                                  recoveryRequestId: recoveryStatus.activeRecoveryRequest!.id,
+                        buttons.add(
+                          RowButtonConfig(
+                            onPressed: () async {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => RecoveryStatusScreen(
+                                    recoveryRequestId: recoveryStatus.activeRecoveryRequest!.id,
+                                  ),
                                 ),
-                              ),
-                            );
-                          },
-                          icon: Icons.visibility,
-                          text: 'Manage Recovery',
-                        ));
+                              );
+                            },
+                            icon: Icons.visibility,
+                            text: 'Manage Recovery',
+                          ),
+                        );
                       } else {
                         // Show "Initiate Recovery" if no active recovery or user didn't initiate it
-                        buttons.add(RowButtonConfig(
-                          onPressed: () => _initiateRecovery(context, ref, lockboxId),
-                          icon: Icons.restore,
-                          text: 'Initiate Recovery',
-                        ));
+                        buttons.add(
+                          RowButtonConfig(
+                            onPressed: () => _initiateRecovery(context, ref, lockboxId),
+                            icon: Icons.restore,
+                            text: 'Initiate Recovery',
+                          ),
+                        );
                       }
                     }
 
@@ -207,18 +220,15 @@ class LockboxDetailButtonStack extends ConsumerWidget {
 
   Future<void> _distributeKeys(BuildContext context, WidgetRef ref, Lockbox lockbox) async {
     if (lockbox.backupConfig == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Recovery plan not found'),
-          backgroundColor: Colors.orange,
-        ),
+      context.showTopSnackBar(
+        const SnackBar(content: Text('Recovery plan not found'), backgroundColor: Colors.orange),
       );
       return;
     }
 
     final config = lockbox.backupConfig!;
     if (config.keyHolders.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      context.showTopSnackBar(
         const SnackBar(
           content: Text('No stewards in recovery plan'),
           backgroundColor: Colors.orange,
@@ -228,7 +238,7 @@ class LockboxDetailButtonStack extends ConsumerWidget {
     }
 
     if (lockbox.content == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      context.showTopSnackBar(
         const SnackBar(
           content: Text('Cannot backup: vault content is not available'),
           backgroundColor: Colors.red,
@@ -243,12 +253,14 @@ class LockboxDetailButtonStack extends ConsumerWidget {
     final action = isRedistribution ? 'Redistribute' : 'Distribute';
 
     // Build warning message for redistribution
-    String contentMessage = 'This will generate ${config.totalKeys} key shares '
+    String contentMessage =
+        'This will generate ${config.totalKeys} key shares '
         'and distribute them to ${config.keyHolders.length} steward${config.keyHolders.length > 1 ? 's' : ''}.\n\n'
         'Threshold: ${config.threshold} (minimum keys needed for recovery)';
 
     if (isRedistribution) {
-      contentMessage += '\n\n⚠️ This will invalidate previously distributed keys. '
+      contentMessage +=
+          '\n\n⚠️ This will invalidate previously distributed keys. '
           'All stewards will receive new keys.';
     }
 
@@ -259,14 +271,8 @@ class LockboxDetailButtonStack extends ConsumerWidget {
         title: Text(title),
         content: Text(contentMessage),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(action),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: Text(action)),
         ],
       ),
     );
@@ -291,13 +297,11 @@ class LockboxDetailButtonStack extends ConsumerWidget {
 
     try {
       final backupService = ref.read(backupServiceProvider);
-      await backupService.createAndDistributeBackup(
-        lockboxId: lockbox.id,
-      );
+      await backupService.createAndDistributeBackup(lockboxId: lockbox.id);
 
       if (context.mounted) {
         Navigator.pop(context); // Close loading dialog
-        ScaffoldMessenger.of(context).showSnackBar(
+        context.showTopSnackBar(
           const SnackBar(
             content: Text('Keys distributed successfully!'),
             backgroundColor: Colors.green,
@@ -332,12 +336,7 @@ class LockboxDetailButtonStack extends ConsumerWidget {
                 ),
               ],
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('OK'),
-              ),
-            ],
+            actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK'))],
           ),
         );
       }
@@ -368,10 +367,7 @@ class LockboxDetailButtonStack extends ConsumerWidget {
                     children: [
                       CircularProgressIndicator(),
                       SizedBox(height: 24),
-                      Text(
-                        'Sending recovery requests...',
-                        style: TextStyle(fontSize: 16),
-                      ),
+                      Text('Sending recovery requests...', style: TextStyle(fontSize: 16)),
                     ],
                   ),
                 ),
@@ -389,7 +385,7 @@ class LockboxDetailButtonStack extends ConsumerWidget {
       if (currentPubkey == null) {
         if (context.mounted) {
           Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(
+          context.showTopSnackBar(
             const SnackBar(content: Text('Error: Could not load current user')),
           );
         }
@@ -403,7 +399,7 @@ class LockboxDetailButtonStack extends ConsumerWidget {
       if (shards.isEmpty) {
         if (context.mounted) {
           Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(
+          context.showTopSnackBar(
             const SnackBar(content: Text('No shard data available for recovery')),
           );
         }
@@ -422,7 +418,8 @@ class LockboxDetailButtonStack extends ConsumerWidget {
         return a.createdAt > b.createdAt ? a : b;
       });
       Log.debug(
-          'Selected shard with distributionVersion ${selectedShard.distributionVersion} for recovery');
+        'Selected shard with distributionVersion ${selectedShard.distributionVersion} for recovery',
+      );
 
       // Use peers list for recovery
       final keyHolderPubkeys = <String>[];
@@ -438,7 +435,7 @@ class LockboxDetailButtonStack extends ConsumerWidget {
       if (keyHolderPubkeys.isEmpty) {
         if (context.mounted) {
           Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(
+          context.showTopSnackBar(
             const SnackBar(content: Text('No stewards available for recovery')),
           );
         }
@@ -446,7 +443,8 @@ class LockboxDetailButtonStack extends ConsumerWidget {
       }
 
       Log.info(
-          'Initiating recovery with ${keyHolderPubkeys.length} stewards: ${keyHolderPubkeys.map((k) => k.substring(0, 8)).join(", ")}...');
+        'Initiating recovery with ${keyHolderPubkeys.length} stewards: ${keyHolderPubkeys.map((k) => k.substring(0, 8)).join(", ")}...',
+      );
 
       final recoveryService = ref.read(recoveryServiceProvider);
       final recoveryRequest = await recoveryService.initiateRecovery(
@@ -458,17 +456,15 @@ class LockboxDetailButtonStack extends ConsumerWidget {
 
       // Get relays and send recovery request via Nostr
       try {
-        final relays =
-            await ref.read(relayScanServiceProvider).getRelayConfigurations(enabledOnly: true);
+        final relays = await ref
+            .read(relayScanServiceProvider)
+            .getRelayConfigurations(enabledOnly: true);
         final relayUrls = relays.map((r) => r.url).toList();
 
         if (relayUrls.isEmpty) {
           Log.warning('No relays configured, recovery request not sent via Nostr');
         } else {
-          await recoveryService.sendRecoveryRequestViaNostr(
-            recoveryRequest,
-            relays: relayUrls,
-          );
+          await recoveryService.sendRecoveryRequestViaNostr(recoveryRequest, relays: relayUrls);
         }
       } catch (e) {
         Log.error('Failed to send recovery request via Nostr', e);
@@ -492,7 +488,7 @@ class LockboxDetailButtonStack extends ConsumerWidget {
       if (context.mounted) {
         Navigator.pop(context);
 
-        ScaffoldMessenger.of(context).showSnackBar(
+        context.showTopSnackBar(
           const SnackBar(content: Text('Recovery request initiated and sent')),
         );
 
@@ -502,9 +498,7 @@ class LockboxDetailButtonStack extends ConsumerWidget {
           await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => RecoveryStatusScreen(
-                recoveryRequestId: recoveryRequest.id,
-              ),
+              builder: (context) => RecoveryStatusScreen(recoveryRequestId: recoveryRequest.id),
             ),
           );
         }
@@ -513,9 +507,7 @@ class LockboxDetailButtonStack extends ConsumerWidget {
       Log.error('Error initiating recovery', e);
       if (context.mounted) {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        context.showTopSnackBar(SnackBar(content: Text('Error: $e')));
       }
     }
   }

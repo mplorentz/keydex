@@ -12,6 +12,7 @@ import '../services/invitation_service.dart';
 import '../services/invitation_sending_service.dart';
 import '../providers/lockbox_provider.dart';
 import '../utils/backup_distribution_helper.dart';
+import '../utils/snackbar_helper.dart';
 import '../widgets/row_button_stack.dart';
 import '../widgets/recovery_rules_widget.dart';
 
@@ -117,10 +118,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Scaffold(
-        appBar: AppBar(
-          title: const Text('Recovery Plan'),
-          centerTitle: false,
-        ),
+        appBar: AppBar(title: const Text('Recovery Plan'), centerTitle: false),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
@@ -134,9 +132,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
           context: context,
           builder: (context) => AlertDialog(
             title: const Text('Discard Changes?'),
-            content: const Text(
-              'You have unsaved changes. Are you sure you want to discard them?',
-            ),
+            content: const Text('You have unsaved changes. Are you sure you want to discard them?'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
@@ -156,10 +152,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
         }
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Recovery Plan'),
-          centerTitle: false,
-        ),
+        appBar: AppBar(title: const Text('Recovery Plan'), centerTitle: false),
         body: Column(
           children: [
             Expanded(
@@ -187,10 +180,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  'Stewards',
-                                  style: Theme.of(context).textTheme.headlineSmall,
-                                ),
+                                Text('Stewards', style: Theme.of(context).textTheme.headlineSmall),
                                 const SizedBox(height: 8),
                                 Text(
                                   'Stewards are trusted contacts who will help you recover access. Each steward receives one key to your vault.',
@@ -208,10 +198,9 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                                           Icon(
                                             Icons.people_outline,
                                             size: 48,
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .onSurface
-                                                .withValues(alpha: 0.5),
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.onSurface.withValues(alpha: 0.5),
                                           ),
                                           const SizedBox(height: 16),
                                           Text(
@@ -222,11 +211,10 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                                           Text(
                                             'Add your first steward to get started',
                                             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                                  color: Theme.of(context)
-                                                      .colorScheme
-                                                      .onSurface
-                                                      .withValues(alpha: 0.7),
-                                                ),
+                                              color: Theme.of(
+                                                context,
+                                              ).colorScheme.onSurface.withValues(alpha: 0.7),
+                                            ),
                                             textAlign: TextAlign.center,
                                           ),
                                         ],
@@ -234,9 +222,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                                     ),
                                   )
                                 else
-                                  ..._keyHolders.map(
-                                    (holder) => _buildKeyHolderListItem(holder),
-                                  ),
+                                  ..._keyHolders.map((holder) => _buildKeyHolderListItem(holder)),
 
                                 // Add Steward Button
                                 const SizedBox(height: 16),
@@ -245,9 +231,9 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                                   child: ElevatedButton.icon(
                                     onPressed: _showAddStewardDialog,
                                     icon: const Icon(Icons.person_add),
-                                    label: Text(_keyHolders.isEmpty
-                                        ? 'Add Steward'
-                                        : 'Add Another Steward'),
+                                    label: Text(
+                                      _keyHolders.isEmpty ? 'Add Steward' : 'Add Another Steward',
+                                    ),
                                   ),
                                 ),
                               ],
@@ -314,9 +300,11 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                           icon: Icon(
                             _showAdvancedSettings ? Icons.expand_more : Icons.chevron_right,
                           ),
-                          label: Text(_showAdvancedSettings
-                              ? 'Hide Advanced Configuration'
-                              : 'Show Advanced Configuration'),
+                          label: Text(
+                            _showAdvancedSettings
+                                ? 'Hide Advanced Configuration'
+                                : 'Show Advanced Configuration',
+                          ),
                         ),
 
                         // Relay Configuration (Advanced)
@@ -328,8 +316,10 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('Relay Servers',
-                                      style: Theme.of(context).textTheme.headlineSmall),
+                                  Text(
+                                    'Relay Servers',
+                                    style: Theme.of(context).textTheme.headlineSmall,
+                                  ),
                                   const SizedBox(height: 16),
                                   ..._relays.map(
                                     (relay) => ListTile(
@@ -369,11 +359,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
             // Fixed action buttons at bottom
             RowButtonStack(
               buttons: [
-                RowButtonConfig(
-                  onPressed: _handleCancel,
-                  icon: Icons.close,
-                  text: 'Cancel',
-                ),
+                RowButtonConfig(onPressed: _handleCancel, icon: Icons.close, text: 'Cancel'),
                 RowButtonConfig(
                   onPressed: _canCreateBackup() && !_isCreating ? _saveBackup : () {},
                   icon: _isCreating ? Icons.hourglass_empty : Icons.save,
@@ -450,7 +436,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
         });
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
+          context.showTopSnackBar(
             SnackBar(content: Text('Invalid relay URL: $e'), backgroundColor: Colors.red),
           );
         }
@@ -461,7 +447,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
   /// Shows dialog to select method for adding a steward
   Future<void> _showAddStewardDialog() async {
     if (_relays.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      context.showTopSnackBar(
         const SnackBar(
           content: Text('Please add at least one relay before adding a steward'),
           backgroundColor: Colors.orange,
@@ -478,10 +464,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
-              'Choose how you want to add this steward:',
-              style: TextStyle(fontSize: 14),
-            ),
+            const Text('Choose how you want to add this steward:', style: TextStyle(fontSize: 14)),
             const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: () => Navigator.pop(context, 'invite'),
@@ -520,12 +503,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-        ],
+        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel'))],
       ),
     );
 
@@ -552,10 +530,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             child: const Text('Continue'),
@@ -568,7 +543,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
 
     final stewardName = nameController.text.trim();
     if (stewardName.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      context.showTopSnackBar(
         const SnackBar(
           content: Text('Please enter a steward name'),
           backgroundColor: Colors.orange,
@@ -579,7 +554,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
 
     // Check if steward with this name already exists
     if (_keyHolders.any((holder) => holder.name == stewardName)) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      context.showTopSnackBar(
         SnackBar(
           content: Text('A steward with the name "$stewardName" already exists'),
           backgroundColor: Colors.orange,
@@ -632,7 +607,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
           _hasUnsavedChanges = true;
         });
 
-        ScaffoldMessenger.of(context).showSnackBar(
+        context.showTopSnackBar(
           const SnackBar(
             content: Text('Invitation link generated and steward added!'),
             backgroundColor: Colors.green,
@@ -647,12 +622,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
         } else {
           errorMessage = '$errorMessage: $e';
         }
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMessage),
-            backgroundColor: Colors.red,
-          ),
-        );
+        context.showTopSnackBar(SnackBar(content: Text(errorMessage), backgroundColor: Colors.red));
       }
     }
   }
@@ -668,10 +638,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              'Adding: $stewardName',
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
+            Text('Adding: $stewardName', style: Theme.of(context).textTheme.bodyMedium),
             const SizedBox(height: 16),
             TextField(
               controller: npubController,
@@ -685,14 +652,8 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Add'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text('Add')),
         ],
       ),
     );
@@ -733,7 +694,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
       });
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        context.showTopSnackBar(
           const SnackBar(
             content: Text('Steward added successfully!'),
             backgroundColor: Colors.green,
@@ -742,7 +703,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        context.showTopSnackBar(
           SnackBar(content: Text('Invalid steward: $e'), backgroundColor: Colors.red),
         );
       }
@@ -759,9 +720,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ListTile(
-            leading: Icon(
-              isInvited ? Icons.mail_outline : Icons.person,
-            ),
+            leading: Icon(isInvited ? Icons.mail_outline : Icons.person),
             title: Text(holder.displayName),
             subtitle: Text(holder.displaySubtitle),
             trailing: Row(
@@ -857,7 +816,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
   void _copyInvitationLinkForHolder(InvitationLink invitation) {
     final url = invitation.toUrl();
     Clipboard.setData(ClipboardData(text: url));
-    ScaffoldMessenger.of(context).showSnackBar(
+    context.showTopSnackBar(
       const SnackBar(
         content: Text('Invitation link copied to clipboard'),
         duration: Duration(seconds: 2),
@@ -978,7 +937,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
           _hasUnsavedChanges = true;
         });
 
-        ScaffoldMessenger.of(context).showSnackBar(
+        context.showTopSnackBar(
           const SnackBar(
             content: Text('Invitation link regenerated successfully!'),
             backgroundColor: Colors.green,
@@ -987,7 +946,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        context.showTopSnackBar(
           SnackBar(
             content: Text('Failed to regenerate invitation link: $e'),
             backgroundColor: Colors.red,
@@ -1003,18 +962,10 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
         context: context,
         builder: (context) => AlertDialog(
           title: const Text('Discard Changes?'),
-          content: const Text(
-            'You have unsaved changes. Are you sure you want to discard them?',
-          ),
+          content: const Text('You have unsaved changes. Are you sure you want to discard them?'),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Discard'),
-            ),
+            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+            TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Discard')),
           ],
         ),
       );
@@ -1061,11 +1012,11 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
         if (!mounted) return;
         final shouldAutoDistributeResult =
             await BackupDistributionHelper.showRegenerationAlertIfNeeded(
-          context: context,
-          backupConfig: existingConfig,
-          willChange: configWillChange,
-          mounted: mounted,
-        );
+              context: context,
+              backupConfig: existingConfig,
+              willChange: configWillChange,
+              mounted: mounted,
+            );
 
         if (shouldAutoDistributeResult == false) {
           // User cancelled or widget disposed, don't save changes
@@ -1114,7 +1065,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
           try {
             await backupService.createAndDistributeBackup(lockboxId: widget.lockboxId);
             if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
+              context.showTopSnackBar(
                 const SnackBar(
                   content: Text('Keys regenerated and distributed successfully!'),
                   backgroundColor: Colors.green,
@@ -1123,7 +1074,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
             }
           } catch (e) {
             if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
+              context.showTopSnackBar(
                 SnackBar(
                   content: Text('Failed to distribute keys: $e'),
                   backgroundColor: Colors.orange,
@@ -1143,7 +1094,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
         Navigator.pop(context, true);
 
         if (!shouldAutoDistribute) {
-          ScaffoldMessenger.of(context).showSnackBar(
+          context.showTopSnackBar(
             const SnackBar(
               content: Text('Backup configuration saved successfully!'),
               backgroundColor: Colors.green,
@@ -1153,7 +1104,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        context.showTopSnackBar(
           SnackBar(content: Text('Failed to save recovery plan: $e'), backgroundColor: Colors.red),
         );
       }

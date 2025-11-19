@@ -4,15 +4,13 @@ import '../models/lockbox.dart';
 import '../providers/recovery_provider.dart';
 import '../providers/lockbox_provider.dart';
 import '../services/recovery_service.dart';
+import '../utils/snackbar_helper.dart';
 
 /// Widget for displaying recovery progress and status
 class RecoveryProgressWidget extends ConsumerWidget {
   final String recoveryRequestId;
 
-  const RecoveryProgressWidget({
-    super.key,
-    required this.recoveryRequestId,
-  });
+  const RecoveryProgressWidget({super.key, required this.recoveryRequestId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -27,18 +25,12 @@ class RecoveryProgressWidget extends ConsumerWidget {
         ),
       ),
       error: (error, stack) => Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Text('Error: $error'),
-        ),
+        child: Padding(padding: const EdgeInsets.all(16), child: Text('Error: $error')),
       ),
       data: (request) {
         if (request == null) {
           return const Card(
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: Text('Recovery request not found'),
-            ),
+            child: Padding(padding: EdgeInsets.all(16), child: Text('Recovery request not found')),
           );
         }
 
@@ -87,10 +79,7 @@ class RecoveryProgressWidget extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Recovery Progress',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
+                    Text('Recovery Progress', style: Theme.of(context).textTheme.titleMedium),
                     const SizedBox(height: 16),
                     LinearProgressIndicator(
                       value: progress / 100,
@@ -102,32 +91,13 @@ class RecoveryProgressWidget extends ConsumerWidget {
                     const SizedBox(height: 8),
                     Text(
                       '${progress.toStringAsFixed(0)}% complete',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                      ),
+                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                     ),
                     const SizedBox(height: 16),
-                    _buildProgressRow(
-                      'Threshold',
-                      '$threshold',
-                      'Minimum shares needed',
-                    ),
-                    _buildProgressRow(
-                      'Approved',
-                      '$approvedCount',
-                      'Stewards approved',
-                    ),
-                    _buildProgressRow(
-                      'Denied',
-                      '$deniedCount',
-                      'Stewards denied',
-                    ),
-                    _buildProgressRow(
-                      'Pending',
-                      '$pendingCount',
-                      'Awaiting response',
-                    ),
+                    _buildProgressRow('Threshold', '$threshold', 'Minimum shares needed'),
+                    _buildProgressRow('Approved', '$approvedCount', 'Stewards approved'),
+                    _buildProgressRow('Denied', '$deniedCount', 'Stewards denied'),
+                    _buildProgressRow('Pending', '$pendingCount', 'Awaiting response'),
                     const SizedBox(height: 16),
                     if (canRecover) ...[
                       Container(
@@ -220,16 +190,10 @@ class RecoveryProgressWidget extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
-              Text(
-                subtitle,
-                style: TextStyle(fontSize: 11, color: Colors.grey[500]),
-              ),
+              Text(subtitle, style: TextStyle(fontSize: 11, color: Colors.grey[500])),
             ],
           ),
-          Text(
-            value,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
+          Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         ],
       ),
     );
@@ -245,14 +209,8 @@ class RecoveryProgressWidget extends ConsumerWidget {
           'The recovered content will be displayed. Continue?',
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Recover'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Recover')),
         ],
       ),
     );
@@ -271,22 +229,16 @@ class RecoveryProgressWidget extends ConsumerWidget {
           builder: (context) => AlertDialog(
             title: const Text('Vault Recovered!'),
             content: SingleChildScrollView(
-              child: SelectableText(
-                content,
-                style: const TextStyle(fontFamily: 'monospace'),
-              ),
+              child: SelectableText(content, style: const TextStyle(fontFamily: 'monospace')),
             ),
             actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Close'),
-              ),
+              TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
             ],
           ),
         );
 
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
+          context.showTopSnackBar(
             const SnackBar(
               content: Text('Vault successfully recovered!'),
               backgroundColor: Colors.green,
@@ -296,12 +248,7 @@ class RecoveryProgressWidget extends ConsumerWidget {
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        context.showTopSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red));
       }
     }
   }

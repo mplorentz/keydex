@@ -4,6 +4,7 @@ import '../models/relay_configuration.dart';
 import '../services/relay_scan_service.dart';
 import '../services/logger.dart';
 import '../utils/invite_code_utils.dart';
+import '../utils/snackbar_helper.dart';
 
 /// Screen for managing Nostr relay configurations
 class RelayManagementScreen extends ConsumerStatefulWidget {
@@ -70,16 +71,12 @@ class _RelayManagementScreenState extends ConsumerState<RelayManagementScreen> {
         await _loadData();
 
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Added relay: ${relay.name}')),
-          );
+          context.showTopSnackBar(SnackBar(content: Text('Added relay: ${relay.name}')));
         }
       } catch (e) {
         Log.error('Error adding relay', e);
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error adding relay: $e')),
-          );
+          context.showTopSnackBar(SnackBar(content: Text('Error adding relay: $e')));
         }
       }
     }
@@ -102,10 +99,7 @@ class _RelayManagementScreenState extends ConsumerState<RelayManagementScreen> {
         title: const Text('Delete Relay'),
         content: Text('Are you sure you want to delete "${relay.name}"?'),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             child: const Text('Delete', style: TextStyle(color: Colors.red)),
@@ -120,16 +114,12 @@ class _RelayManagementScreenState extends ConsumerState<RelayManagementScreen> {
         await _loadData();
 
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Deleted relay: ${relay.name}')),
-          );
+          context.showTopSnackBar(SnackBar(content: Text('Deleted relay: ${relay.name}')));
         }
       } catch (e) {
         Log.error('Error deleting relay', e);
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error deleting relay: $e')),
-          );
+          context.showTopSnackBar(SnackBar(content: Text('Error deleting relay: $e')));
         }
       }
     }
@@ -145,18 +135,14 @@ class _RelayManagementScreenState extends ConsumerState<RelayManagementScreen> {
       await _loadData();
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(_isScanning ? 'Scanning stopped' : 'Scanning started'),
-          ),
+        context.showTopSnackBar(
+          SnackBar(content: Text(_isScanning ? 'Scanning stopped' : 'Scanning started')),
         );
       }
     } catch (e) {
       Log.error('Error toggling scanning', e);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        context.showTopSnackBar(SnackBar(content: Text('Error: $e')));
       }
     }
   }
@@ -167,16 +153,12 @@ class _RelayManagementScreenState extends ConsumerState<RelayManagementScreen> {
       await _loadData();
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Manual scan completed')),
-        );
+        context.showTopSnackBar(const SnackBar(content: Text('Manual scan completed')));
       }
     } catch (e) {
       Log.error('Error scanning relays', e);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error scanning: $e')),
-        );
+        context.showTopSnackBar(SnackBar(content: Text('Error scanning: $e')));
       }
     }
   }
@@ -189,11 +171,7 @@ class _RelayManagementScreenState extends ConsumerState<RelayManagementScreen> {
         backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadData,
-            tooltip: 'Refresh',
-          ),
+          IconButton(icon: const Icon(Icons.refresh), onPressed: _loadData, tooltip: 'Refresh'),
         ],
       ),
       body: _isLoading
@@ -212,8 +190,9 @@ class _RelayManagementScreenState extends ConsumerState<RelayManagementScreen> {
                         child: ElevatedButton.icon(
                           onPressed: _toggleScanning,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                _isScanning ? Colors.red : Theme.of(context).primaryColor,
+                            backgroundColor: _isScanning
+                                ? Colors.red
+                                : Theme.of(context).primaryColor,
                             foregroundColor: Colors.white,
                           ),
                           icon: Icon(_isScanning ? Icons.stop : Icons.play_arrow),
@@ -290,10 +269,7 @@ class _RelayManagementScreenState extends ConsumerState<RelayManagementScreen> {
                   color: _isScanning ? Colors.green : Colors.grey,
                 ),
                 const SizedBox(width: 12),
-                Text(
-                  'Scanning Status',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
+                Text('Scanning Status', style: Theme.of(context).textTheme.titleMedium),
               ],
             ),
             const SizedBox(height: 12),
@@ -302,10 +278,7 @@ class _RelayManagementScreenState extends ConsumerState<RelayManagementScreen> {
             _buildStatusRow('Shares Found', '${status.sharesFound}'),
             _buildStatusRow('Requests Found', '${status.requestsFound}'),
             if (status.lastScan != null)
-              _buildStatusRow(
-                'Last Scan',
-                _formatDateTime(status.lastScan!),
-              ),
+              _buildStatusRow('Last Scan', _formatDateTime(status.lastScan!)),
             if (status.lastError != null)
               Padding(
                 padding: const EdgeInsets.only(top: 8),
@@ -346,10 +319,7 @@ class _RelayManagementScreenState extends ConsumerState<RelayManagementScreen> {
             color: relay.isEnabled ? Theme.of(context).primaryColor : Colors.grey,
           ),
         ),
-        title: Text(
-          relay.name,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
+        title: Text(relay.name, style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -522,10 +492,7 @@ class _AddRelayDialogState extends State<_AddRelayDialog> {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
-        ),
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
         ElevatedButton(
           onPressed: () {
             if (_formKey.currentState!.validate()) {

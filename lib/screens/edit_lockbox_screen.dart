@@ -4,6 +4,7 @@ import '../models/lockbox.dart';
 import '../providers/lockbox_provider.dart';
 import '../widgets/lockbox_content_form.dart';
 import '../widgets/lockbox_content_save_mixin.dart';
+import '../utils/snackbar_helper.dart';
 
 /// Edit existing lockbox screen
 class EditLockboxScreen extends ConsumerStatefulWidget {
@@ -86,14 +87,12 @@ class _EditLockboxScreenState extends ConsumerState<EditLockboxScreen>
       name: _nameController.text,
       content: _contentController.text,
       lockboxId: widget.lockboxId,
-      ownerName: _ownerNameController.text.trim().isEmpty
-          ? null
-          : _ownerNameController.text.trim(),
+      ownerName: _ownerNameController.text.trim().isEmpty ? null : _ownerNameController.text.trim(),
     );
 
     if (savedId != null && mounted) {
       Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
+      context.showTopSnackBar(
         SnackBar(
           content: Text('Vault "${_nameController.text.trim()}" updated successfully!'),
           backgroundColor: Colors.green,
