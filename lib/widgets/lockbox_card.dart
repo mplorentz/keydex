@@ -54,7 +54,6 @@ class LockboxCard extends ConsumerWidget {
       orElse: () => null,
     );
     final ownerDisplayText = _getOwnerDisplayText(currentPubkey);
-    final isOwnedByCurrentUser = currentPubkey == lockbox.ownerPubkey;
     // Use monospace font only for npub display (not for names or "You")
     final isNpubDisplay = ownerDisplayText.startsWith('npub');
 
