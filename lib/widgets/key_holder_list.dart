@@ -105,32 +105,34 @@ class KeyHolderList extends ConsumerWidget {
                     ),
               ),
               const Spacer(),
-              InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => BackupConfigScreen(
-                        lockboxId: lockbox.id,
+              // Only show settings button for owner
+              if (currentPubkey != null && currentPubkey == lockbox.ownerPubkey)
+                InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => BackupConfigScreen(
+                          lockboxId: lockbox.id,
+                        ),
                       ),
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFd2d7bf).withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(20),
                     ),
-                  );
-                },
-                borderRadius: BorderRadius.circular(20),
-                child: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFd2d7bf).withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Icon(
-                    Icons.settings,
-                    color: Color(0xFFd2d7bf),
-                    size: 20,
+                    child: const Icon(
+                      Icons.settings,
+                      color: Color(0xFFd2d7bf),
+                      size: 20,
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
           const SizedBox(height: 16),
