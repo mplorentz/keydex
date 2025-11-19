@@ -7,7 +7,6 @@ import '../services/recovery_service.dart';
 import '../providers/key_provider.dart';
 import '../services/logger.dart';
 import '../providers/recovery_provider.dart';
-import '../utils/snackbar_helper.dart';
 import '../providers/lockbox_provider.dart';
 import '../widgets/row_button_stack.dart';
 
@@ -50,7 +49,9 @@ class _RecoveryRequestDetailScreenState extends ConsumerState<RecoveryRequestDet
 
   Future<void> _respondToRequest(RecoveryResponseStatus status) async {
     if (_currentPubkey == null) {
-      context.showTopSnackBar(const SnackBar(content: Text('Error: Could not load current user')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error: Could not load current user')),
+      );
       return;
     }
 
@@ -72,7 +73,7 @@ class _RecoveryRequestDetailScreenState extends ConsumerState<RecoveryRequestDet
         // Invalidate the recovery status provider to force a refresh when navigating back
         ref.invalidate(recoveryStatusProvider(widget.recoveryRequest.lockboxId));
 
-        context.showTopSnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
               status == RecoveryResponseStatus.approved
@@ -86,7 +87,9 @@ class _RecoveryRequestDetailScreenState extends ConsumerState<RecoveryRequestDet
     } catch (e) {
       Log.error('Error responding to recovery request', e);
       if (mounted) {
-        context.showTopSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
         setState(() {
           _isLoading = false;
         });
