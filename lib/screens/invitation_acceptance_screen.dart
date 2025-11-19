@@ -37,7 +37,6 @@ class _InvitationAcceptanceScreenState extends ConsumerState<InvitationAcceptanc
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Invitation'),
         centerTitle: false,
       ),
       body: invitationAsync.when(
@@ -121,23 +120,6 @@ class _InvitationAcceptanceScreenState extends ConsumerState<InvitationAcceptanc
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Graphic/Icon
-                Center(
-                  child: Container(
-                    margin: const EdgeInsets.only(bottom: 24.0),
-                    padding: const EdgeInsets.all(24.0),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surfaceContainer,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.mail_outline,
-                      size: 64,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                  ),
-                ),
-
                 // Status Banner
                 if (isTerminal)
                   Container(
