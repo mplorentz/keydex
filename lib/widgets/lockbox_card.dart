@@ -14,9 +14,13 @@ class LockboxCard extends ConsumerWidget {
     if (currentPubkey == null) {
       return Helpers.encodeBech32(lockbox.ownerPubkey, 'npub');
     }
-    return currentPubkey == lockbox.ownerPubkey
-        ? 'You'
-        : Helpers.encodeBech32(lockbox.ownerPubkey, 'npub');
+    if (currentPubkey == lockbox.ownerPubkey) {
+      return 'You';
+    }
+    if (lockbox.ownerName != null && lockbox.ownerName!.isNotEmpty) {
+      return lockbox.ownerName!;
+    }
+    return Helpers.encodeBech32(lockbox.ownerPubkey, 'npub');
   }
 
   @override
@@ -51,6 +55,8 @@ class LockboxCard extends ConsumerWidget {
     );
     final ownerDisplayText = _getOwnerDisplayText(currentPubkey);
     final isOwnedByCurrentUser = currentPubkey == lockbox.ownerPubkey;
+    // Use monospace font only for npub display (not for names or "You")
+    final isNpubDisplay = ownerDisplayText.startsWith('npub');
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
@@ -58,9 +64,7 @@ class LockboxCard extends ConsumerWidget {
         onTap: () {
           Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (context) => LockboxDetailScreen(lockboxId: lockbox.id),
-            ),
+            MaterialPageRoute(builder: (context) => LockboxDetailScreen(lockboxId: lockbox.id)),
           );
         },
         child: Padding(
@@ -75,11 +79,7 @@ class LockboxCard extends ConsumerWidget {
                   color: theme.colorScheme.surfaceContainer,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(
-                  stateIcon,
-                  color: iconColor ?? theme.scaffoldBackgroundColor,
-                  size: 24,
-                ),
+                child: Icon(stateIcon, color: iconColor ?? theme.scaffoldBackgroundColor, size: 24),
               ),
               const SizedBox(width: 16),
               // Content
@@ -89,15 +89,13 @@ class LockboxCard extends ConsumerWidget {
                   children: [
                     Text(
                       lockbox.name,
-                      style: textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       "Owner: $ownerDisplayText",
                       style: textTheme.bodySmall?.copyWith(
-                        fontFamily: isOwnedByCurrentUser ? null : 'RobotoMono',
+                        fontFamily: isNpubDisplay ? 'RobotoMono' : null,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -110,11 +108,7 @@ class LockboxCard extends ConsumerWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    size: 16,
-                    color: theme.colorScheme.secondary,
-                  ),
+                  Icon(Icons.arrow_forward_ios, size: 16, color: theme.colorScheme.secondary),
                   const SizedBox(height: 8),
                 ],
               ),
