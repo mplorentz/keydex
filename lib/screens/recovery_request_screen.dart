@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../utils/snackbar_helper.dart';
 
 /// Screen for initiating recovery of a lockbox
 ///
@@ -8,7 +7,10 @@ import '../utils/snackbar_helper.dart';
 class RecoveryRequestScreen extends StatefulWidget {
   final String lockboxId;
 
-  const RecoveryRequestScreen({super.key, required this.lockboxId});
+  const RecoveryRequestScreen({
+    super.key,
+    required this.lockboxId,
+  });
 
   @override
   State<RecoveryRequestScreen> createState() => _RecoveryRequestScreenState();
@@ -39,11 +41,17 @@ class _RecoveryRequestScreenState extends State<RecoveryRequestScreen> {
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.lock_outline, color: Theme.of(context).primaryColor),
+                        Icon(
+                          Icons.lock_outline,
+                          color: Theme.of(context).primaryColor,
+                        ),
                         const SizedBox(width: 8),
                         const Text(
                           'Vault Recovery',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ],
                     ),
@@ -60,7 +68,13 @@ class _RecoveryRequestScreenState extends State<RecoveryRequestScreen> {
             const SizedBox(height: 24),
 
             // Stewards section
-            const Text('Stewards', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text(
+              'Stewards',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             const SizedBox(height: 12),
 
             // Placeholder for steward list
@@ -73,17 +87,26 @@ class _RecoveryRequestScreenState extends State<RecoveryRequestScreen> {
                     child: ListTile(
                       leading: CircleAvatar(
                         backgroundColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
-                        child: Icon(Icons.person, color: Theme.of(context).primaryColor),
+                        child: Icon(
+                          Icons.person,
+                          color: Theme.of(context).primaryColor,
+                        ),
                       ),
                       title: Text('Steward ${index + 1}'),
                       subtitle: const Text('npub1...abc123'),
                       trailing: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.grey[200],
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Text('Pending', style: TextStyle(fontSize: 12)),
+                        child: const Text(
+                          'Pending',
+                          style: TextStyle(fontSize: 12),
+                        ),
                       ),
                     ),
                   );
@@ -146,7 +169,7 @@ class _RecoveryRequestScreenState extends State<RecoveryRequestScreen> {
         });
 
         // Show success message
-        context.showTopSnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Recovery requests sent to stewards'),
             backgroundColor: Colors.green,

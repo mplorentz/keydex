@@ -6,13 +6,15 @@ import '../providers/lockbox_provider.dart';
 import '../services/recovery_service.dart';
 import '../widgets/recovery_progress_widget.dart';
 import '../widgets/recovery_key_holders_widget.dart';
-import '../utils/snackbar_helper.dart';
 
 /// Screen for displaying recovery request status and key holder responses
 class RecoveryStatusScreen extends ConsumerStatefulWidget {
   final String recoveryRequestId;
 
-  const RecoveryStatusScreen({super.key, required this.recoveryRequestId});
+  const RecoveryStatusScreen({
+    super.key,
+    required this.recoveryRequestId,
+  });
 
   @override
   ConsumerState<RecoveryStatusScreen> createState() => _RecoveryStatusScreenState();
@@ -30,7 +32,9 @@ class _RecoveryStatusScreenState extends ConsumerState<RecoveryStatusScreen> {
       ),
       body: requestAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(child: Text('Error: $error')),
+        error: (error, stack) => Center(
+          child: Text('Error: $error'),
+        ),
         data: (request) {
           if (request == null) {
             return const Center(child: Text('Recovery request not found'));
@@ -80,7 +84,10 @@ class _RecoveryStatusScreenState extends ConsumerState<RecoveryStatusScreen> {
                                 ],
                               ),
                               const SizedBox(height: 16),
-                              Text(instructions, style: Theme.of(context).textTheme.bodyMedium),
+                              Text(
+                                instructions,
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
                             ],
                           ),
                         ),
@@ -130,7 +137,10 @@ class _RecoveryStatusScreenState extends ConsumerState<RecoveryStatusScreen> {
           'Are you sure you want to exit recovery mode?',
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(
@@ -146,15 +156,14 @@ class _RecoveryStatusScreenState extends ConsumerState<RecoveryStatusScreen> {
     if (confirmed == true) {
       try {
         // Get lockboxId before exiting recovery mode
-        final request = await ref
-            .read(recoveryServiceProvider)
-            .getRecoveryRequest(widget.recoveryRequestId);
+        final request =
+            await ref.read(recoveryServiceProvider).getRecoveryRequest(widget.recoveryRequestId);
         final lockboxId = request?.lockboxId;
 
         await ref.read(recoveryServiceProvider).exitRecoveryMode(widget.recoveryRequestId);
 
         if (mounted) {
-          context.showTopSnackBar(
+          ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Exited recovery mode successfully')),
           );
           // Invalidate providers to refresh the UI
@@ -166,7 +175,9 @@ class _RecoveryStatusScreenState extends ConsumerState<RecoveryStatusScreen> {
         }
       } catch (e) {
         if (mounted) {
-          context.showTopSnackBar(SnackBar(content: Text('Error: $e')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: $e')),
+          );
         }
       }
     }
@@ -177,7 +188,10 @@ class _RecoveryStatusScreenState extends ConsumerState<RecoveryStatusScreen> {
       width: double.infinity,
       child: ElevatedButton.icon(
         onPressed: _cancelRecovery,
-        style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.red,
+          foregroundColor: Colors.white,
+        ),
         icon: const Icon(Icons.cancel),
         label: const Text('Cancel Recovery Request'),
       ),
@@ -191,7 +205,10 @@ class _RecoveryStatusScreenState extends ConsumerState<RecoveryStatusScreen> {
         title: const Text('Cancel Recovery'),
         content: const Text('Are you sure you want to cancel this recovery request?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('No')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('No'),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             child: const Text('Yes, Cancel', style: TextStyle(color: Colors.red)),
@@ -205,12 +222,16 @@ class _RecoveryStatusScreenState extends ConsumerState<RecoveryStatusScreen> {
         await ref.read(recoveryServiceProvider).cancelRecoveryRequest(widget.recoveryRequestId);
 
         if (mounted) {
-          context.showTopSnackBar(const SnackBar(content: Text('Recovery request cancelled')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Recovery request cancelled')),
+          );
           Navigator.pop(context);
         }
       } catch (e) {
         if (mounted) {
-          context.showTopSnackBar(SnackBar(content: Text('Error: $e')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: $e')),
+          );
         }
       }
     }

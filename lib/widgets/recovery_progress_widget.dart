@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../models/lockbox.dart';
 import '../providers/recovery_provider.dart';
 import '../providers/lockbox_provider.dart';
 import '../services/recovery_service.dart';
-import '../utils/snackbar_helper.dart';
 
 /// Widget for displaying recovery progress and status
 class RecoveryProgressWidget extends ConsumerWidget {
   final String recoveryRequestId;
 
-  const RecoveryProgressWidget({super.key, required this.recoveryRequestId});
+  const RecoveryProgressWidget({
+    super.key,
+    required this.recoveryRequestId,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -24,12 +27,18 @@ class RecoveryProgressWidget extends ConsumerWidget {
         ),
       ),
       error: (error, stack) => Card(
-        child: Padding(padding: const EdgeInsets.all(16), child: Text('Error: $error')),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Text('Error: $error'),
+        ),
       ),
       data: (request) {
         if (request == null) {
           return const Card(
-            child: Padding(padding: EdgeInsets.all(16), child: Text('Recovery request not found')),
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Text('Recovery request not found'),
+            ),
           );
         }
 
@@ -62,8 +71,11 @@ class RecoveryProgressWidget extends ConsumerWidget {
           ),
           data: (lockbox) {
             // Get actual totals from lockbox
+            final totalKeyHolders = _getTotalKeyHolders(lockbox);
             final approvedCount = request.approvedCount;
+            final deniedCount = request.deniedCount;
             final threshold = request.threshold;
+            final pendingCount = totalKeyHolders - (approvedCount + deniedCount);
             final canRecover = approvedCount >= threshold;
 
             // Calculate progress based on threshold
@@ -75,7 +87,10 @@ class RecoveryProgressWidget extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Recovery Progress', style: Theme.of(context).textTheme.titleMedium),
+                    Text(
+                      'Recovery Progress',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
                     const SizedBox(height: 16),
                     LinearProgressIndicator(
                       value: progress / 100,
@@ -87,10 +102,32 @@ class RecoveryProgressWidget extends ConsumerWidget {
                     const SizedBox(height: 8),
                     Text(
                       '${progress.toStringAsFixed(0)}% complete',
-                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                      ),
                     ),
                     const SizedBox(height: 16),
-                    _buildProgressRow('Threshold', '$threshold', 'Minimum shares needed'),
+                    _buildProgressRow(
+                      'Threshold',
+                      '$threshold',
+                      'Minimum shares needed',
+                    ),
+                    _buildProgressRow(
+                      'Approved',
+                      '$approvedCount',
+                      'Stewards approved',
+                    ),
+                    _buildProgressRow(
+                      'Denied',
+                      '$deniedCount',
+                      'Stewards denied',
+                    ),
+                    _buildProgressRow(
+                      'Pending',
+                      '$pendingCount',
+                      'Awaiting response',
+                    ),
                     const SizedBox(height: 16),
                     if (canRecover) ...[
                       Container(
@@ -143,6 +180,36 @@ class RecoveryProgressWidget extends ConsumerWidget {
     );
   }
 
+  /// Extract total number of key holders from lockbox
+  int _getTotalKeyHolders(Lockbox? lockbox) {
+    if (lockbox == null) return 0;
+
+    // Get from backupConfig if available
+    if (lockbox.backupConfig?.keyHolders.isNotEmpty == true) {
+      return lockbox.backupConfig!.keyHolders.length;
+    }
+
+    // Fallback: use shards
+    if (lockbox.shards.isNotEmpty) {
+      final firstShard = lockbox.shards.first;
+      if (firstShard.peers != null) {
+        // Peers is now a list of maps, count them
+        var count = firstShard.peers!.length;
+        // Also count owner if ownerName is present (from lockbox or shard)
+        if (lockbox.ownerName != null || firstShard.ownerName != null) {
+          count++;
+        }
+        return count;
+      }
+      // If no peers but ownerName is present, count owner
+      if (lockbox.ownerName != null || firstShard.ownerName != null) {
+        return 1;
+      }
+    }
+
+    return 0;
+  }
+
   Widget _buildProgressRow(String label, String value, String subtitle) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
@@ -153,10 +220,16 @@ class RecoveryProgressWidget extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
-              Text(subtitle, style: TextStyle(fontSize: 11, color: Colors.grey[500])),
+              Text(
+                subtitle,
+                style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+              ),
             ],
           ),
-          Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          Text(
+            value,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
         ],
       ),
     );
@@ -172,8 +245,14 @@ class RecoveryProgressWidget extends ConsumerWidget {
           'The recovered content will be displayed. Continue?',
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Recover')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Recover'),
+          ),
         ],
       ),
     );
@@ -192,16 +271,22 @@ class RecoveryProgressWidget extends ConsumerWidget {
           builder: (context) => AlertDialog(
             title: const Text('Vault Recovered!'),
             content: SingleChildScrollView(
-              child: SelectableText(content, style: const TextStyle(fontFamily: 'monospace')),
+              child: SelectableText(
+                content,
+                style: const TextStyle(fontFamily: 'monospace'),
+              ),
             ),
             actions: [
-              TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Close'),
+              ),
             ],
           ),
         );
 
         if (context.mounted) {
-          context.showTopSnackBar(
+          ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Vault successfully recovered!'),
               backgroundColor: Colors.green,
@@ -211,7 +296,12 @@ class RecoveryProgressWidget extends ConsumerWidget {
       }
     } catch (e) {
       if (context.mounted) {
-        context.showTopSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     }
   }

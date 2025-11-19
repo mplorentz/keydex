@@ -7,7 +7,6 @@ import '../providers/key_provider.dart';
 import '../services/backup_service.dart';
 import '../utils/backup_distribution_helper.dart';
 import '../utils/invite_code_utils.dart';
-import '../utils/snackbar_helper.dart';
 
 /// Mixin for shared lockbox save logic between create and edit screens
 mixin LockboxContentSaveMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
@@ -51,11 +50,11 @@ mixin LockboxContentSaveMixin<T extends ConsumerStatefulWidget> on ConsumerState
           if (!mounted) return null;
           final shouldAutoDistributeResult =
               await BackupDistributionHelper.showRegenerationAlertIfNeeded(
-                context: context,
-                backupConfig: existingLockbox.backupConfig,
-                willChange: true,
-                mounted: mounted,
-              );
+            context: context,
+            backupConfig: existingLockbox.backupConfig,
+            willChange: true,
+            mounted: mounted,
+          );
 
           if (shouldAutoDistributeResult == false) {
             // User cancelled or widget disposed, don't save changes
@@ -86,7 +85,7 @@ mixin LockboxContentSaveMixin<T extends ConsumerStatefulWidget> on ConsumerState
               try {
                 await backupService.createAndDistributeBackup(lockboxId: lockboxId);
                 if (mounted) {
-                  context.showTopSnackBar(
+                  ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Keys regenerated and distributed successfully!'),
                       backgroundColor: Colors.green,
@@ -95,7 +94,7 @@ mixin LockboxContentSaveMixin<T extends ConsumerStatefulWidget> on ConsumerState
                 }
               } catch (e) {
                 if (mounted) {
-                  context.showTopSnackBar(
+                  ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('Failed to distribute keys: $e'),
                       backgroundColor: Colors.orange,
@@ -141,6 +140,11 @@ mixin LockboxContentSaveMixin<T extends ConsumerStatefulWidget> on ConsumerState
   void showError(String message) {
     if (!mounted) return;
 
-    context.showTopSnackBar(SnackBar(content: Text(message), backgroundColor: Colors.red));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
+    );
   }
 }

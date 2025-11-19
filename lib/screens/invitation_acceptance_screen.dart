@@ -7,7 +7,6 @@ import '../models/invitation_exceptions.dart';
 import '../services/invitation_service.dart';
 import '../providers/invitation_provider.dart';
 import '../providers/key_provider.dart';
-import '../utils/snackbar_helper.dart';
 
 /// Screen for accepting or denying an invitation link
 ///
@@ -16,7 +15,10 @@ import '../utils/snackbar_helper.dart';
 class InvitationAcceptanceScreen extends ConsumerStatefulWidget {
   final String inviteCode;
 
-  const InvitationAcceptanceScreen({super.key, required this.inviteCode});
+  const InvitationAcceptanceScreen({
+    super.key,
+    required this.inviteCode,
+  });
 
   @override
   ConsumerState<InvitationAcceptanceScreen> createState() => _InvitationAcceptanceScreenState();
@@ -32,7 +34,10 @@ class _InvitationAcceptanceScreenState extends ConsumerState<InvitationAcceptanc
     final currentPubkeyAsync = ref.watch(currentPublicKeyProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Invitation'), centerTitle: false),
+      appBar: AppBar(
+        title: const Text('Invitation'),
+        centerTitle: false,
+      ),
       body: invitationAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stack) => Padding(
@@ -43,7 +48,10 @@ class _InvitationAcceptanceScreenState extends ConsumerState<InvitationAcceptanc
               children: [
                 const Icon(Icons.error_outline, size: 64, color: Colors.red),
                 const SizedBox(height: 16),
-                Text('Error loading invitation', style: Theme.of(context).textTheme.headlineSmall),
+                Text(
+                  'Error loading invitation',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
                 const SizedBox(height: 8),
                 Text(
                   error.toString(),
@@ -69,7 +77,10 @@ class _InvitationAcceptanceScreenState extends ConsumerState<InvitationAcceptanc
                   children: [
                     const Icon(Icons.link_off, size: 64, color: Colors.grey),
                     const SizedBox(height: 16),
-                    Text('Invitation Not Found', style: Theme.of(context).textTheme.headlineSmall),
+                    Text(
+                      'Invitation Not Found',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
                     const SizedBox(height: 8),
                     const Text(
                       'This invitation link is invalid or has expired.',
@@ -112,7 +123,10 @@ class _InvitationAcceptanceScreenState extends ConsumerState<InvitationAcceptanc
               decoration: BoxDecoration(
                 color: _getStatusColor(invitation.status).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8.0),
-                border: Border.all(color: _getStatusColor(invitation.status), width: 1),
+                border: Border.all(
+                  color: _getStatusColor(invitation.status),
+                  width: 1,
+                ),
               ),
               child: Row(
                 children: [
@@ -141,7 +155,10 @@ class _InvitationAcceptanceScreenState extends ConsumerState<InvitationAcceptanc
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('You\'ve been invited', style: Theme.of(context).textTheme.headlineSmall),
+                  Text(
+                    'You\'ve been invited',
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
                   const SizedBox(height: 16),
                   _buildDetailRow('Invitation Code:', widget.inviteCode, monospace: true),
                   const SizedBox(height: 12),
@@ -163,9 +180,9 @@ class _InvitationAcceptanceScreenState extends ConsumerState<InvitationAcceptanc
                         child: Text(
                           relay,
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            fontFamily: 'monospace',
-                            color: Colors.grey[700],
-                          ),
+                                fontFamily: 'monospace',
+                                color: Colors.grey[700],
+                              ),
                         ),
                       ),
                     ),
@@ -190,7 +207,10 @@ class _InvitationAcceptanceScreenState extends ConsumerState<InvitationAcceptanc
                   const Icon(Icons.error_outline, color: Colors.red, size: 20),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
+                    child: Text(
+                      _errorMessage!,
+                      style: const TextStyle(color: Colors.red),
+                    ),
                   ),
                 ],
               ),
@@ -341,17 +361,18 @@ class _InvitationAcceptanceScreenState extends ConsumerState<InvitationAcceptanc
           width: 120,
           child: Text(
             label,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500, color: Colors.grey[700]),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey[700],
+                ),
           ),
         ),
         Expanded(
           child: SelectableText(
             value,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(fontFamily: monospace ? 'monospace' : null),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontFamily: monospace ? 'monospace' : null,
+                ),
           ),
         ),
       ],
@@ -402,7 +423,7 @@ class _InvitationAcceptanceScreenState extends ConsumerState<InvitationAcceptanc
       );
 
       if (mounted) {
-        context.showTopSnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Invitation accepted successfully!'),
             backgroundColor: Colors.green,
@@ -453,7 +474,7 @@ class _InvitationAcceptanceScreenState extends ConsumerState<InvitationAcceptanc
         });
 
         // Show error snackbar
-        context.showTopSnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(errorMessage),
             backgroundColor: Colors.red,
@@ -473,10 +494,15 @@ class _InvitationAcceptanceScreenState extends ConsumerState<InvitationAcceptanc
           'Are you sure you want to deny this invitation? This action cannot be undone.',
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
           OutlinedButton(
             onPressed: () => Navigator.pop(context, true),
-            style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.red,
+            ),
             child: const Text('Deny'),
           ),
         ],
@@ -495,8 +521,11 @@ class _InvitationAcceptanceScreenState extends ConsumerState<InvitationAcceptanc
       await invitationService.denyInvitation(inviteCode: widget.inviteCode);
 
       if (mounted) {
-        context.showTopSnackBar(
-          const SnackBar(content: Text('Invitation denied'), backgroundColor: Colors.orange),
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Invitation denied'),
+            backgroundColor: Colors.orange,
+          ),
         );
 
         // Refresh the invitation data

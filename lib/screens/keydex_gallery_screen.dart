@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/row_button_stack.dart';
 import '../widgets/theme.dart';
-import '../utils/snackbar_helper.dart';
 
 class KeydexGallery extends StatelessWidget {
   const KeydexGallery({super.key});
@@ -50,7 +49,9 @@ class KeydexGallery extends StatelessWidget {
                 const Row(
                   children: [
                     Expanded(
-                      child: TextField(decoration: InputDecoration(labelText: 'Username')),
+                      child: TextField(
+                        decoration: InputDecoration(labelText: 'Username'),
+                      ),
                     ),
                     SizedBox(width: 12),
                     Expanded(
@@ -89,7 +90,9 @@ class KeydexGallery extends StatelessWidget {
                   children: [
                     ElevatedButton(
                       onPressed: () {
-                        context.showTopSnackBar(const SnackBar(content: Text('Saved!')));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Saved!')),
+                        );
                       },
                       child: const Text('Show toast'),
                     ),
@@ -100,7 +103,7 @@ class KeydexGallery extends StatelessWidget {
                         foregroundColor: cs.onError,
                       ),
                       onPressed: () {
-                        context.showTopSnackBar(
+                        ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             backgroundColor: cs.error,
                             content: const Text('Something went wrong'),
@@ -118,21 +121,27 @@ class KeydexGallery extends StatelessWidget {
                 buttons: [
                   RowButtonConfig(
                     onPressed: () {
-                      context.showTopSnackBar(const SnackBar(content: Text('First action')));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('First action')),
+                      );
                     },
                     icon: Icons.download,
                     text: 'Import',
                   ),
                   RowButtonConfig(
                     onPressed: () {
-                      context.showTopSnackBar(const SnackBar(content: Text('Second action')));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Second action')),
+                      );
                     },
                     icon: Icons.settings,
                     text: 'Settings',
                   ),
                   RowButtonConfig(
                     onPressed: () {
-                      context.showTopSnackBar(const SnackBar(content: Text('Primary action')));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Primary action')),
+                      );
                     },
                     icon: Icons.add,
                     text: 'Create Vault',
@@ -147,12 +156,16 @@ class KeydexGallery extends StatelessWidget {
   }
 
   Widget _icon(BuildContext context) => Container(
-    width: 48,
-    height: 48,
-    decoration: BoxDecoration(
-      color: Theme.of(context).colorScheme.surfaceContainer,
-      borderRadius: BorderRadius.circular(8),
-    ),
-    child: Icon(Icons.lock_outline, color: Theme.of(context).scaffoldBackgroundColor, size: 24),
-  );
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surfaceContainer,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(
+          Icons.lock_outline,
+          color: Theme.of(context).scaffoldBackgroundColor,
+          size: 24,
+        ),
+      );
 }
