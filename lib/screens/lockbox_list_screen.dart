@@ -111,9 +111,13 @@ class LockboxListScreen extends ConsumerWidget {
                               style: textTheme.titleLarge,
                             ),
                             const SizedBox(height: 8),
-                            Text(
-                              'Tap + to create your first secure vault',
-                              style: textTheme.bodySmall,
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 32),
+                              child: Text(
+                                'Tap + to create a vault or if you received an invitation link open it now to join their vault.',
+                                style: textTheme.bodySmall,
+                                textAlign: TextAlign.center,
+                              ),
                             ),
                           ],
                         ),
