@@ -7,6 +7,8 @@ import '../models/invitation_exceptions.dart';
 import '../services/invitation_service.dart';
 import '../providers/invitation_provider.dart';
 import '../providers/key_provider.dart';
+import '../widgets/row_button_stack.dart';
+import '../widgets/row_button.dart';
 
 /// Screen for accepting or denying an invitation link
 ///
@@ -109,275 +111,261 @@ class _InvitationAcceptanceScreenState extends ConsumerState<InvitationAcceptanc
   ) {
     final canAct = invitation.status.canRedeem && !_isProcessing;
     final isTerminal = invitation.status.isTerminal;
+    final ownerNpub = Helpers.encodeBech32(invitation.ownerPubkey, 'npub');
 
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Status Banner
-          if (isTerminal)
-            Container(
-              padding: const EdgeInsets.all(12.0),
-              margin: const EdgeInsets.only(bottom: 16.0),
-              decoration: BoxDecoration(
-                color: _getStatusColor(invitation.status).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8.0),
-                border: Border.all(
-                  color: _getStatusColor(invitation.status),
-                  width: 1,
-                ),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    _getStatusIcon(invitation.status),
-                    color: _getStatusColor(invitation.status),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      invitation.status.description,
-                      style: TextStyle(
-                        color: _getStatusColor(invitation.status),
-                        fontWeight: FontWeight.w500,
-                      ),
+    return Column(
+      children: [
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Graphic/Icon
+                Center(
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 24.0),
+                    padding: const EdgeInsets.all(24.0),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surfaceContainer,
+                      shape: BoxShape.circle,
                     ),
-                  ),
-                ],
-              ),
-            ),
-
-          // Invitation Details Card
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'You\'ve been invited',
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
-                  const SizedBox(height: 16),
-                  _buildDetailRow('Invitation Code:', widget.inviteCode, monospace: true),
-                  const SizedBox(height: 12),
-                  if (invitation.inviteeName != null)
-                    _buildDetailRow('Invitee Name:', invitation.inviteeName!),
-                  const SizedBox(height: 12),
-                  _buildDetailRow(
-                    'Owner Public Key:',
-                    Helpers.encodeBech32(invitation.ownerPubkey, 'npub'),
-                    monospace: true,
-                  ),
-                  const SizedBox(height: 12),
-                  _buildDetailRow('Relays:', '${invitation.relayUrls.length} relay(s)'),
-                  if (invitation.relayUrls.isNotEmpty) ...[
-                    const SizedBox(height: 8),
-                    ...invitation.relayUrls.map(
-                      (relay) => Padding(
-                        padding: const EdgeInsets.only(left: 16.0, top: 4.0),
-                        child: Text(
-                          relay,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                fontFamily: 'monospace',
-                                color: Colors.grey[700],
-                              ),
-                        ),
-                      ),
+                    child: Icon(
+                      Icons.mail_outline,
+                      size: 64,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
-                  ],
-                ],
-              ),
-            ),
-          ),
-
-          // Error Message
-          if (_errorMessage != null) ...[
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12.0),
-              decoration: BoxDecoration(
-                color: Colors.red.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8.0),
-                border: Border.all(color: Colors.red, width: 1),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.error_outline, color: Colors.red, size: 20),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      _errorMessage!,
-                      style: const TextStyle(color: Colors.red),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-
-          const Spacer(),
-
-          // Action Buttons
-          if (!isTerminal)
-            currentPubkeyAsync.when(
-              loading: () => const SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: null,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                      SizedBox(width: 8),
-                      Text('Checking account...'),
-                    ],
                   ),
                 ),
-              ),
-              error: (error, _) => Column(
-                children: [
+
+                // Status Banner
+                if (isTerminal)
                   Container(
                     padding: const EdgeInsets.all(12.0),
                     margin: const EdgeInsets.only(bottom: 16.0),
                     decoration: BoxDecoration(
-                      color: Colors.red.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8.0),
-                      border: Border.all(color: Colors.red, width: 1),
+                      color: _getStatusColor(invitation.status).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(4.0),
+                      border: Border.all(
+                        color: _getStatusColor(invitation.status),
+                        width: 1,
+                      ),
                     ),
-                    child: const Row(
+                    child: Row(
                       children: [
-                        Icon(Icons.error_outline, color: Colors.red, size: 20),
-                        SizedBox(width: 8),
+                        Icon(
+                          _getStatusIcon(invitation.status),
+                          color: _getStatusColor(invitation.status),
+                        ),
+                        const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            'Error checking account. Please ensure you are logged in.',
-                            style: TextStyle(color: Colors.red),
+                            invitation.status.description,
+                            style: TextStyle(
+                              color: _getStatusColor(invitation.status),
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Go Back'),
+
+                // Title
+                Text(
+                  'You\'ve been invited',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+                const SizedBox(height: 8),
+
+                // Explainer text
+                Text(
+                  'Accepting this invitation will grant you access to a shared lockbox. You\'ll be able to view and manage the contents.',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                      ),
+                ),
+                const SizedBox(height: 24),
+
+                // Owner information
+                Text(
+                  'From',
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                      ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  ownerNpub,
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        fontFamily: 'monospace',
+                        fontWeight: FontWeight.w500,
+                      ),
+                ),
+                const SizedBox(height: 24),
+
+                // Invitee name (if provided)
+                if (invitation.inviteeName != null) ...[
+                  Text(
+                    'Invited as',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                        ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    invitation.inviteeName!,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w500,
+                        ),
+                  ),
+                  const SizedBox(height: 24),
+                ],
+
+                // Lockbox name (if available)
+                if (invitation.lockboxName != null && invitation.lockboxName != 'Shared Lockbox') ...[
+                  Text(
+                    'Lockbox',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                        ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    invitation.lockboxName!,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w500,
+                        ),
+                  ),
+                  const SizedBox(height: 24),
+                ],
+
+                // Error Message
+                if (_errorMessage != null) ...[
+                  Container(
+                    padding: const EdgeInsets.all(12.0),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(4.0),
+                      border: Border.all(color: Colors.red, width: 1),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.error_outline, color: Colors.red, size: 20),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            _errorMessage!,
+                            style: const TextStyle(color: Colors.red),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
-              ),
-              data: (pubkey) {
-                if (pubkey == null) {
-                  return Column(
+              ],
+            ),
+          ),
+        ),
+
+        // Action Buttons
+        if (!isTerminal)
+          currentPubkeyAsync.when(
+            loading: () => RowButton(
+              onPressed: null,
+              icon: Icons.hourglass_empty,
+              text: 'Checking account...',
+            ),
+            error: (error, _) => Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12.0),
+                  margin: const EdgeInsets.all(16.0),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(4.0),
+                    border: Border.all(color: Colors.red, width: 1),
+                  ),
+                  child: const Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(12.0),
-                        margin: const EdgeInsets.only(bottom: 16.0),
-                        decoration: BoxDecoration(
-                          color: Colors.orange.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8.0),
-                          border: Border.all(color: Colors.orange, width: 1),
-                        ),
-                        child: const Row(
-                          children: [
-                            Icon(Icons.warning_amber, color: Colors.orange, size: 20),
-                            SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                'You need to be logged in to accept an invitation.',
-                                style: TextStyle(color: Colors.orange),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text('Go Back'),
+                      Icon(Icons.error_outline, color: Colors.red, size: 20),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Error checking account. Please ensure you are logged in.',
+                          style: TextStyle(color: Colors.red),
                         ),
                       ),
                     ],
-                  );
-                }
-
-                return Row(
+                  ),
+                ),
+                RowButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: Icons.arrow_back,
+                  text: 'Go Back',
+                ),
+              ],
+            ),
+            data: (pubkey) {
+              if (pubkey == null) {
+                return Column(
                   children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: canAct ? _denyInvitation : null,
-                        child: const Text('Deny'),
+                    Container(
+                      padding: const EdgeInsets.all(12.0),
+                      margin: const EdgeInsets.all(16.0),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(4.0),
+                        border: Border.all(color: Colors.orange, width: 1),
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(Icons.warning_amber, color: Colors.orange, size: 20),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'You need to be logged in to accept an invitation.',
+                              style: TextStyle(color: Colors.orange),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: canAct ? () => _acceptInvitation(pubkey) : null,
-                        child: _isProcessing
-                            ? const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  SizedBox(
-                                    width: 16,
-                                    height: 16,
-                                    child: CircularProgressIndicator(strokeWidth: 2),
-                                  ),
-                                  SizedBox(width: 8),
-                                  Text('Processing...'),
-                                ],
-                              )
-                            : const Text('Accept'),
-                      ),
+                    RowButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: Icons.arrow_back,
+                      text: 'Go Back',
                     ),
                   ],
                 );
-              },
-            )
-          else
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Go Back'),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
+              }
 
-  Widget _buildDetailRow(String label, String value, {bool monospace = false}) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(
-          width: 120,
-          child: Text(
-            label,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey[700],
-                ),
+              return RowButtonStack(
+                buttons: [
+                  RowButtonConfig(
+                    onPressed: canAct ? _denyInvitation : null,
+                    icon: Icons.close,
+                    text: 'Deny',
+                  ),
+                  RowButtonConfig(
+                    onPressed: canAct && !_isProcessing ? () => _acceptInvitation(pubkey) : null,
+                    icon: _isProcessing ? Icons.hourglass_empty : Icons.check,
+                    text: _isProcessing ? 'Processing...' : 'Accept',
+                  ),
+                ],
+              );
+            },
+          )
+        else
+          RowButton(
+            onPressed: () => Navigator.pop(context),
+            icon: Icons.arrow_back,
+            text: 'Go Back',
           ),
-        ),
-        Expanded(
-          child: SelectableText(
-            value,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontFamily: monospace ? 'monospace' : null,
-                ),
-          ),
-        ),
       ],
     );
   }
+
 
   Color _getStatusColor(InvitationStatus status) {
     switch (status) {
