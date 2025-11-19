@@ -151,7 +151,6 @@ class LockboxListScreen extends ConsumerWidget {
                 context,
                 MaterialPageRoute(
                   builder: (context) => const VaultExplainerScreen(),
-                  fullscreenDialog: true,
                 ),
               );
             },

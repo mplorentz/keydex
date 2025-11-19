@@ -90,7 +90,6 @@ class VaultExplainerScreen extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                   builder: (context) => const LockboxCreateScreen(),
-                  fullscreenDialog: true,
                 ),
               );
             },
