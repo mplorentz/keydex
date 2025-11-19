@@ -1,4 +1,5 @@
-import 'dart:io';
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 
 /// A full-width button with an icon and text in a row layout
@@ -40,7 +41,8 @@ class RowButton extends StatelessWidget {
         : (foregroundColor ?? const Color.fromARGB(255, 253, 255, 240));
 
     // Add bottom safe area padding on iOS devices with home indicator
-    final bottomSafeArea = addBottomSafeArea && Platform.isIOS ? 8.0 : 0.0;
+    // Note: Platform.isIOS is not available on web, so check kIsWeb first
+    final bottomSafeArea = addBottomSafeArea && !kIsWeb && Platform.isIOS ? 8.0 : 0.0;
 
     // Calculate effective padding with safe area
     final effectivePadding = padding != null
