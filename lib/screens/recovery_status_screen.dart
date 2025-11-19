@@ -4,7 +4,6 @@ import '../models/recovery_request.dart';
 import '../providers/recovery_provider.dart';
 import '../providers/lockbox_provider.dart';
 import '../services/recovery_service.dart';
-import '../widgets/recovery_metadata_widget.dart';
 import '../widgets/recovery_progress_widget.dart';
 import '../widgets/recovery_key_holders_widget.dart';
 import '../utils/snackbar_helper.dart';
@@ -28,16 +27,6 @@ class _RecoveryStatusScreenState extends ConsumerState<RecoveryStatusScreen> {
       appBar: AppBar(
         title: const Text('Recovery'),
         centerTitle: false,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              // Invalidate the provider to trigger refresh
-              ref.invalidate(recoveryRequestByIdProvider(widget.recoveryRequestId));
-            },
-            tooltip: 'Refresh',
-          ),
-        ],
       ),
       body: requestAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -72,8 +61,6 @@ class _RecoveryStatusScreenState extends ConsumerState<RecoveryStatusScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    RecoveryMetadataWidget(recoveryRequestId: widget.recoveryRequestId),
-                    const SizedBox(height: 16),
                     // Instructions section
                     if (instructions != null && instructions.isNotEmpty) ...[
                       Card(
