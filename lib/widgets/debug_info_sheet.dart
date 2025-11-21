@@ -1,6 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:cross_file/cross_file.dart';
 import '../providers/key_provider.dart';
 import '../providers/lockbox_provider.dart';
 import '../services/lockbox_share_service.dart';
@@ -12,6 +15,68 @@ import '../screens/keydex_gallery_screen.dart';
 /// Debug information sheet widget
 class DebugInfoSheet extends ConsumerWidget {
   const DebugInfoSheet({super.key});
+
+  Future<void> _exportLogs(BuildContext context) async {
+    try {
+      // Show loading indicator
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Exporting logs...'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+
+      // Export logs as zip
+      final zipPath = await Log.exportLogsAsZip();
+      
+      if (!context.mounted) return;
+
+      if (zipPath == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No logs found to export'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        return;
+      }
+
+      // Share the zip file
+      final zipFile = File(zipPath);
+      if (await zipFile.exists()) {
+        await Share.shareXFiles(
+          [XFile(zipPath)],
+          text: 'Keydex Logs Export',
+        );
+        
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Logs exported successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to create log export file'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      Log.error('Error exporting logs', e);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error exporting logs: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 
   Future<void> _clearAllData(BuildContext context, WidgetRef ref) async {
     // Show confirmation dialog
@@ -205,6 +270,19 @@ class DebugInfoSheet extends ConsumerWidget {
               ),
               icon: const Icon(Icons.palette),
               label: const Text('View Design Gallery'),
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Export logs button
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () => _exportLogs(context),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+              icon: const Icon(Icons.archive),
+              label: const Text('Export Logs'),
             ),
           ),
           const SizedBox(height: 12),
