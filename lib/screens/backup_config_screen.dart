@@ -1182,12 +1182,57 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
         Navigator.pop(context, true);
 
         if (!shouldAutoDistribute) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Backup configuration saved successfully!'),
-              backgroundColor: Colors.green,
-            ),
-          );
+          // Check if we added new invited stewards to an existing plan with distributed keys
+          if (!isNewConfig && existingConfig.lastRedistribution != null) {
+            final existingInvitedNames = existingConfig.keyHolders
+                .where((h) => h.status == KeyHolderStatus.invited && h.pubkey == null)
+                .map((h) => h.name)
+                .whereType<String>()
+                .toSet();
+
+            final newInvitedNames = _keyHolders
+                .where((h) => h.status == KeyHolderStatus.invited && h.pubkey == null)
+                .map((h) => h.name)
+                .whereType<String>()
+                .toSet();
+
+            final addedInvitedCount = newInvitedNames.difference(existingInvitedNames).length;
+
+            if (addedInvitedCount > 0 && mounted) {
+              // Show alert explaining that keys need to be redistributed
+              await showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('New Stewards Added'),
+                  content: Text(
+                    'You\'ve added $addedInvitedCount new steward${addedInvitedCount > 1 ? 's' : ''} to your recovery plan. '
+                    'Keys have already been distributed to your existing stewards.\n\n'
+                    'To include the new steward${addedInvitedCount > 1 ? 's' : ''}, you\'ll need to redistribute keys from the lockbox detail screen once ${addedInvitedCount > 1 ? 'they' : 'the steward'} accept${addedInvitedCount > 1 ? '' : 's'} ${addedInvitedCount > 1 ? 'their invitations' : 'the invitation'}.',
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('OK'),
+                    ),
+                  ],
+                ),
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Backup configuration saved successfully!'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            }
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Backup configuration saved successfully!'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
         }
       }
     } catch (e) {
