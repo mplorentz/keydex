@@ -186,12 +186,24 @@ class RecoveryProgressWidget extends ConsumerWidget {
   }
 
   Future<void> _performRecovery(BuildContext context, WidgetRef ref) async {
+    // Get the recovery request to find the lockbox
+    final recoveryService = ref.read(recoveryServiceProvider);
+    final request = await recoveryService.getRecoveryRequest(recoveryRequestId);
+    if (request == null) return;
+
+    // Get the lockbox to access owner name
+    final lockboxAsync = ref.read(lockboxProvider(request.lockboxId));
+    final lockbox = lockboxAsync.valueOrNull;
+    final ownerName = lockbox?.ownerName ?? 'the owner';
+
+    if (!context.mounted) return;
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Recover Vault'),
-        content: const Text(
-          'This will recover and unlock your vault using the collected key shares. '
+        content: Text(
+          'This will recover and unlock $ownerName\'s vault using the collected keys. '
           'The recovered content will be displayed. Continue?',
         ),
         actions: [
