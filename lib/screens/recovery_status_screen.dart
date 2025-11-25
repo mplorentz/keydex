@@ -132,8 +132,8 @@ class _RecoveryStatusScreenState extends ConsumerState<RecoveryStatusScreen> {
       builder: (context) => AlertDialog(
         title: const Text('Exit Recovery Mode'),
         content: const Text(
-          'This will archive the recovery request and delete the recovered content and recovery shards. '
-          'Your own share of the vault will be preserved.\n\n'
+          'This will archive the recovery request and delete the recovered content and steward keys. '
+          'Your own key to the vault will be preserved.\n\n'
           'Are you sure you want to exit recovery mode?',
         ),
         actions: [
