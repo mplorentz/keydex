@@ -204,7 +204,7 @@ class RecoveryProgressWidget extends ConsumerWidget {
         title: const Text('Recover Vault'),
         content: Text(
           'This will recover and unlock $ownerName\'s vault using the collected keys. '
-          'The recovered content will be displayed. Continue?',
+          'The vault contents will now be displayed. Continue?',
         ),
         actions: [
           TextButton(
