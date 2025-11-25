@@ -68,7 +68,7 @@ class VaultExplainerScreen extends StatelessWidget {
                     number: '4',
                     title: 'Recover',
                     description:
-                        'if you lose access to your data or your stewards lose access to you any steward can initiate a recovery process. All stewards will receive a notification requesting them to share their key. Assemble enough keys and the steward can unlock the vault.',
+                        'if you lose access to your data or your stewards lose access to you (🪦) any steward can initiate a recovery process. All stewards will receive a notification requesting them to share their key. Assemble enough keys and the steward can unlock the vault.',
                   ),
                   const SizedBox(height: 24),
                   // Learn more button (placeholder)
