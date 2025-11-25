@@ -144,7 +144,7 @@ class RecoveryProgressWidget extends ConsumerWidget {
                           ),
                           icon: const Icon(Icons.lock_open),
                           label: const Text(
-                            'Recover Vault',
+                            'Open Vault',
                             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                         ),
