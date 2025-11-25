@@ -139,9 +139,9 @@ extension KeyHolderExtension on KeyHolder {
     if (name != null && name!.isNotEmpty) {
       return name!;
     }
-    // For invited key holders without a real pubkey, show "Invited"
+    // For invited key holders without a real pubkey, show "Pending"
     if (isInvited) {
-      return 'Invited';
+      return 'Pending';
     }
     final displayNpub = npub;
     if (displayNpub == null) {
@@ -153,7 +153,7 @@ extension KeyHolderExtension on KeyHolder {
   /// Get display subtitle (npub for real key holders, status for invited)
   String get displaySubtitle {
     if (isInvited) {
-      return 'Invited';
+      return 'Pending';
     }
     return npub ?? 'No pubkey';
   }
