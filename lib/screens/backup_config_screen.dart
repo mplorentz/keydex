@@ -759,6 +759,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             leading: Icon(
               isInvited ? Icons.mail_outline : Icons.person,
             ),
@@ -811,36 +812,45 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
           ),
           // Show invitation link preview for invited stewards
           if (isInvited && invitation != null) ...[
-            const Divider(height: 1),
-            Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          _truncateUrl(invitation.toUrl()),
-                          style: TextStyle(
-                            fontFamily: 'monospace',
-                            fontSize: 11,
+            InkWell(
+              onTap: () => _copyInvitationLinkForHolder(invitation),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Share this invitation with ${holder.name ?? holder.displayName}:',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            _truncateUrl(invitation.toUrl()),
+                            style: TextStyle(
+                              fontFamily: 'monospace',
+                              fontSize: 11,
+                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.copy, size: 18),
-                        onPressed: () => _copyInvitationLinkForHolder(invitation),
-                        tooltip: 'Copy invitation link',
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
-                    ],
-                  ),
-                ],
+                        IconButton(
+                          icon: const Icon(Icons.copy, size: 18),
+                          onPressed: () => _copyInvitationLinkForHolder(invitation),
+                          tooltip: 'Copy invitation link',
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
