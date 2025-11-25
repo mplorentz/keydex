@@ -803,7 +803,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                 ],
                 IconButton(
                   icon: const Icon(Icons.remove_circle),
-                  onPressed: () => _removeKeyHolder(holder),
+                  onPressed: () => _showRemoveStewardConfirmation(holder),
                   tooltip: 'Remove steward',
                 ),
               ],
@@ -889,6 +889,35 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
     } catch (e) {
       // Log error but don't fail loading
       debugPrint('Error loading existing invitations: $e');
+    }
+  }
+
+  Future<void> _showRemoveStewardConfirmation(KeyHolder holder) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Remove Steward'),
+        content: Text(
+            'Are you sure you want to remove "${holder.name ?? 'this steward'}" from the recovery plan? '),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Remove'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await _removeKeyHolder(holder);
     }
   }
 
