@@ -455,6 +455,7 @@ ThemeData keydex3(Brightness brightness) {
       backgroundColor: scaffoldBg,
       foregroundColor: primaryText,
       elevation: 0,
+      surfaceTintColor: Colors.transparent, // Prevent bluish tint when scrolling
       toolbarHeight: 100.0,
       titleSpacing: 32.0,
       leadingWidth: 32.0,
