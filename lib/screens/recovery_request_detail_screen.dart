@@ -77,7 +77,7 @@ class _RecoveryRequestDetailScreenState extends ConsumerState<RecoveryRequestDet
           SnackBar(
             content: Text(
               status == RecoveryResponseStatus.approved
-                  ? 'Recovery request approved and shard sent'
+                  ? 'Recovery request approved and key sent'
                   : 'Recovery request denied',
             ),
           ),
@@ -135,7 +135,7 @@ class _RecoveryRequestDetailScreenState extends ConsumerState<RecoveryRequestDet
         title: const Text('Deny Recovery'),
         content: const Text(
           'Are you sure you want to deny this recovery request? '
-          'The requester will not be able to use your shard.',
+          'The requester will not receive your key.',
         ),
         actions: [
           TextButton(

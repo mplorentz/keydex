@@ -224,6 +224,24 @@ class LockboxStatusBanner extends ConsumerWidget {
       );
     }
 
+    // Check for pending stewards before showing "Ready for recovery"
+    final pendingCount = backupConfig.pendingInvitationsCount;
+    if (pendingCount > 0) {
+      return _buildBanner(
+        context,
+        _StatusData(
+          headline: 'Waiting for stewards to accept',
+          subtext:
+              'Step 2 of 3: Waiting for $pendingCount pending steward${pendingCount > 1 ? 's' : ''} to accept their invitation${pendingCount > 1 ? 's' : ''} before keys can be distributed.',
+          icon: Icons.hourglass_empty,
+          accentColor: const Color(0xFF7A4A2F), // Umber
+          variant: _StatusVariant.waitingOnStewards,
+        ),
+        true,
+        false,
+      );
+    }
+
     // Fully ready
     return _buildBanner(
       context,

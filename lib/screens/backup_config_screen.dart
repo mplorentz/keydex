@@ -759,6 +759,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             leading: Icon(
               isInvited ? Icons.mail_outline : Icons.person,
             ),
@@ -803,7 +804,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                 ],
                 IconButton(
                   icon: const Icon(Icons.remove_circle),
-                  onPressed: () => _removeKeyHolder(holder),
+                  onPressed: () => _showRemoveStewardConfirmation(holder),
                   tooltip: 'Remove steward',
                 ),
               ],
@@ -811,36 +812,45 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
           ),
           // Show invitation link preview for invited stewards
           if (isInvited && invitation != null) ...[
-            const Divider(height: 1),
-            Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          _truncateUrl(invitation.toUrl()),
-                          style: TextStyle(
-                            fontFamily: 'monospace',
-                            fontSize: 11,
+            InkWell(
+              onTap: () => _copyInvitationLinkForHolder(invitation),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Share this invitation with ${holder.name ?? holder.displayName}:',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            _truncateUrl(invitation.toUrl()),
+                            style: TextStyle(
+                              fontFamily: 'monospace',
+                              fontSize: 11,
+                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.copy, size: 18),
-                        onPressed: () => _copyInvitationLinkForHolder(invitation),
-                        tooltip: 'Copy invitation link',
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
-                    ],
-                  ),
-                ],
+                        IconButton(
+                          icon: const Icon(Icons.copy, size: 18),
+                          onPressed: () => _copyInvitationLinkForHolder(invitation),
+                          tooltip: 'Copy invitation link',
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -889,6 +899,35 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
     } catch (e) {
       // Log error but don't fail loading
       debugPrint('Error loading existing invitations: $e');
+    }
+  }
+
+  Future<void> _showRemoveStewardConfirmation(KeyHolder holder) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Remove Steward'),
+        content: Text(
+            'Are you sure you want to remove "${holder.name ?? 'this steward'}" from the recovery plan? '),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Remove'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await _removeKeyHolder(holder);
     }
   }
 
@@ -1143,12 +1182,57 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
         Navigator.pop(context, true);
 
         if (!shouldAutoDistribute) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Backup configuration saved successfully!'),
-              backgroundColor: Colors.green,
-            ),
-          );
+          // Check if we added new invited stewards to an existing plan with distributed keys
+          if (!isNewConfig && existingConfig.lastRedistribution != null) {
+            final existingInvitedNames = existingConfig.keyHolders
+                .where((h) => h.status == KeyHolderStatus.invited && h.pubkey == null)
+                .map((h) => h.name)
+                .whereType<String>()
+                .toSet();
+
+            final newInvitedNames = _keyHolders
+                .where((h) => h.status == KeyHolderStatus.invited && h.pubkey == null)
+                .map((h) => h.name)
+                .whereType<String>()
+                .toSet();
+
+            final addedInvitedCount = newInvitedNames.difference(existingInvitedNames).length;
+
+            if (addedInvitedCount > 0 && mounted) {
+              // Show alert explaining that keys need to be redistributed
+              await showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('New Stewards Added'),
+                  content: Text(
+                    'You\'ve added $addedInvitedCount new steward${addedInvitedCount > 1 ? 's' : ''} to your recovery plan. '
+                    'Keys have already been distributed to your existing stewards.\n\n'
+                    'To include the new steward${addedInvitedCount > 1 ? 's' : ''}, you\'ll need to redistribute keys from the lockbox detail screen once ${addedInvitedCount > 1 ? 'they' : 'the steward'} accept${addedInvitedCount > 1 ? '' : 's'} ${addedInvitedCount > 1 ? 'their invitations' : 'the invitation'}.',
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('OK'),
+                    ),
+                  ],
+                ),
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Backup configuration saved successfully!'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            }
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Backup configuration saved successfully!'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
         }
       }
     } catch (e) {

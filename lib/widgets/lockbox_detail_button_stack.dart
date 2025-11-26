@@ -404,7 +404,7 @@ class LockboxDetailButtonStack extends ConsumerWidget {
         if (context.mounted) {
           Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('No shard data available for recovery')),
+            const SnackBar(content: Text('Cannot recover: you don\'t have a key to this vault.')),
           );
         }
         return;
