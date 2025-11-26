@@ -127,7 +127,7 @@ class VaultExplainerScreen extends StatelessWidget {
               number,
               style: textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: theme.scaffoldBackgroundColor,
+                color: theme.colorScheme.onSurface,
               ),
             ),
           ),
