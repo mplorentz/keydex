@@ -167,14 +167,14 @@ class KeyHolderList extends ConsumerWidget {
               ),
             ),
           ] else ...[
-            // Key holder list
+            // Key holder list with dividers
             Column(
-              children: keyHolders.map((keyHolder) {
-                return _buildKeyHolderItem(
-                  context,
-                  keyHolder,
-                );
-              }).toList(),
+              children: [
+                for (int i = 0; i < keyHolders.length; i++) ...[
+                  _buildKeyHolderItem(context, keyHolders[i]),
+                  if (i < keyHolders.length - 1) const Divider(height: 1),
+                ],
+              ],
             ),
           ],
         ],
