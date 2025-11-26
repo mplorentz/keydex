@@ -358,8 +358,8 @@ ThemeData keydex3(Brightness brightness) {
       onError: scaffoldBg,
     ),
 
-    // Typography: Keep current Archivo/OpenSans setup
-    fontFamily: 'OpenSans',
+    // Typography: Archivo for titles, Fira Sans for body
+    fontFamily: 'FiraSans',
     textTheme: TextTheme(
       displayLarge: TextStyle(
         fontFamily: 'Archivo',
@@ -394,40 +394,40 @@ ThemeData keydex3(Brightness brightness) {
         color: primaryText,
       ),
       bodyLarge: TextStyle(
-        fontFamily: 'OpenSans',
+        fontFamily: 'FiraSans',
         fontWeight: FontWeight.w500,
         fontSize: 14,
         height: 22 / 14,
         color: primaryText,
       ),
       bodyMedium: TextStyle(
-        fontFamily: 'OpenSans',
+        fontFamily: 'FiraSans',
         fontWeight: FontWeight.w400,
         fontSize: 14,
         height: 20 / 14,
         color: primaryText,
       ),
       bodySmall: TextStyle(
-        fontFamily: 'OpenSans',
+        fontFamily: 'FiraSans',
         fontWeight: FontWeight.w400,
         fontSize: 12,
         height: 16 / 12,
         color: secondaryText,
       ),
       labelSmall: TextStyle(
-        fontFamily: 'OpenSans',
+        fontFamily: 'FiraSans',
         fontWeight: FontWeight.w500,
         fontSize: 12,
         height: 16 / 12,
         color: secondaryText,
       ),
       labelMedium: TextStyle(
-        fontFamily: 'OpenSans',
+        fontFamily: 'FiraSans',
         fontWeight: FontWeight.w600,
         color: primaryText,
       ),
       labelLarge: TextStyle(
-        fontFamily: 'OpenSans',
+        fontFamily: 'FiraSans',
         fontWeight: FontWeight.w600,
         color: primaryText,
       ),
@@ -502,7 +502,7 @@ ThemeData keydex3(Brightness brightness) {
         color: secondaryText.withOpacity(0.6),
         fontFamily: 'Archivo',
       ),
-      errorStyle: const TextStyle(fontFamily: 'OpenSans', fontSize: 12),
+      errorStyle: const TextStyle(fontFamily: 'FiraSans', fontSize: 12),
     ),
 
     // Text selection
@@ -571,7 +571,7 @@ ThemeData keydex3(Brightness brightness) {
         color: primaryText,
       ),
       subtitleTextStyle: TextStyle(
-        fontFamily: 'OpenSans',
+        fontFamily: 'FiraSans',
         fontSize: 12,
         color: secondaryText,
       ),
@@ -580,7 +580,7 @@ ThemeData keydex3(Brightness brightness) {
     // Popup menus
     popupMenuTheme: PopupMenuThemeData(
       color: scaffoldBg,
-      textStyle: TextStyle(color: primaryText, fontFamily: 'OpenSans'),
+      textStyle: TextStyle(color: primaryText, fontFamily: 'FiraSans'),
       surfaceTintColor: Colors.transparent,
     ),
 
@@ -590,7 +590,7 @@ ThemeData keydex3(Brightness brightness) {
       backgroundColor: isDark ? const Color(0xFF1A1A1A) : const Color(0xFF2C2C2C),
       contentTextStyle: const TextStyle(
         color: Color(0xFFf4f4f4), // Light text for dark snackbar backgrounds
-        fontFamily: 'OpenSans',
+        fontFamily: 'FiraSans',
       ),
     ),
 
