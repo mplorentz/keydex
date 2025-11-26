@@ -126,7 +126,7 @@ class KeyHolderList extends ConsumerWidget {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: colorScheme.onSurface.withOpacity(0.1),
+                      color: colorScheme.onSurface.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Icon(
@@ -147,7 +147,7 @@ class KeyHolderList extends ConsumerWidget {
                   Icon(
                     Icons.key_off,
                     size: 48,
-                    color: colorScheme.onSurface.withOpacity(0.6),
+                    color: colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -160,7 +160,7 @@ class KeyHolderList extends ConsumerWidget {
                   Text(
                     'Change backup settings to add stewards',
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onSurface.withOpacity(0.7),
+                      color: colorScheme.onSurface.withValues(alpha: 0.7),
                     ),
                   ),
                 ],
@@ -195,7 +195,7 @@ class KeyHolderList extends ConsumerWidget {
       child: Row(
         children: [
           CircleAvatar(
-            backgroundColor: colorScheme.onSurface.withOpacity(0.1),
+            backgroundColor: colorScheme.onSurface.withValues(alpha: 0.1),
             child: Icon(
               keyHolder.isOwner ? Icons.person : Icons.key,
               color: colorScheme.onSurface,
@@ -230,7 +230,7 @@ class KeyHolderList extends ConsumerWidget {
                   Text(
                     'Owner',
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onSurface.withOpacity(0.8),
+                      color: colorScheme.onSurface.withValues(alpha: 0.8),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -238,7 +238,7 @@ class KeyHolderList extends ConsumerWidget {
                   Text(
                     keyHolder.status!.label,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onSurface.withOpacity(0.7),
+                      color: colorScheme.onSurface.withValues(alpha: 0.7),
                     ),
                   ),
                 ]

@@ -500,7 +500,7 @@ ThemeData keydex3(Brightness brightness) {
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       hintStyle: TextStyle(
-        color: secondaryText.withOpacity(0.6),
+        color: secondaryText.withValues(alpha: 0.6),
         fontFamily: 'Archivo',
       ),
       errorStyle: const TextStyle(fontFamily: 'FiraSans', fontSize: 12),
@@ -509,7 +509,7 @@ ThemeData keydex3(Brightness brightness) {
     // Text selection
     textSelectionTheme: TextSelectionThemeData(
       cursorColor: primaryText,
-      selectionColor: primaryText.withOpacity(0.2),
+      selectionColor: primaryText.withValues(alpha: 0.2),
       selectionHandleColor: primaryText,
     ),
 
@@ -523,7 +523,7 @@ ThemeData keydex3(Brightness brightness) {
           borderRadius: BorderRadius.circular(12),
         ),
         elevation: 2, // Subtle shadow
-        shadowColor: isDark ? buttonBg.withOpacity(0.1) : buttonBg.withOpacity(0.1),
+        shadowColor: isDark ? buttonBg.withValues(alpha: 0.1) : buttonBg.withValues(alpha: 0.1),
       ),
     ),
 

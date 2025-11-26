@@ -37,13 +37,14 @@ class RowButton extends StatelessWidget {
     final borderColor = theme.colorScheme.primary;
     final textColor = theme.colorScheme.onSurface; // Use onSurface for better contrast
     // Very subtle background fill
-    final subtleFill = isDark ? borderColor.withOpacity(0.1) : borderColor.withOpacity(0.05);
+    final subtleFill =
+        isDark ? borderColor.withValues(alpha: 0.1) : borderColor.withValues(alpha: 0.05);
 
     // Disabled colors: use gray that works in both light and dark
     final disabledBorder = isDark ? const Color(0xFF404040) : const Color(0xFFC0C0C0);
     final disabledText = isDark ? const Color(0xFF808080) : const Color(0xFF808080);
     final disabledFill =
-        isDark ? disabledBorder.withOpacity(0.1) : disabledBorder.withOpacity(0.05);
+        isDark ? disabledBorder.withValues(alpha: 0.1) : disabledBorder.withValues(alpha: 0.05);
 
     // Effective colors
     final effectiveBorderColor = isDisabled ? disabledBorder : (backgroundColor ?? borderColor);
@@ -51,7 +52,8 @@ class RowButton extends StatelessWidget {
     final effectiveFill = isDisabled ? disabledFill : subtleFill;
 
     // Subtle shadow for enabled buttons
-    final shadowColor = isDark ? borderColor.withOpacity(0.1) : borderColor.withOpacity(0.1);
+    final shadowColor =
+        isDark ? borderColor.withValues(alpha: 0.1) : borderColor.withValues(alpha: 0.1);
 
     // Add bottom safe area padding on iOS devices with home indicator
     // Note: Platform.isIOS is not available on web, so check kIsWeb first
