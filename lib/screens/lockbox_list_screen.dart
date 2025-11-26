@@ -28,7 +28,7 @@ class LockboxListScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Keydex'),
+        title: const Text('Horcrux'),
         centerTitle: false,
         actions: [
           IconButton(

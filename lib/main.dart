@@ -71,7 +71,7 @@ class _KeydexAppState extends ConsumerState<KeydexApp> {
 
     return MaterialApp(
       navigatorKey: navigatorKey,
-      title: 'Keydex Lockbox',
+      title: 'Horcrux Lockbox',
       theme: keydex3Light,
       darkTheme: keydex3Dark,
       themeMode: ThemeMode.system,
@@ -106,7 +106,7 @@ class _InitializingScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              'Initializing Keydex...',
+              'Initializing Horcrux...',
               style: TextStyle(
                 fontSize: 18,
                 color: Colors.grey[600],

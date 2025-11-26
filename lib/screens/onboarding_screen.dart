@@ -29,7 +29,7 @@ class OnboardingScreen extends ConsumerWidget {
                         children: [
                           Center(
                             child: Text(
-                              'Keydex',
+                              'Horcrux',
                               style: Theme.of(context).textTheme.displaySmall?.copyWith(
                                     fontSize: 90,
                                     fontWeight: FontWeight.w700,
@@ -47,7 +47,7 @@ class OnboardingScreen extends ConsumerWidget {
                               Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                                 child: Text(
-                                  'Keydex is a tool for backing up sensitive data like digital wills, passwords, and cryptographic keys. Rather than backing the data up to the cloud, Keydex sends the sensitive data in pieces to your friends and family\'s devices. Recovery is accomplished by getting consent from these friends and family to reassemble your data.',
+                                  'Horcrux is a tool for backing up sensitive data like digital wills, passwords, and cryptographic keys. Rather than backing the data up to the cloud, Horcrux sends the sensitive data in pieces to your friends and family\'s devices. Recovery is accomplished by getting consent from these friends and family to reassemble your data.',
                                   style: Theme.of(context).textTheme.bodyMedium,
                                 ),
                               ),
