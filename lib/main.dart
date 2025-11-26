@@ -72,7 +72,9 @@ class _KeydexAppState extends ConsumerState<KeydexApp> {
     return MaterialApp(
       navigatorKey: navigatorKey,
       title: 'Keydex Lockbox',
-      theme: keydex2,
+      theme: keydex3Light,
+      darkTheme: keydex3Dark,
+      themeMode: ThemeMode.system,
       debugShowCheckedModeBanner: false,
       home: _isInitializing
           ? const _InitializingScreen()

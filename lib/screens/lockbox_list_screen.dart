@@ -124,9 +124,10 @@ class LockboxListScreen extends ConsumerWidget {
                       );
                     }
 
-                    return ListView.builder(
+                    return ListView.separated(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       itemCount: lockboxes.length,
+                      separatorBuilder: (context, index) => const Divider(height: 1),
                       itemBuilder: (context, index) {
                         final lockbox = lockboxes[index];
                         return LockboxCard(key: ValueKey(lockbox.id), lockbox: lockbox);
