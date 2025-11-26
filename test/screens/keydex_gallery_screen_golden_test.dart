@@ -8,7 +8,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('KeydexGallery Golden Test', () {
-    testGoldens('gallery screen - keydex2 theme', (tester) async {
+    testGoldens('gallery screen - keydex3 theme', (tester) async {
       await pumpGoldenWidget(
         tester,
         const KeydexGallery(),
