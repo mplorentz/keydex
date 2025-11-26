@@ -11,6 +11,7 @@ class OnboardingScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       body: SafeArea(
+        bottom: false, // Exclude bottom safe area, let RowButton handle it
         child: Column(
           children: [
             const SizedBox(height: 64),
