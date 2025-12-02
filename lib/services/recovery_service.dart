@@ -109,7 +109,9 @@ class RecoveryService {
 
   /// Initialize the service
   Future<void> initialize() async {
-    if (_isInitialized) return;
+    if (_isInitialized) {
+      return;
+    }
 
     try {
       await _loadViewedNotificationIds();
@@ -144,7 +146,9 @@ class RecoveryService {
 
   /// Save viewed notification IDs to storage
   Future<void> _saveViewedNotificationIds() async {
-    if (_viewedNotificationIds == null) return;
+    if (_viewedNotificationIds == null) {
+      return;
+    }
 
     try {
       final jsonList = _viewedNotificationIds!.toList();
@@ -161,7 +165,9 @@ class RecoveryService {
 
   /// Emit notification update to stream
   Future<void> _emitNotificationUpdate() async {
-    if (_viewedNotificationIds == null) return;
+    if (_viewedNotificationIds == null) {
+      return;
+    }
 
     // Get current user's pubkey to filter out their own recovery requests
     final currentPubkey = await _ndkService.getCurrentPubkey();

@@ -142,11 +142,15 @@ extension BackupConfigExtension on BackupConfig {
       // Check for unique npubs (only for key holders with pubkeys)
       final keyHoldersWithPubkeys = keyHolders.where((h) => h.pubkey != null).toList();
       final npubs = keyHoldersWithPubkeys.map((h) => h.npub).where((n) => n != null).toSet();
-      if (npubs.length != keyHoldersWithPubkeys.length) return false;
+      if (npubs.length != keyHoldersWithPubkeys.length) {
+        return false;
+      }
 
       // Check relay URLs
       for (final relay in relays) {
-        if (!_isValidRelayUrl(relay)) return false;
+        if (!_isValidRelayUrl(relay)) {
+          return false;
+        }
       }
 
       return true;
