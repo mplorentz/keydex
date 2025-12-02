@@ -234,8 +234,13 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                                     ),
                                   )
                                 else
-                                  ..._keyHolders.map(
-                                    (holder) => _buildKeyHolderListItem(holder),
+                                  Column(
+                                    children: [
+                                      for (int i = 0; i < _keyHolders.length; i++) ...[
+                                        _buildKeyHolderListItem(_keyHolders[i]),
+                                        if (i < _keyHolders.length - 1) const Divider(height: 1),
+                                      ],
+                                    ],
                                   ),
 
                                 // Add Steward Button

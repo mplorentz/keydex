@@ -96,7 +96,7 @@ class LockboxDetailScreen extends ConsumerWidget {
           // Scrollable content
           Expanded(
             child: Container(
-              color: const Color(0xFF666f62),
+              color: Theme.of(context).colorScheme.surfaceContainer,
               child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

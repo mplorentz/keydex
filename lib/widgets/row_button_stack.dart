@@ -30,8 +30,12 @@ class RowButtonStack extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    // Generate gradient colors
-    final colors = _generateGradientColors(buttons.length);
+    // Generate gradient colors based on theme
+    final colors = _generateGradientColors(buttons.length, context);
+    
+    // Get theme colors for text - all buttons use onSurface for outlined style
+    final theme = Theme.of(context);
+    final buttonTextColor = theme.colorScheme.onSurface; // Use onSurface for all buttons
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -41,39 +45,61 @@ class RowButtonStack extends StatelessWidget {
             onPressed: buttons[i].onPressed,
             icon: buttons[i].icon,
             text: buttons[i].text,
-            backgroundColor: colors[i],
+            backgroundColor: colors[i], // This controls the border color in outlined style
+            foregroundColor: buttonTextColor, // All buttons use onSurface for contrast
             addBottomSafeArea: i == buttons.length - 1, // Only add safe area to bottom button
           ),
       ],
     );
   }
 
-  /// Generate gradient colors: orange at bottom, then #474d42 getting progressively lighter going up
-  List<Color> _generateGradientColors(int count) {
+  /// Generate gradient colors: primary button color at bottom, then progressively lighter/darker going up
+  List<Color> _generateGradientColors(int count, BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
+    // Primary button color (black in light mode, white in dark mode)
+    final primaryColor = theme.colorScheme.primary;
+    
     if (count == 1) {
-      return [const Color(0xFFdc714e)]; // Primary orange
+      return [primaryColor];
     }
 
     final colors = <Color>[];
 
-    // Primary orange at bottom (last button)
-    const primaryOrange = Color(0xFFdc714e);
-
-    // Dark olive-sage base color
-    const baseColor = Color(0xFF474d42);
-
-    // Lightest version (for top button) - lighter than base
-    const lightestColor = Color(0xFF6f7568);
-
-    for (int i = 0; i < count; i++) {
-      if (i == count - 1) {
-        // Bottom button is always orange
-        colors.add(primaryOrange);
-      } else {
-        // For buttons above, interpolate from lightest at top to baseColor
-        // i = 0 is top (lightest), i = count-2 is just above orange (baseColor)
-        final t = count > 2 ? i / (count - 2) : 0.0;
-        colors.add(Color.lerp(lightestColor, baseColor, t)!);
+    // For the new black/white theme, create a gradient using grays
+    // Bottom button (primary) is the theme's button color
+    // Buttons above get progressively lighter (in dark mode) or darker (in light mode)
+    
+    if (isDark) {
+      // Dark mode: primary button (#404040) at bottom, progressively lighter grays going up
+      const lightestGray = Color(0xFF606060); // Lighter gray for top buttons
+      const lighterGray = Color(0xFF505050); // Slightly lighter than primary for buttons above
+      
+      for (int i = 0; i < count; i++) {
+        if (i == count - 1) {
+          // Bottom button is always primary (#404040)
+          colors.add(primaryColor);
+        } else {
+          // Interpolate from lightestGray at top to lighterGray just above primary
+          final t = count > 2 ? i / (count - 2) : 0.0;
+          colors.add(Color.lerp(lightestGray, lighterGray, t)!);
+        }
+      }
+    } else {
+      // Light mode: primary button (#808080) at bottom, progressively darker grays going up
+      const darkestGray = Color(0xFF606060); // Darker gray for buttons above primary
+      const lighterGray = Color(0xFF707070); // Slightly lighter than primary for top buttons
+      
+      for (int i = 0; i < count; i++) {
+        if (i == count - 1) {
+          // Bottom button is always primary (#808080)
+          colors.add(primaryColor);
+        } else {
+          // Interpolate from darkestGray just above primary to lighterGray at top
+          final t = count > 2 ? i / (count - 2) : 0.0;
+          colors.add(Color.lerp(darkestGray, lighterGray, t)!);
+        }
       }
     }
 

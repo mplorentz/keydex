@@ -359,7 +359,7 @@ class LockboxStatusBanner extends ConsumerWidget {
             child: Icon(
               statusData.icon,
               size: 20,
-              color: theme.scaffoldBackgroundColor,
+              color: colorScheme.onSurface,
             ),
           ),
           const SizedBox(width: 12),
