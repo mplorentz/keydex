@@ -30,6 +30,14 @@ class _AccountChoiceScreenState extends ConsumerState<AccountChoiceScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 24),
+              // Explainer text
+              const Text(
+                'Horcrux uses the Nostr network to store and transmit data. '
+                'Nostr is a digital commons that prevents vendor lock-in. '
+                'We can create a new Nostr account for you or you can log in with an existing one.',
+                style: TextStyle(fontSize: 16, height: 1.5),
+              ),
+              const SizedBox(height: 32),
               // Create Account card
               _buildAccountCard(
                 context,
@@ -80,8 +88,35 @@ class _AccountChoiceScreenState extends ConsumerState<AccountChoiceScreen> {
                 context,
                 icon: Icons.arrow_forward,
                 title: 'Continue Without Account',
-                description: 'Use local-only mode (key generated silently)',
+                description: 'Use local-only mode',
                 onTap: () async {
+                  // Show warning dialog
+                  final confirmed = await showDialog<bool>(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Limited Functionality'),
+                      content: const Text(
+                        'Without a Nostr account, you won\'t be able to:\n\n'
+                        '• Back up your vaults to the Nostr network\n'
+                        '• Distribute shards to key holders\n'
+                        '• Recover vaults from key holders\n\n'
+                        'You can only use local-only vaults on this device.',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(false),
+                          child: const Text('Cancel'),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(true),
+                          child: const Text('Continue Anyway'),
+                        ),
+                      ],
+                    ),
+                  );
+
+                  if (confirmed != true) return;
+
                   final navigator = Navigator.of(context);
                   
                   // Generate key silently

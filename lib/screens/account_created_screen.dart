@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/key_provider.dart';
-import '../providers/lockbox_provider.dart';
-import '../utils/invite_code_utils.dart';
-import '../models/lockbox.dart';
 import '../widgets/row_button_stack.dart';
-import '../screens/lockbox_detail_screen.dart';
+import '../screens/vault_explainer_screen.dart';
 import '../screens/lockbox_list_screen.dart';
 
 /// Screen shown after account creation or import, allowing user to back up their key
@@ -55,54 +51,16 @@ class _AccountCreatedScreenState extends ConsumerState<AccountCreatedScreen> {
     });
 
     try {
-      final repository = ref.read(lockboxRepositoryProvider);
-      final loginService = ref.read(loginServiceProvider);
-
-      // Get current user's public key
-      final currentPubkey = await loginService.getCurrentPublicKey();
-      if (currentPubkey == null) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Error: Unable to get current user public key'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-        return;
-      }
-
-      // Generate secure ID
-      final lockboxId = generateSecureID();
-
-      // Create lockbox with nsec as content
-      final lockbox = Lockbox(
-        id: lockboxId,
-        name: 'Nostr Key Backup',
-        content: widget.nsec,
-        createdAt: DateTime.now(),
-        ownerPubkey: currentPubkey,
-      );
-
-      // Save lockbox
-      await repository.addLockbox(lockbox);
-
-      // Navigate to detail screen
+      // Navigate to vault explainer with nsec prefilled
       if (mounted) {
-        Navigator.of(context).pushAndRemoveUntil(
+        await Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(
-            builder: (context) => LockboxDetailScreen(lockboxId: lockboxId),
+            builder: (context) => VaultExplainerScreen(
+              initialContent: widget.nsec,
+              initialName: 'Nostr Key Backup',
+            ),
           ),
           (route) => false, // Clear all previous routes
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error creating vault backup: $e'),
-            backgroundColor: Colors.red,
-          ),
         );
       }
     } finally {

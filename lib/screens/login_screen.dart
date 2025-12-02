@@ -5,7 +5,7 @@ import '../providers/key_provider.dart';
 import '../utils/validators.dart';
 import '../utils/app_initialization.dart';
 import '../widgets/row_button.dart';
-import '../screens/account_created_screen.dart';
+import '../screens/import_success_screen.dart';
 
 /// Screen for importing existing Nostr keys
 class LoginScreen extends ConsumerStatefulWidget {
@@ -94,14 +94,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       ref.invalidate(currentPublicKeyBech32Provider);
       ref.invalidate(isLoggedInProvider);
 
-      // Navigate to account created screen
+      // Navigate to import success screen
       if (mounted && keyPair != null && keyPair.privateKeyBech32 != null) {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => AccountCreatedScreen(
+            builder: (context) => ImportSuccessScreen(
               nsec: keyPair.privateKeyBech32!,
-              isImported: true,
             ),
           ),
         );
