@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/key_provider.dart';
 import '../utils/validators.dart';
 import '../widgets/row_button.dart';
-import 'account_created_screen.dart';
+import 'key_imported_screen.dart';
 
 /// Screen for importing an existing Nostr key
 /// Supports nsec, hex private key, and bunker URL (bunker not yet implemented)
@@ -82,14 +82,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         return;
       }
 
-      // Navigate to AccountCreatedScreen
+      // Navigate to KeyImportedScreen
       if (mounted && nsecKey != null) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => AccountCreatedScreen(
+            builder: (context) => KeyImportedScreen(
               nsec: nsecKey!,
-              isImported: true,
             ),
           ),
         );

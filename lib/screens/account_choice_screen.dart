@@ -25,11 +25,22 @@ class AccountChoiceScreen extends ConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              // Explainer text
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
+                child: Text(
+                  'Horcrux uses the Nostr network to store and transmit data. Nostr is a digital commons that prevents vendor lock-in. We can create a new Nostr account for you or you can log in with an existing one.',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(height: 16),
+
               // Create Account Card
               _AccountChoiceCard(
                 icon: Icons.person_add,
                 title: 'Create Account',
-                description: 'Generate a new Nostr identity and back it up',
+                description: 'Generate a new Nostr identity',
                 onTap: () async {
                   // Generate new key
                   final loginService = ref.read(loginServiceProvider);
@@ -67,12 +78,36 @@ class AccountChoiceScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
 
-              // Continue Without Account Card
+              // Skip For Now Card
               _AccountChoiceCard(
                 icon: Icons.arrow_forward,
-                title: 'Continue Without Account',
+                title: 'Skip For Now',
                 description: 'Use the app without a Nostr identity',
                 onTap: () async {
+                  // Show warning alert
+                  final confirmed = await showDialog<bool>(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Skip Account Setup?'),
+                      content: const Text(
+                        'If you skip account setup, you won\'t be able to access your vaults on other devices. '
+                        'Your data will only be available on this device.',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, false),
+                          child: const Text('Cancel'),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, true),
+                          child: const Text('Skip Anyway'),
+                        ),
+                      ],
+                    ),
+                  );
+
+                  if (confirmed != true || !context.mounted) return;
+
                   // Generate key silently
                   final loginService = ref.read(loginServiceProvider);
                   await loginService.initializeKey();
