@@ -223,3 +223,61 @@ The app uses the **keydex2 theme** defined in `lib/widgets/theme.dart`
 - **AppBar**: Large (40pt), left-aligned, 100pt toolbar height
 
 **Remember**: Check DESIGN_GUIDE.md for complete details before implementing any UI changes.
+
+## Pull Request Checklist
+
+### Before Opening a PR
+**CRITICAL**: Before opening or requesting review for a pull request, you MUST ensure all of the following pass:
+
+1. **All Tests Pass**
+   - Run unit tests: `flutter test --exclude-tags=golden`
+   - Run golden tests: `flutter test --tags=golden`
+   - All tests must pass with exit code 0
+   - If any test fails, fix the issue before opening the PR
+
+2. **Golden Tests Are Updated**
+   - If you made UI changes, golden tests may fail
+   - Review the failure diffs in `test/**/failures/` directories
+   - If changes are intentional, update goldens: `flutter test test/screens --update-goldens`
+   - If changes are unintentional bugs, fix the code instead
+   - Commit updated golden PNG files with your code changes
+   - Never open a PR with failing golden tests
+
+3. **No Analyzer Errors**
+   - Run: `flutter analyze`
+   - Must exit with code 0 (no errors, warnings are acceptable)
+   - Fix all analyzer errors before opening the PR
+   - Suppress warnings only with explicit `// ignore:` comments when justified
+
+4. **Code Formatting**
+   - Run: `dart format --set-exit-if-changed .`
+   - If formatting changes are detected, apply them: `dart format .`
+   - Commit formatted code with your changes
+
+### Automated Verification Commands
+Run these commands in sequence before opening a PR:
+
+```bash
+# 1. Format code
+dart format .
+
+# 2. Run analyzer
+flutter analyze
+
+# 3. Run unit tests (excluding golden tests)
+flutter test --exclude-tags=golden
+
+# 4. Run golden tests
+flutter test --tags=golden
+
+# 5. If golden tests fail and changes are intentional, update goldens:
+flutter test test/screens --update-goldens
+```
+
+### When Assisting with PRs
+When helping prepare a PR or reviewing code changes:
+- Always run the full checklist above before suggesting the PR is ready
+- If tests fail, help fix the issues before proceeding
+- If golden tests fail, determine if changes are intentional (update goldens) or bugs (fix code)
+- Never skip the checklist steps
+- Remind the user to commit updated golden files if they were regenerated

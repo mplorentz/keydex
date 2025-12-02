@@ -17,12 +17,12 @@ import 'logger.dart';
 /// Provider for ShardDistributionService
 final Provider<ShardDistributionService> shardDistributionServiceProvider =
     Provider<ShardDistributionService>((ref) {
-  return ShardDistributionService(
-    ref.read(lockboxRepositoryProvider),
-    ref.read(loginServiceProvider),
-    ref.read(ndkServiceProvider),
-  );
-});
+      return ShardDistributionService(
+        ref.read(lockboxRepositoryProvider),
+        ref.read(loginServiceProvider),
+        ref.read(ndkServiceProvider),
+      );
+    });
 
 /// Service for distributing shards to key holders via Nostr
 class ShardDistributionService {
@@ -30,11 +30,16 @@ class ShardDistributionService {
   final LoginService _loginService;
   final NdkService _ndkService;
 
-  ShardDistributionService(this._repository, this._loginService, this._ndkService);
+  ShardDistributionService(
+    this._repository,
+    this._loginService,
+    this._ndkService,
+  );
 
   /// Distribute shards to all key holders
   Future<List<ShardEvent>> distributeShards({
-    required String ownerPubkey, // Hex format - lockbox owner's pubkey for signing
+    required String
+    ownerPubkey, // Hex format - lockbox owner's pubkey for signing
     required BackupConfig config,
     required List<ShardData> shards,
   }) async {
@@ -52,7 +57,8 @@ class ShardDistributionService {
         // Skip key holders without pubkeys (invited but not yet accepted)
         if (keyHolder.pubkey == null) {
           Log.info(
-              'Skipping shard distribution to key holder ${keyHolder.name ?? keyHolder.id} - no pubkey yet (invited)');
+            'Skipping shard distribution to key holder ${keyHolder.name ?? keyHolder.id} - no pubkey yet (invited)',
+          );
           continue;
         }
 
@@ -74,7 +80,8 @@ class ShardDistributionService {
           final eventId = await _ndkService.publishEncryptedEvent(
             content: shardString,
             kind: NostrKind.shardData.value,
-            recipientPubkey: keyHolder.pubkey!, // Hex format - safe because we checked null above
+            recipientPubkey: keyHolder
+                .pubkey!, // Hex format - safe because we checked null above
             relays: config.relays,
             tags: [
               ['d', 'shard_${config.lockboxId}_$i'], // Distinguisher tag
@@ -91,8 +98,10 @@ class ShardDistributionService {
           // Create ShardEvent record
           final shardEvent = createShardEvent(
             eventId: eventId,
-            recipientPubkey: keyHolder.pubkey!, // Hex format - safe because we checked null above
-            encryptedContent: shardString, // Store original content for reference
+            recipientPubkey: keyHolder
+                .pubkey!, // Hex format - safe because we checked null above
+            encryptedContent:
+                shardString, // Store original content for reference
             backupConfigId: config.lockboxId,
             shardIndex: i,
           );
@@ -105,11 +114,14 @@ class ShardDistributionService {
           );
 
           shardEvents.add(publishedShardEvent);
-          Log.info('Distributed shard $i to ${keyHolder.npub ?? keyHolder.name ?? keyHolder.id}');
+          Log.info(
+            'Distributed shard $i to ${keyHolder.npub ?? keyHolder.name ?? keyHolder.id}',
+          );
         } catch (e) {
           Log.error(
-              'Failed to distribute shard $i to ${keyHolder.npub ?? keyHolder.name ?? keyHolder.id}',
-              e);
+            'Failed to distribute shard $i to ${keyHolder.npub ?? keyHolder.name ?? keyHolder.id}',
+            e,
+          );
           // Continue with other shards even if one fails
         }
       }
@@ -138,9 +150,7 @@ class ShardDistributionService {
             since: shardEvent.createdAt.millisecondsSinceEpoch ~/ 1000,
           );
 
-          final acknowledgmentResponse = ndk.requests.query(
-            filters: [filter],
-          );
+          final acknowledgmentResponse = ndk.requests.query(filters: [filter]);
 
           // Get the events from the response
           final acknowledgmentEvents = await acknowledgmentResponse.future;
@@ -179,7 +189,10 @@ class ShardDistributionService {
             );
           }
         } catch (e) {
-          Log.error('Failed to check acknowledgment for shard ${shardEvent.shardIndex}', e);
+          Log.error(
+            'Failed to check acknowledgment for shard ${shardEvent.shardIndex}',
+            e,
+          );
           // Continue with other shards even if one fails
         }
       }
@@ -201,36 +214,47 @@ class ShardDistributionService {
     // Validate event kind
     if (event.kind != NostrKind.shardConfirmation.value) {
       throw ArgumentError(
-          'Invalid event kind: expected ${NostrKind.shardConfirmation.value}, got ${event.kind}');
+        'Invalid event kind: expected ${NostrKind.shardConfirmation.value}, got ${event.kind}',
+      );
     }
 
     // Get current user's pubkey to verify we're the owner
     final ownerPubkey = await _loginService.getCurrentPublicKey();
     if (ownerPubkey == null) {
-      throw Exception('No key pair available. Cannot process shard confirmation event.');
+      throw Exception(
+        'No key pair available. Cannot process shard confirmation event.',
+      );
     }
 
     // Extract lockbox ID, shard index, and distribution version from tags
     // All confirmation data is stored in tags (no content)
     final lockboxId = _extractTagValue(event.tags, 'lockbox_id');
     final shardIndexStr = _extractTagValue(event.tags, 'shard_index');
-    final distributionVersionStr = _extractTagValue(event.tags, 'distribution_version');
+    final distributionVersionStr = _extractTagValue(
+      event.tags,
+      'distribution_version',
+    );
 
     if (lockboxId == null) {
       throw ArgumentError('Missing lockbox_id tag in shard confirmation event');
     }
 
     if (shardIndexStr == null) {
-      throw ArgumentError('Missing shard_index tag in shard confirmation event');
+      throw ArgumentError(
+        'Missing shard_index tag in shard confirmation event',
+      );
     }
 
     final shardIndex = int.tryParse(shardIndexStr);
     if (shardIndex == null) {
-      throw ArgumentError('Invalid shard index in shard confirmation event: $shardIndexStr');
+      throw ArgumentError(
+        'Invalid shard index in shard confirmation event: $shardIndexStr',
+      );
     }
 
-    final distributionVersion =
-        distributionVersionStr != null ? int.tryParse(distributionVersionStr) : null;
+    final distributionVersion = distributionVersionStr != null
+        ? int.tryParse(distributionVersionStr)
+        : null;
 
     // Update key holder status
     final keyHolderPubkey = event.pubKey;
@@ -244,7 +268,8 @@ class ShardDistributionService {
     );
 
     Log.info(
-        'Processed shard confirmation event for lockbox $lockboxId, shard $shardIndex from key holder $keyHolderPubkey');
+      'Processed shard confirmation event for lockbox $lockboxId, shard $shardIndex from key holder $keyHolderPubkey',
+    );
   }
 
   /// Processes shard error event received from key holder
@@ -253,19 +278,20 @@ class ShardDistributionService {
   /// Validates lockbox ID and shard index.
   /// Updates key holder status to "error".
   /// Logs error details.
-  Future<void> processShardErrorEvent({
-    required Nip01Event event,
-  }) async {
+  Future<void> processShardErrorEvent({required Nip01Event event}) async {
     // Validate event kind
     if (event.kind != NostrKind.shardError.value) {
       throw ArgumentError(
-          'Invalid event kind: expected ${NostrKind.shardError.value}, got ${event.kind}');
+        'Invalid event kind: expected ${NostrKind.shardError.value}, got ${event.kind}',
+      );
     }
 
     // Get current user's pubkey to verify we're the owner
     final ownerPubkey = await _loginService.getCurrentPublicKey();
     if (ownerPubkey == null) {
-      throw Exception('No key pair available. Cannot process shard error event.');
+      throw Exception(
+        'No key pair available. Cannot process shard error event.',
+      );
     }
 
     // Extract lockbox ID and shard index from tags
@@ -282,7 +308,9 @@ class ShardDistributionService {
 
     final shardIndex = int.tryParse(shardIndexStr);
     if (shardIndex == null) {
-      throw ArgumentError('Invalid shard index in shard error event: $shardIndexStr');
+      throw ArgumentError(
+        'Invalid shard index in shard error event: $shardIndexStr',
+      );
     }
 
     // Verify we're the recipient (p tag should be owner)
@@ -334,7 +362,8 @@ class ShardDistributionService {
     );
 
     Log.error(
-        'Processed shard error event for lockbox $lockboxId, shard $shardIndex from key holder $keyHolderPubkey: $error');
+      'Processed shard error event for lockbox $lockboxId, shard $shardIndex from key holder $keyHolderPubkey: $error',
+    );
   }
 
   /// Helper method to extract a tag value from event tags

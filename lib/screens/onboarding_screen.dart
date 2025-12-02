@@ -30,7 +30,8 @@ class OnboardingScreen extends ConsumerWidget {
                           Center(
                             child: Text(
                               'Keydex',
-                              style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                              style: Theme.of(context).textTheme.displaySmall
+                                  ?.copyWith(
                                     fontSize: 90,
                                     fontWeight: FontWeight.w700,
                                     height: 1.2,
@@ -45,7 +46,9 @@ class OnboardingScreen extends ConsumerWidget {
                             children: [
                               // Body text explaining Keydex - left aligned
                               Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16.0,
+                                ),
                                 child: Text(
                                   'Keydex is a tool for backing up sensitive data like digital wills, passwords, and cryptographic keys. Rather than backing the data up to the cloud, Keydex sends the sensitive data in pieces to your friends and family\'s devices. Recovery is accomplished by getting consent from these friends and family to reassemble your data.',
                                   style: Theme.of(context).textTheme.bodyMedium,
@@ -63,7 +66,8 @@ class OnboardingScreen extends ConsumerWidget {
                                         content: const Text('todo'),
                                         actions: [
                                           TextButton(
-                                            onPressed: () => Navigator.pop(context),
+                                            onPressed: () =>
+                                                Navigator.pop(context),
                                             child: const Text('OK'),
                                           ),
                                         ],

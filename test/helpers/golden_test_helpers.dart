@@ -63,10 +63,7 @@ Future<void> screenMatchesGoldenWithoutSettleWithFinder(
   await tester.pump();
 
   // Manually capture the golden without pumpAndSettle
-  await expectLater(
-    finder,
-    matchesGoldenFile('goldens/$goldenName.png'),
-  );
+  await expectLater(finder, matchesGoldenFile('goldens/$goldenName.png'));
 }
 
 /// Creates a MaterialApp wrapper with keydex2 theme for golden tests.
@@ -81,10 +78,8 @@ Future<void> screenMatchesGoldenWithoutSettleWithFinder(
 ///   wrapper: goldenMaterialAppWrapper,
 /// );
 /// ```
-Widget Function(Widget) get goldenMaterialAppWrapper => (Widget child) => MaterialApp(
-      theme: keydex2,
-      home: child,
-    );
+Widget Function(Widget) get goldenMaterialAppWrapper =>
+    (Widget child) => MaterialApp(theme: keydex2, home: child);
 
 /// Creates a MaterialApp wrapper with keydex2 theme and ProviderContainer for golden tests.
 ///
@@ -113,10 +108,7 @@ Widget goldenMaterialAppWrapperWithProviders({
 }) {
   return UncontrolledProviderScope(
     container: container,
-    child: MaterialApp(
-      theme: keydex2,
-      home: child,
-    ),
+    child: MaterialApp(theme: keydex2, home: child),
   );
 }
 
@@ -214,14 +206,14 @@ Future<void> pumpGoldenWidget(
   if (container != null) {
     if (useScaffold) {
       wrapper = (child) => goldenMaterialAppWrapperWithProvidersAndScaffold(
-            child: child,
-            container: container,
-          );
+        child: child,
+        container: container,
+      );
     } else {
       wrapper = (child) => goldenMaterialAppWrapperWithProviders(
-            child: child,
-            container: container,
-          );
+        child: child,
+        container: container,
+      );
     }
   } else {
     wrapper = goldenMaterialAppWrapper;

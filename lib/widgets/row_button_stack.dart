@@ -19,10 +19,7 @@ class RowButtonConfig {
 class RowButtonStack extends StatelessWidget {
   final List<RowButtonConfig> buttons;
 
-  const RowButtonStack({
-    super.key,
-    required this.buttons,
-  });
+  const RowButtonStack({super.key, required this.buttons});
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +39,8 @@ class RowButtonStack extends StatelessWidget {
             icon: buttons[i].icon,
             text: buttons[i].text,
             backgroundColor: colors[i],
-            addBottomSafeArea: i == buttons.length - 1, // Only add safe area to bottom button
+            addBottomSafeArea:
+                i == buttons.length - 1, // Only add safe area to bottom button
           ),
       ],
     );

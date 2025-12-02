@@ -83,7 +83,9 @@ class LockboxListScreen extends ConsumerWidget {
                           ElevatedButton(
                             onPressed: () => ref.refresh(lockboxListProvider),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Theme.of(context).colorScheme.secondary,
+                              backgroundColor: Theme.of(
+                                context,
+                              ).colorScheme.secondary,
                               foregroundColor: Colors.white,
                             ),
                             child: const Text('Retry'),
@@ -106,13 +108,12 @@ class LockboxListScreen extends ConsumerWidget {
                               color: theme.colorScheme.surfaceContainerHighest,
                             ),
                             const SizedBox(height: 16),
-                            Text(
-                              'No vaults yet',
-                              style: textTheme.titleLarge,
-                            ),
+                            Text('No vaults yet', style: textTheme.titleLarge),
                             const SizedBox(height: 8),
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 32),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 32,
+                              ),
                               child: Text(
                                 'Tap + to create a vault or if you received an invitation link open it now to join their vault.',
                                 style: textTheme.bodySmall,
@@ -125,11 +126,17 @@ class LockboxListScreen extends ConsumerWidget {
                     }
 
                     return ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                       itemCount: lockboxes.length,
                       itemBuilder: (context, index) {
                         final lockbox = lockboxes[index];
-                        return LockboxCard(key: ValueKey(lockbox.id), lockbox: lockbox);
+                        return LockboxCard(
+                          key: ValueKey(lockbox.id),
+                          lockbox: lockbox,
+                        );
                       },
                     );
                   },

@@ -12,7 +12,8 @@ class RowButton extends StatelessWidget {
   final double? iconSize;
   final TextStyle? textStyle;
   final EdgeInsets? padding;
-  final bool addBottomSafeArea; // Whether to add bottom safe area padding on iOS
+  final bool
+  addBottomSafeArea; // Whether to add bottom safe area padding on iOS
 
   const RowButton({
     super.key,
@@ -24,7 +25,8 @@ class RowButton extends StatelessWidget {
     this.iconSize = 24,
     this.textStyle,
     this.padding = const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-    this.addBottomSafeArea = false, // Default to false, set to true for bottom buttons
+    this.addBottomSafeArea =
+        false, // Default to false, set to true for bottom buttons
   });
 
   @override
@@ -42,13 +44,13 @@ class RowButton extends StatelessWidget {
 
     // Add bottom safe area padding on iOS devices with home indicator
     // Note: Platform.isIOS is not available on web, so check kIsWeb first
-    final bottomSafeArea = addBottomSafeArea && !kIsWeb && Platform.isIOS ? 8.0 : 0.0;
+    final bottomSafeArea = addBottomSafeArea && !kIsWeb && Platform.isIOS
+        ? 8.0
+        : 0.0;
 
     // Calculate effective padding with safe area
     final effectivePadding = padding != null
-        ? padding!.copyWith(
-            bottom: padding!.bottom + bottomSafeArea,
-          )
+        ? padding!.copyWith(bottom: padding!.bottom + bottomSafeArea)
         : EdgeInsets.only(
             top: 20,
             bottom: 20 + bottomSafeArea,
@@ -63,21 +65,16 @@ class RowButton extends StatelessWidget {
         child: Container(
           width: double.infinity,
           padding: effectivePadding,
-          decoration: BoxDecoration(
-            color: effectiveBackgroundColor,
-          ),
+          decoration: BoxDecoration(color: effectiveBackgroundColor),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Icon(
-                icon,
-                color: effectiveForegroundColor,
-                size: iconSize,
-              ),
+              Icon(icon, color: effectiveForegroundColor, size: iconSize),
               const SizedBox(width: 12),
               Text(
                 text,
-                style: textStyle ??
+                style:
+                    textStyle ??
                     theme.textTheme.titleLarge?.copyWith(
                       color: effectiveForegroundColor,
                       fontWeight: FontWeight.bold,

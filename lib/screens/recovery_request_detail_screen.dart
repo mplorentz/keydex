@@ -14,16 +14,15 @@ import '../widgets/row_button_stack.dart';
 class RecoveryRequestDetailScreen extends ConsumerStatefulWidget {
   final RecoveryRequest recoveryRequest;
 
-  const RecoveryRequestDetailScreen({
-    super.key,
-    required this.recoveryRequest,
-  });
+  const RecoveryRequestDetailScreen({super.key, required this.recoveryRequest});
 
   @override
-  ConsumerState<RecoveryRequestDetailScreen> createState() => _RecoveryRequestDetailScreenState();
+  ConsumerState<RecoveryRequestDetailScreen> createState() =>
+      _RecoveryRequestDetailScreenState();
 }
 
-class _RecoveryRequestDetailScreenState extends ConsumerState<RecoveryRequestDetailScreen> {
+class _RecoveryRequestDetailScreenState
+    extends ConsumerState<RecoveryRequestDetailScreen> {
   bool _isLoading = false;
   String? _currentPubkey;
 
@@ -63,7 +62,9 @@ class _RecoveryRequestDetailScreenState extends ConsumerState<RecoveryRequestDet
       final approved = status == RecoveryResponseStatus.approved;
 
       // Use the convenience method that handles shard retrieval and Nostr sending
-      await ref.read(recoveryServiceProvider).respondToRecoveryRequestWithShard(
+      await ref
+          .read(recoveryServiceProvider)
+          .respondToRecoveryRequestWithShard(
             widget.recoveryRequest.id,
             _currentPubkey!,
             approved,
@@ -71,7 +72,9 @@ class _RecoveryRequestDetailScreenState extends ConsumerState<RecoveryRequestDet
 
       if (mounted) {
         // Invalidate the recovery status provider to force a refresh when navigating back
-        ref.invalidate(recoveryStatusProvider(widget.recoveryRequest.lockboxId));
+        ref.invalidate(
+          recoveryStatusProvider(widget.recoveryRequest.lockboxId),
+        );
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -87,9 +90,9 @@ class _RecoveryRequestDetailScreenState extends ConsumerState<RecoveryRequestDet
     } catch (e) {
       Log.error('Error responding to recovery request', e);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
         setState(() {
           _isLoading = false;
         });
@@ -165,21 +168,23 @@ class _RecoveryRequestDetailScreenState extends ConsumerState<RecoveryRequestDet
     final lockboxAsync = ref.watch(lockboxProvider(request.lockboxId));
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Recovery Request'),
-        centerTitle: false,
-      ),
+      appBar: AppBar(title: const Text('Recovery Request'), centerTitle: false),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : lockboxAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, stack) => Center(child: Text('Error loading lockbox: $error')),
+              error: (error, stack) =>
+                  Center(child: Text('Error loading lockbox: $error')),
               data: (lockbox) => _buildContent(context, request, lockbox),
             ),
     );
   }
 
-  Widget _buildContent(BuildContext context, RecoveryRequest request, Lockbox? lockbox) {
+  Widget _buildContent(
+    BuildContext context,
+    RecoveryRequest request,
+    Lockbox? lockbox,
+  ) {
     // Get initiator name from lockbox shard data
     String? initiatorName;
     if (lockbox != null) {
@@ -208,8 +213,9 @@ class _RecoveryRequestDetailScreenState extends ConsumerState<RecoveryRequestDet
       // Also check backupConfig
       if (initiatorName == null && lockbox.backupConfig != null) {
         try {
-          final keyHolder = lockbox.backupConfig!.keyHolders
-              .firstWhere((kh) => kh.pubkey == request.initiatorPubkey);
+          final keyHolder = lockbox.backupConfig!.keyHolders.firstWhere(
+            (kh) => kh.pubkey == request.initiatorPubkey,
+          );
           initiatorName = keyHolder.displayName;
         } catch (e) {
           // Key holder not found in backupConfig
@@ -256,9 +262,8 @@ class _RecoveryRequestDetailScreenState extends ConsumerState<RecoveryRequestDet
                         Expanded(
                           child: Text(
                             'Someone is requesting recovery of a vault you have a key for',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(fontWeight: FontWeight.bold),
                           ),
                         ),
                       ],
@@ -335,8 +340,9 @@ class _RecoveryRequestDetailScreenState extends ConsumerState<RecoveryRequestDet
                         Row(
                           children: [
                             CircleAvatar(
-                              backgroundColor:
-                                  Theme.of(context).colorScheme.surfaceContainerHighest,
+                              backgroundColor: Theme.of(
+                                context,
+                              ).colorScheme.surfaceContainerHighest,
                               child: Icon(
                                 Icons.person,
                                 color: Theme.of(context).colorScheme.onSurface,
@@ -350,7 +356,10 @@ class _RecoveryRequestDetailScreenState extends ConsumerState<RecoveryRequestDet
                                   if (initiatorName != null)
                                     Text(
                                       initiatorName,
-                                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge
+                                          ?.copyWith(
                                             fontWeight: FontWeight.bold,
                                           ),
                                     ),
@@ -394,20 +403,9 @@ class _RecoveryRequestDetailScreenState extends ConsumerState<RecoveryRequestDet
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey[600],
-            ),
-          ),
+          Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
           const SizedBox(height: 4),
-          Text(
-            value,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
         ],
       ),
     );

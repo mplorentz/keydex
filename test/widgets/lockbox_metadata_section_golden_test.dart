@@ -33,7 +33,8 @@ void main() {
       creatorPubkey: testPubkey,
       lockboxId: lockboxId,
       lockboxName: lockboxName,
-      peers: peers ??
+      peers:
+          peers ??
           [
             {'name': 'Peer 1', 'pubkey': otherPubkey},
             {'name': 'Peer 2', 'pubkey': thirdPubkey},
@@ -64,8 +65,12 @@ void main() {
     testGoldens('loading state', (tester) async {
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider('test-lockbox').overrideWith((ref) => Stream.value(null)),
-          currentPublicKeyProvider.overrideWith((ref) => Future.value('test-pubkey')),
+          lockboxProvider(
+            'test-lockbox',
+          ).overrideWith((ref) => Stream.value(null)),
+          currentPublicKeyProvider.overrideWith(
+            (ref) => Future.value('test-pubkey'),
+          ),
         ],
       );
 
@@ -89,10 +94,12 @@ void main() {
     testGoldens('error state', (tester) async {
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider('test-lockbox').overrideWith(
-            (ref) => Stream.error('Failed to load lockbox'),
+          lockboxProvider(
+            'test-lockbox',
+          ).overrideWith((ref) => Stream.error('Failed to load lockbox')),
+          currentPublicKeyProvider.overrideWith(
+            (ref) => Future.value('test-pubkey'),
           ),
-          currentPublicKeyProvider.overrideWith((ref) => Future.value('test-pubkey')),
         ],
       );
 
@@ -125,7 +132,9 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider('test-lockbox').overrideWith((ref) => Stream.value(lockbox)),
+          lockboxProvider(
+            'test-lockbox',
+          ).overrideWith((ref) => Stream.value(lockbox)),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
         ],
       );
@@ -159,7 +168,9 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider('test-lockbox').overrideWith((ref) => Stream.value(lockbox)),
+          lockboxProvider(
+            'test-lockbox',
+          ).overrideWith((ref) => Stream.value(lockbox)),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
         ],
       );
@@ -186,7 +197,9 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider('test-lockbox').overrideWith((ref) => Stream.value(lockbox)),
+          lockboxProvider(
+            'test-lockbox',
+          ).overrideWith((ref) => Stream.value(lockbox)),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
         ],
       );
@@ -199,7 +212,10 @@ void main() {
         useScaffold: true,
       );
 
-      await screenMatchesGolden(tester, 'lockbox_metadata_section_key_holder_no_shards');
+      await screenMatchesGolden(
+        tester,
+        'lockbox_metadata_section_key_holder_no_shards',
+      );
 
       container.dispose();
     });
@@ -219,11 +235,15 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider('test-lockbox').overrideWith((ref) => Stream.value(lockbox)),
-          currentPublicKeyProvider.overrideWith((ref) => Future<String?>.delayed(
-                const Duration(seconds: 10),
-                () => testPubkey,
-              )),
+          lockboxProvider(
+            'test-lockbox',
+          ).overrideWith((ref) => Stream.value(lockbox)),
+          currentPublicKeyProvider.overrideWith(
+            (ref) => Future<String?>.delayed(
+              const Duration(seconds: 10),
+              () => testPubkey,
+            ),
+          ),
         ],
       );
 
@@ -236,7 +256,10 @@ void main() {
         waitForSettle: false,
       );
 
-      await screenMatchesGolden(tester, 'lockbox_metadata_section_user_loading');
+      await screenMatchesGolden(
+        tester,
+        'lockbox_metadata_section_user_loading',
+      );
 
       container.dispose();
     });

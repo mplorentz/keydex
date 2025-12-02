@@ -12,10 +12,7 @@ class VaultExplainerScreen extends StatelessWidget {
     final textTheme = theme.textTheme;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Create Vault'),
-        centerTitle: false,
-      ),
+      appBar: AppBar(title: const Text('Create Vault'), centerTitle: false),
       body: Column(
         children: [
           Expanded(
@@ -31,10 +28,7 @@ class VaultExplainerScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
                   // Setup steps section
-                  Text(
-                    'Setting one up involves:',
-                    style: textTheme.bodyLarge,
-                  ),
+                  Text('Setting one up involves:', style: textTheme.bodyLarge),
                   const SizedBox(height: 16),
                   // Step 1
                   _buildStep(
@@ -138,15 +132,9 @@ class VaultExplainerScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                title,
-                style: textTheme.titleLarge,
-              ),
+              Text(title, style: textTheme.titleLarge),
               const SizedBox(height: 4),
-              Text(
-                description,
-                style: textTheme.bodyMedium,
-              ),
+              Text(description, style: textTheme.bodyMedium),
             ],
           ),
         ),

@@ -27,16 +27,28 @@ class KeydexGallery extends StatelessWidget {
             body: ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                Text('Buttons', style: Theme.of(context).textTheme.headlineSmall),
+                Text(
+                  'Buttons',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 12,
                   runSpacing: 12,
                   children: [
-                    ElevatedButton(onPressed: () {}, child: const Text('Primary')),
-                    OutlinedButton(onPressed: () {}, child: const Text('Secondary')),
+                    ElevatedButton(
+                      onPressed: () {},
+                      child: const Text('Primary'),
+                    ),
+                    OutlinedButton(
+                      onPressed: () {},
+                      child: const Text('Secondary'),
+                    ),
                     TextButton(onPressed: () {}, child: const Text('Tertiary')),
-                    IconButton(onPressed: () {}, icon: const Icon(Icons.more_horiz)),
+                    IconButton(
+                      onPressed: () {},
+                      icon: const Icon(Icons.more_horiz),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 24),
@@ -44,7 +56,9 @@ class KeydexGallery extends StatelessWidget {
                 const SizedBox(height: 8),
                 const Text("Here is some explanatory body text for a field."),
                 const SizedBox(height: 8),
-                const TextField(decoration: InputDecoration(labelText: 'Vault name')),
+                const TextField(
+                  decoration: InputDecoration(labelText: 'Vault name'),
+                ),
                 const SizedBox(height: 12),
                 const Row(
                   children: [
@@ -90,9 +104,9 @@ class KeydexGallery extends StatelessWidget {
                   children: [
                     ElevatedButton(
                       onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Saved!')),
-                        );
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(const SnackBar(content: Text('Saved!')));
                       },
                       child: const Text('Show toast'),
                     ),
@@ -156,16 +170,16 @@ class KeydexGallery extends StatelessWidget {
   }
 
   Widget _icon(BuildContext context) => Container(
-        width: 48,
-        height: 48,
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surfaceContainer,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Icon(
-          Icons.lock_outline,
-          color: Theme.of(context).scaffoldBackgroundColor,
-          size: 24,
-        ),
-      );
+    width: 48,
+    height: 48,
+    decoration: BoxDecoration(
+      color: Theme.of(context).colorScheme.surfaceContainer,
+      borderRadius: BorderRadius.circular(8),
+    ),
+    child: Icon(
+      Icons.lock_outline,
+      color: Theme.of(context).scaffoldBackgroundColor,
+      size: 24,
+    ),
+  );
 }
