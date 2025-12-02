@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../utils/app_initialization.dart';
 import '../widgets/row_button.dart';
+import 'account_choice_screen.dart';
 
 /// Onboarding screen shown when user is not logged in
 class OnboardingScreen extends ConsumerWidget {
@@ -87,9 +87,13 @@ class OnboardingScreen extends ConsumerWidget {
             ),
             // Get Started button at bottom
             RowButton(
-              onPressed: () async {
-                // Initialize key and services, then invalidate providers to show main screen
-                await initializeAppServices(ref, initializeKeyIfNeeded: true);
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AccountChoiceScreen(),
+                  ),
+                );
               },
               icon: Icons.arrow_forward,
               text: 'Get Started',
