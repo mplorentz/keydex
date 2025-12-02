@@ -202,24 +202,30 @@ Read the design guide when:
 - Implementing layouts
 - Making any visual design decisions
 
-### The Orange Rule (Most Important!)
-**Orange `#DC714E` appears ONLY on RowButton components** (primary actions at bottom of screen)
-- Never use orange for regular buttons, borders, highlights, icons, or text
-- When multiple actions are needed, use `RowButtonStack` with gradient (only bottom button is orange)
-- All other UI elements use Navy-Ink `#243036` or Umber `#7A4A2F`
+### The Monochrome Rule (Most Important!)
+**Keydex3 uses ONLY grayscale colors** - no accent colors beyond error red
+- All UI elements use shades of gray
+- Buttons use medium grays (light: `#808080`, dark: `#404040`)
+- RowButtonStack creates monotonic gray gradients (no visual "dips")
+- High contrast between text and background in both light and dark modes
+- Never add colorful UI elements - stay monochrome
 
 ### Active Theme
-The app uses the **keydex2 theme** defined in `lib/widgets/theme.dart`
-- Professional, muted palette inspired by ledgers and terminals
+The app uses the **keydex3 theme** defined in `lib/widgets/theme.dart`
+- Stark black and white monochrome palette
+- System theme support (light and dark modes)
 - Minimal rounding (4pt for fields, 12pt for buttons)
-- Flat design with no unnecessary shadows
-- Confident typography (Archivo for titles, OpenSans for body)
+- Flat design with subtle shadows (2pt elevation on buttons)
+- Confident typography (Archivo for titles, Fira Sans for body)
+- Razor-thin dividers (0.5pt) between list items
 
 ### Quick Design References
-- **Primary Action**: Use `RowButton` widget (orange, full-width, at bottom)
-- **Multiple Actions**: Use `RowButtonStack` widget (gradient with orange at bottom)
-- **Forms**: Match scaffold background, subtle borders, minimal fill
-- **Lists**: Edge-to-edge, no borders, no card wrappers
-- **AppBar**: Large (40pt), left-aligned, 100pt toolbar height
+- **Primary Action**: Use `RowButton` widget (outlined with gray fill, full-width, at bottom)
+- **Multiple Actions**: Use `RowButtonStack` widget (monotonic gray gradient, darker at bottom)
+- **Forms**: Match scaffold background, subtle borders, filled inputs
+- **Lists**: Use `ListView.separated` with dividers, icon containers use `surfaceContainer`
+- **AppBar**: Large (40pt), left-aligned, 100pt toolbar height, transparent surface tint
+- **Icons**: Use `onSurface` color for high contrast
 
 **Remember**: Check DESIGN_GUIDE.md for complete details before implementing any UI changes.
+- If you need to manually verify some behavior in the UI you can run the app for web and use Playwright MCP to interact with it. Use the task "Flutter: Build and Serve for Playwright" to start.
