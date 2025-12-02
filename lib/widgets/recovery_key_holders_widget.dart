@@ -80,11 +80,6 @@ class RecoveryKeyHoldersWidget extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Key Holders',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 16),
                     ...keyHolders.map((info) {
                       return _buildKeyHolderItem(info);
                     }),

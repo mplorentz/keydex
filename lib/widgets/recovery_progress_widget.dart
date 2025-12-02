@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/lockbox.dart';
 import '../providers/recovery_provider.dart';
 import '../providers/lockbox_provider.dart';
 import '../services/recovery_service.dart';
@@ -70,12 +69,8 @@ class RecoveryProgressWidget extends ConsumerWidget {
             ),
           ),
           data: (lockbox) {
-            // Get actual totals from lockbox
-            final totalKeyHolders = _getTotalKeyHolders(lockbox);
             final approvedCount = request.approvedCount;
-            final deniedCount = request.deniedCount;
             final threshold = request.threshold;
-            final pendingCount = totalKeyHolders - (approvedCount + deniedCount);
             final canRecover = approvedCount >= threshold;
 
             // Calculate progress based on threshold
@@ -113,21 +108,6 @@ class RecoveryProgressWidget extends ConsumerWidget {
                       '$threshold',
                       'Minimum shares needed',
                     ),
-                    _buildProgressRow(
-                      'Approved',
-                      '$approvedCount',
-                      'Stewards approved',
-                    ),
-                    _buildProgressRow(
-                      'Denied',
-                      '$deniedCount',
-                      'Stewards denied',
-                    ),
-                    _buildProgressRow(
-                      'Pending',
-                      '$pendingCount',
-                      'Awaiting response',
-                    ),
                     const SizedBox(height: 16),
                     if (canRecover) ...[
                       Container(
@@ -164,7 +144,7 @@ class RecoveryProgressWidget extends ConsumerWidget {
                           ),
                           icon: const Icon(Icons.lock_open),
                           label: const Text(
-                            'Recover Vault',
+                            'Open Vault',
                             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                         ),
@@ -178,36 +158,6 @@ class RecoveryProgressWidget extends ConsumerWidget {
         );
       },
     );
-  }
-
-  /// Extract total number of key holders from lockbox
-  int _getTotalKeyHolders(Lockbox? lockbox) {
-    if (lockbox == null) return 0;
-
-    // Get from backupConfig if available
-    if (lockbox.backupConfig?.keyHolders.isNotEmpty == true) {
-      return lockbox.backupConfig!.keyHolders.length;
-    }
-
-    // Fallback: use shards
-    if (lockbox.shards.isNotEmpty) {
-      final firstShard = lockbox.shards.first;
-      if (firstShard.peers != null) {
-        // Peers is now a list of maps, count them
-        var count = firstShard.peers!.length;
-        // Also count owner if ownerName is present (from lockbox or shard)
-        if (lockbox.ownerName != null || firstShard.ownerName != null) {
-          count++;
-        }
-        return count;
-      }
-      // If no peers but ownerName is present, count owner
-      if (lockbox.ownerName != null || firstShard.ownerName != null) {
-        return 1;
-      }
-    }
-
-    return 0;
   }
 
   Widget _buildProgressRow(String label, String value, String subtitle) {
@@ -236,13 +186,25 @@ class RecoveryProgressWidget extends ConsumerWidget {
   }
 
   Future<void> _performRecovery(BuildContext context, WidgetRef ref) async {
+    // Get the recovery request to find the lockbox
+    final recoveryService = ref.read(recoveryServiceProvider);
+    final request = await recoveryService.getRecoveryRequest(recoveryRequestId);
+    if (request == null) return;
+
+    // Get the lockbox to access owner name
+    final lockboxAsync = ref.read(lockboxProvider(request.lockboxId));
+    final lockbox = lockboxAsync.valueOrNull;
+    final ownerName = lockbox?.ownerName ?? 'the owner';
+
+    if (!context.mounted) return;
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Recover Vault'),
-        content: const Text(
-          'This will recover and unlock your vault using the collected key shares. '
-          'The recovered content will be displayed. Continue?',
+        content: Text(
+          'This will recover and unlock $ownerName\'s vault using the collected keys. '
+          'The vault contents will now be displayed. Continue?',
         ),
         actions: [
           TextButton(

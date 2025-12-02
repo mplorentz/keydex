@@ -4,7 +4,6 @@ import '../models/recovery_request.dart';
 import '../providers/recovery_provider.dart';
 import '../providers/lockbox_provider.dart';
 import '../services/recovery_service.dart';
-import '../widgets/recovery_metadata_widget.dart';
 import '../widgets/recovery_progress_widget.dart';
 import '../widgets/recovery_key_holders_widget.dart';
 
@@ -30,16 +29,6 @@ class _RecoveryStatusScreenState extends ConsumerState<RecoveryStatusScreen> {
       appBar: AppBar(
         title: const Text('Recovery'),
         centerTitle: false,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              // Invalidate the provider to trigger refresh
-              ref.invalidate(recoveryRequestByIdProvider(widget.recoveryRequestId));
-            },
-            tooltip: 'Refresh',
-          ),
-        ],
       ),
       body: requestAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -76,8 +65,6 @@ class _RecoveryStatusScreenState extends ConsumerState<RecoveryStatusScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    RecoveryMetadataWidget(recoveryRequestId: widget.recoveryRequestId),
-                    const SizedBox(height: 16),
                     // Instructions section
                     if (instructions != null && instructions.isNotEmpty) ...[
                       Card(
@@ -134,7 +121,7 @@ class _RecoveryStatusScreenState extends ConsumerState<RecoveryStatusScreen> {
           foregroundColor: Colors.white,
         ),
         icon: const Icon(Icons.exit_to_app),
-        label: const Text('Exit Recovery Mode'),
+        label: const Text('End Recovery'),
       ),
     );
   }
@@ -143,11 +130,11 @@ class _RecoveryStatusScreenState extends ConsumerState<RecoveryStatusScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Exit Recovery Mode'),
+        title: const Text('End Recovery'),
         content: const Text(
-          'This will archive the recovery request and delete the recovered content and recovery shards. '
-          'Your own share of the vault will be preserved.\n\n'
-          'Are you sure you want to exit recovery mode?',
+          'This will archive the recovery request and delete the recovered content and steward keys. '
+          'Your own key to the vault will be preserved.\n\n'
+          'Are you sure you want to end recovery?',
         ),
         actions: [
           TextButton(
@@ -160,7 +147,7 @@ class _RecoveryStatusScreenState extends ConsumerState<RecoveryStatusScreen> {
               backgroundColor: Theme.of(context).primaryColor,
               foregroundColor: Colors.white,
             ),
-            child: const Text('Exit Recovery Mode'),
+            child: const Text('End Recovery'),
           ),
         ],
       ),
@@ -177,7 +164,7 @@ class _RecoveryStatusScreenState extends ConsumerState<RecoveryStatusScreen> {
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Exited recovery mode successfully')),
+            const SnackBar(content: Text('Ended recovery')),
           );
           // Invalidate providers to refresh the UI
           ref.invalidate(recoveryRequestByIdProvider(widget.recoveryRequestId));

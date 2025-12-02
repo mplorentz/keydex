@@ -48,7 +48,7 @@ extension KeyHolderStatusExtension on KeyHolderStatus {
   String get label {
     switch (this) {
       case KeyHolderStatus.invited:
-        return 'Invited';
+        return 'Pending';
       case KeyHolderStatus.awaitingKey:
         return 'Awaiting Key';
       case KeyHolderStatus.awaitingNewKey:
