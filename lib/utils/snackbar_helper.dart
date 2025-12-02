@@ -48,10 +48,12 @@ class TopSnackBarScaffoldMessenger extends StatefulWidget {
   });
 
   @override
-  State<TopSnackBarScaffoldMessenger> createState() => _TopSnackBarScaffoldMessengerState();
+  State<TopSnackBarScaffoldMessenger> createState() =>
+      _TopSnackBarScaffoldMessengerState();
 }
 
-class _TopSnackBarScaffoldMessengerState extends State<TopSnackBarScaffoldMessenger> {
+class _TopSnackBarScaffoldMessengerState
+    extends State<TopSnackBarScaffoldMessenger> {
   @override
   Widget build(BuildContext context) {
     return ScaffoldMessenger(
@@ -73,7 +75,10 @@ class _TopSnackBarMessengerWrapper extends StatelessWidget {
   final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey;
   final Widget child;
 
-  const _TopSnackBarMessengerWrapper({required this.scaffoldMessengerKey, required this.child});
+  const _TopSnackBarMessengerWrapper({
+    required this.scaffoldMessengerKey,
+    required this.child,
+  });
 
   @override
   Widget build(BuildContext context) {

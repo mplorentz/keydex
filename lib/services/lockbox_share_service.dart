@@ -13,10 +13,7 @@ import 'ndk_service.dart';
 /// This service depends on LockboxRepository for shard management
 final lockboxShareServiceProvider = Provider<LockboxShareService>((ref) {
   final repository = ref.watch(lockboxRepositoryProvider);
-  return LockboxShareService(
-    repository,
-    () => ref.read(ndkServiceProvider),
-  );
+  return LockboxShareService(repository, () => ref.read(ndkServiceProvider));
 });
 
 /// Service for managing lockbox shares and recovery operations
@@ -37,7 +34,7 @@ class LockboxShareService {
 
   // Shards collected during recovery (multiple per recovery request)
   static Map<String, List<ShardData>>?
-      _cachedRecoveryShards; // recoveryRequestId -> List<ShardData>
+  _cachedRecoveryShards; // recoveryRequestId -> List<ShardData>
 
   static bool _isInitialized = false;
 
@@ -50,7 +47,8 @@ class LockboxShareService {
       await _loadRecoveryShardData();
       _isInitialized = true;
       Log.info(
-          'LockboxShareService initialized with ${_cachedShardData?.length ?? 0} key holder shards and ${_cachedRecoveryShards?.length ?? 0} recovery requests');
+        'LockboxShareService initialized with ${_cachedShardData?.length ?? 0} key holder shards and ${_cachedRecoveryShards?.length ?? 0} recovery requests',
+      );
     } catch (e) {
       Log.error('Error initializing LockboxShareService', e);
       _cachedShardData = {};
@@ -75,7 +73,9 @@ class LockboxShareService {
         final shard = shardDataFromJson(shardJson as Map<String, dynamic>);
         return MapEntry(lockboxId, shard);
       });
-      Log.info('Loaded shard data for ${_cachedShardData!.length} lockboxes from storage');
+      Log.info(
+        'Loaded shard data for ${_cachedShardData!.length} lockboxes from storage',
+      );
     } catch (e) {
       Log.error('Error loading shard data', e);
       _cachedShardData = {};
@@ -95,7 +95,9 @@ class LockboxShareService {
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_shardDataKey, jsonString);
-      Log.info('Saved shard data for ${_cachedShardData!.length} lockboxes to storage');
+      Log.info(
+        'Saved shard data for ${_cachedShardData!.length} lockboxes to storage',
+      );
     } catch (e) {
       Log.error('Error saving shard data', e);
       throw Exception('Failed to save shard data: $e');
@@ -121,7 +123,8 @@ class LockboxShareService {
         return MapEntry(recoveryRequestId, shardList);
       });
       Log.info(
-          'Loaded recovery shards for ${_cachedRecoveryShards!.length} recovery requests from storage');
+        'Loaded recovery shards for ${_cachedRecoveryShards!.length} recovery requests from storage',
+      );
     } catch (e) {
       Log.error('Error loading recovery shard data', e);
       _cachedRecoveryShards = {};
@@ -133,8 +136,13 @@ class LockboxShareService {
     if (_cachedRecoveryShards == null) return;
 
     try {
-      final jsonMap = _cachedRecoveryShards!.map((recoveryRequestId, shardList) {
-        final shardListJson = shardList.map((shard) => shardDataToJson(shard)).toList();
+      final jsonMap = _cachedRecoveryShards!.map((
+        recoveryRequestId,
+        shardList,
+      ) {
+        final shardListJson = shardList
+            .map((shard) => shardDataToJson(shard))
+            .toList();
         return MapEntry(recoveryRequestId, shardListJson);
       });
       final jsonString = json.encode(jsonMap);
@@ -142,7 +150,8 @@ class LockboxShareService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_recoveryShardDataKey, jsonString);
       Log.info(
-          'Saved recovery shards for ${_cachedRecoveryShards!.length} recovery requests to storage');
+        'Saved recovery shards for ${_cachedRecoveryShards!.length} recovery requests to storage',
+      );
     } catch (e) {
       Log.error('Error saving recovery shard data', e);
       throw Exception('Failed to save recovery shard data: $e');
@@ -188,7 +197,9 @@ class LockboxShareService {
 
     // Add shard to lockbox via LockboxService
     await repository.addShardToLockbox(lockboxId, shardData);
-    Log.info('Added shard for lockbox $lockboxId (event: ${shardData.nostrEventId})');
+    Log.info(
+      'Added shard for lockbox $lockboxId (event: ${shardData.nostrEventId})',
+    );
   }
 
   /// Process a received lockbox share (invitation flow)
@@ -198,7 +209,10 @@ class LockboxShareService {
   /// 2. Sends a confirmation event to notify the owner
   ///
   /// Uses relay URLs from the shard data (included during distribution).
-  Future<void> processLockboxShare(String lockboxId, ShardData shardData) async {
+  Future<void> processLockboxShare(
+    String lockboxId,
+    ShardData shardData,
+  ) async {
     // Validate shard data
     if (!shardData.isValid) {
       throw ArgumentError('Invalid shard data');
@@ -225,17 +239,23 @@ class LockboxShareService {
 
         if (eventId != null) {
           Log.info(
-              'Sent shard confirmation event $eventId for lockbox $lockboxId, shard $shardIndex');
+            'Sent shard confirmation event $eventId for lockbox $lockboxId, shard $shardIndex',
+          );
         } else {
           Log.warning(
-              'Failed to send shard confirmation event for lockbox $lockboxId, shard $shardIndex');
+            'Failed to send shard confirmation event for lockbox $lockboxId, shard $shardIndex',
+          );
         }
       } else {
         Log.warning(
-            'No relay URLs found in shard data for lockbox $lockboxId - cannot send shard confirmation event');
+          'No relay URLs found in shard data for lockbox $lockboxId - cannot send shard confirmation event',
+        );
       }
     } catch (e) {
-      Log.error('Error sending shard confirmation event for lockbox $lockboxId', e);
+      Log.error(
+        'Error sending shard confirmation event for lockbox $lockboxId',
+        e,
+      );
       // Don't fail shard storage if confirmation sending fails
     }
   }
@@ -264,7 +284,8 @@ class LockboxShareService {
       }
 
       Log.info(
-          'Sending shard confirmation event for lockbox: ${lockboxId.substring(0, 8)}..., shard: $shardIndex');
+        'Sending shard confirmation event for lockbox: ${lockboxId.substring(0, 8)}..., shard: $shardIndex',
+      );
 
       // Publish using NdkService with empty content, all data in tags
       return await ndkService.publishEncryptedEvent(
@@ -286,7 +307,10 @@ class LockboxShareService {
   }
 
   /// Ensure a lockbox record exists for received shares
-  Future<void> _ensureLockboxExists(String lockboxId, ShardData shardData) async {
+  Future<void> _ensureLockboxExists(
+    String lockboxId,
+    ShardData shardData,
+  ) async {
     try {
       // Check if lockbox already exists
       final existingLockbox = await repository.getLockbox(lockboxId);
@@ -318,13 +342,18 @@ class LockboxShareService {
         id: lockboxId,
         name: lockboxName,
         content: null, // No decrypted content yet - we only have a shard
-        createdAt: DateTime.fromMillisecondsSinceEpoch(shardData.createdAt * 1000),
-        ownerPubkey: shardData.creatorPubkey, // Owner is the creator of the shard
+        createdAt: DateTime.fromMillisecondsSinceEpoch(
+          shardData.createdAt * 1000,
+        ),
+        ownerPubkey:
+            shardData.creatorPubkey, // Owner is the creator of the shard
         ownerName: shardData.ownerName, // Set owner name from shard data
       );
 
       await repository.addLockbox(lockbox);
-      Log.info('Created lockbox record for shared key: $lockboxId ($lockboxName)');
+      Log.info(
+        'Created lockbox record for shared key: $lockboxId ($lockboxName)',
+      );
     } catch (e) {
       Log.error('Error creating lockbox record for $lockboxId', e);
       // Don't throw - we don't want to fail shard storage just because lockbox creation failed
@@ -349,7 +378,9 @@ class LockboxShareService {
 
     _cachedShardData![lockboxId] = updatedShard;
     await _saveShardData();
-    Log.info('Marked share as received for lockbox $lockboxId (event: ${shard.nostrEventId})');
+    Log.info(
+      'Marked share as received for lockbox $lockboxId (event: ${shard.nostrEventId})',
+    );
   }
 
   /// Mark a share as received by event ID
@@ -379,7 +410,8 @@ class LockboxShareService {
     }
 
     Log.warning(
-        'Cannot reassemble from single shard - need ${shard.threshold} shards from recovery process');
+      'Cannot reassemble from single shard - need ${shard.threshold} shards from recovery process',
+    );
     return null;
   }
 
@@ -446,7 +478,10 @@ class LockboxShareService {
   // These methods manage shards collected during recovery
 
   /// Add a recovery shard (for recovery initiator collecting shards from key holders)
-  Future<void> addRecoveryShard(String recoveryRequestId, ShardData shardData) async {
+  Future<void> addRecoveryShard(
+    String recoveryRequestId,
+    ShardData shardData,
+  ) async {
     await initialize();
 
     // Validate shard data
@@ -466,12 +501,14 @@ class LockboxShareService {
       // Update existing shard
       existingShards[existingIndex] = shardData;
       Log.info(
-          'Updated recovery shard for request $recoveryRequestId (event: ${shardData.nostrEventId})');
+        'Updated recovery shard for request $recoveryRequestId (event: ${shardData.nostrEventId})',
+      );
     } else {
       // Add new shard
       existingShards.add(shardData);
       Log.info(
-          'Added recovery shard for request $recoveryRequestId (event: ${shardData.nostrEventId}, total: ${existingShards.length})');
+        'Added recovery shard for request $recoveryRequestId (event: ${shardData.nostrEventId}, total: ${existingShards.length})',
+      );
     }
 
     _cachedRecoveryShards![recoveryRequestId] = existingShards;
@@ -497,7 +534,10 @@ class LockboxShareService {
   }
 
   /// Check if we have sufficient recovery shards for a recovery request
-  Future<bool> hasSufficientRecoveryShards(String recoveryRequestId, int threshold) async {
+  Future<bool> hasSufficientRecoveryShards(
+    String recoveryRequestId,
+    int threshold,
+  ) async {
     await initialize();
 
     final shards = _cachedRecoveryShards![recoveryRequestId];
@@ -546,7 +586,8 @@ class LockboxShareService {
       // Validate event kind
       if (event.kind != NostrKind.keyHolderRemoved.value) {
         throw ArgumentError(
-            'Invalid event kind: expected ${NostrKind.keyHolderRemoved.value}, got ${event.kind}');
+          'Invalid event kind: expected ${NostrKind.keyHolderRemoved.value}, got ${event.kind}',
+        );
       }
 
       // Parse the removal data from the unwrapped content (already decrypted by NDK)
@@ -554,25 +595,34 @@ class LockboxShareService {
       try {
         Log.debug('Key holder removed event content: ${event.content}');
         payload = json.decode(event.content) as Map<String, dynamic>;
-        Log.debug('Key holder removed event payload keys: ${payload.keys.toList()}');
+        Log.debug(
+          'Key holder removed event payload keys: ${payload.keys.toList()}',
+        );
       } catch (e) {
         Log.error('Error parsing key holder removed event JSON', e);
         throw Exception(
-            'Failed to parse key holder removed event content. The event may be corrupted or encrypted incorrectly: $e');
+          'Failed to parse key holder removed event content. The event may be corrupted or encrypted incorrectly: $e',
+        );
       }
 
       // Extract lockbox ID from payload
       final lockboxId = payload['lockbox_id'] as String?;
       if (lockboxId == null || lockboxId.isEmpty) {
-        throw ArgumentError('Missing lockbox_id in key holder removed event payload');
+        throw ArgumentError(
+          'Missing lockbox_id in key holder removed event payload',
+        );
       }
 
-      Log.info('Processing key holder removal for lockbox: ${lockboxId.substring(0, 8)}...');
+      Log.info(
+        'Processing key holder removal for lockbox: ${lockboxId.substring(0, 8)}...',
+      );
 
       // Get the lockbox
       final lockbox = await repository.getLockbox(lockboxId);
       if (lockbox == null) {
-        Log.warning('Lockbox $lockboxId not found - may have already been deleted');
+        Log.warning(
+          'Lockbox $lockboxId not found - may have already been deleted',
+        );
         return;
       }
 
@@ -589,7 +639,9 @@ class LockboxShareService {
       await removeLockboxShare(lockboxId);
       Log.info('Removed shard for archived lockbox $lockboxId');
 
-      Log.info('Successfully processed key holder removal for lockbox $lockboxId');
+      Log.info(
+        'Successfully processed key holder removal for lockbox $lockboxId',
+      );
     } catch (e) {
       Log.error('Error processing key holder removal event ${event.id}', e);
       rethrow;

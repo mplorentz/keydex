@@ -15,7 +15,9 @@ import 'relay_scan_service.dart';
 import '../services/logger.dart';
 
 /// Provider for BackupService
-final Provider<BackupService> backupServiceProvider = Provider<BackupService>((ref) {
+final Provider<BackupService> backupServiceProvider = Provider<BackupService>((
+  ref,
+) {
   return BackupService(
     ref.read(lockboxRepositoryProvider),
     ref.read(shardDistributionServiceProvider),
@@ -49,13 +51,17 @@ class BackupService {
     String? contentHash,
   }) async {
     // Validate inputs
-    if (threshold < LockboxBackupConstraints.minThreshold || threshold > totalKeys) {
+    if (threshold < LockboxBackupConstraints.minThreshold ||
+        threshold > totalKeys) {
       throw ArgumentError(
-          'Threshold must be >= ${LockboxBackupConstraints.minThreshold} and <= totalKeys');
+        'Threshold must be >= ${LockboxBackupConstraints.minThreshold} and <= totalKeys',
+      );
     }
-    if (totalKeys < threshold || totalKeys > LockboxBackupConstraints.maxTotalKeys) {
+    if (totalKeys < threshold ||
+        totalKeys > LockboxBackupConstraints.maxTotalKeys) {
       throw ArgumentError(
-          'TotalKeys must be >= threshold and <= ${LockboxBackupConstraints.maxTotalKeys}');
+        'TotalKeys must be >= threshold and <= ${LockboxBackupConstraints.maxTotalKeys}',
+      );
     }
     if (keyHolders.length != totalKeys) {
       throw ArgumentError('KeyHolders length must equal totalKeys');
@@ -127,7 +133,9 @@ class BackupService {
     try {
       // Validate inputs
       if (threshold < LockboxBackupConstraints.minThreshold) {
-        throw ArgumentError('Threshold must be at least ${LockboxBackupConstraints.minThreshold}');
+        throw ArgumentError(
+          'Threshold must be at least ${LockboxBackupConstraints.minThreshold}',
+        );
       }
       if (threshold > totalShards) {
         throw ArgumentError('Threshold cannot exceed total shards');
@@ -169,7 +177,9 @@ class BackupService {
         shardDataList.add(shardData);
       }
 
-      Log.info('Generated $totalShards Shamir shares with threshold $threshold');
+      Log.info(
+        'Generated $totalShards Shamir shares with threshold $threshold',
+      );
       return shardDataList;
     } catch (e) {
       Log.error('Error generating Shamir shares', e);
@@ -178,7 +188,9 @@ class BackupService {
   }
 
   /// Reconstruct content from Shamir shares
-  Future<String> reconstructFromShares({required List<ShardData> shares}) async {
+  Future<String> reconstructFromShares({
+    required List<ShardData> shares,
+  }) async {
     try {
       if (shares.isEmpty) {
         throw ArgumentError('At least one share is required');
@@ -200,7 +212,9 @@ class BackupService {
       }
 
       if (shares.length < threshold) {
-        throw ArgumentError('At least $threshold shares are required, got ${shares.length}');
+        throw ArgumentError(
+          'At least $threshold shares are required, got ${shares.length}',
+        );
       }
 
       // Create SSS instance
@@ -208,7 +222,9 @@ class BackupService {
 
       // Verify that the prime modulus matches the one ntcdcrypto uses
       final expectedPrimeModHex = sss.prime.toRadixString(16);
-      final expectedPrimeMod = base64Url.encode(utf8.encode(expectedPrimeModHex));
+      final expectedPrimeMod = base64Url.encode(
+        utf8.encode(expectedPrimeModHex),
+      );
 
       if (primeMod != expectedPrimeMod) {
         throw ArgumentError(
@@ -223,7 +239,9 @@ class BackupService {
       // This will reconstruct the original secret
       final content = sss.combine(shareStrings, true);
 
-      Log.info('Successfully reconstructed content from ${shares.length} shares');
+      Log.info(
+        'Successfully reconstructed content from ${shares.length} shares',
+      );
       return content;
     } on ArgumentError catch (e) {
       Log.error('Error reconstructing from shares', e);
@@ -238,10 +256,16 @@ class BackupService {
   Future<void> updateBackupStatus(String lockboxId, BackupStatus status) async {
     final config = await _repository.getBackupConfig(lockboxId);
     if (config == null) {
-      throw ArgumentError('Backup configuration not found for lockbox $lockboxId');
+      throw ArgumentError(
+        'Backup configuration not found for lockbox $lockboxId',
+      );
     }
 
-    final updatedConfig = copyBackupConfig(config, status: status, lastUpdated: DateTime.now());
+    final updatedConfig = copyBackupConfig(
+      config,
+      status: status,
+      lastUpdated: DateTime.now(),
+    );
     await _repository.updateBackupConfig(lockboxId, updatedConfig);
 
     Log.info('Updated backup status for lockbox $lockboxId to $status');
@@ -257,7 +281,9 @@ class BackupService {
   }) async {
     final config = await _repository.getBackupConfig(lockboxId);
     if (config == null) {
-      throw ArgumentError('Backup configuration not found for lockbox $lockboxId');
+      throw ArgumentError(
+        'Backup configuration not found for lockbox $lockboxId',
+      );
     }
 
     // Find and update the key holder
@@ -310,7 +336,9 @@ class BackupService {
     final existingConfig = await _repository.getBackupConfig(lockboxId);
 
     if (existingConfig == null) {
-      throw ArgumentError('No existing backup configuration found for lockbox $lockboxId');
+      throw ArgumentError(
+        'No existing backup configuration found for lockbox $lockboxId',
+      );
     }
 
     // Track if config parameters changed (requires redistribution)
@@ -337,7 +365,10 @@ class BackupService {
     // Merge key holders (more complex)
     List<KeyHolder> mergedKeyHolders;
     if (keyHolders != null) {
-      mergedKeyHolders = _mergeKeyHolders(existingConfig.keyHolders, keyHolders);
+      mergedKeyHolders = _mergeKeyHolders(
+        existingConfig.keyHolders,
+        keyHolders,
+      );
       // If key holder list changed, it requires redistribution
       if (mergedKeyHolders.length != existingConfig.keyHolders.length) {
         configParamsChanged = true;
@@ -356,11 +387,13 @@ class BackupService {
 
     // If distribution version incremented, reset all key holders with pubkeys to awaitingNewKey
     // (preserve invited key holders without pubkeys)
-    final finalKeyHolders = newDistributionVersion > existingConfig.distributionVersion
+    final finalKeyHolders =
+        newDistributionVersion > existingConfig.distributionVersion
         ? mergedKeyHolders.map((holder) {
             // Reset to awaitingNewKey if they have a pubkey and were holding a key
             // Keep as awaitingKey if they were already awaiting (never received a key)
-            if (holder.pubkey != null && holder.status != KeyHolderStatus.invited) {
+            if (holder.pubkey != null &&
+                holder.status != KeyHolderStatus.invited) {
               final newStatus = holder.status == KeyHolderStatus.holdingKey
                   ? KeyHolderStatus.awaitingNewKey
                   : KeyHolderStatus.awaitingKey;
@@ -404,7 +437,8 @@ class BackupService {
     }
 
     Log.info(
-        'Merged backup configuration for lockbox $lockboxId (version: $newDistributionVersion)');
+      'Merged backup configuration for lockbox $lockboxId (version: $newDistributionVersion)',
+    );
     return mergedConfig;
   }
 
@@ -455,27 +489,36 @@ class BackupService {
 
     await _repository.updateBackupConfig(lockboxId, updatedConfig);
     Log.info(
-        'Incremented distributionVersion to $newDistributionVersion for lockbox $lockboxId due to content change');
+      'Incremented distributionVersion to $newDistributionVersion for lockbox $lockboxId due to content change',
+    );
   }
 
   /// Helper to merge key holder lists
-  List<KeyHolder> _mergeKeyHolders(List<KeyHolder> existing, List<KeyHolder> updated) {
+  List<KeyHolder> _mergeKeyHolders(
+    List<KeyHolder> existing,
+    List<KeyHolder> updated,
+  ) {
     final merged = <KeyHolder>[];
 
     // Add all updated key holders, preserving acknowledgments from existing
     for (final updatedHolder in updated) {
       // Find matching holder in existing list by id
-      final existingHolder = existing.where((h) => h.id == updatedHolder.id).firstOrNull;
+      final existingHolder = existing
+          .where((h) => h.id == updatedHolder.id)
+          .firstOrNull;
 
       if (existingHolder != null) {
         // Preserve important fields from existing (status, acknowledgments, etc)
-        merged.add(copyKeyHolder(
-          updatedHolder,
-          status: existingHolder.status,
-          acknowledgedAt: existingHolder.acknowledgedAt,
-          acknowledgmentEventId: existingHolder.acknowledgmentEventId,
-          acknowledgedDistributionVersion: existingHolder.acknowledgedDistributionVersion,
-        ));
+        merged.add(
+          copyKeyHolder(
+            updatedHolder,
+            status: existingHolder.status,
+            acknowledgedAt: existingHolder.acknowledgedAt,
+            acknowledgmentEventId: existingHolder.acknowledgmentEventId,
+            acknowledgedDistributionVersion:
+                existingHolder.acknowledgedDistributionVersion,
+          ),
+        );
       } else {
         // New key holder
         merged.add(updatedHolder);
@@ -556,14 +599,18 @@ class BackupService {
       }
       final content = lockbox.content;
       if (content == null) {
-        throw Exception('Cannot backup encrypted lockbox - content is not available');
+        throw Exception(
+          'Cannot backup encrypted lockbox - content is not available',
+        );
       }
       Log.info('Loaded lockbox content for backup: $lockboxId');
 
       // Step 2: Load backup configuration
       final config = await _repository.getBackupConfig(lockboxId);
       if (config == null) {
-        throw Exception('Backup configuration not found for lockbox: $lockboxId');
+        throw Exception(
+          'Backup configuration not found for lockbox: $lockboxId',
+        );
       }
       if (config.keyHolders.isEmpty) {
         throw Exception('No stewards configured in backup configuration');
@@ -596,10 +643,7 @@ class BackupService {
       // Build peers list with name and pubkey maps
       final peers = config.keyHolders
           .where((kh) => kh.pubkey != null && kh.pubkey != creatorPubkey)
-          .map((kh) => {
-                'name': kh.name ?? 'Unknown',
-                'pubkey': kh.pubkey!,
-              })
+          .map((kh) => {'name': kh.name ?? 'Unknown', 'pubkey': kh.pubkey!})
           .toList();
       final shards = await generateShamirShares(
         content: content,

@@ -16,36 +16,37 @@ import '../helpers/golden_test_helpers.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  const MethodChannel sharedPreferencesChannel =
-      MethodChannel('plugins.flutter.io/shared_preferences');
+  const MethodChannel sharedPreferencesChannel = MethodChannel(
+    'plugins.flutter.io/shared_preferences',
+  );
   final Map<String, dynamic> sharedPreferencesStore = {};
 
   setUpAll(() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(sharedPreferencesChannel, (call) async {
-      final args = call.arguments as Map? ?? {};
-      if (call.method == 'getAll') {
-        return Map<String, dynamic>.from(sharedPreferencesStore);
-      } else if (call.method == 'setString') {
-        sharedPreferencesStore[args['key']] = args['value'];
-        return true;
-      } else if (call.method == 'getString') {
-        return sharedPreferencesStore[args['key']];
-      } else if (call.method == 'remove') {
-        sharedPreferencesStore.remove(args['key']);
-        return true;
-      } else if (call.method == 'getStringList') {
-        final value = sharedPreferencesStore[args['key']];
-        return value is List ? value : null;
-      } else if (call.method == 'setStringList') {
-        sharedPreferencesStore[args['key']] = args['value'];
-        return true;
-      } else if (call.method == 'clear') {
-        sharedPreferencesStore.clear();
-        return true;
-      }
-      return null;
-    });
+          final args = call.arguments as Map? ?? {};
+          if (call.method == 'getAll') {
+            return Map<String, dynamic>.from(sharedPreferencesStore);
+          } else if (call.method == 'setString') {
+            sharedPreferencesStore[args['key']] = args['value'];
+            return true;
+          } else if (call.method == 'getString') {
+            return sharedPreferencesStore[args['key']];
+          } else if (call.method == 'remove') {
+            sharedPreferencesStore.remove(args['key']);
+            return true;
+          } else if (call.method == 'getStringList') {
+            final value = sharedPreferencesStore[args['key']];
+            return value is List ? value : null;
+          } else if (call.method == 'setStringList') {
+            sharedPreferencesStore[args['key']] = args['value'];
+            return true;
+          } else if (call.method == 'clear') {
+            sharedPreferencesStore.clear();
+            return true;
+          }
+          return null;
+        });
   });
 
   tearDownAll(() {
@@ -63,20 +64,14 @@ void main() {
     String? name,
     KeyHolderStatus status = KeyHolderStatus.awaitingKey,
   }) {
-    return createKeyHolder(
-      pubkey: pubkey,
-      name: name,
-    );
+    return createKeyHolder(pubkey: pubkey, name: name);
   }
 
   KeyHolder createTestInvitedKeyHolder({
     required String name,
     required String inviteCode,
   }) {
-    return createInvitedKeyHolder(
-      name: name,
-      inviteCode: inviteCode,
-    );
+    return createInvitedKeyHolder(name: name, inviteCode: inviteCode);
   }
 
   // Helper to create backup config
@@ -184,7 +179,10 @@ void main() {
         surfaceSize: const Size(375, 1200), // Taller to show all key holders
       );
 
-      await screenMatchesGolden(tester, 'backup_config_screen_manual_key_holders');
+      await screenMatchesGolden(
+        tester,
+        'backup_config_screen_manual_key_holders',
+      );
 
       container.dispose();
     });
@@ -223,7 +221,10 @@ void main() {
         surfaceSize: const Size(375, 1200),
       );
 
-      await screenMatchesGolden(tester, 'backup_config_screen_invited_key_holders');
+      await screenMatchesGolden(
+        tester,
+        'backup_config_screen_invited_key_holders',
+      );
 
       container.dispose();
     });
@@ -248,7 +249,7 @@ void main() {
         relays: [
           'wss://relay1.example.com',
           'wss://relay2.example.com',
-          'wss://relay3.example.com'
+          'wss://relay3.example.com',
         ],
       );
 
@@ -267,17 +268,17 @@ void main() {
         surfaceSize: const Size(375, 1200),
       );
 
-      await screenMatchesGolden(tester, 'backup_config_screen_mixed_key_holders');
+      await screenMatchesGolden(
+        tester,
+        'backup_config_screen_mixed_key_holders',
+      );
 
       container.dispose();
     });
 
     testGoldens('with existing config - multiple relays', (tester) async {
       final keyHolders = [
-        createTestKeyHolder(
-          pubkey: keyHolder1Pubkey,
-          name: 'Grace',
-        ),
+        createTestKeyHolder(pubkey: keyHolder1Pubkey, name: 'Grace'),
       ];
 
       final backupConfig = createTestBackupConfig(
@@ -313,14 +314,8 @@ void main() {
 
     testGoldens('multiple device sizes', (tester) async {
       final keyHolders = [
-        createTestKeyHolder(
-          pubkey: keyHolder1Pubkey,
-          name: 'Henry',
-        ),
-        createTestKeyHolder(
-          pubkey: keyHolder2Pubkey,
-          name: 'Iris',
-        ),
+        createTestKeyHolder(pubkey: keyHolder1Pubkey, name: 'Henry'),
+        createTestKeyHolder(pubkey: keyHolder2Pubkey, name: 'Iris'),
       ];
 
       final backupConfig = createTestBackupConfig(
@@ -339,11 +334,9 @@ void main() {
       );
 
       final builder = DeviceBuilder()
-        ..overrideDevicesForAllScenarios(devices: [
-          Device.phone,
-          Device.iphone11,
-          Device.tabletPortrait,
-        ])
+        ..overrideDevicesForAllScenarios(
+          devices: [Device.phone, Device.iphone11, Device.tabletPortrait],
+        )
         ..addScenario(
           widget: const BackupConfigScreen(lockboxId: 'test-lockbox'),
           name: 'with_key_holders',
@@ -357,7 +350,10 @@ void main() {
         ),
       );
 
-      await screenMatchesGolden(tester, 'backup_config_screen_multiple_devices');
+      await screenMatchesGolden(
+        tester,
+        'backup_config_screen_multiple_devices',
+      );
 
       container.dispose();
     });
@@ -370,8 +366,8 @@ class _MockLockboxRepository extends LockboxRepository {
   final bool _neverCompletes;
 
   _MockLockboxRepository(this._backupConfig, {bool neverCompletes = false})
-      : _neverCompletes = neverCompletes,
-        super(LoginService());
+    : _neverCompletes = neverCompletes,
+      super(LoginService());
 
   @override
   Future<BackupConfig?> getBackupConfig(String lockboxId) async {

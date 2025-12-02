@@ -5,15 +5,13 @@ class InlineTimePrinter extends LogPrinter {
   final bool colors;
   final bool printEmojis;
 
-  InlineTimePrinter({
-    this.colors = true,
-    this.printEmojis = true,
-  });
+  InlineTimePrinter({this.colors = true, this.printEmojis = true});
 
   @override
   List<String> log(LogEvent event) {
     final time = DateTime.now();
-    final timeStr = '${time.hour.toString().padLeft(2, '0')}:'
+    final timeStr =
+        '${time.hour.toString().padLeft(2, '0')}:'
         '${time.minute.toString().padLeft(2, '0')}:'
         '${time.second.toString().padLeft(2, '0')}.'
         '${time.millisecond.toString().padLeft(3, '0')}';
@@ -102,10 +100,7 @@ class InlineTimePrinter extends LogPrinter {
 /// with configurable log levels and formatting.
 class Log {
   static final Logger _logger = Logger(
-    printer: InlineTimePrinter(
-      colors: true,
-      printEmojis: true,
-    ),
+    printer: InlineTimePrinter(colors: true, printEmojis: true),
   );
 
   /// Log trace messages (most detailed level)

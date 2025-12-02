@@ -70,7 +70,8 @@ void main() {
     return RecoveryResponse(
       pubkey: pubkey,
       approved: approved,
-      respondedAt: respondedAt ?? DateTime.now().subtract(const Duration(minutes: 30)),
+      respondedAt:
+          respondedAt ?? DateTime.now().subtract(const Duration(minutes: 30)),
       shardData: approved
           ? createTestShard(
               shardIndex: 0,
@@ -86,12 +87,14 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           // Mock the lockbox provider to return loading state
-          lockboxProvider('test-lockbox')
-              .overrideWith((ref) => Stream.value(null).asyncMap((_) async {
-                    await Future.delayed(
-                        const Duration(seconds: 10)); // Never completes to simulate loading
-                    return null;
-                  })),
+          lockboxProvider('test-lockbox').overrideWith(
+            (ref) => Stream.value(null).asyncMap((_) async {
+              await Future.delayed(
+                const Duration(seconds: 10),
+              ); // Never completes to simulate loading
+              return null;
+            }),
+          ),
         ],
       );
 
@@ -99,7 +102,10 @@ void main() {
         tester,
         const LockboxDetailScreen(lockboxId: 'test-lockbox'),
         container: container,
-        surfaceSize: const Size(375, 1200), // Further increased height to prevent overflow
+        surfaceSize: const Size(
+          375,
+          1200,
+        ), // Further increased height to prevent overflow
         waitForSettle: false, // Loading state has infinite animations
       );
 
@@ -112,9 +118,9 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           // Mock provider to throw an error
-          lockboxProvider('test-lockbox').overrideWith(
-            (ref) => Stream.error('Failed to load lockbox'),
-          ),
+          lockboxProvider(
+            'test-lockbox',
+          ).overrideWith((ref) => Stream.error('Failed to load lockbox')),
         ],
       );
 
@@ -122,7 +128,10 @@ void main() {
         tester,
         const LockboxDetailScreen(lockboxId: 'test-lockbox'),
         container: container,
-        surfaceSize: const Size(375, 1000), // Increased height to handle overflow
+        surfaceSize: const Size(
+          375,
+          1000,
+        ), // Increased height to handle overflow
       );
 
       await screenMatchesGolden(tester, 'lockbox_detail_screen_error');
@@ -134,9 +143,9 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           // Mock provider to return null (lockbox not found)
-          lockboxProvider('test-lockbox').overrideWith(
-            (ref) => Stream.value(null),
-          ),
+          lockboxProvider(
+            'test-lockbox',
+          ).overrideWith((ref) => Stream.value(null)),
         ],
       );
 
@@ -144,7 +153,10 @@ void main() {
         tester,
         const LockboxDetailScreen(lockboxId: 'test-lockbox'),
         container: container,
-        surfaceSize: const Size(375, 1000), // Increased height to handle overflow
+        surfaceSize: const Size(
+          375,
+          1000,
+        ), // Increased height to handle overflow
       );
 
       await screenMatchesGolden(tester, 'lockbox_detail_screen_not_found');
@@ -165,9 +177,9 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider('test-lockbox').overrideWith(
-            (ref) => Stream.value(ownedLockbox),
-          ),
+          lockboxProvider(
+            'test-lockbox',
+          ).overrideWith((ref) => Stream.value(ownedLockbox)),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
         ],
       );
@@ -176,10 +188,16 @@ void main() {
         tester,
         const LockboxDetailScreen(lockboxId: 'test-lockbox'),
         container: container,
-        surfaceSize: const Size(375, 1000), // Increased height to handle overflow
+        surfaceSize: const Size(
+          375,
+          1000,
+        ), // Increased height to handle overflow
       );
 
-      await screenMatchesGolden(tester, 'lockbox_detail_screen_owner_no_backup');
+      await screenMatchesGolden(
+        tester,
+        'lockbox_detail_screen_owner_no_backup',
+      );
 
       container.dispose();
     });
@@ -192,26 +210,36 @@ void main() {
         createdAt: DateTime(2024, 10, 1, 10, 30),
         ownerPubkey: testPubkey,
         shards: [
-          createTestShard(shardIndex: 0, recipientPubkey: otherPubkey, lockboxId: 'test-lockbox'),
-          createTestShard(shardIndex: 1, recipientPubkey: thirdPubkey, lockboxId: 'test-lockbox'),
+          createTestShard(
+            shardIndex: 0,
+            recipientPubkey: otherPubkey,
+            lockboxId: 'test-lockbox',
+          ),
+          createTestShard(
+            shardIndex: 1,
+            recipientPubkey: thirdPubkey,
+            lockboxId: 'test-lockbox',
+          ),
         ],
         recoveryRequests: [], // No active recovery
       );
 
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider('test-lockbox').overrideWith(
-            (ref) => Stream.value(ownedLockbox),
-          ),
+          lockboxProvider(
+            'test-lockbox',
+          ).overrideWith((ref) => Stream.value(ownedLockbox)),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
           // Mock recovery status to show no active recovery
           recoveryStatusProvider.overrideWith((ref, lockboxId) {
-            return const AsyncValue.data(RecoveryStatus(
-              hasActiveRecovery: false,
-              canRecover: false,
-              activeRecoveryRequest: null,
-              isInitiator: false,
-            ));
+            return const AsyncValue.data(
+              RecoveryStatus(
+                hasActiveRecovery: false,
+                canRecover: false,
+                activeRecoveryRequest: null,
+                isInitiator: false,
+              ),
+            );
           }),
         ],
       );
@@ -220,10 +248,16 @@ void main() {
         tester,
         const LockboxDetailScreen(lockboxId: 'test-lockbox'),
         container: container,
-        surfaceSize: const Size(375, 1000), // Increased height to handle overflow
+        surfaceSize: const Size(
+          375,
+          1000,
+        ), // Increased height to handle overflow
       );
 
-      await screenMatchesGolden(tester, 'lockbox_detail_screen_owner_backup_no_recovery');
+      await screenMatchesGolden(
+        tester,
+        'lockbox_detail_screen_owner_backup_no_recovery',
+      );
 
       container.dispose();
     });
@@ -234,8 +268,14 @@ void main() {
         initiatorPubkey: testPubkey,
         status: RecoveryRequestStatus.inProgress,
         responses: {
-          otherPubkey: createTestRecoveryResponse(pubkey: otherPubkey, approved: true),
-          thirdPubkey: createTestRecoveryResponse(pubkey: thirdPubkey, approved: false),
+          otherPubkey: createTestRecoveryResponse(
+            pubkey: otherPubkey,
+            approved: true,
+          ),
+          thirdPubkey: createTestRecoveryResponse(
+            pubkey: thirdPubkey,
+            approved: false,
+          ),
         },
       );
 
@@ -246,26 +286,36 @@ void main() {
         createdAt: DateTime(2024, 10, 1, 10, 30),
         ownerPubkey: testPubkey,
         shards: [
-          createTestShard(shardIndex: 0, recipientPubkey: otherPubkey, lockboxId: 'test-lockbox'),
-          createTestShard(shardIndex: 1, recipientPubkey: thirdPubkey, lockboxId: 'test-lockbox'),
+          createTestShard(
+            shardIndex: 0,
+            recipientPubkey: otherPubkey,
+            lockboxId: 'test-lockbox',
+          ),
+          createTestShard(
+            shardIndex: 1,
+            recipientPubkey: thirdPubkey,
+            lockboxId: 'test-lockbox',
+          ),
         ],
         recoveryRequests: [recoveryRequest],
       );
 
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider('test-lockbox').overrideWith(
-            (ref) => Stream.value(ownedLockbox),
-          ),
+          lockboxProvider(
+            'test-lockbox',
+          ).overrideWith((ref) => Stream.value(ownedLockbox)),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
           // Mock recovery status to show active recovery
           recoveryStatusProvider.overrideWith((ref, lockboxId) {
-            return AsyncValue.data(RecoveryStatus(
-              hasActiveRecovery: true,
-              canRecover: true, // Has enough approvals
-              activeRecoveryRequest: recoveryRequest,
-              isInitiator: true, // testPubkey is the initiator
-            ));
+            return AsyncValue.data(
+              RecoveryStatus(
+                hasActiveRecovery: true,
+                canRecover: true, // Has enough approvals
+                activeRecoveryRequest: recoveryRequest,
+                isInitiator: true, // testPubkey is the initiator
+              ),
+            );
           }),
         ],
       );
@@ -274,10 +324,16 @@ void main() {
         tester,
         const LockboxDetailScreen(lockboxId: 'test-lockbox'),
         container: container,
-        surfaceSize: const Size(375, 1000), // Increased height to handle overflow
+        surfaceSize: const Size(
+          375,
+          1000,
+        ), // Increased height to handle overflow
       );
 
-      await screenMatchesGolden(tester, 'lockbox_detail_screen_owner_in_recovery');
+      await screenMatchesGolden(
+        tester,
+        'lockbox_detail_screen_owner_in_recovery',
+      );
 
       container.dispose();
     });
@@ -290,25 +346,31 @@ void main() {
         createdAt: DateTime(2024, 9, 15, 14, 20),
         ownerPubkey: otherPubkey, // Different owner
         shards: [
-          createTestShard(shardIndex: 1, recipientPubkey: testPubkey, lockboxId: 'test-lockbox'),
+          createTestShard(
+            shardIndex: 1,
+            recipientPubkey: testPubkey,
+            lockboxId: 'test-lockbox',
+          ),
         ],
         recoveryRequests: [], // No active recovery
       );
 
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider('test-lockbox').overrideWith(
-            (ref) => Stream.value(shardHolderLockbox),
-          ),
+          lockboxProvider(
+            'test-lockbox',
+          ).overrideWith((ref) => Stream.value(shardHolderLockbox)),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
           // Mock recovery status to show no active recovery
           recoveryStatusProvider.overrideWith((ref, lockboxId) {
-            return const AsyncValue.data(RecoveryStatus(
-              hasActiveRecovery: false,
-              canRecover: false,
-              activeRecoveryRequest: null,
-              isInitiator: false,
-            ));
+            return const AsyncValue.data(
+              RecoveryStatus(
+                hasActiveRecovery: false,
+                canRecover: false,
+                activeRecoveryRequest: null,
+                isInitiator: false,
+              ),
+            );
           }),
         ],
       );
@@ -317,10 +379,16 @@ void main() {
         tester,
         const LockboxDetailScreen(lockboxId: 'test-lockbox'),
         container: container,
-        surfaceSize: const Size(375, 1000), // Increased height to handle overflow
+        surfaceSize: const Size(
+          375,
+          1000,
+        ), // Increased height to handle overflow
       );
 
-      await screenMatchesGolden(tester, 'lockbox_detail_screen_shard_holder_no_recovery');
+      await screenMatchesGolden(
+        tester,
+        'lockbox_detail_screen_shard_holder_no_recovery',
+      );
 
       container.dispose();
     });
@@ -328,11 +396,18 @@ void main() {
     testGoldens('shard holder - in recovery', (tester) async {
       final recoveryRequest = createTestRecoveryRequest(
         lockboxId: 'test-lockbox',
-        initiatorPubkey: testPubkey, // testPubkey (shard holder) is the initiator
+        initiatorPubkey:
+            testPubkey, // testPubkey (shard holder) is the initiator
         status: RecoveryRequestStatus.inProgress,
         responses: {
-          testPubkey: createTestRecoveryResponse(pubkey: testPubkey, approved: true),
-          thirdPubkey: createTestRecoveryResponse(pubkey: thirdPubkey, approved: false),
+          testPubkey: createTestRecoveryResponse(
+            pubkey: testPubkey,
+            approved: true,
+          ),
+          thirdPubkey: createTestRecoveryResponse(
+            pubkey: thirdPubkey,
+            approved: false,
+          ),
         },
       );
 
@@ -343,25 +418,31 @@ void main() {
         createdAt: DateTime(2024, 9, 15, 14, 20),
         ownerPubkey: otherPubkey, // Different owner
         shards: [
-          createTestShard(shardIndex: 1, recipientPubkey: testPubkey, lockboxId: 'test-lockbox'),
+          createTestShard(
+            shardIndex: 1,
+            recipientPubkey: testPubkey,
+            lockboxId: 'test-lockbox',
+          ),
         ],
         recoveryRequests: [recoveryRequest],
       );
 
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider('test-lockbox').overrideWith(
-            (ref) => Stream.value(shardHolderLockbox),
-          ),
+          lockboxProvider(
+            'test-lockbox',
+          ).overrideWith((ref) => Stream.value(shardHolderLockbox)),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
           // Mock recovery status to show active recovery
           recoveryStatusProvider.overrideWith((ref, lockboxId) {
-            return AsyncValue.data(RecoveryStatus(
-              hasActiveRecovery: true,
-              canRecover: false, // Not enough approvals yet
-              activeRecoveryRequest: recoveryRequest,
-              isInitiator: true, // testPubkey is the initiator
-            ));
+            return AsyncValue.data(
+              RecoveryStatus(
+                hasActiveRecovery: true,
+                canRecover: false, // Not enough approvals yet
+                activeRecoveryRequest: recoveryRequest,
+                isInitiator: true, // testPubkey is the initiator
+              ),
+            );
           }),
         ],
       );
@@ -370,15 +451,23 @@ void main() {
         tester,
         const LockboxDetailScreen(lockboxId: 'test-lockbox'),
         container: container,
-        surfaceSize: const Size(375, 1000), // Increased height to handle overflow
+        surfaceSize: const Size(
+          375,
+          1000,
+        ), // Increased height to handle overflow
       );
 
-      await screenMatchesGolden(tester, 'lockbox_detail_screen_shard_holder_in_recovery');
+      await screenMatchesGolden(
+        tester,
+        'lockbox_detail_screen_shard_holder_in_recovery',
+      );
 
       container.dispose();
     });
 
-    testGoldens('awaiting key state - invitee waiting for shard', (tester) async {
+    testGoldens('awaiting key state - invitee waiting for shard', (
+      tester,
+    ) async {
       final awaitingKeyLockbox = Lockbox(
         id: 'test-lockbox',
         name: "Bob's Shared Lockbox",
@@ -391,18 +480,20 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider('test-lockbox').overrideWith(
-            (ref) => Stream.value(awaitingKeyLockbox),
-          ),
+          lockboxProvider(
+            'test-lockbox',
+          ).overrideWith((ref) => Stream.value(awaitingKeyLockbox)),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
           // Mock recovery status to show no active recovery
           recoveryStatusProvider.overrideWith((ref, lockboxId) {
-            return const AsyncValue.data(RecoveryStatus(
-              hasActiveRecovery: false,
-              canRecover: false,
-              activeRecoveryRequest: null,
-              isInitiator: false,
-            ));
+            return const AsyncValue.data(
+              RecoveryStatus(
+                hasActiveRecovery: false,
+                canRecover: false,
+                activeRecoveryRequest: null,
+                isInitiator: false,
+              ),
+            );
           }),
         ],
       );
@@ -411,7 +502,10 @@ void main() {
         tester,
         const LockboxDetailScreen(lockboxId: 'test-lockbox'),
         container: container,
-        surfaceSize: const Size(375, 1000), // Increased height to handle overflow
+        surfaceSize: const Size(
+          375,
+          1000,
+        ), // Increased height to handle overflow
       );
 
       await screenMatchesGolden(tester, 'lockbox_detail_screen_awaiting_key');
@@ -427,35 +521,44 @@ void main() {
         createdAt: DateTime(2024, 10, 1, 10, 30),
         ownerPubkey: testPubkey,
         shards: [
-          createTestShard(shardIndex: 0, recipientPubkey: otherPubkey, lockboxId: 'test-lockbox'),
-          createTestShard(shardIndex: 1, recipientPubkey: thirdPubkey, lockboxId: 'test-lockbox'),
+          createTestShard(
+            shardIndex: 0,
+            recipientPubkey: otherPubkey,
+            lockboxId: 'test-lockbox',
+          ),
+          createTestShard(
+            shardIndex: 1,
+            recipientPubkey: thirdPubkey,
+            lockboxId: 'test-lockbox',
+          ),
         ],
         recoveryRequests: [],
       );
 
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider('test-lockbox').overrideWith(
-            (ref) => Stream.value(ownedLockbox),
-          ),
+          lockboxProvider(
+            'test-lockbox',
+          ).overrideWith((ref) => Stream.value(ownedLockbox)),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
           // Mock recovery status to show no active recovery
           recoveryStatusProvider.overrideWith((ref, lockboxId) {
-            return const AsyncValue.data(RecoveryStatus(
-              hasActiveRecovery: false,
-              canRecover: false,
-              activeRecoveryRequest: null,
-              isInitiator: false,
-            ));
+            return const AsyncValue.data(
+              RecoveryStatus(
+                hasActiveRecovery: false,
+                canRecover: false,
+                activeRecoveryRequest: null,
+                isInitiator: false,
+              ),
+            );
           }),
         ],
       );
 
       final builder = DeviceBuilder()
-        ..overrideDevicesForAllScenarios(devices: [
-          Device.iphone11,
-          Device.tabletPortrait,
-        ])
+        ..overrideDevicesForAllScenarios(
+          devices: [Device.iphone11, Device.tabletPortrait],
+        )
         ..addScenario(
           widget: const LockboxDetailScreen(lockboxId: 'test-lockbox'),
           name: 'owner_backup_no_recovery',
@@ -469,7 +572,10 @@ void main() {
         ),
       );
 
-      await screenMatchesGolden(tester, 'lockbox_detail_screen_multiple_devices');
+      await screenMatchesGolden(
+        tester,
+        'lockbox_detail_screen_multiple_devices',
+      );
 
       container.dispose();
     });

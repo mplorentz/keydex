@@ -9,7 +9,8 @@ import '../utils/backup_distribution_helper.dart';
 import '../utils/invite_code_utils.dart';
 
 /// Mixin for shared lockbox save logic between create and edit screens
-mixin LockboxContentSaveMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
+mixin LockboxContentSaveMixin<T extends ConsumerStatefulWidget>
+    on ConsumerState<T> {
   /// Save a lockbox (create new or update existing)
   /// Returns the lockbox ID (newly created ID or the existing one)
   Future<String?> saveLockbox({
@@ -38,7 +39,9 @@ mixin LockboxContentSaveMixin<T extends ConsumerStatefulWidget> on ConsumerState
 
         final contentChanged = existingLockbox.content != content;
         final nameChanged = existingLockbox.name != name.trim();
-        final newOwnerName = ownerName?.trim().isEmpty == true ? null : ownerName?.trim();
+        final newOwnerName = ownerName?.trim().isEmpty == true
+            ? null
+            : ownerName?.trim();
         final ownerNameChanged = existingLockbox.ownerName != newOwnerName;
 
         // Check if we need to show the regeneration alert
@@ -50,11 +53,11 @@ mixin LockboxContentSaveMixin<T extends ConsumerStatefulWidget> on ConsumerState
           if (!mounted) return null;
           final shouldAutoDistributeResult =
               await BackupDistributionHelper.showRegenerationAlertIfNeeded(
-            context: context,
-            backupConfig: existingLockbox.backupConfig,
-            willChange: true,
-            mounted: mounted,
-          );
+                context: context,
+                backupConfig: existingLockbox.backupConfig,
+                willChange: true,
+                mounted: mounted,
+              );
 
           if (shouldAutoDistributeResult == false) {
             // User cancelled or widget disposed, don't save changes
@@ -70,7 +73,9 @@ mixin LockboxContentSaveMixin<T extends ConsumerStatefulWidget> on ConsumerState
         await repository.updateLockbox(lockboxId, name, content);
 
         // Also update ownerName (even if null, to clear it)
-        await repository.saveLockbox(existingLockbox.copyWith(ownerName: newOwnerName));
+        await repository.saveLockbox(
+          existingLockbox.copyWith(ownerName: newOwnerName),
+        );
 
         // If content, name, or ownerName changed, increment distributionVersion
         if (contentChanged || nameChanged || ownerNameChanged) {
@@ -83,11 +88,15 @@ mixin LockboxContentSaveMixin<T extends ConsumerStatefulWidget> on ConsumerState
             final updatedConfig = await repository.getBackupConfig(lockboxId);
             if (updatedConfig != null && updatedConfig.canDistribute) {
               try {
-                await backupService.createAndDistributeBackup(lockboxId: lockboxId);
+                await backupService.createAndDistributeBackup(
+                  lockboxId: lockboxId,
+                );
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('Keys regenerated and distributed successfully!'),
+                      content: Text(
+                        'Keys regenerated and distributed successfully!',
+                      ),
                       backgroundColor: Colors.green,
                     ),
                   );
@@ -115,7 +124,11 @@ mixin LockboxContentSaveMixin<T extends ConsumerStatefulWidget> on ConsumerState
   }
 
   /// Create a new lockbox with the current user's public key
-  Future<Lockbox> _createNewLockbox(String name, String content, String? ownerName) async {
+  Future<Lockbox> _createNewLockbox(
+    String name,
+    String content,
+    String? ownerName,
+  ) async {
     final loginService = ref.read(loginServiceProvider);
     final currentPubkey = await loginService.getCurrentPublicKey();
     if (currentPubkey == null) {
@@ -141,10 +154,7 @@ mixin LockboxContentSaveMixin<T extends ConsumerStatefulWidget> on ConsumerState
     if (!mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
     );
   }
 }

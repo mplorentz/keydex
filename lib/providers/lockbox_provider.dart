@@ -51,7 +51,10 @@ final lockboxListProvider = StreamProvider.autoDispose<List<Lockbox>>((ref) {
 
 /// Provider for a specific lockbox by ID
 /// This will automatically update when the lockbox changes
-final lockboxProvider = StreamProvider.family<Lockbox?, String>((ref, lockboxId) {
+final lockboxProvider = StreamProvider.family<Lockbox?, String>((
+  ref,
+  lockboxId,
+) {
   final repository = ref.watch(lockboxRepositoryProvider);
 
   // Return a stream that:
@@ -158,8 +161,9 @@ class LockboxRepository {
       final List<dynamic> jsonList = json.decode(decryptedJson);
       Log.info('Decrypted ${jsonList.length} lockboxes');
 
-      _cachedLockboxes =
-          jsonList.map((json) => Lockbox.fromJson(json as Map<String, dynamic>)).toList();
+      _cachedLockboxes = jsonList
+          .map((json) => Lockbox.fromJson(json as Map<String, dynamic>))
+          .toList();
     } catch (e) {
       Log.error('Error decrypting lockboxes', e);
       _cachedLockboxes = [];
@@ -181,7 +185,9 @@ class LockboxRepository {
         Log.debug('  - Name: ${lockbox.name}');
         Log.debug('  - Owner: ${lockbox.ownerPubkey}');
         Log.debug('  - Shards count: ${lockbox.shards.length}');
-        Log.debug('  - Recovery requests count: ${lockbox.recoveryRequests.length}');
+        Log.debug(
+          '  - Recovery requests count: ${lockbox.recoveryRequests.length}',
+        );
 
         try {
           final lockboxJson = lockbox.toJson();
@@ -193,35 +199,58 @@ class LockboxRepository {
           // Try to identify which recovery request is causing the issue
           for (var j = 0; j < lockbox.recoveryRequests.length; j++) {
             final request = lockbox.recoveryRequests[j];
-            Log.debug('    - Recovery request $j: id=${request.id}, status=${request.status.name}');
-            Log.debug('      keyHolderResponses count: ${request.keyHolderResponses.length}');
+            Log.debug(
+              '    - Recovery request $j: id=${request.id}, status=${request.status.name}',
+            );
+            Log.debug(
+              '      keyHolderResponses count: ${request.keyHolderResponses.length}',
+            );
 
             // Check each response
             for (var entry in request.keyHolderResponses.entries) {
               final pubkey = entry.key;
               final response = entry.value;
               Log.debug(
-                  '        Response from ${pubkey.substring(0, 8)}: approved=${response.approved}, shardData=${response.shardData != null ? "present" : "null"}');
+                '        Response from ${pubkey.substring(0, 8)}: approved=${response.approved}, shardData=${response.shardData != null ? "present" : "null"}',
+              );
 
               if (response.shardData != null) {
                 final shard = response.shardData!;
                 Log.debug('          ShardData details:');
                 Log.debug('            shard type: ${shard.shard.runtimeType}');
-                Log.debug('            threshold type: ${shard.threshold.runtimeType}');
-                Log.debug('            shardIndex type: ${shard.shardIndex.runtimeType}');
-                Log.debug('            totalShards type: ${shard.totalShards.runtimeType}');
-                Log.debug('            primeMod type: ${shard.primeMod.runtimeType}');
-                Log.debug('            creatorPubkey type: ${shard.creatorPubkey.runtimeType}');
-                Log.debug('            createdAt type: ${shard.createdAt.runtimeType}');
                 Log.debug(
-                    '            lockboxId: ${shard.lockboxId} (type: ${shard.lockboxId?.runtimeType})');
+                  '            threshold type: ${shard.threshold.runtimeType}',
+                );
                 Log.debug(
-                    '            lockboxName: ${shard.lockboxName} (type: ${shard.lockboxName?.runtimeType})');
-                Log.debug('            peers: ${shard.peers} (type: ${shard.peers?.runtimeType})');
+                  '            shardIndex type: ${shard.shardIndex.runtimeType}',
+                );
                 Log.debug(
-                    '            recipientPubkey: ${shard.recipientPubkey} (type: ${shard.recipientPubkey?.runtimeType})');
+                  '            totalShards type: ${shard.totalShards.runtimeType}',
+                );
                 Log.debug(
-                    '            nostrEventId: ${shard.nostrEventId} (type: ${shard.nostrEventId?.runtimeType})');
+                  '            primeMod type: ${shard.primeMod.runtimeType}',
+                );
+                Log.debug(
+                  '            creatorPubkey type: ${shard.creatorPubkey.runtimeType}',
+                );
+                Log.debug(
+                  '            createdAt type: ${shard.createdAt.runtimeType}',
+                );
+                Log.debug(
+                  '            lockboxId: ${shard.lockboxId} (type: ${shard.lockboxId?.runtimeType})',
+                );
+                Log.debug(
+                  '            lockboxName: ${shard.lockboxName} (type: ${shard.lockboxName?.runtimeType})',
+                );
+                Log.debug(
+                  '            peers: ${shard.peers} (type: ${shard.peers?.runtimeType})',
+                );
+                Log.debug(
+                  '            recipientPubkey: ${shard.recipientPubkey} (type: ${shard.recipientPubkey?.runtimeType})',
+                );
+                Log.debug(
+                  '            nostrEventId: ${shard.nostrEventId} (type: ${shard.nostrEventId?.runtimeType})',
+                );
               }
             }
           }
@@ -239,7 +268,9 @@ class LockboxRepository {
       // Save to SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_lockboxesKey, encryptedData);
-      Log.info('Saved ${jsonList.length} encrypted lockboxes to SharedPreferences');
+      Log.info(
+        'Saved ${jsonList.length} encrypted lockboxes to SharedPreferences',
+      );
 
       // Notify listeners that lockboxes have changed
       final lockboxesList = List<Lockbox>.unmodifiable(_cachedLockboxes!);
@@ -377,7 +408,9 @@ class LockboxRepository {
     }
 
     // Find and update the key holder
-    final holderIndex = backupConfig.keyHolders.indexWhere((h) => h.pubkey == pubkey);
+    final holderIndex = backupConfig.keyHolders.indexWhere(
+      (h) => h.pubkey == pubkey,
+    );
     if (holderIndex == -1) {
       throw ArgumentError('Key holder $pubkey not found in lockbox $lockboxId');
     }
@@ -391,10 +424,15 @@ class LockboxRepository {
       acknowledgedDistributionVersion: acknowledgedDistributionVersion,
     );
 
-    final updatedConfig = copyBackupConfig(backupConfig, keyHolders: updatedHolders);
+    final updatedConfig = copyBackupConfig(
+      backupConfig,
+      keyHolders: updatedHolders,
+    );
     await updateBackupConfig(lockboxId, updatedConfig);
 
-    Log.info('Updated key holder $pubkey status to $status in lockbox $lockboxId');
+    Log.info(
+      'Updated key holder $pubkey status to $status in lockbox $lockboxId',
+    );
   }
 
   // ========== Shard Management Methods ==========
@@ -413,7 +451,9 @@ class LockboxRepository {
 
     _cachedLockboxes![index] = lockbox.copyWith(shards: updatedShards);
     await _saveLockboxes();
-    Log.info('Added shard to lockbox $lockboxId (total shards: ${updatedShards.length})');
+    Log.info(
+      'Added shard to lockbox $lockboxId (total shards: ${updatedShards.length})',
+    );
   }
 
   /// Get all shards for a lockbox
@@ -469,9 +509,12 @@ class LockboxRepository {
     }
 
     final lockbox = _cachedLockboxes![index];
-    final updatedRequests = List<RecoveryRequest>.from(lockbox.recoveryRequests)..add(request);
+    final updatedRequests = List<RecoveryRequest>.from(lockbox.recoveryRequests)
+      ..add(request);
 
-    _cachedLockboxes![index] = lockbox.copyWith(recoveryRequests: updatedRequests);
+    _cachedLockboxes![index] = lockbox.copyWith(
+      recoveryRequests: updatedRequests,
+    );
     await _saveLockboxes();
     Log.info('Added recovery request ${request.id} to lockbox $lockboxId');
   }
@@ -490,22 +533,30 @@ class LockboxRepository {
     }
 
     final lockbox = _cachedLockboxes![index];
-    final requestIndex = lockbox.recoveryRequests.indexWhere((r) => r.id == requestId);
+    final requestIndex = lockbox.recoveryRequests.indexWhere(
+      (r) => r.id == requestId,
+    );
 
     if (requestIndex == -1) {
       throw ArgumentError('Recovery request not found: $requestId');
     }
 
-    final updatedRequests = List<RecoveryRequest>.from(lockbox.recoveryRequests);
+    final updatedRequests = List<RecoveryRequest>.from(
+      lockbox.recoveryRequests,
+    );
     updatedRequests[requestIndex] = updatedRequest;
 
-    _cachedLockboxes![index] = lockbox.copyWith(recoveryRequests: updatedRequests);
+    _cachedLockboxes![index] = lockbox.copyWith(
+      recoveryRequests: updatedRequests,
+    );
     await _saveLockboxes();
     Log.info('Updated recovery request $requestId in lockbox $lockboxId');
   }
 
   /// Get all recovery requests for a lockbox
-  Future<List<RecoveryRequest>> getRecoveryRequestsForLockbox(String lockboxId) async {
+  Future<List<RecoveryRequest>> getRecoveryRequestsForLockbox(
+    String lockboxId,
+  ) async {
     await initialize();
 
     final lockbox = _cachedLockboxes!.firstWhere(

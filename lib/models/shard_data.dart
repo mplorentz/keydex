@@ -18,17 +18,18 @@ typedef ShardData = ({
   // Recovery metadata (optional fields)
   String? lockboxId,
   String? lockboxName,
-  List<
-      Map<String,
-          String>>? peers, // List of maps with 'name' and 'pubkey' for OTHER key holders (excludes creatorPubkey)
+  List<Map<String, String>>?
+  peers, // List of maps with 'name' and 'pubkey' for OTHER key holders (excludes creatorPubkey)
   String? ownerName, // Name of the vault owner (creator)
   String? instructions, // Instructions for stewards
   String? recipientPubkey,
   bool? isReceived,
   DateTime? receivedAt,
   String? nostrEventId,
-  List<String>? relayUrls, // Relay URLs from backup config for sending confirmations
-  int? distributionVersion, // Version tracking for redistribution detection (nullable for backward compatibility)
+  List<String>?
+  relayUrls, // Relay URLs from backup config for sending confirmations
+  int?
+  distributionVersion, // Version tracking for redistribution detection (nullable for backward compatibility)
 });
 
 /// Create a new ShardData with validation
@@ -54,9 +55,11 @@ ShardData createShardData({
   if (shard.isEmpty) {
     throw ArgumentError('Shard cannot be empty');
   }
-  if (threshold < LockboxBackupConstraints.minThreshold || threshold > totalShards) {
+  if (threshold < LockboxBackupConstraints.minThreshold ||
+      threshold > totalShards) {
     throw ArgumentError(
-        'Threshold must be >= ${LockboxBackupConstraints.minThreshold} and <= totalShards');
+      'Threshold must be >= ${LockboxBackupConstraints.minThreshold} and <= totalShards',
+    );
   }
   if (shardIndex < 0 || shardIndex >= totalShards) {
     throw ArgumentError('ShardIndex must be >= 0 and < totalShards');
@@ -69,20 +72,29 @@ ShardData createShardData({
   }
 
   // Validate recovery metadata if provided
-  if (recipientPubkey != null && (recipientPubkey.length != 64 || !_isHexString(recipientPubkey))) {
-    throw ArgumentError('RecipientPubkey must be valid hex format (64 characters)');
+  if (recipientPubkey != null &&
+      (recipientPubkey.length != 64 || !_isHexString(recipientPubkey))) {
+    throw ArgumentError(
+      'RecipientPubkey must be valid hex format (64 characters)',
+    );
   }
-  if (isReceived == true && receivedAt != null && receivedAt.isAfter(DateTime.now())) {
+  if (isReceived == true &&
+      receivedAt != null &&
+      receivedAt.isAfter(DateTime.now())) {
     throw ArgumentError('ReceivedAt must be in the past if isReceived is true');
   }
   if (peers != null) {
     for (final peer in peers) {
       if (!peer.containsKey('name') || !peer.containsKey('pubkey')) {
-        throw ArgumentError('All peers must have both "name" and "pubkey" keys');
+        throw ArgumentError(
+          'All peers must have both "name" and "pubkey" keys',
+        );
       }
       final pubkey = peer['pubkey']!;
       if (pubkey.length != 64 || !_isHexString(pubkey)) {
-        throw ArgumentError('All peer pubkeys must be valid hex format (64 characters): $pubkey');
+        throw ArgumentError(
+          'All peer pubkeys must be valid hex format (64 characters): $pubkey',
+        );
       }
       if (peer['name'] == null || peer['name']!.isEmpty) {
         throw ArgumentError('All peers must have a non-empty name');
@@ -172,25 +184,31 @@ extension ShardDataExtension on ShardData {
       }
 
       if (threshold < LockboxBackupConstraints.minThreshold) {
-        Log.error('ShardData validation failed: threshold ($threshold) is below minimum '
-            '(${LockboxBackupConstraints.minThreshold})');
+        Log.error(
+          'ShardData validation failed: threshold ($threshold) is below minimum '
+          '(${LockboxBackupConstraints.minThreshold})',
+        );
         return false;
       }
 
       if (threshold > totalShards) {
         Log.error(
-            'ShardData validation failed: threshold ($threshold) exceeds totalShards ($totalShards)');
+          'ShardData validation failed: threshold ($threshold) exceeds totalShards ($totalShards)',
+        );
         return false;
       }
 
       if (shardIndex < 0) {
-        Log.error('ShardData validation failed: shardIndex ($shardIndex) is negative');
+        Log.error(
+          'ShardData validation failed: shardIndex ($shardIndex) is negative',
+        );
         return false;
       }
 
       if (shardIndex >= totalShards) {
         Log.error(
-            'ShardData validation failed: shardIndex ($shardIndex) is out of bounds (should be 0 to ${totalShards - 1})');
+          'ShardData validation failed: shardIndex ($shardIndex) is out of bounds (should be 0 to ${totalShards - 1})',
+        );
         return false;
       }
 
@@ -205,7 +223,9 @@ extension ShardDataExtension on ShardData {
       }
 
       if (createdAt <= 0) {
-        Log.error('ShardData validation failed: createdAt ($createdAt) is invalid (must be > 0)');
+        Log.error(
+          'ShardData validation failed: createdAt ($createdAt) is invalid (must be > 0)',
+        );
         return false;
       }
 
@@ -248,12 +268,15 @@ Map<String, dynamic> shardDataToJson(ShardData shardData) {
     if (shardData.peers != null) 'peers': shardData.peers,
     if (shardData.ownerName != null) 'ownerName': shardData.ownerName,
     if (shardData.instructions != null) 'instructions': shardData.instructions,
-    if (shardData.recipientPubkey != null) 'recipientPubkey': shardData.recipientPubkey,
+    if (shardData.recipientPubkey != null)
+      'recipientPubkey': shardData.recipientPubkey,
     if (shardData.isReceived != null) 'isReceived': shardData.isReceived,
-    if (shardData.receivedAt != null) 'receivedAt': shardData.receivedAt!.toIso8601String(),
+    if (shardData.receivedAt != null)
+      'receivedAt': shardData.receivedAt!.toIso8601String(),
     if (shardData.nostrEventId != null) 'nostrEventId': shardData.nostrEventId,
     if (shardData.relayUrls != null) 'relayUrls': shardData.relayUrls,
-    if (shardData.distributionVersion != null) 'distributionVersion': shardData.distributionVersion,
+    if (shardData.distributionVersion != null)
+      'distributionVersion': shardData.distributionVersion,
   };
 }
 
@@ -270,15 +293,21 @@ ShardData shardDataFromJson(Map<String, dynamic> json) {
     lockboxId: json['lockboxId'] as String?,
     lockboxName: json['lockboxName'] as String?,
     peers: json['peers'] != null
-        ? (json['peers'] as List).map((e) => Map<String, String>.from(e as Map)).toList()
+        ? (json['peers'] as List)
+              .map((e) => Map<String, String>.from(e as Map))
+              .toList()
         : null,
     ownerName: json['ownerName'] as String?,
     instructions: json['instructions'] as String?,
     recipientPubkey: json['recipientPubkey'] as String?,
     isReceived: json['isReceived'] as bool?,
-    receivedAt: json['receivedAt'] != null ? DateTime.parse(json['receivedAt'] as String) : null,
+    receivedAt: json['receivedAt'] != null
+        ? DateTime.parse(json['receivedAt'] as String)
+        : null,
     nostrEventId: json['nostrEventId'] as String?,
-    relayUrls: json['relayUrls'] != null ? List<String>.from(json['relayUrls'] as List) : null,
+    relayUrls: json['relayUrls'] != null
+        ? List<String>.from(json['relayUrls'] as List)
+        : null,
     distributionVersion: json['distributionVersion'] as int?,
   );
 }

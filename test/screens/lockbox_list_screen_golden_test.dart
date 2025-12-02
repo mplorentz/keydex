@@ -15,36 +15,37 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  const MethodChannel sharedPreferencesChannel =
-      MethodChannel('plugins.flutter.io/shared_preferences');
+  const MethodChannel sharedPreferencesChannel = MethodChannel(
+    'plugins.flutter.io/shared_preferences',
+  );
   final Map<String, dynamic> sharedPreferencesStore = {};
 
   setUpAll(() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(sharedPreferencesChannel, (call) async {
-      final args = call.arguments as Map? ?? {};
-      if (call.method == 'getAll') {
-        return Map<String, dynamic>.from(sharedPreferencesStore);
-      } else if (call.method == 'setString') {
-        sharedPreferencesStore[args['key']] = args['value'];
-        return true;
-      } else if (call.method == 'getString') {
-        return sharedPreferencesStore[args['key']];
-      } else if (call.method == 'remove') {
-        sharedPreferencesStore.remove(args['key']);
-        return true;
-      } else if (call.method == 'getStringList') {
-        final value = sharedPreferencesStore[args['key']];
-        return value is List ? value : null;
-      } else if (call.method == 'setStringList') {
-        sharedPreferencesStore[args['key']] = args['value'];
-        return true;
-      } else if (call.method == 'clear') {
-        sharedPreferencesStore.clear();
-        return true;
-      }
-      return null;
-    });
+          final args = call.arguments as Map? ?? {};
+          if (call.method == 'getAll') {
+            return Map<String, dynamic>.from(sharedPreferencesStore);
+          } else if (call.method == 'setString') {
+            sharedPreferencesStore[args['key']] = args['value'];
+            return true;
+          } else if (call.method == 'getString') {
+            return sharedPreferencesStore[args['key']];
+          } else if (call.method == 'remove') {
+            sharedPreferencesStore.remove(args['key']);
+            return true;
+          } else if (call.method == 'getStringList') {
+            final value = sharedPreferencesStore[args['key']];
+            return value is List ? value : null;
+          } else if (call.method == 'setStringList') {
+            sharedPreferencesStore[args['key']] = args['value'];
+            return true;
+          } else if (call.method == 'clear') {
+            sharedPreferencesStore.clear();
+            return true;
+          }
+          return null;
+        });
   });
 
   tearDownAll(() {
@@ -201,7 +202,10 @@ void main() {
         container: container,
       );
 
-      await screenMatchesGolden(tester, 'lockbox_list_screen_single_key_holder');
+      await screenMatchesGolden(
+        tester,
+        'lockbox_list_screen_single_key_holder',
+      );
 
       container.dispose();
     });
@@ -222,7 +226,10 @@ void main() {
         container: container,
       );
 
-      await screenMatchesGolden(tester, 'lockbox_list_screen_single_awaiting_key');
+      await screenMatchesGolden(
+        tester,
+        'lockbox_list_screen_single_awaiting_key',
+      );
 
       container.dispose();
     });
@@ -259,11 +266,9 @@ void main() {
       );
 
       final builder = DeviceBuilder()
-        ..overrideDevicesForAllScenarios(devices: [
-          Device.phone,
-          Device.iphone11,
-          Device.tabletPortrait,
-        ])
+        ..overrideDevicesForAllScenarios(
+          devices: [Device.phone, Device.iphone11, Device.tabletPortrait],
+        )
         ..addScenario(
           widget: const LockboxListScreen(),
           name: 'multiple_lockboxes',
