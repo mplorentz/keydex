@@ -95,12 +95,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       ref.invalidate(isLoggedInProvider);
 
       // Navigate to import success screen
-      if (mounted && keyPair.privateKeyBech32 != null) {
+      final privateKey = keyPair?.privateKeyBech32;
+      if (mounted && privateKey != null) {
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => ImportSuccessScreen(
-              nsec: keyPair.privateKeyBech32!,
+              nsec: privateKey,
             ),
           ),
         );
