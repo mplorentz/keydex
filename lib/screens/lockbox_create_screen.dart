@@ -7,7 +7,14 @@ import 'backup_config_screen.dart';
 
 /// Enhanced lockbox creation screen with integrated backup configuration
 class LockboxCreateScreen extends ConsumerStatefulWidget {
-  const LockboxCreateScreen({super.key});
+  final String? initialName;
+  final String? initialContent;
+
+  const LockboxCreateScreen({
+    super.key,
+    this.initialName,
+    this.initialContent,
+  });
 
   @override
   ConsumerState<LockboxCreateScreen> createState() =>
@@ -16,10 +23,17 @@ class LockboxCreateScreen extends ConsumerStatefulWidget {
 
 class _LockboxCreateScreenState extends ConsumerState<LockboxCreateScreen>
     with LockboxContentSaveMixin {
-  final _nameController = TextEditingController();
-  final _contentController = TextEditingController();
+  late final TextEditingController _nameController;
+  late final TextEditingController _contentController;
   final _ownerNameController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.initialName ?? '');
+    _contentController = TextEditingController(text: widget.initialContent ?? '');
+  }
 
   @override
   void dispose() {

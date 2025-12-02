@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/lockbox.dart';
-import '../providers/lockbox_provider.dart';
-import '../providers/key_provider.dart';
-import '../utils/invite_code_utils.dart';
 import '../widgets/row_button_stack.dart';
-import 'lockbox_detail_screen.dart';
 import 'lockbox_list_screen.dart';
+import 'vault_explainer_screen.dart';
 
 /// Screen shown after account creation or import
 /// Displays the nsec key and offers backup options
@@ -29,46 +25,17 @@ class AccountCreatedScreen extends ConsumerWidget {
     return '$start...$end';
   }
 
-  /// Create a lockbox with the nsec as content
-  Future<void> _backupKeyInVault(BuildContext context, WidgetRef ref) async {
-    final repository = ref.read(lockboxRepositoryProvider);
-    final loginService = ref.read(loginServiceProvider);
-
-    // Get current user's public key
-    final currentPubkey = await loginService.getCurrentPublicKey();
-    if (currentPubkey == null) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error: No public key available')),
-        );
-      }
-      return;
-    }
-
-    // Generate secure ID
-    final lockboxId = generateSecureID();
-
-    // Create lockbox with nsec as content
-    final lockbox = Lockbox(
-      id: lockboxId,
-      name: 'Nostr Key Backup',
-      content: nsec,
-      createdAt: DateTime.now(),
-      ownerPubkey: currentPubkey,
-    );
-
-    // Save lockbox
-    await repository.addLockbox(lockbox);
-
-    // Navigate to detail screen
-    if (context.mounted) {
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(
-          builder: (context) => LockboxDetailScreen(lockboxId: lockboxId),
+  /// Navigate to vault creation flow with nsec pre-filled
+  void _backupKeyInVault(BuildContext context) {
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (context) => VaultExplainerScreen(
+          initialName: 'Nostr Key Backup',
+          initialContent: nsec,
         ),
-        (route) => false, // Clear all previous routes
-      );
-    }
+      ),
+      (route) => false, // Clear all previous routes
+    );
   }
 
   /// Skip backup and go to main app
@@ -200,7 +167,7 @@ class AccountCreatedScreen extends ConsumerWidget {
                   text: 'Skip for Now',
                 ),
                 RowButtonConfig(
-                  onPressed: () => _backupKeyInVault(context, ref),
+                  onPressed: () => _backupKeyInVault(context),
                   icon: Icons.backup,
                   text: 'Back Up in Horcrux Vault',
                 ),

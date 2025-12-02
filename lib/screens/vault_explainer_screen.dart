@@ -4,7 +4,14 @@ import 'lockbox_create_screen.dart';
 
 /// Screen explaining vault terminology and setup process
 class VaultExplainerScreen extends StatelessWidget {
-  const VaultExplainerScreen({super.key});
+  final String? initialName;
+  final String? initialContent;
+
+  const VaultExplainerScreen({
+    super.key,
+    this.initialName,
+    this.initialContent,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -83,7 +90,10 @@ class VaultExplainerScreen extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const LockboxCreateScreen(),
+                  builder: (context) => LockboxCreateScreen(
+                    initialName: initialName,
+                    initialContent: initialContent,
+                  ),
                 ),
               );
             },

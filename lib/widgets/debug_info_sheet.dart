@@ -70,7 +70,7 @@ class DebugInfoSheet extends ConsumerWidget {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('All data cleared! App will restart...'),
+          content: Text('All data cleared! Returning to onboarding...'),
           duration: Duration(seconds: 2),
           backgroundColor: Colors.green,
         ),
@@ -81,6 +81,10 @@ class DebugInfoSheet extends ConsumerWidget {
       ref.invalidate(currentPublicKeyProvider);
       ref.invalidate(currentPublicKeyBech32Provider);
       ref.invalidate(isLoggedInProvider);
+
+      // Pop all routes to return to root, which will show onboarding
+      // since isLoggedInProvider will now return false
+      Navigator.of(context).popUntil((route) => route.isFirst);
     } catch (e) {
       Log.error('Error clearing all data', e);
       if (!context.mounted) return;
