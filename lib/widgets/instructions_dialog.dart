@@ -4,10 +4,7 @@ import 'package:flutter/material.dart';
 class InstructionsDialog extends StatelessWidget {
   final String? instructions;
 
-  const InstructionsDialog({
-    super.key,
-    required this.instructions,
-  });
+  const InstructionsDialog({super.key, required this.instructions});
 
   /// Show instructions dialog
   static Future<void> show(BuildContext context, String? instructions) {
@@ -29,16 +26,13 @@ class InstructionsDialog extends StatelessWidget {
       ),
       content: SingleChildScrollView(
         child: instructions != null && instructions!.isNotEmpty
-            ? Text(
-                instructions!,
-                style: Theme.of(context).textTheme.bodyMedium,
-              )
+            ? Text(instructions!, style: Theme.of(context).textTheme.bodyMedium)
             : Text(
                 'No instructions provided.',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey[600],
-                      fontStyle: FontStyle.italic,
-                    ),
+                  color: Colors.grey[600],
+                  fontStyle: FontStyle.italic,
+                ),
               ),
       ),
       actions: [

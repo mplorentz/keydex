@@ -37,9 +37,7 @@ void main() {
       // Only override loginServiceProvider - other providers won't be accessed
       // during build, only when "Get Started" button is pressed
       final container = ProviderContainer(
-        overrides: [
-          loginServiceProvider.overrideWithValue(loginService),
-        ],
+        overrides: [loginServiceProvider.overrideWithValue(loginService)],
       );
 
       await pumpGoldenWidget(
@@ -61,21 +59,14 @@ void main() {
       loginService.resetCacheForTest();
 
       final container = ProviderContainer(
-        overrides: [
-          loginServiceProvider.overrideWithValue(loginService),
-        ],
+        overrides: [loginServiceProvider.overrideWithValue(loginService)],
       );
 
       final builder = DeviceBuilder()
-        ..overrideDevicesForAllScenarios(devices: [
-          Device.phone,
-          Device.iphone11,
-          Device.tabletPortrait,
-        ])
-        ..addScenario(
-          widget: const OnboardingScreen(),
-          name: 'onboarding',
-        );
+        ..overrideDevicesForAllScenarios(
+          devices: [Device.phone, Device.iphone11, Device.tabletPortrait],
+        )
+        ..addScenario(widget: const OnboardingScreen(), name: 'onboarding');
 
       await tester.pumpDeviceBuilder(
         builder,

@@ -53,259 +53,134 @@ import 'package:ndk/shared/nips/nip01/key_pair.dart' as _i23;
 // ignore_for_file: subtype_of_sealed_class
 
 class _FakeNdkConfig_0 extends _i1.SmartFake implements _i2.NdkConfig {
-  _FakeNdkConfig_0(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeNdkConfig_0(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeRequests_1 extends _i1.SmartFake implements _i3.Requests {
-  _FakeRequests_1(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeRequests_1(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeAccounts_2 extends _i1.SmartFake implements _i4.Accounts {
-  _FakeAccounts_2(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeAccounts_2(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeBroadcast_3 extends _i1.SmartFake implements _i5.Broadcast {
-  _FakeBroadcast_3(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeBroadcast_3(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeRelayManager_4<T> extends _i1.SmartFake
     implements _i6.RelayManager<T> {
-  _FakeRelayManager_4(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeRelayManager_4(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeFollows_5 extends _i1.SmartFake implements _i7.Follows {
-  _FakeFollows_5(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeFollows_5(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeMetadatas_6 extends _i1.SmartFake implements _i8.Metadatas {
-  _FakeMetadatas_6(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeMetadatas_6(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeUserRelayLists_7 extends _i1.SmartFake
     implements _i9.UserRelayLists {
-  _FakeUserRelayLists_7(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeUserRelayLists_7(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeLists_8 extends _i1.SmartFake implements _i10.Lists {
-  _FakeLists_8(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeLists_8(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeRelaySets_9 extends _i1.SmartFake implements _i11.RelaySets {
-  _FakeRelaySets_9(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeRelaySets_9(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeVerifyNip05_10 extends _i1.SmartFake implements _i12.VerifyNip05 {
-  _FakeVerifyNip05_10(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeVerifyNip05_10(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeFiles_11 extends _i1.SmartFake implements _i13.Files {
-  _FakeFiles_11(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeFiles_11(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeBlossom_12 extends _i1.SmartFake implements _i14.Blossom {
-  _FakeBlossom_12(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeBlossom_12(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeBlossomUserServerList_13 extends _i1.SmartFake
     implements _i15.BlossomUserServerList {
-  _FakeBlossomUserServerList_13(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeBlossomUserServerList_13(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeGiftWrap_14 extends _i1.SmartFake implements _i16.GiftWrap {
-  _FakeGiftWrap_14(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeGiftWrap_14(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeConnectivy_15 extends _i1.SmartFake implements _i17.Connectivy {
-  _FakeConnectivy_15(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeConnectivy_15(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeNwc_16 extends _i1.SmartFake implements _i18.Nwc {
-  _FakeNwc_16(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeNwc_16(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeZaps_17 extends _i1.SmartFake implements _i19.Zaps {
-  _FakeZaps_17(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeZaps_17(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeSearch_18 extends _i1.SmartFake implements _i20.Search {
-  _FakeSearch_18(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeSearch_18(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeNip01Event_19 extends _i1.SmartFake implements _i21.Nip01Event {
-  _FakeNip01Event_19(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeNip01Event_19(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeNdkBroadcastResponse_20 extends _i1.SmartFake
     implements _i22.NdkBroadcastResponse {
-  _FakeNdkBroadcastResponse_20(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeNdkBroadcastResponse_20(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeKeyPair_21 extends _i1.SmartFake implements _i23.KeyPair {
-  _FakeKeyPair_21(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeKeyPair_21(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeLockboxRepository_22 extends _i1.SmartFake
     implements _i24.LockboxRepository {
-  _FakeLockboxRepository_22(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeLockboxRepository_22(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeInvitationSendingService_23 extends _i1.SmartFake
     implements _i25.InvitationSendingService {
-  _FakeInvitationSendingService_23(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeInvitationSendingService_23(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeDateTime_24 extends _i1.SmartFake implements DateTime {
-  _FakeDateTime_24(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeDateTime_24(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 /// A class which mocks [Ndk].
@@ -317,185 +192,177 @@ class MockNdk extends _i1.Mock implements _i22.Ndk {
   }
 
   @override
-  _i2.NdkConfig get config => (super.noSuchMethod(
-        Invocation.getter(#config),
-        returnValue: _FakeNdkConfig_0(
-          this,
-          Invocation.getter(#config),
-        ),
-      ) as _i2.NdkConfig);
+  _i2.NdkConfig get config =>
+      (super.noSuchMethod(
+            Invocation.getter(#config),
+            returnValue: _FakeNdkConfig_0(this, Invocation.getter(#config)),
+          )
+          as _i2.NdkConfig);
 
   @override
-  _i3.Requests get requests => (super.noSuchMethod(
-        Invocation.getter(#requests),
-        returnValue: _FakeRequests_1(
-          this,
-          Invocation.getter(#requests),
-        ),
-      ) as _i3.Requests);
+  _i3.Requests get requests =>
+      (super.noSuchMethod(
+            Invocation.getter(#requests),
+            returnValue: _FakeRequests_1(this, Invocation.getter(#requests)),
+          )
+          as _i3.Requests);
 
   @override
-  _i4.Accounts get accounts => (super.noSuchMethod(
-        Invocation.getter(#accounts),
-        returnValue: _FakeAccounts_2(
-          this,
-          Invocation.getter(#accounts),
-        ),
-      ) as _i4.Accounts);
+  _i4.Accounts get accounts =>
+      (super.noSuchMethod(
+            Invocation.getter(#accounts),
+            returnValue: _FakeAccounts_2(this, Invocation.getter(#accounts)),
+          )
+          as _i4.Accounts);
 
   @override
-  _i5.Broadcast get broadcast => (super.noSuchMethod(
-        Invocation.getter(#broadcast),
-        returnValue: _FakeBroadcast_3(
-          this,
-          Invocation.getter(#broadcast),
-        ),
-      ) as _i5.Broadcast);
+  _i5.Broadcast get broadcast =>
+      (super.noSuchMethod(
+            Invocation.getter(#broadcast),
+            returnValue: _FakeBroadcast_3(this, Invocation.getter(#broadcast)),
+          )
+          as _i5.Broadcast);
 
   @override
-  _i6.RelayManager<dynamic> get relays => (super.noSuchMethod(
-        Invocation.getter(#relays),
-        returnValue: _FakeRelayManager_4<dynamic>(
-          this,
-          Invocation.getter(#relays),
-        ),
-      ) as _i6.RelayManager<dynamic>);
+  _i6.RelayManager<dynamic> get relays =>
+      (super.noSuchMethod(
+            Invocation.getter(#relays),
+            returnValue: _FakeRelayManager_4<dynamic>(
+              this,
+              Invocation.getter(#relays),
+            ),
+          )
+          as _i6.RelayManager<dynamic>);
 
   @override
-  _i7.Follows get follows => (super.noSuchMethod(
-        Invocation.getter(#follows),
-        returnValue: _FakeFollows_5(
-          this,
-          Invocation.getter(#follows),
-        ),
-      ) as _i7.Follows);
+  _i7.Follows get follows =>
+      (super.noSuchMethod(
+            Invocation.getter(#follows),
+            returnValue: _FakeFollows_5(this, Invocation.getter(#follows)),
+          )
+          as _i7.Follows);
 
   @override
-  _i8.Metadatas get metadata => (super.noSuchMethod(
-        Invocation.getter(#metadata),
-        returnValue: _FakeMetadatas_6(
-          this,
-          Invocation.getter(#metadata),
-        ),
-      ) as _i8.Metadatas);
+  _i8.Metadatas get metadata =>
+      (super.noSuchMethod(
+            Invocation.getter(#metadata),
+            returnValue: _FakeMetadatas_6(this, Invocation.getter(#metadata)),
+          )
+          as _i8.Metadatas);
 
   @override
-  _i9.UserRelayLists get userRelayLists => (super.noSuchMethod(
-        Invocation.getter(#userRelayLists),
-        returnValue: _FakeUserRelayLists_7(
-          this,
-          Invocation.getter(#userRelayLists),
-        ),
-      ) as _i9.UserRelayLists);
+  _i9.UserRelayLists get userRelayLists =>
+      (super.noSuchMethod(
+            Invocation.getter(#userRelayLists),
+            returnValue: _FakeUserRelayLists_7(
+              this,
+              Invocation.getter(#userRelayLists),
+            ),
+          )
+          as _i9.UserRelayLists);
 
   @override
-  _i10.Lists get lists => (super.noSuchMethod(
-        Invocation.getter(#lists),
-        returnValue: _FakeLists_8(
-          this,
-          Invocation.getter(#lists),
-        ),
-      ) as _i10.Lists);
+  _i10.Lists get lists =>
+      (super.noSuchMethod(
+            Invocation.getter(#lists),
+            returnValue: _FakeLists_8(this, Invocation.getter(#lists)),
+          )
+          as _i10.Lists);
 
   @override
-  _i11.RelaySets get relaySets => (super.noSuchMethod(
-        Invocation.getter(#relaySets),
-        returnValue: _FakeRelaySets_9(
-          this,
-          Invocation.getter(#relaySets),
-        ),
-      ) as _i11.RelaySets);
+  _i11.RelaySets get relaySets =>
+      (super.noSuchMethod(
+            Invocation.getter(#relaySets),
+            returnValue: _FakeRelaySets_9(this, Invocation.getter(#relaySets)),
+          )
+          as _i11.RelaySets);
 
   @override
-  _i12.VerifyNip05 get nip05 => (super.noSuchMethod(
-        Invocation.getter(#nip05),
-        returnValue: _FakeVerifyNip05_10(
-          this,
-          Invocation.getter(#nip05),
-        ),
-      ) as _i12.VerifyNip05);
+  _i12.VerifyNip05 get nip05 =>
+      (super.noSuchMethod(
+            Invocation.getter(#nip05),
+            returnValue: _FakeVerifyNip05_10(this, Invocation.getter(#nip05)),
+          )
+          as _i12.VerifyNip05);
 
   @override
-  _i13.Files get files => (super.noSuchMethod(
-        Invocation.getter(#files),
-        returnValue: _FakeFiles_11(
-          this,
-          Invocation.getter(#files),
-        ),
-      ) as _i13.Files);
+  _i13.Files get files =>
+      (super.noSuchMethod(
+            Invocation.getter(#files),
+            returnValue: _FakeFiles_11(this, Invocation.getter(#files)),
+          )
+          as _i13.Files);
 
   @override
-  _i14.Blossom get blossom => (super.noSuchMethod(
-        Invocation.getter(#blossom),
-        returnValue: _FakeBlossom_12(
-          this,
-          Invocation.getter(#blossom),
-        ),
-      ) as _i14.Blossom);
+  _i14.Blossom get blossom =>
+      (super.noSuchMethod(
+            Invocation.getter(#blossom),
+            returnValue: _FakeBlossom_12(this, Invocation.getter(#blossom)),
+          )
+          as _i14.Blossom);
 
   @override
-  _i15.BlossomUserServerList get blossomUserServerList => (super.noSuchMethod(
-        Invocation.getter(#blossomUserServerList),
-        returnValue: _FakeBlossomUserServerList_13(
-          this,
-          Invocation.getter(#blossomUserServerList),
-        ),
-      ) as _i15.BlossomUserServerList);
+  _i15.BlossomUserServerList get blossomUserServerList =>
+      (super.noSuchMethod(
+            Invocation.getter(#blossomUserServerList),
+            returnValue: _FakeBlossomUserServerList_13(
+              this,
+              Invocation.getter(#blossomUserServerList),
+            ),
+          )
+          as _i15.BlossomUserServerList);
 
   @override
-  _i16.GiftWrap get giftWrap => (super.noSuchMethod(
-        Invocation.getter(#giftWrap),
-        returnValue: _FakeGiftWrap_14(
-          this,
-          Invocation.getter(#giftWrap),
-        ),
-      ) as _i16.GiftWrap);
+  _i16.GiftWrap get giftWrap =>
+      (super.noSuchMethod(
+            Invocation.getter(#giftWrap),
+            returnValue: _FakeGiftWrap_14(this, Invocation.getter(#giftWrap)),
+          )
+          as _i16.GiftWrap);
 
   @override
-  _i17.Connectivy get connectivity => (super.noSuchMethod(
-        Invocation.getter(#connectivity),
-        returnValue: _FakeConnectivy_15(
-          this,
-          Invocation.getter(#connectivity),
-        ),
-      ) as _i17.Connectivy);
+  _i17.Connectivy get connectivity =>
+      (super.noSuchMethod(
+            Invocation.getter(#connectivity),
+            returnValue: _FakeConnectivy_15(
+              this,
+              Invocation.getter(#connectivity),
+            ),
+          )
+          as _i17.Connectivy);
 
   @override
-  _i18.Nwc get nwc => (super.noSuchMethod(
-        Invocation.getter(#nwc),
-        returnValue: _FakeNwc_16(
-          this,
-          Invocation.getter(#nwc),
-        ),
-      ) as _i18.Nwc);
+  _i18.Nwc get nwc =>
+      (super.noSuchMethod(
+            Invocation.getter(#nwc),
+            returnValue: _FakeNwc_16(this, Invocation.getter(#nwc)),
+          )
+          as _i18.Nwc);
 
   @override
-  _i19.Zaps get zaps => (super.noSuchMethod(
-        Invocation.getter(#zaps),
-        returnValue: _FakeZaps_17(
-          this,
-          Invocation.getter(#zaps),
-        ),
-      ) as _i19.Zaps);
+  _i19.Zaps get zaps =>
+      (super.noSuchMethod(
+            Invocation.getter(#zaps),
+            returnValue: _FakeZaps_17(this, Invocation.getter(#zaps)),
+          )
+          as _i19.Zaps);
 
   @override
-  _i20.Search get search => (super.noSuchMethod(
-        Invocation.getter(#search),
-        returnValue: _FakeSearch_18(
-          this,
-          Invocation.getter(#search),
-        ),
-      ) as _i20.Search);
+  _i20.Search get search =>
+      (super.noSuchMethod(
+            Invocation.getter(#search),
+            returnValue: _FakeSearch_18(this, Invocation.getter(#search)),
+          )
+          as _i20.Search);
 
   @override
-  _i26.Future<void> destroy() => (super.noSuchMethod(
-        Invocation.method(
-          #destroy,
-          [],
-        ),
-        returnValue: _i26.Future<void>.value(),
-        returnValueForMissingStub: _i26.Future<void>.value(),
-      ) as _i26.Future<void>);
+  _i26.Future<void> destroy() =>
+      (super.noSuchMethod(
+            Invocation.method(#destroy, []),
+            returnValue: _i26.Future<void>.value(),
+            returnValueForMissingStub: _i26.Future<void>.value(),
+          )
+          as _i26.Future<void>);
 }
 
 /// A class which mocks [GiftWrap].
@@ -507,13 +374,12 @@ class MockGiftWrap extends _i1.Mock implements _i16.GiftWrap {
   }
 
   @override
-  _i4.Accounts get accounts => (super.noSuchMethod(
-        Invocation.getter(#accounts),
-        returnValue: _FakeAccounts_2(
-          this,
-          Invocation.getter(#accounts),
-        ),
-      ) as _i4.Accounts);
+  _i4.Accounts get accounts =>
+      (super.noSuchMethod(
+            Invocation.getter(#accounts),
+            returnValue: _FakeAccounts_2(this, Invocation.getter(#accounts)),
+          )
+          as _i4.Accounts);
 
   @override
   _i26.Future<_i21.Nip01Event> toGiftWrap({
@@ -521,45 +387,36 @@ class MockGiftWrap extends _i1.Mock implements _i16.GiftWrap {
     required String? recipientPubkey,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #toGiftWrap,
-          [],
-          {
-            #rumor: rumor,
-            #recipientPubkey: recipientPubkey,
-          },
-        ),
-        returnValue: _i26.Future<_i21.Nip01Event>.value(_FakeNip01Event_19(
-          this,
-          Invocation.method(
-            #toGiftWrap,
-            [],
-            {
+            Invocation.method(#toGiftWrap, [], {
               #rumor: rumor,
               #recipientPubkey: recipientPubkey,
-            },
-          ),
-        )),
-      ) as _i26.Future<_i21.Nip01Event>);
+            }),
+            returnValue: _i26.Future<_i21.Nip01Event>.value(
+              _FakeNip01Event_19(
+                this,
+                Invocation.method(#toGiftWrap, [], {
+                  #rumor: rumor,
+                  #recipientPubkey: recipientPubkey,
+                }),
+              ),
+            ),
+          )
+          as _i26.Future<_i21.Nip01Event>);
 
   @override
-  _i26.Future<_i21.Nip01Event> fromGiftWrap(
-          {required _i21.Nip01Event? giftWrap}) =>
+  _i26.Future<_i21.Nip01Event> fromGiftWrap({
+    required _i21.Nip01Event? giftWrap,
+  }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #fromGiftWrap,
-          [],
-          {#giftWrap: giftWrap},
-        ),
-        returnValue: _i26.Future<_i21.Nip01Event>.value(_FakeNip01Event_19(
-          this,
-          Invocation.method(
-            #fromGiftWrap,
-            [],
-            {#giftWrap: giftWrap},
-          ),
-        )),
-      ) as _i26.Future<_i21.Nip01Event>);
+            Invocation.method(#fromGiftWrap, [], {#giftWrap: giftWrap}),
+            returnValue: _i26.Future<_i21.Nip01Event>.value(
+              _FakeNip01Event_19(
+                this,
+                Invocation.method(#fromGiftWrap, [], {#giftWrap: giftWrap}),
+              ),
+            ),
+          )
+          as _i26.Future<_i21.Nip01Event>);
 
   @override
   _i26.Future<_i21.Nip01Event> createRumor({
@@ -569,30 +426,25 @@ class MockGiftWrap extends _i1.Mock implements _i16.GiftWrap {
     required List<List<String>>? tags,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #createRumor,
-          [],
-          {
-            #customPubkey: customPubkey,
-            #content: content,
-            #kind: kind,
-            #tags: tags,
-          },
-        ),
-        returnValue: _i26.Future<_i21.Nip01Event>.value(_FakeNip01Event_19(
-          this,
-          Invocation.method(
-            #createRumor,
-            [],
-            {
+            Invocation.method(#createRumor, [], {
               #customPubkey: customPubkey,
               #content: content,
               #kind: kind,
               #tags: tags,
-            },
-          ),
-        )),
-      ) as _i26.Future<_i21.Nip01Event>);
+            }),
+            returnValue: _i26.Future<_i21.Nip01Event>.value(
+              _FakeNip01Event_19(
+                this,
+                Invocation.method(#createRumor, [], {
+                  #customPubkey: customPubkey,
+                  #content: content,
+                  #kind: kind,
+                  #tags: tags,
+                }),
+              ),
+            ),
+          )
+          as _i26.Future<_i21.Nip01Event>);
 
   @override
   _i26.Future<_i21.Nip01Event> sealRumor({
@@ -600,64 +452,55 @@ class MockGiftWrap extends _i1.Mock implements _i16.GiftWrap {
     required String? recipientPubkey,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #sealRumor,
-          [],
-          {
-            #rumor: rumor,
-            #recipientPubkey: recipientPubkey,
-          },
-        ),
-        returnValue: _i26.Future<_i21.Nip01Event>.value(_FakeNip01Event_19(
-          this,
-          Invocation.method(
-            #sealRumor,
-            [],
-            {
+            Invocation.method(#sealRumor, [], {
               #rumor: rumor,
               #recipientPubkey: recipientPubkey,
-            },
-          ),
-        )),
-      ) as _i26.Future<_i21.Nip01Event>);
+            }),
+            returnValue: _i26.Future<_i21.Nip01Event>.value(
+              _FakeNip01Event_19(
+                this,
+                Invocation.method(#sealRumor, [], {
+                  #rumor: rumor,
+                  #recipientPubkey: recipientPubkey,
+                }),
+              ),
+            ),
+          )
+          as _i26.Future<_i21.Nip01Event>);
 
   @override
-  _i26.Future<_i21.Nip01Event> unsealRumor(
-          {required _i21.Nip01Event? sealedEvent}) =>
+  _i26.Future<_i21.Nip01Event> unsealRumor({
+    required _i21.Nip01Event? sealedEvent,
+  }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #unsealRumor,
-          [],
-          {#sealedEvent: sealedEvent},
-        ),
-        returnValue: _i26.Future<_i21.Nip01Event>.value(_FakeNip01Event_19(
-          this,
-          Invocation.method(
-            #unsealRumor,
-            [],
-            {#sealedEvent: sealedEvent},
-          ),
-        )),
-      ) as _i26.Future<_i21.Nip01Event>);
+            Invocation.method(#unsealRumor, [], {#sealedEvent: sealedEvent}),
+            returnValue: _i26.Future<_i21.Nip01Event>.value(
+              _FakeNip01Event_19(
+                this,
+                Invocation.method(#unsealRumor, [], {
+                  #sealedEvent: sealedEvent,
+                }),
+              ),
+            ),
+          )
+          as _i26.Future<_i21.Nip01Event>);
 
   @override
-  _i26.Future<_i21.Nip01Event> unwrapEvent(
-          {required _i21.Nip01Event? wrappedEvent}) =>
+  _i26.Future<_i21.Nip01Event> unwrapEvent({
+    required _i21.Nip01Event? wrappedEvent,
+  }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #unwrapEvent,
-          [],
-          {#wrappedEvent: wrappedEvent},
-        ),
-        returnValue: _i26.Future<_i21.Nip01Event>.value(_FakeNip01Event_19(
-          this,
-          Invocation.method(
-            #unwrapEvent,
-            [],
-            {#wrappedEvent: wrappedEvent},
-          ),
-        )),
-      ) as _i26.Future<_i21.Nip01Event>);
+            Invocation.method(#unwrapEvent, [], {#wrappedEvent: wrappedEvent}),
+            returnValue: _i26.Future<_i21.Nip01Event>.value(
+              _FakeNip01Event_19(
+                this,
+                Invocation.method(#unwrapEvent, [], {
+                  #wrappedEvent: wrappedEvent,
+                }),
+              ),
+            ),
+          )
+          as _i26.Future<_i21.Nip01Event>);
 }
 
 /// A class which mocks [Broadcast].
@@ -677,32 +520,25 @@ class MockBroadcast extends _i1.Mock implements _i5.Broadcast {
     Duration? timeout,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #broadcast,
-          [],
-          {
-            #nostrEvent: nostrEvent,
-            #specificRelays: specificRelays,
-            #customSigner: customSigner,
-            #considerDonePercent: considerDonePercent,
-            #timeout: timeout,
-          },
-        ),
-        returnValue: _FakeNdkBroadcastResponse_20(
-          this,
-          Invocation.method(
-            #broadcast,
-            [],
-            {
+            Invocation.method(#broadcast, [], {
               #nostrEvent: nostrEvent,
               #specificRelays: specificRelays,
               #customSigner: customSigner,
               #considerDonePercent: considerDonePercent,
               #timeout: timeout,
-            },
-          ),
-        ),
-      ) as _i22.NdkBroadcastResponse);
+            }),
+            returnValue: _FakeNdkBroadcastResponse_20(
+              this,
+              Invocation.method(#broadcast, [], {
+                #nostrEvent: nostrEvent,
+                #specificRelays: specificRelays,
+                #customSigner: customSigner,
+                #considerDonePercent: considerDonePercent,
+                #timeout: timeout,
+              }),
+            ),
+          )
+          as _i22.NdkBroadcastResponse);
 
   @override
   _i22.NdkBroadcastResponse broadcastReaction({
@@ -711,28 +547,21 @@ class MockBroadcast extends _i1.Mock implements _i5.Broadcast {
     String? reaction = r'+',
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #broadcastReaction,
-          [],
-          {
-            #eventId: eventId,
-            #customRelays: customRelays,
-            #reaction: reaction,
-          },
-        ),
-        returnValue: _FakeNdkBroadcastResponse_20(
-          this,
-          Invocation.method(
-            #broadcastReaction,
-            [],
-            {
+            Invocation.method(#broadcastReaction, [], {
               #eventId: eventId,
               #customRelays: customRelays,
               #reaction: reaction,
-            },
-          ),
-        ),
-      ) as _i22.NdkBroadcastResponse);
+            }),
+            returnValue: _FakeNdkBroadcastResponse_20(
+              this,
+              Invocation.method(#broadcastReaction, [], {
+                #eventId: eventId,
+                #customRelays: customRelays,
+                #reaction: reaction,
+              }),
+            ),
+          )
+          as _i22.NdkBroadcastResponse);
 
   @override
   _i22.NdkBroadcastResponse broadcastDeletion({
@@ -741,28 +570,21 @@ class MockBroadcast extends _i1.Mock implements _i5.Broadcast {
     _i22.EventSigner? customSigner,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #broadcastDeletion,
-          [],
-          {
-            #eventId: eventId,
-            #customRelays: customRelays,
-            #customSigner: customSigner,
-          },
-        ),
-        returnValue: _FakeNdkBroadcastResponse_20(
-          this,
-          Invocation.method(
-            #broadcastDeletion,
-            [],
-            {
+            Invocation.method(#broadcastDeletion, [], {
               #eventId: eventId,
               #customRelays: customRelays,
               #customSigner: customSigner,
-            },
-          ),
-        ),
-      ) as _i22.NdkBroadcastResponse);
+            }),
+            returnValue: _FakeNdkBroadcastResponse_20(
+              this,
+              Invocation.method(#broadcastDeletion, [], {
+                #eventId: eventId,
+                #customRelays: customRelays,
+                #customSigner: customSigner,
+              }),
+            ),
+          )
+          as _i22.NdkBroadcastResponse);
 }
 
 /// A class which mocks [Nip01Event].
@@ -774,199 +596,166 @@ class MockNip01Event extends _i1.Mock implements _i21.Nip01Event {
   }
 
   @override
-  String get id => (super.noSuchMethod(
-        Invocation.getter(#id),
-        returnValue: _i27.dummyValue<String>(
-          this,
-          Invocation.getter(#id),
-        ),
-      ) as String);
+  String get id =>
+      (super.noSuchMethod(
+            Invocation.getter(#id),
+            returnValue: _i27.dummyValue<String>(this, Invocation.getter(#id)),
+          )
+          as String);
 
   @override
   set id(String? _id) => super.noSuchMethod(
-        Invocation.setter(
-          #id,
-          _id,
-        ),
-        returnValueForMissingStub: null,
-      );
+    Invocation.setter(#id, _id),
+    returnValueForMissingStub: null,
+  );
 
   @override
-  String get pubKey => (super.noSuchMethod(
-        Invocation.getter(#pubKey),
-        returnValue: _i27.dummyValue<String>(
-          this,
-          Invocation.getter(#pubKey),
-        ),
-      ) as String);
+  String get pubKey =>
+      (super.noSuchMethod(
+            Invocation.getter(#pubKey),
+            returnValue: _i27.dummyValue<String>(
+              this,
+              Invocation.getter(#pubKey),
+            ),
+          )
+          as String);
 
   @override
-  int get createdAt => (super.noSuchMethod(
-        Invocation.getter(#createdAt),
-        returnValue: 0,
-      ) as int);
+  int get createdAt =>
+      (super.noSuchMethod(Invocation.getter(#createdAt), returnValue: 0)
+          as int);
 
   @override
   set createdAt(int? _createdAt) => super.noSuchMethod(
-        Invocation.setter(
-          #createdAt,
-          _createdAt,
-        ),
-        returnValueForMissingStub: null,
-      );
+    Invocation.setter(#createdAt, _createdAt),
+    returnValueForMissingStub: null,
+  );
 
   @override
-  int get kind => (super.noSuchMethod(
-        Invocation.getter(#kind),
-        returnValue: 0,
-      ) as int);
+  int get kind =>
+      (super.noSuchMethod(Invocation.getter(#kind), returnValue: 0) as int);
 
   @override
-  List<List<String>> get tags => (super.noSuchMethod(
-        Invocation.getter(#tags),
-        returnValue: <List<String>>[],
-      ) as List<List<String>>);
+  List<List<String>> get tags =>
+      (super.noSuchMethod(
+            Invocation.getter(#tags),
+            returnValue: <List<String>>[],
+          )
+          as List<List<String>>);
 
   @override
   set tags(List<List<String>>? _tags) => super.noSuchMethod(
-        Invocation.setter(
-          #tags,
-          _tags,
-        ),
-        returnValueForMissingStub: null,
-      );
+    Invocation.setter(#tags, _tags),
+    returnValueForMissingStub: null,
+  );
 
   @override
-  String get content => (super.noSuchMethod(
-        Invocation.getter(#content),
-        returnValue: _i27.dummyValue<String>(
-          this,
-          Invocation.getter(#content),
-        ),
-      ) as String);
+  String get content =>
+      (super.noSuchMethod(
+            Invocation.getter(#content),
+            returnValue: _i27.dummyValue<String>(
+              this,
+              Invocation.getter(#content),
+            ),
+          )
+          as String);
 
   @override
   set content(String? _content) => super.noSuchMethod(
-        Invocation.setter(
-          #content,
-          _content,
-        ),
-        returnValueForMissingStub: null,
-      );
+    Invocation.setter(#content, _content),
+    returnValueForMissingStub: null,
+  );
 
   @override
-  String get sig => (super.noSuchMethod(
-        Invocation.getter(#sig),
-        returnValue: _i27.dummyValue<String>(
-          this,
-          Invocation.getter(#sig),
-        ),
-      ) as String);
+  String get sig =>
+      (super.noSuchMethod(
+            Invocation.getter(#sig),
+            returnValue: _i27.dummyValue<String>(this, Invocation.getter(#sig)),
+          )
+          as String);
 
   @override
   set sig(String? _sig) => super.noSuchMethod(
-        Invocation.setter(
-          #sig,
-          _sig,
-        ),
-        returnValueForMissingStub: null,
-      );
+    Invocation.setter(#sig, _sig),
+    returnValueForMissingStub: null,
+  );
 
   @override
   set validSig(bool? _validSig) => super.noSuchMethod(
-        Invocation.setter(
-          #validSig,
-          _validSig,
-        ),
-        returnValueForMissingStub: null,
-      );
+    Invocation.setter(#validSig, _validSig),
+    returnValueForMissingStub: null,
+  );
 
   @override
-  List<String> get sources => (super.noSuchMethod(
-        Invocation.getter(#sources),
-        returnValue: <String>[],
-      ) as List<String>);
+  List<String> get sources =>
+      (super.noSuchMethod(Invocation.getter(#sources), returnValue: <String>[])
+          as List<String>);
 
   @override
   set sources(List<String>? _sources) => super.noSuchMethod(
-        Invocation.setter(
-          #sources,
-          _sources,
-        ),
-        returnValueForMissingStub: null,
-      );
+    Invocation.setter(#sources, _sources),
+    returnValueForMissingStub: null,
+  );
 
   @override
-  bool get isIdValid => (super.noSuchMethod(
-        Invocation.getter(#isIdValid),
-        returnValue: false,
-      ) as bool);
+  bool get isIdValid =>
+      (super.noSuchMethod(Invocation.getter(#isIdValid), returnValue: false)
+          as bool);
 
   @override
-  List<String> get tTags => (super.noSuchMethod(
-        Invocation.getter(#tTags),
-        returnValue: <String>[],
-      ) as List<String>);
+  List<String> get tTags =>
+      (super.noSuchMethod(Invocation.getter(#tTags), returnValue: <String>[])
+          as List<String>);
 
   @override
-  List<String> get pTags => (super.noSuchMethod(
-        Invocation.getter(#pTags),
-        returnValue: <String>[],
-      ) as List<String>);
+  List<String> get pTags =>
+      (super.noSuchMethod(Invocation.getter(#pTags), returnValue: <String>[])
+          as List<String>);
 
   @override
-  List<String> get replyETags => (super.noSuchMethod(
-        Invocation.getter(#replyETags),
-        returnValue: <String>[],
-      ) as List<String>);
+  List<String> get replyETags =>
+      (super.noSuchMethod(
+            Invocation.getter(#replyETags),
+            returnValue: <String>[],
+          )
+          as List<String>);
 
   @override
-  Map<String, dynamic> toJson() => (super.noSuchMethod(
-        Invocation.method(
-          #toJson,
-          [],
-        ),
-        returnValue: <String, dynamic>{},
-      ) as Map<String, dynamic>);
+  Map<String, dynamic> toJson() =>
+      (super.noSuchMethod(
+            Invocation.method(#toJson, []),
+            returnValue: <String, dynamic>{},
+          )
+          as Map<String, dynamic>);
 
   @override
-  String toBase64() => (super.noSuchMethod(
-        Invocation.method(
-          #toBase64,
-          [],
-        ),
-        returnValue: _i27.dummyValue<String>(
-          this,
-          Invocation.method(
-            #toBase64,
-            [],
-          ),
-        ),
-      ) as String);
+  String toBase64() =>
+      (super.noSuchMethod(
+            Invocation.method(#toBase64, []),
+            returnValue: _i27.dummyValue<String>(
+              this,
+              Invocation.method(#toBase64, []),
+            ),
+          )
+          as String);
 
   @override
   void sign(String? privateKey) => super.noSuchMethod(
-        Invocation.method(
-          #sign,
-          [privateKey],
-        ),
-        returnValueForMissingStub: null,
-      );
+    Invocation.method(#sign, [privateKey]),
+    returnValueForMissingStub: null,
+  );
 
   @override
-  List<String> getTags(String? tag) => (super.noSuchMethod(
-        Invocation.method(
-          #getTags,
-          [tag],
-        ),
-        returnValue: <String>[],
-      ) as List<String>);
+  List<String> getTags(String? tag) =>
+      (super.noSuchMethod(
+            Invocation.method(#getTags, [tag]),
+            returnValue: <String>[],
+          )
+          as List<String>);
 
   @override
-  String? getFirstTag(String? name) => (super.noSuchMethod(Invocation.method(
-        #getFirstTag,
-        [name],
-      )) as String?);
+  String? getFirstTag(String? name) =>
+      (super.noSuchMethod(Invocation.method(#getFirstTag, [name])) as String?);
 
   @override
   _i21.Nip01Event copyWith({
@@ -979,25 +768,7 @@ class MockNip01Event extends _i1.Mock implements _i21.Nip01Event {
     List<String>? sources,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #copyWith,
-          [],
-          {
-            #pubKey: pubKey,
-            #createdAt: createdAt,
-            #kind: kind,
-            #tags: tags,
-            #content: content,
-            #sig: sig,
-            #sources: sources,
-          },
-        ),
-        returnValue: _FakeNip01Event_19(
-          this,
-          Invocation.method(
-            #copyWith,
-            [],
-            {
+            Invocation.method(#copyWith, [], {
               #pubKey: pubKey,
               #createdAt: createdAt,
               #kind: kind,
@@ -1005,10 +776,21 @@ class MockNip01Event extends _i1.Mock implements _i21.Nip01Event {
               #content: content,
               #sig: sig,
               #sources: sources,
-            },
-          ),
-        ),
-      ) as _i21.Nip01Event);
+            }),
+            returnValue: _FakeNip01Event_19(
+              this,
+              Invocation.method(#copyWith, [], {
+                #pubKey: pubKey,
+                #createdAt: createdAt,
+                #kind: kind,
+                #tags: tags,
+                #content: content,
+                #sig: sig,
+                #sources: sources,
+              }),
+            ),
+          )
+          as _i21.Nip01Event);
 }
 
 /// A class which mocks [NdkBroadcastResponse].
@@ -1021,28 +803,33 @@ class MockNdkBroadcastResponse extends _i1.Mock
   }
 
   @override
-  _i21.Nip01Event get publishEvent => (super.noSuchMethod(
-        Invocation.getter(#publishEvent),
-        returnValue: _FakeNip01Event_19(
-          this,
-          Invocation.getter(#publishEvent),
-        ),
-      ) as _i21.Nip01Event);
+  _i21.Nip01Event get publishEvent =>
+      (super.noSuchMethod(
+            Invocation.getter(#publishEvent),
+            returnValue: _FakeNip01Event_19(
+              this,
+              Invocation.getter(#publishEvent),
+            ),
+          )
+          as _i21.Nip01Event);
 
   @override
   _i26.Future<List<_i28.RelayBroadcastResponse>> get broadcastDoneFuture =>
       (super.noSuchMethod(
-        Invocation.getter(#broadcastDoneFuture),
-        returnValue: _i26.Future<List<_i28.RelayBroadcastResponse>>.value(
-            <_i28.RelayBroadcastResponse>[]),
-      ) as _i26.Future<List<_i28.RelayBroadcastResponse>>);
+            Invocation.getter(#broadcastDoneFuture),
+            returnValue: _i26.Future<List<_i28.RelayBroadcastResponse>>.value(
+              <_i28.RelayBroadcastResponse>[],
+            ),
+          )
+          as _i26.Future<List<_i28.RelayBroadcastResponse>>);
 
   @override
   _i26.Stream<List<_i28.RelayBroadcastResponse>> get broadcastDone =>
       (super.noSuchMethod(
-        Invocation.getter(#broadcastDone),
-        returnValue: _i26.Stream<List<_i28.RelayBroadcastResponse>>.empty(),
-      ) as _i26.Stream<List<_i28.RelayBroadcastResponse>>);
+            Invocation.getter(#broadcastDone),
+            returnValue: _i26.Stream<List<_i28.RelayBroadcastResponse>>.empty(),
+          )
+          as _i26.Stream<List<_i28.RelayBroadcastResponse>>);
 }
 
 /// A class which mocks [LoginService].
@@ -1054,116 +841,96 @@ class MockLoginService extends _i1.Mock implements _i29.LoginService {
   }
 
   @override
-  _i26.Future<_i23.KeyPair> generateAndStoreNostrKey() => (super.noSuchMethod(
-        Invocation.method(
-          #generateAndStoreNostrKey,
-          [],
-        ),
-        returnValue: _i26.Future<_i23.KeyPair>.value(_FakeKeyPair_21(
-          this,
-          Invocation.method(
-            #generateAndStoreNostrKey,
-            [],
-          ),
-        )),
-      ) as _i26.Future<_i23.KeyPair>);
+  _i26.Future<_i23.KeyPair> generateAndStoreNostrKey() =>
+      (super.noSuchMethod(
+            Invocation.method(#generateAndStoreNostrKey, []),
+            returnValue: _i26.Future<_i23.KeyPair>.value(
+              _FakeKeyPair_21(
+                this,
+                Invocation.method(#generateAndStoreNostrKey, []),
+              ),
+            ),
+          )
+          as _i26.Future<_i23.KeyPair>);
 
   @override
-  _i26.Future<_i23.KeyPair?> getStoredNostrKey() => (super.noSuchMethod(
-        Invocation.method(
-          #getStoredNostrKey,
-          [],
-        ),
-        returnValue: _i26.Future<_i23.KeyPair?>.value(),
-      ) as _i26.Future<_i23.KeyPair?>);
+  _i26.Future<_i23.KeyPair?> getStoredNostrKey() =>
+      (super.noSuchMethod(
+            Invocation.method(#getStoredNostrKey, []),
+            returnValue: _i26.Future<_i23.KeyPair?>.value(),
+          )
+          as _i26.Future<_i23.KeyPair?>);
 
   @override
-  _i26.Future<_i23.KeyPair> initializeKey() => (super.noSuchMethod(
-        Invocation.method(
-          #initializeKey,
-          [],
-        ),
-        returnValue: _i26.Future<_i23.KeyPair>.value(_FakeKeyPair_21(
-          this,
-          Invocation.method(
-            #initializeKey,
-            [],
-          ),
-        )),
-      ) as _i26.Future<_i23.KeyPair>);
+  _i26.Future<_i23.KeyPair> initializeKey() =>
+      (super.noSuchMethod(
+            Invocation.method(#initializeKey, []),
+            returnValue: _i26.Future<_i23.KeyPair>.value(
+              _FakeKeyPair_21(this, Invocation.method(#initializeKey, [])),
+            ),
+          )
+          as _i26.Future<_i23.KeyPair>);
 
   @override
-  _i26.Future<String?> getCurrentPublicKey() => (super.noSuchMethod(
-        Invocation.method(
-          #getCurrentPublicKey,
-          [],
-        ),
-        returnValue: _i26.Future<String?>.value(),
-      ) as _i26.Future<String?>);
+  _i26.Future<String?> getCurrentPublicKey() =>
+      (super.noSuchMethod(
+            Invocation.method(#getCurrentPublicKey, []),
+            returnValue: _i26.Future<String?>.value(),
+          )
+          as _i26.Future<String?>);
 
   @override
-  _i26.Future<String?> getCurrentPublicKeyBech32() => (super.noSuchMethod(
-        Invocation.method(
-          #getCurrentPublicKeyBech32,
-          [],
-        ),
-        returnValue: _i26.Future<String?>.value(),
-      ) as _i26.Future<String?>);
+  _i26.Future<String?> getCurrentPublicKeyBech32() =>
+      (super.noSuchMethod(
+            Invocation.method(#getCurrentPublicKeyBech32, []),
+            returnValue: _i26.Future<String?>.value(),
+          )
+          as _i26.Future<String?>);
 
   @override
-  _i26.Future<String> encryptText(String? plaintext) => (super.noSuchMethod(
-        Invocation.method(
-          #encryptText,
-          [plaintext],
-        ),
-        returnValue: _i26.Future<String>.value(_i27.dummyValue<String>(
-          this,
-          Invocation.method(
-            #encryptText,
-            [plaintext],
-          ),
-        )),
-      ) as _i26.Future<String>);
+  _i26.Future<String> encryptText(String? plaintext) =>
+      (super.noSuchMethod(
+            Invocation.method(#encryptText, [plaintext]),
+            returnValue: _i26.Future<String>.value(
+              _i27.dummyValue<String>(
+                this,
+                Invocation.method(#encryptText, [plaintext]),
+              ),
+            ),
+          )
+          as _i26.Future<String>);
 
   @override
-  _i26.Future<String> decryptText(String? encryptedText) => (super.noSuchMethod(
-        Invocation.method(
-          #decryptText,
-          [encryptedText],
-        ),
-        returnValue: _i26.Future<String>.value(_i27.dummyValue<String>(
-          this,
-          Invocation.method(
-            #decryptText,
-            [encryptedText],
-          ),
-        )),
-      ) as _i26.Future<String>);
+  _i26.Future<String> decryptText(String? encryptedText) =>
+      (super.noSuchMethod(
+            Invocation.method(#decryptText, [encryptedText]),
+            returnValue: _i26.Future<String>.value(
+              _i27.dummyValue<String>(
+                this,
+                Invocation.method(#decryptText, [encryptedText]),
+              ),
+            ),
+          )
+          as _i26.Future<String>);
 
   @override
-  _i26.Future<void> clearStoredKeys() => (super.noSuchMethod(
-        Invocation.method(
-          #clearStoredKeys,
-          [],
-        ),
-        returnValue: _i26.Future<void>.value(),
-        returnValueForMissingStub: _i26.Future<void>.value(),
-      ) as _i26.Future<void>);
+  _i26.Future<void> clearStoredKeys() =>
+      (super.noSuchMethod(
+            Invocation.method(#clearStoredKeys, []),
+            returnValue: _i26.Future<void>.value(),
+            returnValueForMissingStub: _i26.Future<void>.value(),
+          )
+          as _i26.Future<void>);
 
   @override
   void resetCacheForTest() => super.noSuchMethod(
-        Invocation.method(
-          #resetCacheForTest,
-          [],
-        ),
-        returnValueForMissingStub: null,
-      );
+    Invocation.method(#resetCacheForTest, []),
+    returnValueForMissingStub: null,
+  );
 
   @override
-  String? npubToHex(String? npub) => (super.noSuchMethod(Invocation.method(
-        #npubToHex,
-        [npub],
-      )) as String?);
+  String? npubToHex(String? npub) =>
+      (super.noSuchMethod(Invocation.method(#npubToHex, [npub])) as String?);
 
   @override
   _i26.Future<String> encryptForRecipient({
@@ -1171,26 +938,21 @@ class MockLoginService extends _i1.Mock implements _i29.LoginService {
     required String? recipientPubkey,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #encryptForRecipient,
-          [],
-          {
-            #plaintext: plaintext,
-            #recipientPubkey: recipientPubkey,
-          },
-        ),
-        returnValue: _i26.Future<String>.value(_i27.dummyValue<String>(
-          this,
-          Invocation.method(
-            #encryptForRecipient,
-            [],
-            {
+            Invocation.method(#encryptForRecipient, [], {
               #plaintext: plaintext,
               #recipientPubkey: recipientPubkey,
-            },
-          ),
-        )),
-      ) as _i26.Future<String>);
+            }),
+            returnValue: _i26.Future<String>.value(
+              _i27.dummyValue<String>(
+                this,
+                Invocation.method(#encryptForRecipient, [], {
+                  #plaintext: plaintext,
+                  #recipientPubkey: recipientPubkey,
+                }),
+              ),
+            ),
+          )
+          as _i26.Future<String>);
 
   @override
   _i26.Future<String> decryptFromSender({
@@ -1198,26 +960,21 @@ class MockLoginService extends _i1.Mock implements _i29.LoginService {
     required String? senderPubkey,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #decryptFromSender,
-          [],
-          {
-            #encryptedText: encryptedText,
-            #senderPubkey: senderPubkey,
-          },
-        ),
-        returnValue: _i26.Future<String>.value(_i27.dummyValue<String>(
-          this,
-          Invocation.method(
-            #decryptFromSender,
-            [],
-            {
+            Invocation.method(#decryptFromSender, [], {
               #encryptedText: encryptedText,
               #senderPubkey: senderPubkey,
-            },
-          ),
-        )),
-      ) as _i26.Future<String>);
+            }),
+            returnValue: _i26.Future<String>.value(
+              _i27.dummyValue<String>(
+                this,
+                Invocation.method(#decryptFromSender, [], {
+                  #encryptedText: encryptedText,
+                  #senderPubkey: senderPubkey,
+                }),
+              ),
+            ),
+          )
+          as _i26.Future<String>);
 }
 
 /// A class which mocks [InvitationService].
@@ -1229,68 +986,130 @@ class MockInvitationService extends _i1.Mock implements _i30.InvitationService {
   }
 
   @override
-  _i24.LockboxRepository get repository => (super.noSuchMethod(
-        Invocation.getter(#repository),
-        returnValue: _FakeLockboxRepository_22(
-          this,
-          Invocation.getter(#repository),
-        ),
-      ) as _i24.LockboxRepository);
+  _i24.LockboxRepository get repository =>
+      (super.noSuchMethod(
+            Invocation.getter(#repository),
+            returnValue: _FakeLockboxRepository_22(
+              this,
+              Invocation.getter(#repository),
+            ),
+          )
+          as _i24.LockboxRepository);
 
   @override
   _i25.InvitationSendingService get invitationSendingService =>
       (super.noSuchMethod(
-        Invocation.getter(#invitationSendingService),
-        returnValue: _FakeInvitationSendingService_23(
-          this,
-          Invocation.getter(#invitationSendingService),
-        ),
-      ) as _i25.InvitationSendingService);
+            Invocation.getter(#invitationSendingService),
+            returnValue: _FakeInvitationSendingService_23(
+              this,
+              Invocation.getter(#invitationSendingService),
+            ),
+          )
+          as _i25.InvitationSendingService);
 
   @override
-  _i26.Stream<void> get invitationsChangedStream => (super.noSuchMethod(
-        Invocation.getter(#invitationsChangedStream),
-        returnValue: _i26.Stream<void>.empty(),
-      ) as _i26.Stream<void>);
+  _i26.Stream<void> get invitationsChangedStream =>
+      (super.noSuchMethod(
+            Invocation.getter(#invitationsChangedStream),
+            returnValue: _i26.Stream<void>.empty(),
+          )
+          as _i26.Stream<void>);
 
   @override
   void dispose() => super.noSuchMethod(
-        Invocation.method(
-          #dispose,
-          [],
-        ),
-        returnValueForMissingStub: null,
-      );
+    Invocation.method(#dispose, []),
+    returnValueForMissingStub: null,
+  );
 
   @override
   _i26.Future<
-      ({
-        DateTime createdAt,
-        String inviteCode,
-        String? inviteeName,
-        String lockboxId,
-        String lockboxName,
-        String ownerPubkey,
-        DateTime? redeemedAt,
-        String? redeemedBy,
-        List<String> relayUrls,
-        _i31.InvitationStatus status
-      })> generateInvitationLink({
+    ({
+      DateTime createdAt,
+      String inviteCode,
+      String? inviteeName,
+      String lockboxId,
+      String lockboxName,
+      String ownerPubkey,
+      DateTime? redeemedAt,
+      String? redeemedBy,
+      List<String> relayUrls,
+      _i31.InvitationStatus status,
+    })
+  >
+  generateInvitationLink({
     required String? lockboxId,
     required String? inviteeName,
     required List<String>? relayUrls,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #generateInvitationLink,
-          [],
-          {
-            #lockboxId: lockboxId,
-            #inviteeName: inviteeName,
-            #relayUrls: relayUrls,
-          },
-        ),
-        returnValue: _i26.Future<
+            Invocation.method(#generateInvitationLink, [], {
+              #lockboxId: lockboxId,
+              #inviteeName: inviteeName,
+              #relayUrls: relayUrls,
+            }),
+            returnValue:
+                _i26.Future<
+                  ({
+                    DateTime createdAt,
+                    String inviteCode,
+                    String? inviteeName,
+                    String lockboxId,
+                    String lockboxName,
+                    String ownerPubkey,
+                    DateTime? redeemedAt,
+                    String? redeemedBy,
+                    List<String> relayUrls,
+                    _i31.InvitationStatus status,
+                  })
+                >.value((
+                  createdAt: _FakeDateTime_24(
+                    this,
+                    Invocation.method(#generateInvitationLink, [], {
+                      #lockboxId: lockboxId,
+                      #inviteeName: inviteeName,
+                      #relayUrls: relayUrls,
+                    }),
+                  ),
+                  inviteCode: _i27.dummyValue<String>(
+                    this,
+                    Invocation.method(#generateInvitationLink, [], {
+                      #lockboxId: lockboxId,
+                      #inviteeName: inviteeName,
+                      #relayUrls: relayUrls,
+                    }),
+                  ),
+                  inviteeName: null,
+                  lockboxId: _i27.dummyValue<String>(
+                    this,
+                    Invocation.method(#generateInvitationLink, [], {
+                      #lockboxId: lockboxId,
+                      #inviteeName: inviteeName,
+                      #relayUrls: relayUrls,
+                    }),
+                  ),
+                  lockboxName: _i27.dummyValue<String>(
+                    this,
+                    Invocation.method(#generateInvitationLink, [], {
+                      #lockboxId: lockboxId,
+                      #inviteeName: inviteeName,
+                      #relayUrls: relayUrls,
+                    }),
+                  ),
+                  ownerPubkey: _i27.dummyValue<String>(
+                    this,
+                    Invocation.method(#generateInvitationLink, [], {
+                      #lockboxId: lockboxId,
+                      #inviteeName: inviteeName,
+                      #relayUrls: relayUrls,
+                    }),
+                  ),
+                  redeemedAt: null,
+                  redeemedBy: null,
+                  relayUrls: <String>[],
+                  status: _i31.InvitationStatus.created,
+                )),
+          )
+          as _i26.Future<
             ({
               DateTime createdAt,
               String inviteCode,
@@ -1301,134 +1120,65 @@ class MockInvitationService extends _i1.Mock implements _i30.InvitationService {
               DateTime? redeemedAt,
               String? redeemedBy,
               List<String> relayUrls,
-              _i31.InvitationStatus status
-            })>.value((
-          createdAt: _FakeDateTime_24(
-            this,
-            Invocation.method(
-              #generateInvitationLink,
-              [],
-              {
-                #lockboxId: lockboxId,
-                #inviteeName: inviteeName,
-                #relayUrls: relayUrls,
-              },
-            ),
-          ),
-          inviteCode: _i27.dummyValue<String>(
-            this,
-            Invocation.method(
-              #generateInvitationLink,
-              [],
-              {
-                #lockboxId: lockboxId,
-                #inviteeName: inviteeName,
-                #relayUrls: relayUrls,
-              },
-            ),
-          ),
-          inviteeName: null,
-          lockboxId: _i27.dummyValue<String>(
-            this,
-            Invocation.method(
-              #generateInvitationLink,
-              [],
-              {
-                #lockboxId: lockboxId,
-                #inviteeName: inviteeName,
-                #relayUrls: relayUrls,
-              },
-            ),
-          ),
-          lockboxName: _i27.dummyValue<String>(
-            this,
-            Invocation.method(
-              #generateInvitationLink,
-              [],
-              {
-                #lockboxId: lockboxId,
-                #inviteeName: inviteeName,
-                #relayUrls: relayUrls,
-              },
-            ),
-          ),
-          ownerPubkey: _i27.dummyValue<String>(
-            this,
-            Invocation.method(
-              #generateInvitationLink,
-              [],
-              {
-                #lockboxId: lockboxId,
-                #inviteeName: inviteeName,
-                #relayUrls: relayUrls,
-              },
-            ),
-          ),
-          redeemedAt: null,
-          redeemedBy: null,
-          relayUrls: <String>[],
-          status: _i31.InvitationStatus.created
-        )),
-      ) as _i26.Future<
-          ({
-            DateTime createdAt,
-            String inviteCode,
-            String? inviteeName,
-            String lockboxId,
-            String lockboxName,
-            String ownerPubkey,
-            DateTime? redeemedAt,
-            String? redeemedBy,
-            List<String> relayUrls,
-            _i31.InvitationStatus status
-          })>);
+              _i31.InvitationStatus status,
+            })
+          >);
 
   @override
   _i26.Future<
-      List<
-          ({
-            DateTime createdAt,
-            String inviteCode,
-            String? inviteeName,
-            String lockboxId,
-            String lockboxName,
-            String ownerPubkey,
-            DateTime? redeemedAt,
-            String? redeemedBy,
-            List<String> relayUrls,
-            _i31.InvitationStatus status
-          })>> getPendingInvitations(String? lockboxId) => (super.noSuchMethod(
-        Invocation.method(
-          #getPendingInvitations,
-          [lockboxId],
-        ),
-        returnValue: _i26.Future<
+    List<
+      ({
+        DateTime createdAt,
+        String inviteCode,
+        String? inviteeName,
+        String lockboxId,
+        String lockboxName,
+        String ownerPubkey,
+        DateTime? redeemedAt,
+        String? redeemedBy,
+        List<String> relayUrls,
+        _i31.InvitationStatus status,
+      })
+    >
+  >
+  getPendingInvitations(String? lockboxId) =>
+      (super.noSuchMethod(
+            Invocation.method(#getPendingInvitations, [lockboxId]),
+            returnValue:
+                _i26.Future<
+                  List<
+                    ({
+                      DateTime createdAt,
+                      String inviteCode,
+                      String? inviteeName,
+                      String lockboxId,
+                      String lockboxName,
+                      String ownerPubkey,
+                      DateTime? redeemedAt,
+                      String? redeemedBy,
+                      List<String> relayUrls,
+                      _i31.InvitationStatus status,
+                    })
+                  >
+                >.value(
+                  <
+                    ({
+                      DateTime createdAt,
+                      String inviteCode,
+                      String? inviteeName,
+                      String lockboxId,
+                      String lockboxName,
+                      String ownerPubkey,
+                      DateTime? redeemedAt,
+                      String? redeemedBy,
+                      List<String> relayUrls,
+                      _i31.InvitationStatus status,
+                    })
+                  >[],
+                ),
+          )
+          as _i26.Future<
             List<
-                ({
-                  DateTime createdAt,
-                  String inviteCode,
-                  String? inviteeName,
-                  String lockboxId,
-                  String lockboxName,
-                  String ownerPubkey,
-                  DateTime? redeemedAt,
-                  String? redeemedBy,
-                  List<String> relayUrls,
-                  _i31.InvitationStatus status
-                })>>.value(<({
-          DateTime createdAt,
-          String inviteCode,
-          String? inviteeName,
-          String lockboxId,
-          String lockboxName,
-          String ownerPubkey,
-          DateTime? redeemedAt,
-          String? redeemedBy,
-          List<String> relayUrls,
-          _i31.InvitationStatus status
-        })>[]),
-      ) as _i26.Future<
-          List<
               ({
                 DateTime createdAt,
                 String inviteCode,
@@ -1439,28 +1189,46 @@ class MockInvitationService extends _i1.Mock implements _i30.InvitationService {
                 DateTime? redeemedAt,
                 String? redeemedBy,
                 List<String> relayUrls,
-                _i31.InvitationStatus status
-              })>>);
+                _i31.InvitationStatus status,
+              })
+            >
+          >);
 
   @override
   _i26.Future<
-      ({
-        DateTime createdAt,
-        String inviteCode,
-        String? inviteeName,
-        String lockboxId,
-        String lockboxName,
-        String ownerPubkey,
-        DateTime? redeemedAt,
-        String? redeemedBy,
-        List<String> relayUrls,
-        _i31.InvitationStatus status
-      })?> lookupInvitationByCode(String? inviteCode) => (super.noSuchMethod(
-        Invocation.method(
-          #lookupInvitationByCode,
-          [inviteCode],
-        ),
-        returnValue: _i26.Future<
+    ({
+      DateTime createdAt,
+      String inviteCode,
+      String? inviteeName,
+      String lockboxId,
+      String lockboxName,
+      String ownerPubkey,
+      DateTime? redeemedAt,
+      String? redeemedBy,
+      List<String> relayUrls,
+      _i31.InvitationStatus status,
+    })?
+  >
+  lookupInvitationByCode(String? inviteCode) =>
+      (super.noSuchMethod(
+            Invocation.method(#lookupInvitationByCode, [inviteCode]),
+            returnValue:
+                _i26.Future<
+                  ({
+                    DateTime createdAt,
+                    String inviteCode,
+                    String? inviteeName,
+                    String lockboxId,
+                    String lockboxName,
+                    String ownerPubkey,
+                    DateTime? redeemedAt,
+                    String? redeemedBy,
+                    List<String> relayUrls,
+                    _i31.InvitationStatus status,
+                  })?
+                >.value(),
+          )
+          as _i26.Future<
             ({
               DateTime createdAt,
               String inviteCode,
@@ -1471,21 +1239,9 @@ class MockInvitationService extends _i1.Mock implements _i30.InvitationService {
               DateTime? redeemedAt,
               String? redeemedBy,
               List<String> relayUrls,
-              _i31.InvitationStatus status
-            })?>.value(),
-      ) as _i26.Future<
-          ({
-            DateTime createdAt,
-            String inviteCode,
-            String? inviteeName,
-            String lockboxId,
-            String lockboxName,
-            String ownerPubkey,
-            DateTime? redeemedAt,
-            String? redeemedBy,
-            List<String> relayUrls,
-            _i31.InvitationStatus status
-          })?>);
+              _i31.InvitationStatus status,
+            })?
+          >);
 
   @override
   _i26.Future<void> createReceivedInvitation({
@@ -1496,20 +1252,17 @@ class MockInvitationService extends _i1.Mock implements _i30.InvitationService {
     String? lockboxName,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #createReceivedInvitation,
-          [],
-          {
-            #inviteCode: inviteCode,
-            #lockboxId: lockboxId,
-            #ownerPubkey: ownerPubkey,
-            #relayUrls: relayUrls,
-            #lockboxName: lockboxName,
-          },
-        ),
-        returnValue: _i26.Future<void>.value(),
-        returnValueForMissingStub: _i26.Future<void>.value(),
-      ) as _i26.Future<void>);
+            Invocation.method(#createReceivedInvitation, [], {
+              #inviteCode: inviteCode,
+              #lockboxId: lockboxId,
+              #ownerPubkey: ownerPubkey,
+              #relayUrls: relayUrls,
+              #lockboxName: lockboxName,
+            }),
+            returnValue: _i26.Future<void>.value(),
+            returnValueForMissingStub: _i26.Future<void>.value(),
+          )
+          as _i26.Future<void>);
 
   @override
   _i26.Future<void> redeemInvitation({
@@ -1517,17 +1270,14 @@ class MockInvitationService extends _i1.Mock implements _i30.InvitationService {
     required String? inviteePubkey,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #redeemInvitation,
-          [],
-          {
-            #inviteCode: inviteCode,
-            #inviteePubkey: inviteePubkey,
-          },
-        ),
-        returnValue: _i26.Future<void>.value(),
-        returnValueForMissingStub: _i26.Future<void>.value(),
-      ) as _i26.Future<void>);
+            Invocation.method(#redeemInvitation, [], {
+              #inviteCode: inviteCode,
+              #inviteePubkey: inviteePubkey,
+            }),
+            returnValue: _i26.Future<void>.value(),
+            returnValueForMissingStub: _i26.Future<void>.value(),
+          )
+          as _i26.Future<void>);
 
   @override
   _i26.Future<void> denyInvitation({
@@ -1535,17 +1285,14 @@ class MockInvitationService extends _i1.Mock implements _i30.InvitationService {
     String? reason,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #denyInvitation,
-          [],
-          {
-            #inviteCode: inviteCode,
-            #reason: reason,
-          },
-        ),
-        returnValue: _i26.Future<void>.value(),
-        returnValueForMissingStub: _i26.Future<void>.value(),
-      ) as _i26.Future<void>);
+            Invocation.method(#denyInvitation, [], {
+              #inviteCode: inviteCode,
+              #reason: reason,
+            }),
+            returnValue: _i26.Future<void>.value(),
+            returnValueForMissingStub: _i26.Future<void>.value(),
+          )
+          as _i26.Future<void>);
 
   @override
   _i26.Future<void> invalidateInvitation({
@@ -1553,39 +1300,30 @@ class MockInvitationService extends _i1.Mock implements _i30.InvitationService {
     required String? reason,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #invalidateInvitation,
-          [],
-          {
-            #inviteCode: inviteCode,
-            #reason: reason,
-          },
-        ),
-        returnValue: _i26.Future<void>.value(),
-        returnValueForMissingStub: _i26.Future<void>.value(),
-      ) as _i26.Future<void>);
+            Invocation.method(#invalidateInvitation, [], {
+              #inviteCode: inviteCode,
+              #reason: reason,
+            }),
+            returnValue: _i26.Future<void>.value(),
+            returnValueForMissingStub: _i26.Future<void>.value(),
+          )
+          as _i26.Future<void>);
 
   @override
   _i26.Future<void> processRsvpEvent({required _i21.Nip01Event? event}) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #processRsvpEvent,
-          [],
-          {#event: event},
-        ),
-        returnValue: _i26.Future<void>.value(),
-        returnValueForMissingStub: _i26.Future<void>.value(),
-      ) as _i26.Future<void>);
+            Invocation.method(#processRsvpEvent, [], {#event: event}),
+            returnValue: _i26.Future<void>.value(),
+            returnValueForMissingStub: _i26.Future<void>.value(),
+          )
+          as _i26.Future<void>);
 
   @override
   _i26.Future<void> processDenialEvent({required _i21.Nip01Event? event}) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #processDenialEvent,
-          [],
-          {#event: event},
-        ),
-        returnValue: _i26.Future<void>.value(),
-        returnValueForMissingStub: _i26.Future<void>.value(),
-      ) as _i26.Future<void>);
+            Invocation.method(#processDenialEvent, [], {#event: event}),
+            returnValue: _i26.Future<void>.value(),
+            returnValueForMissingStub: _i26.Future<void>.value(),
+          )
+          as _i26.Future<void>);
 }
