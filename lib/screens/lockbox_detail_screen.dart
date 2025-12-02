@@ -18,17 +18,11 @@ class LockboxDetailScreen extends ConsumerWidget {
 
     return lockboxAsync.when(
       loading: () => Scaffold(
-        appBar: AppBar(
-          title: const Text('Loading...'),
-          centerTitle: false,
-        ),
+        appBar: AppBar(title: const Text('Loading...'), centerTitle: false),
         body: const Center(child: CircularProgressIndicator()),
       ),
       error: (error, stack) => Scaffold(
-        appBar: AppBar(
-          title: const Text('Error'),
-          centerTitle: false,
-        ),
+        appBar: AppBar(title: const Text('Error'), centerTitle: false),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -61,7 +55,11 @@ class LockboxDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildLockboxDetail(BuildContext context, WidgetRef ref, Lockbox lockbox) {
+  Widget _buildLockboxDetail(
+    BuildContext context,
+    WidgetRef ref,
+    Lockbox lockbox,
+  ) {
     return Scaffold(
       appBar: AppBar(
         title: Text(lockbox.name),
@@ -121,7 +119,8 @@ class LockboxDetailScreen extends ConsumerWidget {
       builder: (context) => AlertDialog(
         title: const Text('Delete Vault'),
         content: Text(
-            'Are you sure you want to delete "${lockbox.name}"? This action cannot be undone.'),
+          'Are you sure you want to delete "${lockbox.name}"? This action cannot be undone.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),

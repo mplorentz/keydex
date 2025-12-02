@@ -39,8 +39,10 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
   bool _isCreating = false;
   bool _isLoading = true;
   bool _hasUnsavedChanges = false;
-  bool _isEditingExistingPlan = false; // Track if we're editing an existing plan
-  bool _thresholdManuallyChanged = false; // Track if user manually changed threshold
+  bool _isEditingExistingPlan =
+      false; // Track if we're editing an existing plan
+  bool _thresholdManuallyChanged =
+      false; // Track if user manually changed threshold
   bool _showAdvancedSettings = false; // Track if advanced settings are visible
 
   // Instructions controller
@@ -91,7 +93,8 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
           _isLoading = false;
           _hasUnsavedChanges = false;
           _isEditingExistingPlan = true; // We're editing an existing plan
-          _thresholdManuallyChanged = true; // Existing plan means threshold was already set
+          _thresholdManuallyChanged =
+              true; // Existing plan means threshold was already set
         });
 
         // Load existing invitations and match them to key holders
@@ -117,10 +120,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Scaffold(
-        appBar: AppBar(
-          title: const Text('Recovery Plan'),
-          centerTitle: false,
-        ),
+        appBar: AppBar(title: const Text('Recovery Plan'), centerTitle: false),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
@@ -156,10 +156,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
         }
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Recovery Plan'),
-          centerTitle: false,
-        ),
+        appBar: AppBar(title: const Text('Recovery Plan'), centerTitle: false),
         body: Column(
           children: [
             Expanded(
@@ -173,7 +170,12 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                       children: [
                         // Recovery Plan Overview
                         Padding(
-                          padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
+                          padding: const EdgeInsets.fromLTRB(
+                            16.0,
+                            0,
+                            16.0,
+                            16.0,
+                          ),
                           child: Text(
                             'Your recovery plan details how your vault can be opened and by whom.',
                             style: Theme.of(context).textTheme.bodyMedium,
@@ -189,7 +191,9 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                               children: [
                                 Text(
                                   'Stewards',
-                                  style: Theme.of(context).textTheme.headlineSmall,
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.headlineSmall,
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
@@ -201,7 +205,9 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                                 // Stewards List
                                 if (_keyHolders.isEmpty)
                                   Padding(
-                                    padding: const EdgeInsets.symmetric(vertical: 24.0),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 24.0,
+                                    ),
                                     child: Center(
                                       child: Column(
                                         children: [
@@ -216,12 +222,17 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                                           const SizedBox(height: 16),
                                           Text(
                                             'No stewards yet',
-                                            style: Theme.of(context).textTheme.titleMedium,
+                                            style: Theme.of(
+                                              context,
+                                            ).textTheme.titleMedium,
                                           ),
                                           const SizedBox(height: 8),
                                           Text(
                                             'Add your first steward to get started',
-                                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodyMedium
+                                                ?.copyWith(
                                                   color: Theme.of(context)
                                                       .colorScheme
                                                       .onSurface
@@ -236,9 +247,14 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                                 else
                                   Column(
                                     children: [
-                                      for (int i = 0; i < _keyHolders.length; i++) ...[
+                                      for (
+                                        int i = 0;
+                                        i < _keyHolders.length;
+                                        i++
+                                      ) ...[
                                         _buildKeyHolderListItem(_keyHolders[i]),
-                                        if (i < _keyHolders.length - 1) const Divider(height: 1),
+                                        if (i < _keyHolders.length - 1)
+                                          const Divider(height: 1),
                                       ],
                                     ],
                                   ),
@@ -250,9 +266,11 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                                   child: ElevatedButton.icon(
                                     onPressed: _showAddStewardDialog,
                                     icon: const Icon(Icons.person_add),
-                                    label: Text(_keyHolders.isEmpty
-                                        ? 'Add Steward'
-                                        : 'Add Another Steward'),
+                                    label: Text(
+                                      _keyHolders.isEmpty
+                                          ? 'Add Steward'
+                                          : 'Add Another Steward',
+                                    ),
                                   ),
                                 ),
                               ],
@@ -268,7 +286,8 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                           onThresholdChanged: (newThreshold) {
                             setState(() {
                               _threshold = newThreshold;
-                              _thresholdManuallyChanged = true; // Mark as manually changed
+                              _thresholdManuallyChanged =
+                                  true; // Mark as manually changed
                               _hasUnsavedChanges = true;
                             });
                           },
@@ -284,7 +303,9 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                               children: [
                                 Text(
                                   'Recovery Instructions',
-                                  style: Theme.of(context).textTheme.headlineSmall,
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.headlineSmall,
                                 ),
                                 const SizedBox(height: 16),
                                 TextField(
@@ -317,11 +338,15 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                             });
                           },
                           icon: Icon(
-                            _showAdvancedSettings ? Icons.expand_more : Icons.chevron_right,
+                            _showAdvancedSettings
+                                ? Icons.expand_more
+                                : Icons.chevron_right,
                           ),
-                          label: Text(_showAdvancedSettings
-                              ? 'Hide Advanced Configuration'
-                              : 'Show Advanced Configuration'),
+                          label: Text(
+                            _showAdvancedSettings
+                                ? 'Hide Advanced Configuration'
+                                : 'Show Advanced Configuration',
+                          ),
                         ),
 
                         // Relay Configuration (Advanced)
@@ -333,8 +358,12 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('Relay Servers',
-                                      style: Theme.of(context).textTheme.headlineSmall),
+                                  Text(
+                                    'Relay Servers',
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.headlineSmall,
+                                  ),
                                   const SizedBox(height: 16),
                                   ..._relays.map(
                                     (relay) => ListTile(
@@ -364,7 +393,9 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                           ),
                         ],
 
-                        const SizedBox(height: 16), // Bottom padding inside scroll view
+                        const SizedBox(
+                          height: 16,
+                        ), // Bottom padding inside scroll view
                       ],
                     ),
                   ),
@@ -380,7 +411,9 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                   text: 'Cancel',
                 ),
                 RowButtonConfig(
-                  onPressed: _canCreateBackup() && !_isCreating ? _saveBackup : () {},
+                  onPressed: _canCreateBackup() && !_isCreating
+                      ? _saveBackup
+                      : () {},
                   icon: _isCreating ? Icons.hourglass_empty : Icons.save,
                   text: _isCreating ? 'Saving...' : 'Save',
                 ),
@@ -424,8 +457,14 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text('Add')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Add'),
+          ),
         ],
       ),
     );
@@ -456,7 +495,10 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Invalid relay URL: $e'), backgroundColor: Colors.red),
+            SnackBar(
+              content: Text('Invalid relay URL: $e'),
+              backgroundColor: Colors.red,
+            ),
           );
         }
       }
@@ -468,7 +510,9 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
     if (_relays.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please add at least one relay before adding a steward'),
+          content: Text(
+            'Please add at least one relay before adding a steward',
+          ),
           backgroundColor: Colors.orange,
         ),
       );
@@ -586,7 +630,9 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
     if (_keyHolders.any((holder) => holder.name == stewardName)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('A steward with the name "$stewardName" already exists'),
+          content: Text(
+            'A steward with the name "$stewardName" already exists',
+          ),
           backgroundColor: Colors.orange,
         ),
       );
@@ -653,10 +699,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
           errorMessage = '$errorMessage: $e';
         }
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMessage),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
         );
       }
     }
@@ -748,14 +791,19 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Invalid steward: $e'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text('Invalid steward: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }
   }
 
   Widget _buildKeyHolderListItem(KeyHolder holder) {
-    final invitation = holder.name != null ? _invitationLinksByInviteeName[holder.name] : null;
+    final invitation = holder.name != null
+        ? _invitationLinksByInviteeName[holder.name]
+        : null;
     final isInvited = holder.status == KeyHolderStatus.invited;
 
     return Card(
@@ -764,10 +812,11 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            leading: Icon(
-              isInvited ? Icons.mail_outline : Icons.person,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 8,
             ),
+            leading: Icon(isInvited ? Icons.mail_outline : Icons.person),
             title: Text(holder.displayName),
             subtitle: Text(holder.displaySubtitle),
             trailing: Row(
@@ -827,8 +876,10 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                     Text(
                       'Share this invitation with ${holder.name ?? holder.displayName}:',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-                          ),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.7),
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Row(
@@ -839,7 +890,9 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                             style: TextStyle(
                               fontFamily: 'monospace',
                               fontSize: 11,
-                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withValues(alpha: 0.7),
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -847,7 +900,8 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                         ),
                         IconButton(
                           icon: const Icon(Icons.copy, size: 18),
-                          onPressed: () => _copyInvitationLinkForHolder(invitation),
+                          onPressed: () =>
+                              _copyInvitationLinkForHolder(invitation),
                           tooltip: 'Copy invitation link',
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints(),
@@ -884,7 +938,9 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
   Future<void> _loadExistingInvitations() async {
     try {
       final invitationService = ref.read(invitationServiceProvider);
-      final pendingInvitations = await invitationService.getPendingInvitations(widget.lockboxId);
+      final pendingInvitations = await invitationService.getPendingInvitations(
+        widget.lockboxId,
+      );
 
       // Match invitations to stewards by inviteeName
       final updatedInvitations = <String, InvitationLink>{};
@@ -913,7 +969,8 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
       builder: (context) => AlertDialog(
         title: const Text('Remove Steward'),
         content: Text(
-            'Are you sure you want to remove "${holder.name ?? 'this steward'}" from the recovery plan? '),
+          'Are you sure you want to remove "${holder.name ?? 'this steward'}" from the recovery plan? ',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -960,7 +1017,9 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
         final repository = ref.read(lockboxRepositoryProvider);
         final config = await repository.getBackupConfig(widget.lockboxId);
         if (config != null && config.relays.isNotEmpty) {
-          final invitationSendingService = ref.read(invitationSendingServiceProvider);
+          final invitationSendingService = ref.read(
+            invitationSendingServiceProvider,
+          );
           await invitationSendingService.sendKeyHolderRemovalEvent(
             lockboxId: widget.lockboxId,
             removedKeyHolderPubkey: holder.pubkey!,
@@ -996,7 +1055,10 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
     });
   }
 
-  Future<void> _regenerateInvitationLink(KeyHolder holder, InvitationLink oldInvitation) async {
+  Future<void> _regenerateInvitationLink(
+    KeyHolder holder,
+    InvitationLink oldInvitation,
+  ) async {
     if (holder.name == null) return;
 
     try {
@@ -1099,17 +1161,19 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
         );
 
         // Check if config parameters will change (will increment version)
-        final configWillChange = existingConfig.configParamsDifferFrom(uiConfig);
+        final configWillChange = existingConfig.configParamsDifferFrom(
+          uiConfig,
+        );
 
         // Show alert if needed and get user confirmation
         if (!mounted) return;
         final shouldAutoDistributeResult =
             await BackupDistributionHelper.showRegenerationAlertIfNeeded(
-          context: context,
-          backupConfig: existingConfig,
-          willChange: configWillChange,
-          mounted: mounted,
-        );
+              context: context,
+              backupConfig: existingConfig,
+              willChange: configWillChange,
+              mounted: mounted,
+            );
 
         if (shouldAutoDistributeResult == false) {
           // User cancelled or widget disposed, don't save changes
@@ -1153,14 +1217,20 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
       // If user confirmed, auto-distribute
       if (shouldAutoDistribute) {
         // Reload config to get updated version
-        final updatedConfig = await repository.getBackupConfig(widget.lockboxId);
+        final updatedConfig = await repository.getBackupConfig(
+          widget.lockboxId,
+        );
         if (updatedConfig != null && updatedConfig.canDistribute) {
           try {
-            await backupService.createAndDistributeBackup(lockboxId: widget.lockboxId);
+            await backupService.createAndDistributeBackup(
+              lockboxId: widget.lockboxId,
+            );
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text('Keys regenerated and distributed successfully!'),
+                  content: Text(
+                    'Keys regenerated and distributed successfully!',
+                  ),
                   backgroundColor: Colors.green,
                 ),
               );
@@ -1190,18 +1260,26 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
           // Check if we added new invited stewards to an existing plan with distributed keys
           if (!isNewConfig && existingConfig.lastRedistribution != null) {
             final existingInvitedNames = existingConfig.keyHolders
-                .where((h) => h.status == KeyHolderStatus.invited && h.pubkey == null)
+                .where(
+                  (h) =>
+                      h.status == KeyHolderStatus.invited && h.pubkey == null,
+                )
                 .map((h) => h.name)
                 .whereType<String>()
                 .toSet();
 
             final newInvitedNames = _keyHolders
-                .where((h) => h.status == KeyHolderStatus.invited && h.pubkey == null)
+                .where(
+                  (h) =>
+                      h.status == KeyHolderStatus.invited && h.pubkey == null,
+                )
                 .map((h) => h.name)
                 .whereType<String>()
                 .toSet();
 
-            final addedInvitedCount = newInvitedNames.difference(existingInvitedNames).length;
+            final addedInvitedCount = newInvitedNames
+                .difference(existingInvitedNames)
+                .length;
 
             if (addedInvitedCount > 0 && mounted) {
               // Show alert explaining that keys need to be redistributed
@@ -1243,7 +1321,10 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save recovery plan: $e'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text('Failed to save recovery plan: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } finally {

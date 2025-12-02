@@ -18,7 +18,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'recovery_service_test.mocks.dart';
 import '../helpers/secure_storage_mock.dart';
 
-@GenerateMocks([BackupService, ShardDistributionService, NdkService, LockboxShareService])
+@GenerateMocks([
+  BackupService,
+  ShardDistributionService,
+  NdkService,
+  LockboxShareService,
+])
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -40,8 +45,10 @@ void main() {
     late NdkService ndkService;
     late LockboxShareService lockboxShareService;
     late RecoveryService recoveryService;
-    const testKeyHolder1 = 'fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321';
-    const testKeyHolder2 = 'abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdef1234';
+    const testKeyHolder1 =
+        'fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321';
+    const testKeyHolder2 =
+        'abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdef1234';
     const testLockboxId = 'lockbox-test-123';
 
     setUp(() async {
@@ -64,18 +71,26 @@ void main() {
       final mockLockboxShareService = MockLockboxShareService();
 
       // Stub the streams that RecoveryService accesses in its constructor
-      when(mockNdkService.recoveryRequestStream)
-          .thenAnswer((_) => const Stream<RecoveryRequest>.empty());
-      when(mockNdkService.recoveryResponseStream)
-          .thenAnswer((_) => const Stream<RecoveryResponseEvent>.empty());
+      when(
+        mockNdkService.recoveryRequestStream,
+      ).thenAnswer((_) => const Stream<RecoveryRequest>.empty());
+      when(
+        mockNdkService.recoveryResponseStream,
+      ).thenAnswer((_) => const Stream<RecoveryResponseEvent>.empty());
       // Stub getCurrentPubkey to return the test creator pubkey
-      when(mockNdkService.getCurrentPubkey())
-          .thenAnswer((_) async => testCreatorPubkey);
+      when(
+        mockNdkService.getCurrentPubkey(),
+      ).thenAnswer((_) async => testCreatorPubkey);
 
       backupService = mockBackupService;
       ndkService = mockNdkService;
       lockboxShareService = mockLockboxShareService;
-      recoveryService = RecoveryService(repository, backupService, ndkService, lockboxShareService);
+      recoveryService = RecoveryService(
+        repository,
+        backupService,
+        ndkService,
+        lockboxShareService,
+      );
       await recoveryService.clearAll();
       await repository.clearAll();
 
@@ -109,8 +124,14 @@ void main() {
       expect(recoveryRequest.lockboxId, testLockboxId);
       expect(recoveryRequest.initiatorPubkey, testCreatorPubkey);
       expect(recoveryRequest.keyHolderResponses.length, 2);
-      expect(recoveryRequest.keyHolderResponses.containsKey(testKeyHolder1), true);
-      expect(recoveryRequest.keyHolderResponses.containsKey(testKeyHolder2), true);
+      expect(
+        recoveryRequest.keyHolderResponses.containsKey(testKeyHolder1),
+        true,
+      );
+      expect(
+        recoveryRequest.keyHolderResponses.containsKey(testKeyHolder2),
+        true,
+      );
     });
 
     test('recovery request JSON payload has correct structure', () async {
@@ -147,60 +168,63 @@ void main() {
       expect(decoded['requested_at'], isNotEmpty);
     });
 
-    test('recovery response JSON payload has correct structure with shard data', () async {
-      // Arrange
-      final recoveryRequest = await recoveryService.initiateRecovery(
-        testLockboxId,
-        initiatorPubkey: testCreatorPubkey,
-        keyHolderPubkeys: [testKeyHolder1],
-        threshold: 1,
-      );
+    test(
+      'recovery response JSON payload has correct structure with shard data',
+      () async {
+        // Arrange
+        final recoveryRequest = await recoveryService.initiateRecovery(
+          testLockboxId,
+          initiatorPubkey: testCreatorPubkey,
+          keyHolderPubkeys: [testKeyHolder1],
+          threshold: 1,
+        );
 
-      final shardData = createShardData(
-        shard: 'test_shard_data_base64',
-        threshold: 2,
-        shardIndex: 0,
-        totalShards: 3,
-        primeMod: 'test_prime_mod',
-        creatorPubkey: testCreatorPubkey,
-        lockboxId: testLockboxId,
-        lockboxName: 'Test Lockbox',
-      );
+        final shardData = createShardData(
+          shard: 'test_shard_data_base64',
+          threshold: 2,
+          shardIndex: 0,
+          totalShards: 3,
+          primeMod: 'test_prime_mod',
+          creatorPubkey: testCreatorPubkey,
+          lockboxId: testLockboxId,
+          lockboxName: 'Test Lockbox',
+        );
 
-      // Build the expected JSON structure for approval (as would be sent via Nostr)
-      final responseData = {
-        'type': 'recovery_response',
-        'recovery_request_id': recoveryRequest.id,
-        'lockbox_id': recoveryRequest.lockboxId,
-        'responder_pubkey': testKeyHolder1,
-        'approved': true,
-        'responded_at': DateTime.now().toIso8601String(),
-        'shard_data': shardDataToJson(shardData),
-      };
+        // Build the expected JSON structure for approval (as would be sent via Nostr)
+        final responseData = {
+          'type': 'recovery_response',
+          'recovery_request_id': recoveryRequest.id,
+          'lockbox_id': recoveryRequest.lockboxId,
+          'responder_pubkey': testKeyHolder1,
+          'approved': true,
+          'responded_at': DateTime.now().toIso8601String(),
+          'shard_data': shardDataToJson(shardData),
+        };
 
-      final responseJson = json.encode(responseData);
+        final responseJson = json.encode(responseData);
 
-      // Verify JSON structure
-      expect(responseJson, isNotEmpty);
+        // Verify JSON structure
+        expect(responseJson, isNotEmpty);
 
-      final decoded = json.decode(responseJson) as Map<String, dynamic>;
-      expect(decoded['type'], 'recovery_response');
-      expect(decoded['recovery_request_id'], recoveryRequest.id);
-      expect(decoded['lockbox_id'], testLockboxId);
-      expect(decoded['responder_pubkey'], testKeyHolder1);
-      expect(decoded['approved'], true);
-      expect(decoded['shard_data'], isNotNull);
+        final decoded = json.decode(responseJson) as Map<String, dynamic>;
+        expect(decoded['type'], 'recovery_response');
+        expect(decoded['recovery_request_id'], recoveryRequest.id);
+        expect(decoded['lockbox_id'], testLockboxId);
+        expect(decoded['responder_pubkey'], testKeyHolder1);
+        expect(decoded['approved'], true);
+        expect(decoded['shard_data'], isNotNull);
 
-      // Verify shard data structure
-      final shardDataJson = decoded['shard_data'] as Map<String, dynamic>;
-      expect(shardDataJson['shard'], 'test_shard_data_base64');
-      expect(shardDataJson['threshold'], 2);
-      expect(shardDataJson['shardIndex'], 0);
-      expect(shardDataJson['totalShards'], 3);
-      expect(shardDataJson['creatorPubkey'], testCreatorPubkey);
-      expect(shardDataJson['lockboxId'], testLockboxId);
-      expect(shardDataJson['lockboxName'], 'Test Lockbox');
-    });
+        // Verify shard data structure
+        final shardDataJson = decoded['shard_data'] as Map<String, dynamic>;
+        expect(shardDataJson['shard'], 'test_shard_data_base64');
+        expect(shardDataJson['threshold'], 2);
+        expect(shardDataJson['shardIndex'], 0);
+        expect(shardDataJson['totalShards'], 3);
+        expect(shardDataJson['creatorPubkey'], testCreatorPubkey);
+        expect(shardDataJson['lockboxId'], testLockboxId);
+        expect(shardDataJson['lockboxName'], 'Test Lockbox');
+      },
+    );
 
     test('recovery response JSON payload for denial omits shard data', () async {
       // Arrange
@@ -243,10 +267,14 @@ void main() {
 
       // Verify all key holders are in the request
       expect(recoveryRequest.keyHolderResponses.length, 2);
-      expect(recoveryRequest.keyHolderResponses[testKeyHolder1]?.status,
-          RecoveryResponseStatus.pending);
-      expect(recoveryRequest.keyHolderResponses[testKeyHolder2]?.status,
-          RecoveryResponseStatus.pending);
+      expect(
+        recoveryRequest.keyHolderResponses[testKeyHolder1]?.status,
+        RecoveryResponseStatus.pending,
+      );
+      expect(
+        recoveryRequest.keyHolderResponses[testKeyHolder2]?.status,
+        RecoveryResponseStatus.pending,
+      );
 
       // In actual sendRecoveryRequestViaNostr, this would create 2 gift wraps
       // (one for each key holder)
@@ -278,7 +306,9 @@ void main() {
       expect(recoveryRequest.expiresAt!.isAfter(DateTime.now()), true);
 
       // Should default to ~24 hours
-      final duration = recoveryRequest.expiresAt!.difference(recoveryRequest.requestedAt);
+      final duration = recoveryRequest.expiresAt!.difference(
+        recoveryRequest.requestedAt,
+      );
       expect(duration.inHours, greaterThanOrEqualTo(23));
       expect(duration.inHours, lessThanOrEqualTo(25));
     });
@@ -295,7 +325,9 @@ void main() {
 
       // Verify custom expiration
       expect(recoveryRequest.expiresAt, isNotNull);
-      final duration = recoveryRequest.expiresAt!.difference(recoveryRequest.requestedAt);
+      final duration = recoveryRequest.expiresAt!.difference(
+        recoveryRequest.requestedAt,
+      );
       expect(duration.inHours, greaterThanOrEqualTo(1));
       expect(duration.inHours, lessThanOrEqualTo(3));
     });
@@ -321,7 +353,7 @@ void main() {
         lockboxId: testLockboxId,
         lockboxName: 'Recovered Lockbox',
         peers: [
-          {'name': 'Key Holder 1', 'pubkey': testKeyHolder1}
+          {'name': 'Key Holder 1', 'pubkey': testKeyHolder1},
         ],
       );
 
@@ -334,13 +366,22 @@ void main() {
       );
 
       // Verify the response was recorded
-      final updatedRequest = await recoveryService.getRecoveryRequest(recoveryRequest.id);
+      final updatedRequest = await recoveryService.getRecoveryRequest(
+        recoveryRequest.id,
+      );
       expect(updatedRequest, isNotNull);
-      expect(updatedRequest!.keyHolderResponses[testKeyHolder1]?.status,
-          RecoveryResponseStatus.approved);
-      expect(updatedRequest.keyHolderResponses[testKeyHolder1]?.shardData, isNotNull);
-      expect(updatedRequest.keyHolderResponses[testKeyHolder1]?.shardData?.shard,
-          'recovered_shard_AAA=');
+      expect(
+        updatedRequest!.keyHolderResponses[testKeyHolder1]?.status,
+        RecoveryResponseStatus.approved,
+      );
+      expect(
+        updatedRequest.keyHolderResponses[testKeyHolder1]?.shardData,
+        isNotNull,
+      );
+      expect(
+        updatedRequest.keyHolderResponses[testKeyHolder1]?.shardData?.shard,
+        'recovered_shard_AAA=',
+      );
     });
 
     test('recovery response denial does not include shard data', () async {
@@ -360,11 +401,18 @@ void main() {
       );
 
       // Verify the response was recorded without shard data
-      final updatedRequest = await recoveryService.getRecoveryRequest(recoveryRequest.id);
+      final updatedRequest = await recoveryService.getRecoveryRequest(
+        recoveryRequest.id,
+      );
       expect(updatedRequest, isNotNull);
-      expect(updatedRequest!.keyHolderResponses[testKeyHolder1]?.status,
-          RecoveryResponseStatus.denied);
-      expect(updatedRequest.keyHolderResponses[testKeyHolder1]?.shardData, isNull);
+      expect(
+        updatedRequest!.keyHolderResponses[testKeyHolder1]?.status,
+        RecoveryResponseStatus.denied,
+      );
+      expect(
+        updatedRequest.keyHolderResponses[testKeyHolder1]?.shardData,
+        isNull,
+      );
     });
 
     test('multiple recovery responses accumulate correctly', () async {
@@ -415,19 +463,35 @@ void main() {
       );
 
       // Verify both responses were recorded
-      final updatedRequest = await recoveryService.getRecoveryRequest(recoveryRequest.id);
+      final updatedRequest = await recoveryService.getRecoveryRequest(
+        recoveryRequest.id,
+      );
       expect(updatedRequest, isNotNull);
       expect(updatedRequest!.approvedCount, 2);
-      expect(updatedRequest.keyHolderResponses[testKeyHolder1]?.status,
-          RecoveryResponseStatus.approved);
-      expect(updatedRequest.keyHolderResponses[testKeyHolder2]?.status,
-          RecoveryResponseStatus.approved);
-      expect(updatedRequest.keyHolderResponses[testKeyHolder1]?.shardData, isNotNull);
-      expect(updatedRequest.keyHolderResponses[testKeyHolder2]?.shardData, isNotNull);
       expect(
-          updatedRequest.keyHolderResponses[testKeyHolder1]?.shardData?.shard, 'shard_data_1_AAA=');
+        updatedRequest.keyHolderResponses[testKeyHolder1]?.status,
+        RecoveryResponseStatus.approved,
+      );
       expect(
-          updatedRequest.keyHolderResponses[testKeyHolder2]?.shardData?.shard, 'shard_data_2_BBB=');
+        updatedRequest.keyHolderResponses[testKeyHolder2]?.status,
+        RecoveryResponseStatus.approved,
+      );
+      expect(
+        updatedRequest.keyHolderResponses[testKeyHolder1]?.shardData,
+        isNotNull,
+      );
+      expect(
+        updatedRequest.keyHolderResponses[testKeyHolder2]?.shardData,
+        isNotNull,
+      );
+      expect(
+        updatedRequest.keyHolderResponses[testKeyHolder1]?.shardData?.shard,
+        'shard_data_1_AAA=',
+      );
+      expect(
+        updatedRequest.keyHolderResponses[testKeyHolder2]?.shardData?.shard,
+        'shard_data_2_BBB=',
+      );
 
       // When threshold is met, status should be completed
       expect(updatedRequest.status, RecoveryRequestStatus.completed);
