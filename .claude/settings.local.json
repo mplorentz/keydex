@@ -5,5 +5,17 @@
       "Bash(flutter --version:*)"
     ]
   },
+  "hooks": {
+      "Stop": [
+        {
+          "hooks": [
+            {
+              "type": "command",
+              "command": "afplay /System/Library/Sounds/Glass.aiff"
+            }
+          ]
+        }
+      ]
+    },
   "enableAllProjectMcpServers": false
 }

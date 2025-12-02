@@ -116,3 +116,72 @@ bool isValidLockboxId(String lockboxId) {
 bool isValidName(String name) {
   return name.trim().isNotEmpty;
 }
+
+/// Validates that a string is a valid nsec (bech32 encoded private key)
+///
+/// Expected format: nsec1 prefix followed by 58 bech32 characters
+/// Bech32 charset: alphanumeric lowercase except '1', 'b', 'i', 'o'
+///
+/// Example valid nsec:
+/// - `nsec1l6huq5jl0q9x8jf7lwfz3c9xt8lx6xqy0jhj8hklx8z7w6k9j5ksqy7w9l`
+bool isValidNsec(String nsec) {
+  if (!nsec.startsWith('nsec1')) return false;
+
+  // Bech32 uses specific charset: qpzry9x8gf2tvdw0s3jn54khce6mua7l (no '1', 'b', 'i', 'o')
+  // Length should be 63 total characters (nsec1 = 5 chars + 58 data chars)
+  final bech32Regex = RegExp(r'^nsec1[qpzry9x8gf2tvdw0s3jn54khce6mua7l]{58}$');
+  return bech32Regex.hasMatch(nsec);
+}
+
+/// Validates that a string is a valid npub (bech32 encoded public key)
+///
+/// Expected format: npub1 prefix followed by 58 bech32 characters
+/// Bech32 charset: alphanumeric lowercase except '1', 'b', 'i', 'o'
+///
+/// Example valid npub:
+/// - `npub1l6huq5jl0q9x8jf7lwfz3c9xt8lx6xqy0jhj8hklx8z7w6k9j5ksqy7w9l`
+bool isValidNpub(String npub) {
+  if (!npub.startsWith('npub1')) return false;
+
+  // Same bech32 charset as nsec
+  // Length should be 63 total characters (npub1 = 5 chars + 58 data chars)
+  final bech32Regex = RegExp(r'^npub1[qpzry9x8gf2tvdw0s3jn54khce6mua7l]{58}$');
+  return bech32Regex.hasMatch(npub);
+}
+
+/// Validates that a string is a valid bunker URL (NIP-46)
+///
+/// Expected format: bunker://<pubkey>?relay=<relay>&secret=<secret>
+/// Or: nostr+walletconnect://<pubkey>?relay=<relay>&secret=<secret>
+///
+/// Example valid bunker URL:
+/// - `bunker://a1b2c3...?relay=wss://relay.example.com&secret=abc123`
+/// - `nostr+walletconnect://a1b2c3...?relay=wss://relay.example.com`
+bool isValidBunkerUrl(String url) {
+  if (url.isEmpty) return false;
+
+  // Support both bunker:// and nostr+walletconnect:// schemes
+  if (!url.startsWith('bunker://') && !url.startsWith('nostr+walletconnect://')) {
+    return false;
+  }
+
+  try {
+    // Try to parse as URI
+    final uri = Uri.parse(url);
+
+    // Validate scheme
+    if (uri.scheme != 'bunker' && uri.scheme != 'nostr+walletconnect') {
+      return false;
+    }
+
+    // Host should be the pubkey (non-empty)
+    if (uri.host.isEmpty) return false;
+
+    // Should have at least one query parameter (relay or secret)
+    if (uri.queryParameters.isEmpty) return false;
+
+    return true;
+  } catch (e) {
+    return false;
+  }
+}

@@ -174,5 +174,98 @@ class LoginService {
       senderPubkey, // Already in hex format
     );
   }
+
+  /// Import key from nsec (bech32 format)
+  /// Decodes the bech32 nsec string to hex, validates it, and stores it
+  /// Returns the KeyPair with both hex and bech32 formats
+  Future<KeyPair> importNsecKey(String nsec) async {
+    Log.info('Importing key from nsec');
+
+    try {
+      // Decode bech32 to get hex private key
+      final decoded = Helpers.decodeBech32(nsec);
+      if (decoded.isEmpty) {
+        throw Exception('Failed to decode nsec: invalid bech32 format');
+      }
+
+      final hexPrivkey = decoded[0]; // First element is the hex key
+      final prefix = decoded.length > 1 ? decoded[1] : null;
+
+      // Validate that the prefix is 'nsec'
+      if (prefix != 'nsec') {
+        throw Exception('Invalid key type: expected nsec, got $prefix');
+      }
+
+      // Validate hex format (64 characters)
+      if (hexPrivkey.length != 64) {
+        throw Exception('Invalid private key length: expected 64 characters, got ${hexPrivkey.length}');
+      }
+
+      // Store the hex private key
+      await _storage.write(key: _nostrPrivateKeyKey, value: hexPrivkey);
+
+      // Derive public key from private key
+      final publicKey = Bip340.getPublicKey(hexPrivkey);
+
+      // Create bech32 formats
+      final privateKeyBech32 = Helpers.encodeBech32(hexPrivkey, 'nsec');
+      final publicKeyBech32 = Helpers.encodeBech32(publicKey, 'npub');
+
+      _cachedKeyPair = KeyPair(hexPrivkey, publicKey, privateKeyBech32, publicKeyBech32);
+      Log.info('Successfully imported nsec key with public key: $publicKeyBech32');
+      return _cachedKeyPair!;
+    } catch (e) {
+      Log.error('Error importing nsec key', e);
+      rethrow;
+    }
+  }
+
+  /// Import key from hex private key
+  /// Validates the hex format and stores it
+  /// Returns the KeyPair with both hex and bech32 formats
+  Future<KeyPair> importHexPrivateKey(String hexPrivkey) async {
+    Log.info('Importing key from hex private key');
+
+    try {
+      // Validate hex format (64 characters, valid hex)
+      if (hexPrivkey.length != 64) {
+        throw Exception('Invalid private key length: expected 64 characters, got ${hexPrivkey.length}');
+      }
+
+      // Validate that it's valid hex
+      final hexRegex = RegExp(r'^[0-9a-fA-F]{64}$');
+      if (!hexRegex.hasMatch(hexPrivkey)) {
+        throw Exception('Invalid hex format: must be 64 hexadecimal characters');
+      }
+
+      // Store the hex private key
+      await _storage.write(key: _nostrPrivateKeyKey, value: hexPrivkey.toLowerCase());
+
+      // Derive public key from private key
+      final publicKey = Bip340.getPublicKey(hexPrivkey);
+
+      // Create bech32 formats
+      final privateKeyBech32 = Helpers.encodeBech32(hexPrivkey, 'nsec');
+      final publicKeyBech32 = Helpers.encodeBech32(publicKey, 'npub');
+
+      _cachedKeyPair = KeyPair(hexPrivkey.toLowerCase(), publicKey, privateKeyBech32, publicKeyBech32);
+      Log.info('Successfully imported hex private key with public key: $publicKeyBech32');
+      return _cachedKeyPair!;
+    } catch (e) {
+      Log.error('Error importing hex private key', e);
+      rethrow;
+    }
+  }
+
+  /// Placeholder for bunker URL login (NIP-46)
+  /// Currently not supported by NDK 0.5.1
+  /// Throws UnimplementedError
+  Future<KeyPair?> loginWithBunker(String bunkerUrl) async {
+    Log.info('Attempted bunker login with URL: $bunkerUrl');
+    throw UnimplementedError(
+      'Bunker URL login (NIP-46) is not yet supported. '
+      'Please use nsec or hex private key instead.',
+    );
+  }
 }
 
