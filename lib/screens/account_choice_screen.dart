@@ -90,6 +90,8 @@ class _AccountChoiceScreenState extends ConsumerState<AccountChoiceScreen> {
                 title: 'Continue Without Account',
                 description: 'Use local-only mode',
                 onTap: () async {
+                  final navigator = Navigator.of(context);
+                  
                   // Show warning dialog
                   final confirmed = await showDialog<bool>(
                     context: context,
@@ -116,8 +118,6 @@ class _AccountChoiceScreenState extends ConsumerState<AccountChoiceScreen> {
                   );
 
                   if (confirmed != true) return;
-
-                  final navigator = Navigator.of(context);
                   
                   // Generate key silently
                   final loginService = ref.read(loginServiceProvider);
