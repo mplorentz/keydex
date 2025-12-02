@@ -48,13 +48,11 @@ class InvitationService {
   final RelayScanService _relayScanService;
 
   // Stream controller for notifying listeners when invitations change
-  final StreamController<void> _invitationsChangedController =
-      StreamController<void>.broadcast();
+  final StreamController<void> _invitationsChangedController = StreamController<void>.broadcast();
 
   // SharedPreferences keys
   static String _invitationKey(String inviteCode) => 'invitation_$inviteCode';
-  static String _lockboxInvitationsKey(String lockboxId) =>
-      'lockbox_invitations_$lockboxId';
+  static String _lockboxInvitationsKey(String lockboxId) => 'lockbox_invitations_$lockboxId';
 
   InvitationService(
     this.repository,
@@ -66,8 +64,7 @@ class InvitationService {
 
   /// Stream that emits whenever invitations change
   /// UI providers listen to this to automatically update
-  Stream<void> get invitationsChangedStream =>
-      _invitationsChangedController.stream;
+  Stream<void> get invitationsChangedStream => _invitationsChangedController.stream;
 
   /// Notify listeners that invitations have changed
   void _notifyInvitationsChanged() {
@@ -204,11 +201,8 @@ class InvitationService {
     }
 
     // Filter to pending status and sort by creation date
-    final pending =
-        invitations
-            .where((inv) => inv.status == InvitationStatus.pending)
-            .toList()
-          ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+    final pending = invitations.where((inv) => inv.status == InvitationStatus.pending).toList()
+      ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
     return pending;
   }
@@ -342,8 +336,7 @@ class InvitationService {
     final lockbox = await repository.getLockbox(invitation.lockboxId);
     if (lockbox != null) {
       final backupConfig = lockbox.backupConfig;
-      final isAlreadyKeyHolder =
-          backupConfig?.keyHolders.any(
+      final isAlreadyKeyHolder = backupConfig?.keyHolders.any(
             (holder) => holder.pubkey == inviteePubkey,
           ) ??
           false;
@@ -526,8 +519,7 @@ class InvitationService {
     await _saveInvitation(invalidatedInvitation);
 
     // If invitation was already redeemed, send invalid event to notify invitee
-    if (invitation.status == InvitationStatus.redeemed &&
-        invitation.redeemedBy != null) {
+    if (invitation.status == InvitationStatus.redeemed && invitation.redeemedBy != null) {
       try {
         await invitationSendingService.sendInvitationInvalidEvent(
           inviteCode: inviteCode,
@@ -808,8 +800,7 @@ class InvitationService {
       final newKeyHolder = createKeyHolder(pubkey: pubkey, name: name);
       backupConfig = createBackupConfig(
         lockboxId: lockboxId,
-        threshold:
-            1, // Start with 1-of-1, will be updated when more key holders are added
+        threshold: 1, // Start with 1-of-1, will be updated when more key holders are added
         totalKeys: 1, // Will be updated when more key holders are added
         keyHolders: [newKeyHolder],
         relays: relayUrls, // Use relay URLs from invitation
@@ -872,9 +863,8 @@ class InvitationService {
       }
 
       // SECOND: Check if key holder with this pubkey already exists
-      final existingByPubkey = backupConfig.keyHolders
-          .where((holder) => holder.pubkey == pubkey)
-          .toList();
+      final existingByPubkey =
+          backupConfig.keyHolders.where((holder) => holder.pubkey == pubkey).toList();
       if (existingByPubkey.isNotEmpty) {
         // Check if this key holder needs status update (e.g., was invited, now accepting)
         final existingHolder = existingByPubkey.first;
@@ -966,9 +956,8 @@ class InvitationService {
       );
     } else {
       // Check if this invite code already exists (avoid duplicates)
-      final existingWithCode = backupConfig.keyHolders
-          .where((holder) => holder.inviteCode == inviteCode)
-          .toList();
+      final existingWithCode =
+          backupConfig.keyHolders.where((holder) => holder.inviteCode == inviteCode).toList();
 
       if (existingWithCode.isNotEmpty) {
         Log.info(

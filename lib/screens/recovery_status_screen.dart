@@ -14,8 +14,7 @@ class RecoveryStatusScreen extends ConsumerStatefulWidget {
   const RecoveryStatusScreen({super.key, required this.recoveryRequestId});
 
   @override
-  ConsumerState<RecoveryStatusScreen> createState() =>
-      _RecoveryStatusScreenState();
+  ConsumerState<RecoveryStatusScreen> createState() => _RecoveryStatusScreenState();
 }
 
 class _RecoveryStatusScreenState extends ConsumerState<RecoveryStatusScreen> {
@@ -40,8 +39,7 @@ class _RecoveryStatusScreenState extends ConsumerState<RecoveryStatusScreen> {
 
           return lockboxAsync.when(
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (error, stack) =>
-                Center(child: Text('Error loading lockbox: $error')),
+            error: (error, stack) => Center(child: Text('Error loading lockbox: $error')),
             data: (lockbox) {
               // Get instructions from lockbox
               String? instructions;
@@ -161,14 +159,11 @@ class _RecoveryStatusScreenState extends ConsumerState<RecoveryStatusScreen> {
     if (confirmed == true) {
       try {
         // Get lockboxId before exiting recovery mode
-        final request = await ref
-            .read(recoveryServiceProvider)
-            .getRecoveryRequest(widget.recoveryRequestId);
+        final request =
+            await ref.read(recoveryServiceProvider).getRecoveryRequest(widget.recoveryRequestId);
         final lockboxId = request?.lockboxId;
 
-        await ref
-            .read(recoveryServiceProvider)
-            .exitRecoveryMode(widget.recoveryRequestId);
+        await ref.read(recoveryServiceProvider).exitRecoveryMode(widget.recoveryRequestId);
 
         if (mounted) {
           ScaffoldMessenger.of(
@@ -232,9 +227,7 @@ class _RecoveryStatusScreenState extends ConsumerState<RecoveryStatusScreen> {
 
     if (confirmed == true) {
       try {
-        await ref
-            .read(recoveryServiceProvider)
-            .cancelRecoveryRequest(widget.recoveryRequestId);
+        await ref.read(recoveryServiceProvider).cancelRecoveryRequest(widget.recoveryRequestId);
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(

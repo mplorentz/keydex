@@ -45,10 +45,8 @@ void main() {
     late NdkService ndkService;
     late LockboxShareService lockboxShareService;
     late RecoveryService recoveryService;
-    const testKeyHolder1 =
-        'fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321';
-    const testKeyHolder2 =
-        'abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdef1234';
+    const testKeyHolder1 = 'fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321';
+    const testKeyHolder2 = 'abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdef1234';
     const testLockboxId = 'lockbox-test-123';
 
     setUp(() async {

@@ -131,8 +131,7 @@ class LockboxListScreen extends ConsumerWidget {
                         vertical: 12,
                       ),
                       itemCount: lockboxes.length,
-                      separatorBuilder: (context, index) =>
-                          const Divider(height: 1),
+                      separatorBuilder: (context, index) => const Divider(height: 1),
                       itemBuilder: (context, index) {
                         final lockbox = lockboxes[index];
                         return LockboxCard(

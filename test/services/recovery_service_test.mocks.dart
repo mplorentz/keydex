@@ -32,19 +32,16 @@ import 'package:ndk/ndk.dart' as _i2;
 // ignore_for_file: subtype_of_sealed_class
 
 class _FakeDateTime_0 extends _i1.SmartFake implements DateTime {
-  _FakeDateTime_0(Object parent, Invocation parentInvocation)
-    : super(parent, parentInvocation);
+  _FakeDateTime_0(Object parent, Invocation parentInvocation) : super(parent, parentInvocation);
 }
 
 class _FakeNdk_1 extends _i1.SmartFake implements _i2.Ndk {
-  _FakeNdk_1(Object parent, Invocation parentInvocation)
-    : super(parent, parentInvocation);
+  _FakeNdk_1(Object parent, Invocation parentInvocation) : super(parent, parentInvocation);
 }
 
-class _FakeLockboxRepository_2 extends _i1.SmartFake
-    implements _i3.LockboxRepository {
+class _FakeLockboxRepository_2 extends _i1.SmartFake implements _i3.LockboxRepository {
   _FakeLockboxRepository_2(Object parent, Invocation parentInvocation)
-    : super(parent, parentInvocation);
+      : super(parent, parentInvocation);
 }
 
 /// A class which mocks [BackupService].
@@ -57,345 +54,25 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
 
   @override
   _i5.Future<
-    ({
-      String? contentHash,
-      DateTime createdAt,
-      int distributionVersion,
-      String? instructions,
-      List<
-        ({
-          DateTime? acknowledgedAt,
-          int? acknowledgedDistributionVersion,
-          String? acknowledgmentEventId,
-          String? giftWrapEventId,
-          String id,
-          String? inviteCode,
-          String? keyShare,
-          DateTime? lastSeen,
-          String? name,
-          String? pubkey,
-          _i6.KeyHolderStatus status,
-        })
-      >
-      keyHolders,
-      DateTime? lastContentChange,
-      DateTime? lastRedistribution,
-      DateTime lastUpdated,
-      String lockboxId,
-      List<String> relays,
-      String specVersion,
-      _i7.BackupStatus status,
-      int threshold,
-      int totalKeys,
-    })
-  >
-  createBackupConfiguration({
-    required String? lockboxId,
-    required int? threshold,
-    required int? totalKeys,
-    required List<
-      ({
-        DateTime? acknowledgedAt,
-        int? acknowledgedDistributionVersion,
-        String? acknowledgmentEventId,
-        String? giftWrapEventId,
-        String id,
-        String? inviteCode,
-        String? keyShare,
-        DateTime? lastSeen,
-        String? name,
-        String? pubkey,
-        _i6.KeyHolderStatus status,
-      })
-    >?
-    keyHolders,
-    required List<String>? relays,
-    String? instructions,
-    String? contentHash,
-  }) =>
-      (super.noSuchMethod(
-            Invocation.method(#createBackupConfiguration, [], {
-              #lockboxId: lockboxId,
-              #threshold: threshold,
-              #totalKeys: totalKeys,
-              #keyHolders: keyHolders,
-              #relays: relays,
-              #instructions: instructions,
-              #contentHash: contentHash,
-            }),
-            returnValue:
-                _i5.Future<
-                  ({
-                    String? contentHash,
-                    DateTime createdAt,
-                    int distributionVersion,
-                    String? instructions,
-                    List<
-                      ({
-                        DateTime? acknowledgedAt,
-                        int? acknowledgedDistributionVersion,
-                        String? acknowledgmentEventId,
-                        String? giftWrapEventId,
-                        String id,
-                        String? inviteCode,
-                        String? keyShare,
-                        DateTime? lastSeen,
-                        String? name,
-                        String? pubkey,
-                        _i6.KeyHolderStatus status,
-                      })
-                    >
-                    keyHolders,
-                    DateTime? lastContentChange,
-                    DateTime? lastRedistribution,
-                    DateTime lastUpdated,
-                    String lockboxId,
-                    List<String> relays,
-                    String specVersion,
-                    _i7.BackupStatus status,
-                    int threshold,
-                    int totalKeys,
-                  })
-                >.value((
-                  contentHash: null,
-                  createdAt: _FakeDateTime_0(
-                    this,
-                    Invocation.method(#createBackupConfiguration, [], {
-                      #lockboxId: lockboxId,
-                      #threshold: threshold,
-                      #totalKeys: totalKeys,
-                      #keyHolders: keyHolders,
-                      #relays: relays,
-                      #instructions: instructions,
-                      #contentHash: contentHash,
-                    }),
-                  ),
-                  distributionVersion: 0,
-                  instructions: null,
-                  keyHolders:
-                      <
-                        ({
-                          DateTime? acknowledgedAt,
-                          int? acknowledgedDistributionVersion,
-                          String? acknowledgmentEventId,
-                          String? giftWrapEventId,
-                          String id,
-                          String? inviteCode,
-                          String? keyShare,
-                          DateTime? lastSeen,
-                          String? name,
-                          String? pubkey,
-                          _i6.KeyHolderStatus status,
-                        })
-                      >[],
-                  lastContentChange: null,
-                  lastRedistribution: null,
-                  lastUpdated: _FakeDateTime_0(
-                    this,
-                    Invocation.method(#createBackupConfiguration, [], {
-                      #lockboxId: lockboxId,
-                      #threshold: threshold,
-                      #totalKeys: totalKeys,
-                      #keyHolders: keyHolders,
-                      #relays: relays,
-                      #instructions: instructions,
-                      #contentHash: contentHash,
-                    }),
-                  ),
-                  lockboxId: _i8.dummyValue<String>(
-                    this,
-                    Invocation.method(#createBackupConfiguration, [], {
-                      #lockboxId: lockboxId,
-                      #threshold: threshold,
-                      #totalKeys: totalKeys,
-                      #keyHolders: keyHolders,
-                      #relays: relays,
-                      #instructions: instructions,
-                      #contentHash: contentHash,
-                    }),
-                  ),
-                  relays: <String>[],
-                  specVersion: _i8.dummyValue<String>(
-                    this,
-                    Invocation.method(#createBackupConfiguration, [], {
-                      #lockboxId: lockboxId,
-                      #threshold: threshold,
-                      #totalKeys: totalKeys,
-                      #keyHolders: keyHolders,
-                      #relays: relays,
-                      #instructions: instructions,
-                      #contentHash: contentHash,
-                    }),
-                  ),
-                  status: _i7.BackupStatus.pending,
-                  threshold: 0,
-                  totalKeys: 0,
-                )),
-          )
-          as _i5.Future<
-            ({
-              String? contentHash,
-              DateTime createdAt,
-              int distributionVersion,
-              String? instructions,
-              List<
-                ({
-                  DateTime? acknowledgedAt,
-                  int? acknowledgedDistributionVersion,
-                  String? acknowledgmentEventId,
-                  String? giftWrapEventId,
-                  String id,
-                  String? inviteCode,
-                  String? keyShare,
-                  DateTime? lastSeen,
-                  String? name,
-                  String? pubkey,
-                  _i6.KeyHolderStatus status,
-                })
-              >
-              keyHolders,
-              DateTime? lastContentChange,
-              DateTime? lastRedistribution,
-              DateTime lastUpdated,
-              String lockboxId,
-              List<String> relays,
-              String specVersion,
-              _i7.BackupStatus status,
-              int threshold,
-              int totalKeys,
-            })
-          >);
-
-  @override
-  _i5.Future<
-    ({
-      String? contentHash,
-      DateTime createdAt,
-      int distributionVersion,
-      String? instructions,
-      List<
-        ({
-          DateTime? acknowledgedAt,
-          int? acknowledgedDistributionVersion,
-          String? acknowledgmentEventId,
-          String? giftWrapEventId,
-          String id,
-          String? inviteCode,
-          String? keyShare,
-          DateTime? lastSeen,
-          String? name,
-          String? pubkey,
-          _i6.KeyHolderStatus status,
-        })
-      >
-      keyHolders,
-      DateTime? lastContentChange,
-      DateTime? lastRedistribution,
-      DateTime lastUpdated,
-      String lockboxId,
-      List<String> relays,
-      String specVersion,
-      _i7.BackupStatus status,
-      int threshold,
-      int totalKeys,
-    })?
-  >
-  getBackupConfig(String? lockboxId) =>
-      (super.noSuchMethod(
-            Invocation.method(#getBackupConfig, [lockboxId]),
-            returnValue:
-                _i5.Future<
-                  ({
-                    String? contentHash,
-                    DateTime createdAt,
-                    int distributionVersion,
-                    String? instructions,
-                    List<
-                      ({
-                        DateTime? acknowledgedAt,
-                        int? acknowledgedDistributionVersion,
-                        String? acknowledgmentEventId,
-                        String? giftWrapEventId,
-                        String id,
-                        String? inviteCode,
-                        String? keyShare,
-                        DateTime? lastSeen,
-                        String? name,
-                        String? pubkey,
-                        _i6.KeyHolderStatus status,
-                      })
-                    >
-                    keyHolders,
-                    DateTime? lastContentChange,
-                    DateTime? lastRedistribution,
-                    DateTime lastUpdated,
-                    String lockboxId,
-                    List<String> relays,
-                    String specVersion,
-                    _i7.BackupStatus status,
-                    int threshold,
-                    int totalKeys,
-                  })?
-                >.value(),
-          )
-          as _i5.Future<
-            ({
-              String? contentHash,
-              DateTime createdAt,
-              int distributionVersion,
-              String? instructions,
-              List<
-                ({
-                  DateTime? acknowledgedAt,
-                  int? acknowledgedDistributionVersion,
-                  String? acknowledgmentEventId,
-                  String? giftWrapEventId,
-                  String id,
-                  String? inviteCode,
-                  String? keyShare,
-                  DateTime? lastSeen,
-                  String? name,
-                  String? pubkey,
-                  _i6.KeyHolderStatus status,
-                })
-              >
-              keyHolders,
-              DateTime? lastContentChange,
-              DateTime? lastRedistribution,
-              DateTime lastUpdated,
-              String lockboxId,
-              List<String> relays,
-              String specVersion,
-              _i7.BackupStatus status,
-              int threshold,
-              int totalKeys,
-            })?
-          >);
-
-  @override
-  _i5.Future<
-    List<
       ({
         String? contentHash,
         DateTime createdAt,
         int distributionVersion,
         String? instructions,
         List<
-          ({
-            DateTime? acknowledgedAt,
-            int? acknowledgedDistributionVersion,
-            String? acknowledgmentEventId,
-            String? giftWrapEventId,
-            String id,
-            String? inviteCode,
-            String? keyShare,
-            DateTime? lastSeen,
-            String? name,
-            String? pubkey,
-            _i6.KeyHolderStatus status,
-          })
-        >
-        keyHolders,
+            ({
+              DateTime? acknowledgedAt,
+              int? acknowledgedDistributionVersion,
+              String? acknowledgmentEventId,
+              String? giftWrapEventId,
+              String id,
+              String? inviteCode,
+              String? keyShare,
+              DateTime? lastSeen,
+              String? name,
+              String? pubkey,
+              _i6.KeyHolderStatus status,
+            })> keyHolders,
         DateTime? lastContentChange,
         DateTime? lastRedistribution,
         DateTime lastUpdated,
@@ -405,91 +82,46 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
         _i7.BackupStatus status,
         int threshold,
         int totalKeys,
-      })
-    >
-  >
-  getAllBackupConfigs() =>
+      })> createBackupConfiguration({
+    required String? lockboxId,
+    required int? threshold,
+    required int? totalKeys,
+    required List<
+            ({
+              DateTime? acknowledgedAt,
+              int? acknowledgedDistributionVersion,
+              String? acknowledgmentEventId,
+              String? giftWrapEventId,
+              String id,
+              String? inviteCode,
+              String? keyShare,
+              DateTime? lastSeen,
+              String? name,
+              String? pubkey,
+              _i6.KeyHolderStatus status,
+            })>?
+        keyHolders,
+    required List<String>? relays,
+    String? instructions,
+    String? contentHash,
+  }) =>
       (super.noSuchMethod(
-            Invocation.method(#getAllBackupConfigs, []),
-            returnValue:
-                _i5.Future<
-                  List<
-                    ({
-                      String? contentHash,
-                      DateTime createdAt,
-                      int distributionVersion,
-                      String? instructions,
-                      List<
-                        ({
-                          DateTime? acknowledgedAt,
-                          int? acknowledgedDistributionVersion,
-                          String? acknowledgmentEventId,
-                          String? giftWrapEventId,
-                          String id,
-                          String? inviteCode,
-                          String? keyShare,
-                          DateTime? lastSeen,
-                          String? name,
-                          String? pubkey,
-                          _i6.KeyHolderStatus status,
-                        })
-                      >
-                      keyHolders,
-                      DateTime? lastContentChange,
-                      DateTime? lastRedistribution,
-                      DateTime lastUpdated,
-                      String lockboxId,
-                      List<String> relays,
-                      String specVersion,
-                      _i7.BackupStatus status,
-                      int threshold,
-                      int totalKeys,
-                    })
-                  >
-                >.value(
-                  <
-                    ({
-                      String? contentHash,
-                      DateTime createdAt,
-                      int distributionVersion,
-                      String? instructions,
-                      List<
-                        ({
-                          DateTime? acknowledgedAt,
-                          int? acknowledgedDistributionVersion,
-                          String? acknowledgmentEventId,
-                          String? giftWrapEventId,
-                          String id,
-                          String? inviteCode,
-                          String? keyShare,
-                          DateTime? lastSeen,
-                          String? name,
-                          String? pubkey,
-                          _i6.KeyHolderStatus status,
-                        })
-                      >
-                      keyHolders,
-                      DateTime? lastContentChange,
-                      DateTime? lastRedistribution,
-                      DateTime lastUpdated,
-                      String lockboxId,
-                      List<String> relays,
-                      String specVersion,
-                      _i7.BackupStatus status,
-                      int threshold,
-                      int totalKeys,
-                    })
-                  >[],
-                ),
-          )
-          as _i5.Future<
-            List<
-              ({
-                String? contentHash,
-                DateTime createdAt,
-                int distributionVersion,
-                String? instructions,
-                List<
+        Invocation.method(#createBackupConfiguration, [], {
+          #lockboxId: lockboxId,
+          #threshold: threshold,
+          #totalKeys: totalKeys,
+          #keyHolders: keyHolders,
+          #relays: relays,
+          #instructions: instructions,
+          #contentHash: contentHash,
+        }),
+        returnValue: _i5.Future<
+            ({
+              String? contentHash,
+              DateTime createdAt,
+              int distributionVersion,
+              String? instructions,
+              List<
                   ({
                     DateTime? acknowledgedAt,
                     int? acknowledgedDistributionVersion,
@@ -502,9 +134,327 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
                     String? name,
                     String? pubkey,
                     _i6.KeyHolderStatus status,
-                  })
-                >
-                keyHolders,
+                  })> keyHolders,
+              DateTime? lastContentChange,
+              DateTime? lastRedistribution,
+              DateTime lastUpdated,
+              String lockboxId,
+              List<String> relays,
+              String specVersion,
+              _i7.BackupStatus status,
+              int threshold,
+              int totalKeys,
+            })>.value((
+          contentHash: null,
+          createdAt: _FakeDateTime_0(
+            this,
+            Invocation.method(#createBackupConfiguration, [], {
+              #lockboxId: lockboxId,
+              #threshold: threshold,
+              #totalKeys: totalKeys,
+              #keyHolders: keyHolders,
+              #relays: relays,
+              #instructions: instructions,
+              #contentHash: contentHash,
+            }),
+          ),
+          distributionVersion: 0,
+          instructions: null,
+          keyHolders: <({
+            DateTime? acknowledgedAt,
+            int? acknowledgedDistributionVersion,
+            String? acknowledgmentEventId,
+            String? giftWrapEventId,
+            String id,
+            String? inviteCode,
+            String? keyShare,
+            DateTime? lastSeen,
+            String? name,
+            String? pubkey,
+            _i6.KeyHolderStatus status,
+          })>[],
+          lastContentChange: null,
+          lastRedistribution: null,
+          lastUpdated: _FakeDateTime_0(
+            this,
+            Invocation.method(#createBackupConfiguration, [], {
+              #lockboxId: lockboxId,
+              #threshold: threshold,
+              #totalKeys: totalKeys,
+              #keyHolders: keyHolders,
+              #relays: relays,
+              #instructions: instructions,
+              #contentHash: contentHash,
+            }),
+          ),
+          lockboxId: _i8.dummyValue<String>(
+            this,
+            Invocation.method(#createBackupConfiguration, [], {
+              #lockboxId: lockboxId,
+              #threshold: threshold,
+              #totalKeys: totalKeys,
+              #keyHolders: keyHolders,
+              #relays: relays,
+              #instructions: instructions,
+              #contentHash: contentHash,
+            }),
+          ),
+          relays: <String>[],
+          specVersion: _i8.dummyValue<String>(
+            this,
+            Invocation.method(#createBackupConfiguration, [], {
+              #lockboxId: lockboxId,
+              #threshold: threshold,
+              #totalKeys: totalKeys,
+              #keyHolders: keyHolders,
+              #relays: relays,
+              #instructions: instructions,
+              #contentHash: contentHash,
+            }),
+          ),
+          status: _i7.BackupStatus.pending,
+          threshold: 0,
+          totalKeys: 0,
+        )),
+      ) as _i5.Future<
+          ({
+            String? contentHash,
+            DateTime createdAt,
+            int distributionVersion,
+            String? instructions,
+            List<
+                ({
+                  DateTime? acknowledgedAt,
+                  int? acknowledgedDistributionVersion,
+                  String? acknowledgmentEventId,
+                  String? giftWrapEventId,
+                  String id,
+                  String? inviteCode,
+                  String? keyShare,
+                  DateTime? lastSeen,
+                  String? name,
+                  String? pubkey,
+                  _i6.KeyHolderStatus status,
+                })> keyHolders,
+            DateTime? lastContentChange,
+            DateTime? lastRedistribution,
+            DateTime lastUpdated,
+            String lockboxId,
+            List<String> relays,
+            String specVersion,
+            _i7.BackupStatus status,
+            int threshold,
+            int totalKeys,
+          })>);
+
+  @override
+  _i5.Future<
+      ({
+        String? contentHash,
+        DateTime createdAt,
+        int distributionVersion,
+        String? instructions,
+        List<
+            ({
+              DateTime? acknowledgedAt,
+              int? acknowledgedDistributionVersion,
+              String? acknowledgmentEventId,
+              String? giftWrapEventId,
+              String id,
+              String? inviteCode,
+              String? keyShare,
+              DateTime? lastSeen,
+              String? name,
+              String? pubkey,
+              _i6.KeyHolderStatus status,
+            })> keyHolders,
+        DateTime? lastContentChange,
+        DateTime? lastRedistribution,
+        DateTime lastUpdated,
+        String lockboxId,
+        List<String> relays,
+        String specVersion,
+        _i7.BackupStatus status,
+        int threshold,
+        int totalKeys,
+      })?> getBackupConfig(String? lockboxId) => (super.noSuchMethod(
+        Invocation.method(#getBackupConfig, [lockboxId]),
+        returnValue: _i5.Future<
+            ({
+              String? contentHash,
+              DateTime createdAt,
+              int distributionVersion,
+              String? instructions,
+              List<
+                  ({
+                    DateTime? acknowledgedAt,
+                    int? acknowledgedDistributionVersion,
+                    String? acknowledgmentEventId,
+                    String? giftWrapEventId,
+                    String id,
+                    String? inviteCode,
+                    String? keyShare,
+                    DateTime? lastSeen,
+                    String? name,
+                    String? pubkey,
+                    _i6.KeyHolderStatus status,
+                  })> keyHolders,
+              DateTime? lastContentChange,
+              DateTime? lastRedistribution,
+              DateTime lastUpdated,
+              String lockboxId,
+              List<String> relays,
+              String specVersion,
+              _i7.BackupStatus status,
+              int threshold,
+              int totalKeys,
+            })?>.value(),
+      ) as _i5.Future<
+          ({
+            String? contentHash,
+            DateTime createdAt,
+            int distributionVersion,
+            String? instructions,
+            List<
+                ({
+                  DateTime? acknowledgedAt,
+                  int? acknowledgedDistributionVersion,
+                  String? acknowledgmentEventId,
+                  String? giftWrapEventId,
+                  String id,
+                  String? inviteCode,
+                  String? keyShare,
+                  DateTime? lastSeen,
+                  String? name,
+                  String? pubkey,
+                  _i6.KeyHolderStatus status,
+                })> keyHolders,
+            DateTime? lastContentChange,
+            DateTime? lastRedistribution,
+            DateTime lastUpdated,
+            String lockboxId,
+            List<String> relays,
+            String specVersion,
+            _i7.BackupStatus status,
+            int threshold,
+            int totalKeys,
+          })?>);
+
+  @override
+  _i5.Future<
+      List<
+          ({
+            String? contentHash,
+            DateTime createdAt,
+            int distributionVersion,
+            String? instructions,
+            List<
+                ({
+                  DateTime? acknowledgedAt,
+                  int? acknowledgedDistributionVersion,
+                  String? acknowledgmentEventId,
+                  String? giftWrapEventId,
+                  String id,
+                  String? inviteCode,
+                  String? keyShare,
+                  DateTime? lastSeen,
+                  String? name,
+                  String? pubkey,
+                  _i6.KeyHolderStatus status,
+                })> keyHolders,
+            DateTime? lastContentChange,
+            DateTime? lastRedistribution,
+            DateTime lastUpdated,
+            String lockboxId,
+            List<String> relays,
+            String specVersion,
+            _i7.BackupStatus status,
+            int threshold,
+            int totalKeys,
+          })>> getAllBackupConfigs() => (super.noSuchMethod(
+        Invocation.method(#getAllBackupConfigs, []),
+        returnValue: _i5.Future<
+            List<
+                ({
+                  String? contentHash,
+                  DateTime createdAt,
+                  int distributionVersion,
+                  String? instructions,
+                  List<
+                      ({
+                        DateTime? acknowledgedAt,
+                        int? acknowledgedDistributionVersion,
+                        String? acknowledgmentEventId,
+                        String? giftWrapEventId,
+                        String id,
+                        String? inviteCode,
+                        String? keyShare,
+                        DateTime? lastSeen,
+                        String? name,
+                        String? pubkey,
+                        _i6.KeyHolderStatus status,
+                      })> keyHolders,
+                  DateTime? lastContentChange,
+                  DateTime? lastRedistribution,
+                  DateTime lastUpdated,
+                  String lockboxId,
+                  List<String> relays,
+                  String specVersion,
+                  _i7.BackupStatus status,
+                  int threshold,
+                  int totalKeys,
+                })>>.value(
+          <({
+            String? contentHash,
+            DateTime createdAt,
+            int distributionVersion,
+            String? instructions,
+            List<
+                ({
+                  DateTime? acknowledgedAt,
+                  int? acknowledgedDistributionVersion,
+                  String? acknowledgmentEventId,
+                  String? giftWrapEventId,
+                  String id,
+                  String? inviteCode,
+                  String? keyShare,
+                  DateTime? lastSeen,
+                  String? name,
+                  String? pubkey,
+                  _i6.KeyHolderStatus status,
+                })> keyHolders,
+            DateTime? lastContentChange,
+            DateTime? lastRedistribution,
+            DateTime lastUpdated,
+            String lockboxId,
+            List<String> relays,
+            String specVersion,
+            _i7.BackupStatus status,
+            int threshold,
+            int totalKeys,
+          })>[],
+        ),
+      ) as _i5.Future<
+          List<
+              ({
+                String? contentHash,
+                DateTime createdAt,
+                int distributionVersion,
+                String? instructions,
+                List<
+                    ({
+                      DateTime? acknowledgedAt,
+                      int? acknowledgedDistributionVersion,
+                      String? acknowledgmentEventId,
+                      String? giftWrapEventId,
+                      String id,
+                      String? inviteCode,
+                      String? keyShare,
+                      DateTime? lastSeen,
+                      String? name,
+                      String? pubkey,
+                      _i6.KeyHolderStatus status,
+                    })> keyHolders,
                 DateTime? lastContentChange,
                 DateTime? lastRedistribution,
                 DateTime lastUpdated,
@@ -514,9 +464,7 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
                 _i7.BackupStatus status,
                 int threshold,
                 int totalKeys,
-              })
-            >
-          >);
+              })>>);
 
   @override
   _i5.Future<void> updateBackupConfig(
@@ -526,21 +474,19 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
       int distributionVersion,
       String? instructions,
       List<
-        ({
-          DateTime? acknowledgedAt,
-          int? acknowledgedDistributionVersion,
-          String? acknowledgmentEventId,
-          String? giftWrapEventId,
-          String id,
-          String? inviteCode,
-          String? keyShare,
-          DateTime? lastSeen,
-          String? name,
-          String? pubkey,
-          _i6.KeyHolderStatus status,
-        })
-      >
-      keyHolders,
+          ({
+            DateTime? acknowledgedAt,
+            int? acknowledgedDistributionVersion,
+            String? acknowledgmentEventId,
+            String? giftWrapEventId,
+            String id,
+            String? inviteCode,
+            String? keyShare,
+            DateTime? lastSeen,
+            String? name,
+            String? pubkey,
+            _i6.KeyHolderStatus status,
+          })> keyHolders,
       DateTime? lastContentChange,
       DateTime? lastRedistribution,
       DateTime lastUpdated,
@@ -550,51 +496,44 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
       _i7.BackupStatus status,
       int threshold,
       int totalKeys,
-    })?
-    config,
+    })? config,
   ) =>
       (super.noSuchMethod(
-            Invocation.method(#updateBackupConfig, [config]),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+        Invocation.method(#updateBackupConfig, [config]),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  _i5.Future<void> deleteBackupConfig(String? lockboxId) =>
-      (super.noSuchMethod(
-            Invocation.method(#deleteBackupConfig, [lockboxId]),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+  _i5.Future<void> deleteBackupConfig(String? lockboxId) => (super.noSuchMethod(
+        Invocation.method(#deleteBackupConfig, [lockboxId]),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
   _i5.Future<
-    List<
-      ({
-        int createdAt,
-        String creatorPubkey,
-        int? distributionVersion,
-        String? instructions,
-        bool? isReceived,
-        String? lockboxId,
-        String? lockboxName,
-        String? nostrEventId,
-        String? ownerName,
-        List<Map<String, String>>? peers,
-        String primeMod,
-        DateTime? receivedAt,
-        String? recipientPubkey,
-        List<String>? relayUrls,
-        String shard,
-        int shardIndex,
-        int threshold,
-        int totalShards,
-      })
-    >
-  >
-  generateShamirShares({
+      List<
+          ({
+            int createdAt,
+            String creatorPubkey,
+            int? distributionVersion,
+            String? instructions,
+            bool? isReceived,
+            String? lockboxId,
+            String? lockboxName,
+            String? nostrEventId,
+            String? ownerName,
+            List<Map<String, String>>? peers,
+            String primeMod,
+            DateTime? receivedAt,
+            String? recipientPubkey,
+            List<String>? relayUrls,
+            String shard,
+            int shardIndex,
+            int threshold,
+            int totalShards,
+          })>> generateShamirShares({
     required String? content,
     required int? threshold,
     required int? totalShards,
@@ -606,68 +545,62 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
     String? instructions,
   }) =>
       (super.noSuchMethod(
-            Invocation.method(#generateShamirShares, [], {
-              #content: content,
-              #threshold: threshold,
-              #totalShards: totalShards,
-              #creatorPubkey: creatorPubkey,
-              #lockboxId: lockboxId,
-              #lockboxName: lockboxName,
-              #peers: peers,
-              #ownerName: ownerName,
-              #instructions: instructions,
-            }),
-            returnValue:
-                _i5.Future<
-                  List<
-                    ({
-                      int createdAt,
-                      String creatorPubkey,
-                      int? distributionVersion,
-                      String? instructions,
-                      bool? isReceived,
-                      String? lockboxId,
-                      String? lockboxName,
-                      String? nostrEventId,
-                      String? ownerName,
-                      List<Map<String, String>>? peers,
-                      String primeMod,
-                      DateTime? receivedAt,
-                      String? recipientPubkey,
-                      List<String>? relayUrls,
-                      String shard,
-                      int shardIndex,
-                      int threshold,
-                      int totalShards,
-                    })
-                  >
-                >.value(
-                  <
-                    ({
-                      int createdAt,
-                      String creatorPubkey,
-                      int? distributionVersion,
-                      String? instructions,
-                      bool? isReceived,
-                      String? lockboxId,
-                      String? lockboxName,
-                      String? nostrEventId,
-                      String? ownerName,
-                      List<Map<String, String>>? peers,
-                      String primeMod,
-                      DateTime? receivedAt,
-                      String? recipientPubkey,
-                      List<String>? relayUrls,
-                      String shard,
-                      int shardIndex,
-                      int threshold,
-                      int totalShards,
-                    })
-                  >[],
-                ),
-          )
-          as _i5.Future<
+        Invocation.method(#generateShamirShares, [], {
+          #content: content,
+          #threshold: threshold,
+          #totalShards: totalShards,
+          #creatorPubkey: creatorPubkey,
+          #lockboxId: lockboxId,
+          #lockboxName: lockboxName,
+          #peers: peers,
+          #ownerName: ownerName,
+          #instructions: instructions,
+        }),
+        returnValue: _i5.Future<
             List<
+                ({
+                  int createdAt,
+                  String creatorPubkey,
+                  int? distributionVersion,
+                  String? instructions,
+                  bool? isReceived,
+                  String? lockboxId,
+                  String? lockboxName,
+                  String? nostrEventId,
+                  String? ownerName,
+                  List<Map<String, String>>? peers,
+                  String primeMod,
+                  DateTime? receivedAt,
+                  String? recipientPubkey,
+                  List<String>? relayUrls,
+                  String shard,
+                  int shardIndex,
+                  int threshold,
+                  int totalShards,
+                })>>.value(
+          <({
+            int createdAt,
+            String creatorPubkey,
+            int? distributionVersion,
+            String? instructions,
+            bool? isReceived,
+            String? lockboxId,
+            String? lockboxName,
+            String? nostrEventId,
+            String? ownerName,
+            List<Map<String, String>>? peers,
+            String primeMod,
+            DateTime? receivedAt,
+            String? recipientPubkey,
+            List<String>? relayUrls,
+            String shard,
+            int shardIndex,
+            int threshold,
+            int totalShards,
+          })>[],
+        ),
+      ) as _i5.Future<
+          List<
               ({
                 int createdAt,
                 String creatorPubkey,
@@ -687,48 +620,44 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
                 int shardIndex,
                 int threshold,
                 int totalShards,
-              })
-            >
-          >);
+              })>>);
 
   @override
   _i5.Future<String> reconstructFromShares({
     required List<
-      ({
-        int createdAt,
-        String creatorPubkey,
-        int? distributionVersion,
-        String? instructions,
-        bool? isReceived,
-        String? lockboxId,
-        String? lockboxName,
-        String? nostrEventId,
-        String? ownerName,
-        List<Map<String, String>>? peers,
-        String primeMod,
-        DateTime? receivedAt,
-        String? recipientPubkey,
-        List<String>? relayUrls,
-        String shard,
-        int shardIndex,
-        int threshold,
-        int totalShards,
-      })
-    >?
-    shares,
+            ({
+              int createdAt,
+              String creatorPubkey,
+              int? distributionVersion,
+              String? instructions,
+              bool? isReceived,
+              String? lockboxId,
+              String? lockboxName,
+              String? nostrEventId,
+              String? ownerName,
+              List<Map<String, String>>? peers,
+              String primeMod,
+              DateTime? receivedAt,
+              String? recipientPubkey,
+              List<String>? relayUrls,
+              String shard,
+              int shardIndex,
+              int threshold,
+              int totalShards,
+            })>?
+        shares,
   }) =>
       (super.noSuchMethod(
-            Invocation.method(#reconstructFromShares, [], {#shares: shares}),
-            returnValue: _i5.Future<String>.value(
-              _i8.dummyValue<String>(
-                this,
-                Invocation.method(#reconstructFromShares, [], {
-                  #shares: shares,
-                }),
-              ),
-            ),
-          )
-          as _i5.Future<String>);
+        Invocation.method(#reconstructFromShares, [], {#shares: shares}),
+        returnValue: _i5.Future<String>.value(
+          _i8.dummyValue<String>(
+            this,
+            Invocation.method(#reconstructFromShares, [], {
+              #shares: shares,
+            }),
+          ),
+        ),
+      ) as _i5.Future<String>);
 
   @override
   _i5.Future<void> updateBackupStatus(
@@ -736,11 +665,10 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
     _i7.BackupStatus? status,
   ) =>
       (super.noSuchMethod(
-            Invocation.method(#updateBackupStatus, [lockboxId, status]),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+        Invocation.method(#updateBackupStatus, [lockboxId, status]),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
   _i5.Future<void> updateKeyHolderStatus({
@@ -751,83 +679,115 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
     String? acknowledgmentEventId,
   }) =>
       (super.noSuchMethod(
-            Invocation.method(#updateKeyHolderStatus, [], {
-              #lockboxId: lockboxId,
-              #pubkey: pubkey,
-              #status: status,
-              #acknowledgedAt: acknowledgedAt,
-              #acknowledgmentEventId: acknowledgmentEventId,
-            }),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+        Invocation.method(#updateKeyHolderStatus, [], {
+          #lockboxId: lockboxId,
+          #pubkey: pubkey,
+          #status: status,
+          #acknowledgedAt: acknowledgedAt,
+          #acknowledgmentEventId: acknowledgmentEventId,
+        }),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  _i5.Future<bool> isBackupReady(String? lockboxId) =>
-      (super.noSuchMethod(
-            Invocation.method(#isBackupReady, [lockboxId]),
-            returnValue: _i5.Future<bool>.value(false),
-          )
-          as _i5.Future<bool>);
+  _i5.Future<bool> isBackupReady(String? lockboxId) => (super.noSuchMethod(
+        Invocation.method(#isBackupReady, [lockboxId]),
+        returnValue: _i5.Future<bool>.value(false),
+      ) as _i5.Future<bool>);
 
   @override
   _i5.Future<
-    ({
-      String? contentHash,
-      DateTime createdAt,
-      int distributionVersion,
-      String? instructions,
-      List<
-        ({
-          DateTime? acknowledgedAt,
-          int? acknowledgedDistributionVersion,
-          String? acknowledgmentEventId,
-          String? giftWrapEventId,
-          String id,
-          String? inviteCode,
-          String? keyShare,
-          DateTime? lastSeen,
-          String? name,
-          String? pubkey,
-          _i6.KeyHolderStatus status,
-        })
-      >
-      keyHolders,
-      DateTime? lastContentChange,
-      DateTime? lastRedistribution,
-      DateTime lastUpdated,
-      String lockboxId,
-      List<String> relays,
-      String specVersion,
-      _i7.BackupStatus status,
-      int threshold,
-      int totalKeys,
-    })
-  >
-  mergeBackupConfig({
+      ({
+        String? contentHash,
+        DateTime createdAt,
+        int distributionVersion,
+        String? instructions,
+        List<
+            ({
+              DateTime? acknowledgedAt,
+              int? acknowledgedDistributionVersion,
+              String? acknowledgmentEventId,
+              String? giftWrapEventId,
+              String id,
+              String? inviteCode,
+              String? keyShare,
+              DateTime? lastSeen,
+              String? name,
+              String? pubkey,
+              _i6.KeyHolderStatus status,
+            })> keyHolders,
+        DateTime? lastContentChange,
+        DateTime? lastRedistribution,
+        DateTime lastUpdated,
+        String lockboxId,
+        List<String> relays,
+        String specVersion,
+        _i7.BackupStatus status,
+        int threshold,
+        int totalKeys,
+      })> mergeBackupConfig({
     required String? lockboxId,
     int? threshold,
     List<
-      ({
-        DateTime? acknowledgedAt,
-        int? acknowledgedDistributionVersion,
-        String? acknowledgmentEventId,
-        String? giftWrapEventId,
-        String id,
-        String? inviteCode,
-        String? keyShare,
-        DateTime? lastSeen,
-        String? name,
-        String? pubkey,
-        _i6.KeyHolderStatus status,
-      })
-    >?
-    keyHolders,
+            ({
+              DateTime? acknowledgedAt,
+              int? acknowledgedDistributionVersion,
+              String? acknowledgmentEventId,
+              String? giftWrapEventId,
+              String id,
+              String? inviteCode,
+              String? keyShare,
+              DateTime? lastSeen,
+              String? name,
+              String? pubkey,
+              _i6.KeyHolderStatus status,
+            })>?
+        keyHolders,
     List<String>? relays,
     String? instructions,
   }) =>
       (super.noSuchMethod(
+        Invocation.method(#mergeBackupConfig, [], {
+          #lockboxId: lockboxId,
+          #threshold: threshold,
+          #keyHolders: keyHolders,
+          #relays: relays,
+          #instructions: instructions,
+        }),
+        returnValue: _i5.Future<
+            ({
+              String? contentHash,
+              DateTime createdAt,
+              int distributionVersion,
+              String? instructions,
+              List<
+                  ({
+                    DateTime? acknowledgedAt,
+                    int? acknowledgedDistributionVersion,
+                    String? acknowledgmentEventId,
+                    String? giftWrapEventId,
+                    String id,
+                    String? inviteCode,
+                    String? keyShare,
+                    DateTime? lastSeen,
+                    String? name,
+                    String? pubkey,
+                    _i6.KeyHolderStatus status,
+                  })> keyHolders,
+              DateTime? lastContentChange,
+              DateTime? lastRedistribution,
+              DateTime lastUpdated,
+              String lockboxId,
+              List<String> relays,
+              String specVersion,
+              _i7.BackupStatus status,
+              int threshold,
+              int totalKeys,
+            })>.value((
+          contentHash: null,
+          createdAt: _FakeDateTime_0(
+            this,
             Invocation.method(#mergeBackupConfig, [], {
               #lockboxId: lockboxId,
               #threshold: threshold,
@@ -835,114 +795,66 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
               #relays: relays,
               #instructions: instructions,
             }),
-            returnValue:
-                _i5.Future<
-                  ({
-                    String? contentHash,
-                    DateTime createdAt,
-                    int distributionVersion,
-                    String? instructions,
-                    List<
-                      ({
-                        DateTime? acknowledgedAt,
-                        int? acknowledgedDistributionVersion,
-                        String? acknowledgmentEventId,
-                        String? giftWrapEventId,
-                        String id,
-                        String? inviteCode,
-                        String? keyShare,
-                        DateTime? lastSeen,
-                        String? name,
-                        String? pubkey,
-                        _i6.KeyHolderStatus status,
-                      })
-                    >
-                    keyHolders,
-                    DateTime? lastContentChange,
-                    DateTime? lastRedistribution,
-                    DateTime lastUpdated,
-                    String lockboxId,
-                    List<String> relays,
-                    String specVersion,
-                    _i7.BackupStatus status,
-                    int threshold,
-                    int totalKeys,
-                  })
-                >.value((
-                  contentHash: null,
-                  createdAt: _FakeDateTime_0(
-                    this,
-                    Invocation.method(#mergeBackupConfig, [], {
-                      #lockboxId: lockboxId,
-                      #threshold: threshold,
-                      #keyHolders: keyHolders,
-                      #relays: relays,
-                      #instructions: instructions,
-                    }),
-                  ),
-                  distributionVersion: 0,
-                  instructions: null,
-                  keyHolders:
-                      <
-                        ({
-                          DateTime? acknowledgedAt,
-                          int? acknowledgedDistributionVersion,
-                          String? acknowledgmentEventId,
-                          String? giftWrapEventId,
-                          String id,
-                          String? inviteCode,
-                          String? keyShare,
-                          DateTime? lastSeen,
-                          String? name,
-                          String? pubkey,
-                          _i6.KeyHolderStatus status,
-                        })
-                      >[],
-                  lastContentChange: null,
-                  lastRedistribution: null,
-                  lastUpdated: _FakeDateTime_0(
-                    this,
-                    Invocation.method(#mergeBackupConfig, [], {
-                      #lockboxId: lockboxId,
-                      #threshold: threshold,
-                      #keyHolders: keyHolders,
-                      #relays: relays,
-                      #instructions: instructions,
-                    }),
-                  ),
-                  lockboxId: _i8.dummyValue<String>(
-                    this,
-                    Invocation.method(#mergeBackupConfig, [], {
-                      #lockboxId: lockboxId,
-                      #threshold: threshold,
-                      #keyHolders: keyHolders,
-                      #relays: relays,
-                      #instructions: instructions,
-                    }),
-                  ),
-                  relays: <String>[],
-                  specVersion: _i8.dummyValue<String>(
-                    this,
-                    Invocation.method(#mergeBackupConfig, [], {
-                      #lockboxId: lockboxId,
-                      #threshold: threshold,
-                      #keyHolders: keyHolders,
-                      #relays: relays,
-                      #instructions: instructions,
-                    }),
-                  ),
-                  status: _i7.BackupStatus.pending,
-                  threshold: 0,
-                  totalKeys: 0,
-                )),
-          )
-          as _i5.Future<
-            ({
-              String? contentHash,
-              DateTime createdAt,
-              int distributionVersion,
-              String? instructions,
-              List<
+          ),
+          distributionVersion: 0,
+          instructions: null,
+          keyHolders: <({
+            DateTime? acknowledgedAt,
+            int? acknowledgedDistributionVersion,
+            String? acknowledgmentEventId,
+            String? giftWrapEventId,
+            String id,
+            String? inviteCode,
+            String? keyShare,
+            DateTime? lastSeen,
+            String? name,
+            String? pubkey,
+            _i6.KeyHolderStatus status,
+          })>[],
+          lastContentChange: null,
+          lastRedistribution: null,
+          lastUpdated: _FakeDateTime_0(
+            this,
+            Invocation.method(#mergeBackupConfig, [], {
+              #lockboxId: lockboxId,
+              #threshold: threshold,
+              #keyHolders: keyHolders,
+              #relays: relays,
+              #instructions: instructions,
+            }),
+          ),
+          lockboxId: _i8.dummyValue<String>(
+            this,
+            Invocation.method(#mergeBackupConfig, [], {
+              #lockboxId: lockboxId,
+              #threshold: threshold,
+              #keyHolders: keyHolders,
+              #relays: relays,
+              #instructions: instructions,
+            }),
+          ),
+          relays: <String>[],
+          specVersion: _i8.dummyValue<String>(
+            this,
+            Invocation.method(#mergeBackupConfig, [], {
+              #lockboxId: lockboxId,
+              #threshold: threshold,
+              #keyHolders: keyHolders,
+              #relays: relays,
+              #instructions: instructions,
+            }),
+          ),
+          status: _i7.BackupStatus.pending,
+          threshold: 0,
+          totalKeys: 0,
+        )),
+      ) as _i5.Future<
+          ({
+            String? contentHash,
+            DateTime createdAt,
+            int distributionVersion,
+            String? instructions,
+            List<
                 ({
                   DateTime? acknowledgedAt,
                   int? acknowledgedDistributionVersion,
@@ -955,9 +867,99 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
                   String? name,
                   String? pubkey,
                   _i6.KeyHolderStatus status,
-                })
-              >
-              keyHolders,
+                })> keyHolders,
+            DateTime? lastContentChange,
+            DateTime? lastRedistribution,
+            DateTime lastUpdated,
+            String lockboxId,
+            List<String> relays,
+            String specVersion,
+            _i7.BackupStatus status,
+            int threshold,
+            int totalKeys,
+          })>);
+
+  @override
+  _i5.Future<
+      ({
+        String? contentHash,
+        DateTime createdAt,
+        int distributionVersion,
+        String? instructions,
+        List<
+            ({
+              DateTime? acknowledgedAt,
+              int? acknowledgedDistributionVersion,
+              String? acknowledgmentEventId,
+              String? giftWrapEventId,
+              String id,
+              String? inviteCode,
+              String? keyShare,
+              DateTime? lastSeen,
+              String? name,
+              String? pubkey,
+              _i6.KeyHolderStatus status,
+            })> keyHolders,
+        DateTime? lastContentChange,
+        DateTime? lastRedistribution,
+        DateTime lastUpdated,
+        String lockboxId,
+        List<String> relays,
+        String specVersion,
+        _i7.BackupStatus status,
+        int threshold,
+        int totalKeys,
+      })> saveBackupConfig({
+    required String? lockboxId,
+    required int? threshold,
+    required int? totalKeys,
+    required List<
+            ({
+              DateTime? acknowledgedAt,
+              int? acknowledgedDistributionVersion,
+              String? acknowledgmentEventId,
+              String? giftWrapEventId,
+              String id,
+              String? inviteCode,
+              String? keyShare,
+              DateTime? lastSeen,
+              String? name,
+              String? pubkey,
+              _i6.KeyHolderStatus status,
+            })>?
+        keyHolders,
+    required List<String>? relays,
+    String? instructions,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(#saveBackupConfig, [], {
+          #lockboxId: lockboxId,
+          #threshold: threshold,
+          #totalKeys: totalKeys,
+          #keyHolders: keyHolders,
+          #relays: relays,
+          #instructions: instructions,
+        }),
+        returnValue: _i5.Future<
+            ({
+              String? contentHash,
+              DateTime createdAt,
+              int distributionVersion,
+              String? instructions,
+              List<
+                  ({
+                    DateTime? acknowledgedAt,
+                    int? acknowledgedDistributionVersion,
+                    String? acknowledgmentEventId,
+                    String? giftWrapEventId,
+                    String id,
+                    String? inviteCode,
+                    String? keyShare,
+                    DateTime? lastSeen,
+                    String? name,
+                    String? pubkey,
+                    _i6.KeyHolderStatus status,
+                  })> keyHolders,
               DateTime? lastContentChange,
               DateTime? lastRedistribution,
               DateTime lastUpdated,
@@ -967,67 +969,10 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
               _i7.BackupStatus status,
               int threshold,
               int totalKeys,
-            })
-          >);
-
-  @override
-  _i5.Future<
-    ({
-      String? contentHash,
-      DateTime createdAt,
-      int distributionVersion,
-      String? instructions,
-      List<
-        ({
-          DateTime? acknowledgedAt,
-          int? acknowledgedDistributionVersion,
-          String? acknowledgmentEventId,
-          String? giftWrapEventId,
-          String id,
-          String? inviteCode,
-          String? keyShare,
-          DateTime? lastSeen,
-          String? name,
-          String? pubkey,
-          _i6.KeyHolderStatus status,
-        })
-      >
-      keyHolders,
-      DateTime? lastContentChange,
-      DateTime? lastRedistribution,
-      DateTime lastUpdated,
-      String lockboxId,
-      List<String> relays,
-      String specVersion,
-      _i7.BackupStatus status,
-      int threshold,
-      int totalKeys,
-    })
-  >
-  saveBackupConfig({
-    required String? lockboxId,
-    required int? threshold,
-    required int? totalKeys,
-    required List<
-      ({
-        DateTime? acknowledgedAt,
-        int? acknowledgedDistributionVersion,
-        String? acknowledgmentEventId,
-        String? giftWrapEventId,
-        String id,
-        String? inviteCode,
-        String? keyShare,
-        DateTime? lastSeen,
-        String? name,
-        String? pubkey,
-        _i6.KeyHolderStatus status,
-      })
-    >?
-    keyHolders,
-    required List<String>? relays,
-    String? instructions,
-  }) =>
-      (super.noSuchMethod(
+            })>.value((
+          contentHash: null,
+          createdAt: _FakeDateTime_0(
+            this,
             Invocation.method(#saveBackupConfig, [], {
               #lockboxId: lockboxId,
               #threshold: threshold,
@@ -1036,118 +981,69 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
               #relays: relays,
               #instructions: instructions,
             }),
-            returnValue:
-                _i5.Future<
-                  ({
-                    String? contentHash,
-                    DateTime createdAt,
-                    int distributionVersion,
-                    String? instructions,
-                    List<
-                      ({
-                        DateTime? acknowledgedAt,
-                        int? acknowledgedDistributionVersion,
-                        String? acknowledgmentEventId,
-                        String? giftWrapEventId,
-                        String id,
-                        String? inviteCode,
-                        String? keyShare,
-                        DateTime? lastSeen,
-                        String? name,
-                        String? pubkey,
-                        _i6.KeyHolderStatus status,
-                      })
-                    >
-                    keyHolders,
-                    DateTime? lastContentChange,
-                    DateTime? lastRedistribution,
-                    DateTime lastUpdated,
-                    String lockboxId,
-                    List<String> relays,
-                    String specVersion,
-                    _i7.BackupStatus status,
-                    int threshold,
-                    int totalKeys,
-                  })
-                >.value((
-                  contentHash: null,
-                  createdAt: _FakeDateTime_0(
-                    this,
-                    Invocation.method(#saveBackupConfig, [], {
-                      #lockboxId: lockboxId,
-                      #threshold: threshold,
-                      #totalKeys: totalKeys,
-                      #keyHolders: keyHolders,
-                      #relays: relays,
-                      #instructions: instructions,
-                    }),
-                  ),
-                  distributionVersion: 0,
-                  instructions: null,
-                  keyHolders:
-                      <
-                        ({
-                          DateTime? acknowledgedAt,
-                          int? acknowledgedDistributionVersion,
-                          String? acknowledgmentEventId,
-                          String? giftWrapEventId,
-                          String id,
-                          String? inviteCode,
-                          String? keyShare,
-                          DateTime? lastSeen,
-                          String? name,
-                          String? pubkey,
-                          _i6.KeyHolderStatus status,
-                        })
-                      >[],
-                  lastContentChange: null,
-                  lastRedistribution: null,
-                  lastUpdated: _FakeDateTime_0(
-                    this,
-                    Invocation.method(#saveBackupConfig, [], {
-                      #lockboxId: lockboxId,
-                      #threshold: threshold,
-                      #totalKeys: totalKeys,
-                      #keyHolders: keyHolders,
-                      #relays: relays,
-                      #instructions: instructions,
-                    }),
-                  ),
-                  lockboxId: _i8.dummyValue<String>(
-                    this,
-                    Invocation.method(#saveBackupConfig, [], {
-                      #lockboxId: lockboxId,
-                      #threshold: threshold,
-                      #totalKeys: totalKeys,
-                      #keyHolders: keyHolders,
-                      #relays: relays,
-                      #instructions: instructions,
-                    }),
-                  ),
-                  relays: <String>[],
-                  specVersion: _i8.dummyValue<String>(
-                    this,
-                    Invocation.method(#saveBackupConfig, [], {
-                      #lockboxId: lockboxId,
-                      #threshold: threshold,
-                      #totalKeys: totalKeys,
-                      #keyHolders: keyHolders,
-                      #relays: relays,
-                      #instructions: instructions,
-                    }),
-                  ),
-                  status: _i7.BackupStatus.pending,
-                  threshold: 0,
-                  totalKeys: 0,
-                )),
-          )
-          as _i5.Future<
-            ({
-              String? contentHash,
-              DateTime createdAt,
-              int distributionVersion,
-              String? instructions,
-              List<
+          ),
+          distributionVersion: 0,
+          instructions: null,
+          keyHolders: <({
+            DateTime? acknowledgedAt,
+            int? acknowledgedDistributionVersion,
+            String? acknowledgmentEventId,
+            String? giftWrapEventId,
+            String id,
+            String? inviteCode,
+            String? keyShare,
+            DateTime? lastSeen,
+            String? name,
+            String? pubkey,
+            _i6.KeyHolderStatus status,
+          })>[],
+          lastContentChange: null,
+          lastRedistribution: null,
+          lastUpdated: _FakeDateTime_0(
+            this,
+            Invocation.method(#saveBackupConfig, [], {
+              #lockboxId: lockboxId,
+              #threshold: threshold,
+              #totalKeys: totalKeys,
+              #keyHolders: keyHolders,
+              #relays: relays,
+              #instructions: instructions,
+            }),
+          ),
+          lockboxId: _i8.dummyValue<String>(
+            this,
+            Invocation.method(#saveBackupConfig, [], {
+              #lockboxId: lockboxId,
+              #threshold: threshold,
+              #totalKeys: totalKeys,
+              #keyHolders: keyHolders,
+              #relays: relays,
+              #instructions: instructions,
+            }),
+          ),
+          relays: <String>[],
+          specVersion: _i8.dummyValue<String>(
+            this,
+            Invocation.method(#saveBackupConfig, [], {
+              #lockboxId: lockboxId,
+              #threshold: threshold,
+              #totalKeys: totalKeys,
+              #keyHolders: keyHolders,
+              #relays: relays,
+              #instructions: instructions,
+            }),
+          ),
+          status: _i7.BackupStatus.pending,
+          threshold: 0,
+          totalKeys: 0,
+        )),
+      ) as _i5.Future<
+          ({
+            String? contentHash,
+            DateTime createdAt,
+            int distributionVersion,
+            String? instructions,
+            List<
                 ({
                   DateTime? acknowledgedAt,
                   int? acknowledgedDistributionVersion,
@@ -1160,152 +1056,136 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
                   String? name,
                   String? pubkey,
                   _i6.KeyHolderStatus status,
-                })
-              >
-              keyHolders,
-              DateTime? lastContentChange,
-              DateTime? lastRedistribution,
-              DateTime lastUpdated,
-              String lockboxId,
-              List<String> relays,
-              String specVersion,
-              _i7.BackupStatus status,
-              int threshold,
-              int totalKeys,
-            })
-          >);
+                })> keyHolders,
+            DateTime? lastContentChange,
+            DateTime? lastRedistribution,
+            DateTime lastUpdated,
+            String lockboxId,
+            List<String> relays,
+            String specVersion,
+            _i7.BackupStatus status,
+            int threshold,
+            int totalKeys,
+          })>);
 
   @override
   _i5.Future<
-    ({
-      String? contentHash,
-      DateTime createdAt,
-      int distributionVersion,
-      String? instructions,
-      List<
-        ({
-          DateTime? acknowledgedAt,
-          int? acknowledgedDistributionVersion,
-          String? acknowledgmentEventId,
-          String? giftWrapEventId,
-          String id,
-          String? inviteCode,
-          String? keyShare,
-          DateTime? lastSeen,
-          String? name,
-          String? pubkey,
-          _i6.KeyHolderStatus status,
-        })
-      >
-      keyHolders,
-      DateTime? lastContentChange,
-      DateTime? lastRedistribution,
-      DateTime lastUpdated,
-      String lockboxId,
-      List<String> relays,
-      String specVersion,
-      _i7.BackupStatus status,
-      int threshold,
-      int totalKeys,
-    })
-  >
-  createAndDistributeBackup({required String? lockboxId}) =>
-      (super.noSuchMethod(
-            Invocation.method(#createAndDistributeBackup, [], {
-              #lockboxId: lockboxId,
-            }),
-            returnValue:
-                _i5.Future<
-                  ({
-                    String? contentHash,
-                    DateTime createdAt,
-                    int distributionVersion,
-                    String? instructions,
-                    List<
-                      ({
-                        DateTime? acknowledgedAt,
-                        int? acknowledgedDistributionVersion,
-                        String? acknowledgmentEventId,
-                        String? giftWrapEventId,
-                        String id,
-                        String? inviteCode,
-                        String? keyShare,
-                        DateTime? lastSeen,
-                        String? name,
-                        String? pubkey,
-                        _i6.KeyHolderStatus status,
-                      })
-                    >
-                    keyHolders,
-                    DateTime? lastContentChange,
-                    DateTime? lastRedistribution,
-                    DateTime lastUpdated,
-                    String lockboxId,
-                    List<String> relays,
-                    String specVersion,
-                    _i7.BackupStatus status,
-                    int threshold,
-                    int totalKeys,
-                  })
-                >.value((
-                  contentHash: null,
-                  createdAt: _FakeDateTime_0(
-                    this,
-                    Invocation.method(#createAndDistributeBackup, [], {
-                      #lockboxId: lockboxId,
-                    }),
-                  ),
-                  distributionVersion: 0,
-                  instructions: null,
-                  keyHolders:
-                      <
-                        ({
-                          DateTime? acknowledgedAt,
-                          int? acknowledgedDistributionVersion,
-                          String? acknowledgmentEventId,
-                          String? giftWrapEventId,
-                          String id,
-                          String? inviteCode,
-                          String? keyShare,
-                          DateTime? lastSeen,
-                          String? name,
-                          String? pubkey,
-                          _i6.KeyHolderStatus status,
-                        })
-                      >[],
-                  lastContentChange: null,
-                  lastRedistribution: null,
-                  lastUpdated: _FakeDateTime_0(
-                    this,
-                    Invocation.method(#createAndDistributeBackup, [], {
-                      #lockboxId: lockboxId,
-                    }),
-                  ),
-                  lockboxId: _i8.dummyValue<String>(
-                    this,
-                    Invocation.method(#createAndDistributeBackup, [], {
-                      #lockboxId: lockboxId,
-                    }),
-                  ),
-                  relays: <String>[],
-                  specVersion: _i8.dummyValue<String>(
-                    this,
-                    Invocation.method(#createAndDistributeBackup, [], {
-                      #lockboxId: lockboxId,
-                    }),
-                  ),
-                  status: _i7.BackupStatus.pending,
-                  threshold: 0,
-                  totalKeys: 0,
-                )),
-          )
-          as _i5.Future<
+      ({
+        String? contentHash,
+        DateTime createdAt,
+        int distributionVersion,
+        String? instructions,
+        List<
+            ({
+              DateTime? acknowledgedAt,
+              int? acknowledgedDistributionVersion,
+              String? acknowledgmentEventId,
+              String? giftWrapEventId,
+              String id,
+              String? inviteCode,
+              String? keyShare,
+              DateTime? lastSeen,
+              String? name,
+              String? pubkey,
+              _i6.KeyHolderStatus status,
+            })> keyHolders,
+        DateTime? lastContentChange,
+        DateTime? lastRedistribution,
+        DateTime lastUpdated,
+        String lockboxId,
+        List<String> relays,
+        String specVersion,
+        _i7.BackupStatus status,
+        int threshold,
+        int totalKeys,
+      })> createAndDistributeBackup({required String? lockboxId}) => (super.noSuchMethod(
+        Invocation.method(#createAndDistributeBackup, [], {
+          #lockboxId: lockboxId,
+        }),
+        returnValue: _i5.Future<
             ({
               String? contentHash,
               DateTime createdAt,
               int distributionVersion,
               String? instructions,
               List<
+                  ({
+                    DateTime? acknowledgedAt,
+                    int? acknowledgedDistributionVersion,
+                    String? acknowledgmentEventId,
+                    String? giftWrapEventId,
+                    String id,
+                    String? inviteCode,
+                    String? keyShare,
+                    DateTime? lastSeen,
+                    String? name,
+                    String? pubkey,
+                    _i6.KeyHolderStatus status,
+                  })> keyHolders,
+              DateTime? lastContentChange,
+              DateTime? lastRedistribution,
+              DateTime lastUpdated,
+              String lockboxId,
+              List<String> relays,
+              String specVersion,
+              _i7.BackupStatus status,
+              int threshold,
+              int totalKeys,
+            })>.value((
+          contentHash: null,
+          createdAt: _FakeDateTime_0(
+            this,
+            Invocation.method(#createAndDistributeBackup, [], {
+              #lockboxId: lockboxId,
+            }),
+          ),
+          distributionVersion: 0,
+          instructions: null,
+          keyHolders: <({
+            DateTime? acknowledgedAt,
+            int? acknowledgedDistributionVersion,
+            String? acknowledgmentEventId,
+            String? giftWrapEventId,
+            String id,
+            String? inviteCode,
+            String? keyShare,
+            DateTime? lastSeen,
+            String? name,
+            String? pubkey,
+            _i6.KeyHolderStatus status,
+          })>[],
+          lastContentChange: null,
+          lastRedistribution: null,
+          lastUpdated: _FakeDateTime_0(
+            this,
+            Invocation.method(#createAndDistributeBackup, [], {
+              #lockboxId: lockboxId,
+            }),
+          ),
+          lockboxId: _i8.dummyValue<String>(
+            this,
+            Invocation.method(#createAndDistributeBackup, [], {
+              #lockboxId: lockboxId,
+            }),
+          ),
+          relays: <String>[],
+          specVersion: _i8.dummyValue<String>(
+            this,
+            Invocation.method(#createAndDistributeBackup, [], {
+              #lockboxId: lockboxId,
+            }),
+          ),
+          status: _i7.BackupStatus.pending,
+          threshold: 0,
+          totalKeys: 0,
+        )),
+      ) as _i5.Future<
+          ({
+            String? contentHash,
+            DateTime createdAt,
+            int distributionVersion,
+            String? instructions,
+            List<
                 ({
                   DateTime? acknowledgedAt,
                   int? acknowledgedDistributionVersion,
@@ -1318,47 +1198,40 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
                   String? name,
                   String? pubkey,
                   _i6.KeyHolderStatus status,
-                })
-              >
-              keyHolders,
-              DateTime? lastContentChange,
-              DateTime? lastRedistribution,
-              DateTime lastUpdated,
-              String lockboxId,
-              List<String> relays,
-              String specVersion,
-              _i7.BackupStatus status,
-              int threshold,
-              int totalKeys,
-            })
-          >);
+                })> keyHolders,
+            DateTime? lastContentChange,
+            DateTime? lastRedistribution,
+            DateTime lastUpdated,
+            String lockboxId,
+            List<String> relays,
+            String specVersion,
+            _i7.BackupStatus status,
+            int threshold,
+            int totalKeys,
+          })>);
 }
 
 /// A class which mocks [ShardDistributionService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockShardDistributionService extends _i1.Mock
-    implements _i9.ShardDistributionService {
+class MockShardDistributionService extends _i1.Mock implements _i9.ShardDistributionService {
   MockShardDistributionService() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
   _i5.Future<
-    List<
-      ({
-        String backupConfigId,
-        DateTime createdAt,
-        String encryptedContent,
-        String eventId,
-        DateTime? publishedAt,
-        String recipientPubkey,
-        int shardIndex,
-        _i10.EventStatus status,
-      })
-    >
-  >
-  distributeShards({
+      List<
+          ({
+            String backupConfigId,
+            DateTime createdAt,
+            String encryptedContent,
+            String eventId,
+            DateTime? publishedAt,
+            String recipientPubkey,
+            int shardIndex,
+            _i10.EventStatus status,
+          })>> distributeShards({
     required String? ownerPubkey,
     required ({
       String? contentHash,
@@ -1366,21 +1239,19 @@ class MockShardDistributionService extends _i1.Mock
       int distributionVersion,
       String? instructions,
       List<
-        ({
-          DateTime? acknowledgedAt,
-          int? acknowledgedDistributionVersion,
-          String? acknowledgmentEventId,
-          String? giftWrapEventId,
-          String id,
-          String? inviteCode,
-          String? keyShare,
-          DateTime? lastSeen,
-          String? name,
-          String? pubkey,
-          _i6.KeyHolderStatus status,
-        })
-      >
-      keyHolders,
+          ({
+            DateTime? acknowledgedAt,
+            int? acknowledgedDistributionVersion,
+            String? acknowledgmentEventId,
+            String? giftWrapEventId,
+            String id,
+            String? inviteCode,
+            String? keyShare,
+            DateTime? lastSeen,
+            String? name,
+            String? pubkey,
+            _i6.KeyHolderStatus status,
+          })> keyHolders,
       DateTime? lastContentChange,
       DateTime? lastRedistribution,
       DateTime lastUpdated,
@@ -1390,69 +1261,61 @@ class MockShardDistributionService extends _i1.Mock
       _i7.BackupStatus status,
       int threshold,
       int totalKeys,
-    })?
-    config,
+    })? config,
     required List<
-      ({
-        int createdAt,
-        String creatorPubkey,
-        int? distributionVersion,
-        String? instructions,
-        bool? isReceived,
-        String? lockboxId,
-        String? lockboxName,
-        String? nostrEventId,
-        String? ownerName,
-        List<Map<String, String>>? peers,
-        String primeMod,
-        DateTime? receivedAt,
-        String? recipientPubkey,
-        List<String>? relayUrls,
-        String shard,
-        int shardIndex,
-        int threshold,
-        int totalShards,
-      })
-    >?
-    shards,
+            ({
+              int createdAt,
+              String creatorPubkey,
+              int? distributionVersion,
+              String? instructions,
+              bool? isReceived,
+              String? lockboxId,
+              String? lockboxName,
+              String? nostrEventId,
+              String? ownerName,
+              List<Map<String, String>>? peers,
+              String primeMod,
+              DateTime? receivedAt,
+              String? recipientPubkey,
+              List<String>? relayUrls,
+              String shard,
+              int shardIndex,
+              int threshold,
+              int totalShards,
+            })>?
+        shards,
   }) =>
       (super.noSuchMethod(
-            Invocation.method(#distributeShards, [], {
-              #ownerPubkey: ownerPubkey,
-              #config: config,
-              #shards: shards,
-            }),
-            returnValue:
-                _i5.Future<
-                  List<
-                    ({
-                      String backupConfigId,
-                      DateTime createdAt,
-                      String encryptedContent,
-                      String eventId,
-                      DateTime? publishedAt,
-                      String recipientPubkey,
-                      int shardIndex,
-                      _i10.EventStatus status,
-                    })
-                  >
-                >.value(
-                  <
-                    ({
-                      String backupConfigId,
-                      DateTime createdAt,
-                      String encryptedContent,
-                      String eventId,
-                      DateTime? publishedAt,
-                      String recipientPubkey,
-                      int shardIndex,
-                      _i10.EventStatus status,
-                    })
-                  >[],
-                ),
-          )
-          as _i5.Future<
+        Invocation.method(#distributeShards, [], {
+          #ownerPubkey: ownerPubkey,
+          #config: config,
+          #shards: shards,
+        }),
+        returnValue: _i5.Future<
             List<
+                ({
+                  String backupConfigId,
+                  DateTime createdAt,
+                  String encryptedContent,
+                  String eventId,
+                  DateTime? publishedAt,
+                  String recipientPubkey,
+                  int shardIndex,
+                  _i10.EventStatus status,
+                })>>.value(
+          <({
+            String backupConfigId,
+            DateTime createdAt,
+            String encryptedContent,
+            String eventId,
+            DateTime? publishedAt,
+            String recipientPubkey,
+            int shardIndex,
+            _i10.EventStatus status,
+          })>[],
+        ),
+      ) as _i5.Future<
+          List<
               ({
                 String backupConfigId,
                 DateTime createdAt,
@@ -1462,58 +1325,51 @@ class MockShardDistributionService extends _i1.Mock
                 String recipientPubkey,
                 int shardIndex,
                 _i10.EventStatus status,
-              })
-            >
-          >);
+              })>>);
 
   @override
   _i5.Future<void> updateDistributionStatus({
     required String? lockboxId,
     required List<
-      ({
-        String backupConfigId,
-        DateTime createdAt,
-        String encryptedContent,
-        String eventId,
-        DateTime? publishedAt,
-        String recipientPubkey,
-        int shardIndex,
-        _i10.EventStatus status,
-      })
-    >?
-    shardEvents,
+            ({
+              String backupConfigId,
+              DateTime createdAt,
+              String encryptedContent,
+              String eventId,
+              DateTime? publishedAt,
+              String recipientPubkey,
+              int shardIndex,
+              _i10.EventStatus status,
+            })>?
+        shardEvents,
   }) =>
       (super.noSuchMethod(
-            Invocation.method(#updateDistributionStatus, [], {
-              #lockboxId: lockboxId,
-              #shardEvents: shardEvents,
-            }),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+        Invocation.method(#updateDistributionStatus, [], {
+          #lockboxId: lockboxId,
+          #shardEvents: shardEvents,
+        }),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
   _i5.Future<void> processShardConfirmationEvent({
     required _i2.Nip01Event? event,
   }) =>
       (super.noSuchMethod(
-            Invocation.method(#processShardConfirmationEvent, [], {
-              #event: event,
-            }),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+        Invocation.method(#processShardConfirmationEvent, [], {
+          #event: event,
+        }),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  _i5.Future<void> processShardErrorEvent({required _i2.Nip01Event? event}) =>
-      (super.noSuchMethod(
-            Invocation.method(#processShardErrorEvent, [], {#event: event}),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+  _i5.Future<void> processShardErrorEvent({required _i2.Nip01Event? event}) => (super.noSuchMethod(
+        Invocation.method(#processShardErrorEvent, [], {#event: event}),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 }
 
 /// A class which mocks [NdkService].
@@ -1525,52 +1381,41 @@ class MockNdkService extends _i1.Mock implements _i11.NdkService {
   }
 
   @override
-  _i5.Stream<_i12.RecoveryRequest> get recoveryRequestStream =>
-      (super.noSuchMethod(
-            Invocation.getter(#recoveryRequestStream),
-            returnValue: _i5.Stream<_i12.RecoveryRequest>.empty(),
-          )
-          as _i5.Stream<_i12.RecoveryRequest>);
+  _i5.Stream<_i12.RecoveryRequest> get recoveryRequestStream => (super.noSuchMethod(
+        Invocation.getter(#recoveryRequestStream),
+        returnValue: _i5.Stream<_i12.RecoveryRequest>.empty(),
+      ) as _i5.Stream<_i12.RecoveryRequest>);
 
   @override
-  _i5.Stream<_i11.RecoveryResponseEvent> get recoveryResponseStream =>
-      (super.noSuchMethod(
-            Invocation.getter(#recoveryResponseStream),
-            returnValue: _i5.Stream<_i11.RecoveryResponseEvent>.empty(),
-          )
-          as _i5.Stream<_i11.RecoveryResponseEvent>);
+  _i5.Stream<_i11.RecoveryResponseEvent> get recoveryResponseStream => (super.noSuchMethod(
+        Invocation.getter(#recoveryResponseStream),
+        returnValue: _i5.Stream<_i11.RecoveryResponseEvent>.empty(),
+      ) as _i5.Stream<_i11.RecoveryResponseEvent>);
 
   @override
   bool get isInitialized =>
-      (super.noSuchMethod(Invocation.getter(#isInitialized), returnValue: false)
-          as bool);
+      (super.noSuchMethod(Invocation.getter(#isInitialized), returnValue: false) as bool);
 
   @override
-  _i5.Future<void> initialize() =>
-      (super.noSuchMethod(
-            Invocation.method(#initialize, []),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+  _i5.Future<void> initialize() => (super.noSuchMethod(
+        Invocation.method(#initialize, []),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  _i5.Future<void> addRelay(String? relayUrl) =>
-      (super.noSuchMethod(
-            Invocation.method(#addRelay, [relayUrl]),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+  _i5.Future<void> addRelay(String? relayUrl) => (super.noSuchMethod(
+        Invocation.method(#addRelay, [relayUrl]),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  _i5.Future<void> removeRelay(String? relayUrl) =>
-      (super.noSuchMethod(
-            Invocation.method(#removeRelay, [relayUrl]),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+  _i5.Future<void> removeRelay(String? relayUrl) => (super.noSuchMethod(
+        Invocation.method(#removeRelay, [relayUrl]),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
   _i5.Future<String?> publishRecoveryRequest({
@@ -1579,14 +1424,13 @@ class MockNdkService extends _i1.Mock implements _i11.NdkService {
     DateTime? expiresAt,
   }) =>
       (super.noSuchMethod(
-            Invocation.method(#publishRecoveryRequest, [], {
-              #lockboxId: lockboxId,
-              #keyHolderPubkeys: keyHolderPubkeys,
-              #expiresAt: expiresAt,
-            }),
-            returnValue: _i5.Future<String?>.value(),
-          )
-          as _i5.Future<String?>);
+        Invocation.method(#publishRecoveryRequest, [], {
+          #lockboxId: lockboxId,
+          #keyHolderPubkeys: keyHolderPubkeys,
+          #expiresAt: expiresAt,
+        }),
+        returnValue: _i5.Future<String?>.value(),
+      ) as _i5.Future<String?>);
 
   @override
   _i5.Future<String?> publishRecoveryResponse({
@@ -1596,40 +1440,33 @@ class MockNdkService extends _i1.Mock implements _i11.NdkService {
     String? shardDataJson,
   }) =>
       (super.noSuchMethod(
-            Invocation.method(#publishRecoveryResponse, [], {
-              #initiatorPubkey: initiatorPubkey,
-              #recoveryRequestId: recoveryRequestId,
-              #approved: approved,
-              #shardDataJson: shardDataJson,
-            }),
-            returnValue: _i5.Future<String?>.value(),
-          )
-          as _i5.Future<String?>);
+        Invocation.method(#publishRecoveryResponse, [], {
+          #initiatorPubkey: initiatorPubkey,
+          #recoveryRequestId: recoveryRequestId,
+          #approved: approved,
+          #shardDataJson: shardDataJson,
+        }),
+        returnValue: _i5.Future<String?>.value(),
+      ) as _i5.Future<String?>);
 
   @override
-  _i5.Future<void> stopListening() =>
-      (super.noSuchMethod(
-            Invocation.method(#stopListening, []),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+  _i5.Future<void> stopListening() => (super.noSuchMethod(
+        Invocation.method(#stopListening, []),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  List<String> getActiveRelays() =>
-      (super.noSuchMethod(
-            Invocation.method(#getActiveRelays, []),
-            returnValue: <String>[],
-          )
-          as List<String>);
+  List<String> getActiveRelays() => (super.noSuchMethod(
+        Invocation.method(#getActiveRelays, []),
+        returnValue: <String>[],
+      ) as List<String>);
 
   @override
-  _i5.Future<String?> getCurrentPubkey() =>
-      (super.noSuchMethod(
-            Invocation.method(#getCurrentPubkey, []),
-            returnValue: _i5.Future<String?>.value(),
-          )
-          as _i5.Future<String?>);
+  _i5.Future<String?> getCurrentPubkey() => (super.noSuchMethod(
+        Invocation.method(#getCurrentPubkey, []),
+        returnValue: _i5.Future<String?>.value(),
+      ) as _i5.Future<String?>);
 
   @override
   _i5.Future<String?> publishEncryptedEvent({
@@ -1641,17 +1478,16 @@ class MockNdkService extends _i1.Mock implements _i11.NdkService {
     String? customPubkey,
   }) =>
       (super.noSuchMethod(
-            Invocation.method(#publishEncryptedEvent, [], {
-              #content: content,
-              #kind: kind,
-              #recipientPubkey: recipientPubkey,
-              #relays: relays,
-              #tags: tags,
-              #customPubkey: customPubkey,
-            }),
-            returnValue: _i5.Future<String?>.value(),
-          )
-          as _i5.Future<String?>);
+        Invocation.method(#publishEncryptedEvent, [], {
+          #content: content,
+          #kind: kind,
+          #recipientPubkey: recipientPubkey,
+          #relays: relays,
+          #tags: tags,
+          #customPubkey: customPubkey,
+        }),
+        returnValue: _i5.Future<String?>.value(),
+      ) as _i5.Future<String?>);
 
   @override
   _i5.Future<List<String>> publishEncryptedEventToMultiple({
@@ -1663,152 +1499,132 @@ class MockNdkService extends _i1.Mock implements _i11.NdkService {
     String? customPubkey,
   }) =>
       (super.noSuchMethod(
-            Invocation.method(#publishEncryptedEventToMultiple, [], {
-              #content: content,
-              #kind: kind,
-              #recipientPubkeys: recipientPubkeys,
-              #relays: relays,
-              #tags: tags,
-              #customPubkey: customPubkey,
-            }),
-            returnValue: _i5.Future<List<String>>.value(<String>[]),
-          )
-          as _i5.Future<List<String>>);
+        Invocation.method(#publishEncryptedEventToMultiple, [], {
+          #content: content,
+          #kind: kind,
+          #recipientPubkeys: recipientPubkeys,
+          #relays: relays,
+          #tags: tags,
+          #customPubkey: customPubkey,
+        }),
+        returnValue: _i5.Future<List<String>>.value(<String>[]),
+      ) as _i5.Future<List<String>>);
 
   @override
-  _i5.Future<_i2.Ndk> getNdk() =>
-      (super.noSuchMethod(
-            Invocation.method(#getNdk, []),
-            returnValue: _i5.Future<_i2.Ndk>.value(
-              _FakeNdk_1(this, Invocation.method(#getNdk, [])),
-            ),
-          )
-          as _i5.Future<_i2.Ndk>);
+  _i5.Future<_i2.Ndk> getNdk() => (super.noSuchMethod(
+        Invocation.method(#getNdk, []),
+        returnValue: _i5.Future<_i2.Ndk>.value(
+          _FakeNdk_1(this, Invocation.method(#getNdk, [])),
+        ),
+      ) as _i5.Future<_i2.Ndk>);
 
   @override
   void setNdkForTesting(_i2.Ndk? ndk) => super.noSuchMethod(
-    Invocation.method(#setNdkForTesting, [ndk]),
-    returnValueForMissingStub: null,
-  );
+        Invocation.method(#setNdkForTesting, [ndk]),
+        returnValueForMissingStub: null,
+      );
 
   @override
-  _i5.Future<void> dispose() =>
-      (super.noSuchMethod(
-            Invocation.method(#dispose, []),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+  _i5.Future<void> dispose() => (super.noSuchMethod(
+        Invocation.method(#dispose, []),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 }
 
 /// A class which mocks [LockboxShareService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockLockboxShareService extends _i1.Mock
-    implements _i13.LockboxShareService {
+class MockLockboxShareService extends _i1.Mock implements _i13.LockboxShareService {
   MockLockboxShareService() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i3.LockboxRepository get repository =>
-      (super.noSuchMethod(
-            Invocation.getter(#repository),
-            returnValue: _FakeLockboxRepository_2(
-              this,
-              Invocation.getter(#repository),
-            ),
-          )
-          as _i3.LockboxRepository);
+  _i3.LockboxRepository get repository => (super.noSuchMethod(
+        Invocation.getter(#repository),
+        returnValue: _FakeLockboxRepository_2(
+          this,
+          Invocation.getter(#repository),
+        ),
+      ) as _i3.LockboxRepository);
 
   @override
-  _i5.Future<void> initialize() =>
-      (super.noSuchMethod(
-            Invocation.method(#initialize, []),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+  _i5.Future<void> initialize() => (super.noSuchMethod(
+        Invocation.method(#initialize, []),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
   _i5.Future<
-    List<
-      ({
-        int createdAt,
-        String creatorPubkey,
-        int? distributionVersion,
-        String? instructions,
-        bool? isReceived,
-        String? lockboxId,
-        String? lockboxName,
-        String? nostrEventId,
-        String? ownerName,
-        List<Map<String, String>>? peers,
-        String primeMod,
-        DateTime? receivedAt,
-        String? recipientPubkey,
-        List<String>? relayUrls,
-        String shard,
-        int shardIndex,
-        int threshold,
-        int totalShards,
-      })
-    >
-  >
-  getLockboxShares(String? lockboxId) =>
-      (super.noSuchMethod(
-            Invocation.method(#getLockboxShares, [lockboxId]),
-            returnValue:
-                _i5.Future<
-                  List<
-                    ({
-                      int createdAt,
-                      String creatorPubkey,
-                      int? distributionVersion,
-                      String? instructions,
-                      bool? isReceived,
-                      String? lockboxId,
-                      String? lockboxName,
-                      String? nostrEventId,
-                      String? ownerName,
-                      List<Map<String, String>>? peers,
-                      String primeMod,
-                      DateTime? receivedAt,
-                      String? recipientPubkey,
-                      List<String>? relayUrls,
-                      String shard,
-                      int shardIndex,
-                      int threshold,
-                      int totalShards,
-                    })
-                  >
-                >.value(
-                  <
-                    ({
-                      int createdAt,
-                      String creatorPubkey,
-                      int? distributionVersion,
-                      String? instructions,
-                      bool? isReceived,
-                      String? lockboxId,
-                      String? lockboxName,
-                      String? nostrEventId,
-                      String? ownerName,
-                      List<Map<String, String>>? peers,
-                      String primeMod,
-                      DateTime? receivedAt,
-                      String? recipientPubkey,
-                      List<String>? relayUrls,
-                      String shard,
-                      int shardIndex,
-                      int threshold,
-                      int totalShards,
-                    })
-                  >[],
-                ),
-          )
-          as _i5.Future<
+      List<
+          ({
+            int createdAt,
+            String creatorPubkey,
+            int? distributionVersion,
+            String? instructions,
+            bool? isReceived,
+            String? lockboxId,
+            String? lockboxName,
+            String? nostrEventId,
+            String? ownerName,
+            List<Map<String, String>>? peers,
+            String primeMod,
+            DateTime? receivedAt,
+            String? recipientPubkey,
+            List<String>? relayUrls,
+            String shard,
+            int shardIndex,
+            int threshold,
+            int totalShards,
+          })>> getLockboxShares(String? lockboxId) => (super.noSuchMethod(
+        Invocation.method(#getLockboxShares, [lockboxId]),
+        returnValue: _i5.Future<
             List<
+                ({
+                  int createdAt,
+                  String creatorPubkey,
+                  int? distributionVersion,
+                  String? instructions,
+                  bool? isReceived,
+                  String? lockboxId,
+                  String? lockboxName,
+                  String? nostrEventId,
+                  String? ownerName,
+                  List<Map<String, String>>? peers,
+                  String primeMod,
+                  DateTime? receivedAt,
+                  String? recipientPubkey,
+                  List<String>? relayUrls,
+                  String shard,
+                  int shardIndex,
+                  int threshold,
+                  int totalShards,
+                })>>.value(
+          <({
+            int createdAt,
+            String creatorPubkey,
+            int? distributionVersion,
+            String? instructions,
+            bool? isReceived,
+            String? lockboxId,
+            String? lockboxName,
+            String? nostrEventId,
+            String? ownerName,
+            List<Map<String, String>>? peers,
+            String primeMod,
+            DateTime? receivedAt,
+            String? recipientPubkey,
+            List<String>? relayUrls,
+            String shard,
+            int shardIndex,
+            int threshold,
+            int totalShards,
+          })>[],
+        ),
+      ) as _i5.Future<
+          List<
               ({
                 int createdAt,
                 String creatorPubkey,
@@ -1828,61 +1644,32 @@ class MockLockboxShareService extends _i1.Mock
                 int shardIndex,
                 int threshold,
                 int totalShards,
-              })
-            >
-          >);
+              })>>);
 
   @override
   _i5.Future<
-    ({
-      int createdAt,
-      String creatorPubkey,
-      int? distributionVersion,
-      String? instructions,
-      bool? isReceived,
-      String? lockboxId,
-      String? lockboxName,
-      String? nostrEventId,
-      String? ownerName,
-      List<Map<String, String>>? peers,
-      String primeMod,
-      DateTime? receivedAt,
-      String? recipientPubkey,
-      List<String>? relayUrls,
-      String shard,
-      int shardIndex,
-      int threshold,
-      int totalShards,
-    })?
-  >
-  getLockboxShare(String? lockboxId) =>
-      (super.noSuchMethod(
-            Invocation.method(#getLockboxShare, [lockboxId]),
-            returnValue:
-                _i5.Future<
-                  ({
-                    int createdAt,
-                    String creatorPubkey,
-                    int? distributionVersion,
-                    String? instructions,
-                    bool? isReceived,
-                    String? lockboxId,
-                    String? lockboxName,
-                    String? nostrEventId,
-                    String? ownerName,
-                    List<Map<String, String>>? peers,
-                    String primeMod,
-                    DateTime? receivedAt,
-                    String? recipientPubkey,
-                    List<String>? relayUrls,
-                    String shard,
-                    int shardIndex,
-                    int threshold,
-                    int totalShards,
-                  })?
-                >.value(),
-          )
-          as _i5.Future<
+      ({
+        int createdAt,
+        String creatorPubkey,
+        int? distributionVersion,
+        String? instructions,
+        bool? isReceived,
+        String? lockboxId,
+        String? lockboxName,
+        String? nostrEventId,
+        String? ownerName,
+        List<Map<String, String>>? peers,
+        String primeMod,
+        DateTime? receivedAt,
+        String? recipientPubkey,
+        List<String>? relayUrls,
+        String shard,
+        int shardIndex,
+        int threshold,
+        int totalShards,
+      })?> getLockboxShare(String? lockboxId) => (super.noSuchMethod(
+        Invocation.method(#getLockboxShare, [lockboxId]),
+        returnValue: _i5.Future<
             ({
               int createdAt,
               String creatorPubkey,
@@ -1902,60 +1689,53 @@ class MockLockboxShareService extends _i1.Mock
               int shardIndex,
               int threshold,
               int totalShards,
-            })?
-          >);
+            })?>.value(),
+      ) as _i5.Future<
+          ({
+            int createdAt,
+            String creatorPubkey,
+            int? distributionVersion,
+            String? instructions,
+            bool? isReceived,
+            String? lockboxId,
+            String? lockboxName,
+            String? nostrEventId,
+            String? ownerName,
+            List<Map<String, String>>? peers,
+            String primeMod,
+            DateTime? receivedAt,
+            String? recipientPubkey,
+            List<String>? relayUrls,
+            String shard,
+            int shardIndex,
+            int threshold,
+            int totalShards,
+          })?>);
 
   @override
   _i5.Future<
-    ({
-      int createdAt,
-      String creatorPubkey,
-      int? distributionVersion,
-      String? instructions,
-      bool? isReceived,
-      String? lockboxId,
-      String? lockboxName,
-      String? nostrEventId,
-      String? ownerName,
-      List<Map<String, String>>? peers,
-      String primeMod,
-      DateTime? receivedAt,
-      String? recipientPubkey,
-      List<String>? relayUrls,
-      String shard,
-      int shardIndex,
-      int threshold,
-      int totalShards,
-    })?
-  >
-  getShareByEventId(String? nostrEventId) =>
-      (super.noSuchMethod(
-            Invocation.method(#getShareByEventId, [nostrEventId]),
-            returnValue:
-                _i5.Future<
-                  ({
-                    int createdAt,
-                    String creatorPubkey,
-                    int? distributionVersion,
-                    String? instructions,
-                    bool? isReceived,
-                    String? lockboxId,
-                    String? lockboxName,
-                    String? nostrEventId,
-                    String? ownerName,
-                    List<Map<String, String>>? peers,
-                    String primeMod,
-                    DateTime? receivedAt,
-                    String? recipientPubkey,
-                    List<String>? relayUrls,
-                    String shard,
-                    int shardIndex,
-                    int threshold,
-                    int totalShards,
-                  })?
-                >.value(),
-          )
-          as _i5.Future<
+      ({
+        int createdAt,
+        String creatorPubkey,
+        int? distributionVersion,
+        String? instructions,
+        bool? isReceived,
+        String? lockboxId,
+        String? lockboxName,
+        String? nostrEventId,
+        String? ownerName,
+        List<Map<String, String>>? peers,
+        String primeMod,
+        DateTime? receivedAt,
+        String? recipientPubkey,
+        List<String>? relayUrls,
+        String shard,
+        int shardIndex,
+        int threshold,
+        int totalShards,
+      })?> getShareByEventId(String? nostrEventId) => (super.noSuchMethod(
+        Invocation.method(#getShareByEventId, [nostrEventId]),
+        returnValue: _i5.Future<
             ({
               int createdAt,
               String creatorPubkey,
@@ -1975,8 +1755,28 @@ class MockLockboxShareService extends _i1.Mock
               int shardIndex,
               int threshold,
               int totalShards,
-            })?
-          >);
+            })?>.value(),
+      ) as _i5.Future<
+          ({
+            int createdAt,
+            String creatorPubkey,
+            int? distributionVersion,
+            String? instructions,
+            bool? isReceived,
+            String? lockboxId,
+            String? lockboxName,
+            String? nostrEventId,
+            String? ownerName,
+            List<Map<String, String>>? peers,
+            String primeMod,
+            DateTime? receivedAt,
+            String? recipientPubkey,
+            List<String>? relayUrls,
+            String shard,
+            int shardIndex,
+            int threshold,
+            int totalShards,
+          })?>);
 
   @override
   _i5.Future<void> addLockboxShare(
@@ -2000,15 +1800,13 @@ class MockLockboxShareService extends _i1.Mock
       int shardIndex,
       int threshold,
       int totalShards,
-    })?
-    shardData,
+    })? shardData,
   ) =>
       (super.noSuchMethod(
-            Invocation.method(#addLockboxShare, [lockboxId, shardData]),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+        Invocation.method(#addLockboxShare, [lockboxId, shardData]),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
   _i5.Future<void> processLockboxShare(
@@ -2032,15 +1830,13 @@ class MockLockboxShareService extends _i1.Mock
       int shardIndex,
       int threshold,
       int totalShards,
-    })?
-    shardData,
+    })? shardData,
   ) =>
       (super.noSuchMethod(
-            Invocation.method(#processLockboxShare, [lockboxId, shardData]),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+        Invocation.method(#processLockboxShare, [lockboxId, shardData]),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
   _i5.Future<String?> sendShardConfirmationEvent({
@@ -2050,129 +1846,110 @@ class MockLockboxShareService extends _i1.Mock
     required List<String>? relayUrls,
   }) =>
       (super.noSuchMethod(
-            Invocation.method(#sendShardConfirmationEvent, [], {
-              #lockboxId: lockboxId,
-              #shardIndex: shardIndex,
-              #ownerPubkey: ownerPubkey,
-              #relayUrls: relayUrls,
-            }),
-            returnValue: _i5.Future<String?>.value(),
-          )
-          as _i5.Future<String?>);
+        Invocation.method(#sendShardConfirmationEvent, [], {
+          #lockboxId: lockboxId,
+          #shardIndex: shardIndex,
+          #ownerPubkey: ownerPubkey,
+          #relayUrls: relayUrls,
+        }),
+        returnValue: _i5.Future<String?>.value(),
+      ) as _i5.Future<String?>);
 
   @override
-  _i5.Future<void> markShareAsReceived(String? lockboxId) =>
-      (super.noSuchMethod(
-            Invocation.method(#markShareAsReceived, [lockboxId]),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+  _i5.Future<void> markShareAsReceived(String? lockboxId) => (super.noSuchMethod(
+        Invocation.method(#markShareAsReceived, [lockboxId]),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  _i5.Future<void> markShareAsReceivedByEventId(String? nostrEventId) =>
-      (super.noSuchMethod(
-            Invocation.method(#markShareAsReceivedByEventId, [nostrEventId]),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+  _i5.Future<void> markShareAsReceivedByEventId(String? nostrEventId) => (super.noSuchMethod(
+        Invocation.method(#markShareAsReceivedByEventId, [nostrEventId]),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  _i5.Future<String?> reassembleLockboxContent(String? lockboxId) =>
-      (super.noSuchMethod(
-            Invocation.method(#reassembleLockboxContent, [lockboxId]),
-            returnValue: _i5.Future<String?>.value(),
-          )
-          as _i5.Future<String?>);
+  _i5.Future<String?> reassembleLockboxContent(String? lockboxId) => (super.noSuchMethod(
+        Invocation.method(#reassembleLockboxContent, [lockboxId]),
+        returnValue: _i5.Future<String?>.value(),
+      ) as _i5.Future<String?>);
 
   @override
-  _i5.Future<bool> hasShard(String? lockboxId) =>
-      (super.noSuchMethod(
-            Invocation.method(#hasShard, [lockboxId]),
-            returnValue: _i5.Future<bool>.value(false),
-          )
-          as _i5.Future<bool>);
+  _i5.Future<bool> hasShard(String? lockboxId) => (super.noSuchMethod(
+        Invocation.method(#hasShard, [lockboxId]),
+        returnValue: _i5.Future<bool>.value(false),
+      ) as _i5.Future<bool>);
 
   @override
   _i5.Future<
-    List<
-      ({
-        int createdAt,
-        String creatorPubkey,
-        int? distributionVersion,
-        String? instructions,
-        bool? isReceived,
-        String? lockboxId,
-        String? lockboxName,
-        String? nostrEventId,
-        String? ownerName,
-        List<Map<String, String>>? peers,
-        String primeMod,
-        DateTime? receivedAt,
-        String? recipientPubkey,
-        List<String>? relayUrls,
-        String shard,
-        int shardIndex,
-        int threshold,
-        int totalShards,
-      })
-    >
-  >
-  getAllCollectedShards() =>
-      (super.noSuchMethod(
-            Invocation.method(#getAllCollectedShards, []),
-            returnValue:
-                _i5.Future<
-                  List<
-                    ({
-                      int createdAt,
-                      String creatorPubkey,
-                      int? distributionVersion,
-                      String? instructions,
-                      bool? isReceived,
-                      String? lockboxId,
-                      String? lockboxName,
-                      String? nostrEventId,
-                      String? ownerName,
-                      List<Map<String, String>>? peers,
-                      String primeMod,
-                      DateTime? receivedAt,
-                      String? recipientPubkey,
-                      List<String>? relayUrls,
-                      String shard,
-                      int shardIndex,
-                      int threshold,
-                      int totalShards,
-                    })
-                  >
-                >.value(
-                  <
-                    ({
-                      int createdAt,
-                      String creatorPubkey,
-                      int? distributionVersion,
-                      String? instructions,
-                      bool? isReceived,
-                      String? lockboxId,
-                      String? lockboxName,
-                      String? nostrEventId,
-                      String? ownerName,
-                      List<Map<String, String>>? peers,
-                      String primeMod,
-                      DateTime? receivedAt,
-                      String? recipientPubkey,
-                      List<String>? relayUrls,
-                      String shard,
-                      int shardIndex,
-                      int threshold,
-                      int totalShards,
-                    })
-                  >[],
-                ),
-          )
-          as _i5.Future<
+      List<
+          ({
+            int createdAt,
+            String creatorPubkey,
+            int? distributionVersion,
+            String? instructions,
+            bool? isReceived,
+            String? lockboxId,
+            String? lockboxName,
+            String? nostrEventId,
+            String? ownerName,
+            List<Map<String, String>>? peers,
+            String primeMod,
+            DateTime? receivedAt,
+            String? recipientPubkey,
+            List<String>? relayUrls,
+            String shard,
+            int shardIndex,
+            int threshold,
+            int totalShards,
+          })>> getAllCollectedShards() => (super.noSuchMethod(
+        Invocation.method(#getAllCollectedShards, []),
+        returnValue: _i5.Future<
             List<
+                ({
+                  int createdAt,
+                  String creatorPubkey,
+                  int? distributionVersion,
+                  String? instructions,
+                  bool? isReceived,
+                  String? lockboxId,
+                  String? lockboxName,
+                  String? nostrEventId,
+                  String? ownerName,
+                  List<Map<String, String>>? peers,
+                  String primeMod,
+                  DateTime? receivedAt,
+                  String? recipientPubkey,
+                  List<String>? relayUrls,
+                  String shard,
+                  int shardIndex,
+                  int threshold,
+                  int totalShards,
+                })>>.value(
+          <({
+            int createdAt,
+            String creatorPubkey,
+            int? distributionVersion,
+            String? instructions,
+            bool? isReceived,
+            String? lockboxId,
+            String? lockboxName,
+            String? nostrEventId,
+            String? ownerName,
+            List<Map<String, String>>? peers,
+            String primeMod,
+            DateTime? receivedAt,
+            String? recipientPubkey,
+            List<String>? relayUrls,
+            String shard,
+            int shardIndex,
+            int threshold,
+            int totalShards,
+          })>[],
+        ),
+      ) as _i5.Future<
+          List<
               ({
                 int createdAt,
                 String creatorPubkey,
@@ -2192,59 +1969,45 @@ class MockLockboxShareService extends _i1.Mock
                 int shardIndex,
                 int threshold,
                 int totalShards,
-              })
-            >
-          >);
+              })>>);
 
   @override
-  _i5.Future<List<String>> getLockboxesWithShares() =>
-      (super.noSuchMethod(
-            Invocation.method(#getLockboxesWithShares, []),
-            returnValue: _i5.Future<List<String>>.value(<String>[]),
-          )
-          as _i5.Future<List<String>>);
+  _i5.Future<List<String>> getLockboxesWithShares() => (super.noSuchMethod(
+        Invocation.method(#getLockboxesWithShares, []),
+        returnValue: _i5.Future<List<String>>.value(<String>[]),
+      ) as _i5.Future<List<String>>);
 
   @override
-  _i5.Future<bool> isKeyHolderForLockbox(String? lockboxId) =>
-      (super.noSuchMethod(
-            Invocation.method(#isKeyHolderForLockbox, [lockboxId]),
-            returnValue: _i5.Future<bool>.value(false),
-          )
-          as _i5.Future<bool>);
+  _i5.Future<bool> isKeyHolderForLockbox(String? lockboxId) => (super.noSuchMethod(
+        Invocation.method(#isKeyHolderForLockbox, [lockboxId]),
+        returnValue: _i5.Future<bool>.value(false),
+      ) as _i5.Future<bool>);
 
   @override
-  _i5.Future<int> getShardCount(String? lockboxId) =>
-      (super.noSuchMethod(
-            Invocation.method(#getShardCount, [lockboxId]),
-            returnValue: _i5.Future<int>.value(0),
-          )
-          as _i5.Future<int>);
+  _i5.Future<int> getShardCount(String? lockboxId) => (super.noSuchMethod(
+        Invocation.method(#getShardCount, [lockboxId]),
+        returnValue: _i5.Future<int>.value(0),
+      ) as _i5.Future<int>);
 
   @override
-  _i5.Future<void> removeLockboxShare(String? lockboxId) =>
-      (super.noSuchMethod(
-            Invocation.method(#removeLockboxShare, [lockboxId]),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+  _i5.Future<void> removeLockboxShare(String? lockboxId) => (super.noSuchMethod(
+        Invocation.method(#removeLockboxShare, [lockboxId]),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  _i5.Future<void> removeShareByEventId(String? nostrEventId) =>
-      (super.noSuchMethod(
-            Invocation.method(#removeShareByEventId, [nostrEventId]),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+  _i5.Future<void> removeShareByEventId(String? nostrEventId) => (super.noSuchMethod(
+        Invocation.method(#removeShareByEventId, [nostrEventId]),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  _i5.Future<int> getTotalShardCount() =>
-      (super.noSuchMethod(
-            Invocation.method(#getTotalShardCount, []),
-            returnValue: _i5.Future<int>.value(0),
-          )
-          as _i5.Future<int>);
+  _i5.Future<int> getTotalShardCount() => (super.noSuchMethod(
+        Invocation.method(#getTotalShardCount, []),
+        returnValue: _i5.Future<int>.value(0),
+      ) as _i5.Future<int>);
 
   @override
   _i5.Future<void> addRecoveryShard(
@@ -2268,98 +2031,86 @@ class MockLockboxShareService extends _i1.Mock
       int shardIndex,
       int threshold,
       int totalShards,
-    })?
-    shardData,
+    })? shardData,
   ) =>
       (super.noSuchMethod(
-            Invocation.method(#addRecoveryShard, [
-              recoveryRequestId,
-              shardData,
-            ]),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+        Invocation.method(#addRecoveryShard, [
+          recoveryRequestId,
+          shardData,
+        ]),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
   _i5.Future<
-    List<
-      ({
-        int createdAt,
-        String creatorPubkey,
-        int? distributionVersion,
-        String? instructions,
-        bool? isReceived,
-        String? lockboxId,
-        String? lockboxName,
-        String? nostrEventId,
-        String? ownerName,
-        List<Map<String, String>>? peers,
-        String primeMod,
-        DateTime? receivedAt,
-        String? recipientPubkey,
-        List<String>? relayUrls,
-        String shard,
-        int shardIndex,
-        int threshold,
-        int totalShards,
-      })
-    >
-  >
-  getRecoveryShards(String? recoveryRequestId) =>
-      (super.noSuchMethod(
-            Invocation.method(#getRecoveryShards, [recoveryRequestId]),
-            returnValue:
-                _i5.Future<
-                  List<
-                    ({
-                      int createdAt,
-                      String creatorPubkey,
-                      int? distributionVersion,
-                      String? instructions,
-                      bool? isReceived,
-                      String? lockboxId,
-                      String? lockboxName,
-                      String? nostrEventId,
-                      String? ownerName,
-                      List<Map<String, String>>? peers,
-                      String primeMod,
-                      DateTime? receivedAt,
-                      String? recipientPubkey,
-                      List<String>? relayUrls,
-                      String shard,
-                      int shardIndex,
-                      int threshold,
-                      int totalShards,
-                    })
-                  >
-                >.value(
-                  <
-                    ({
-                      int createdAt,
-                      String creatorPubkey,
-                      int? distributionVersion,
-                      String? instructions,
-                      bool? isReceived,
-                      String? lockboxId,
-                      String? lockboxName,
-                      String? nostrEventId,
-                      String? ownerName,
-                      List<Map<String, String>>? peers,
-                      String primeMod,
-                      DateTime? receivedAt,
-                      String? recipientPubkey,
-                      List<String>? relayUrls,
-                      String shard,
-                      int shardIndex,
-                      int threshold,
-                      int totalShards,
-                    })
-                  >[],
-                ),
-          )
-          as _i5.Future<
+      List<
+          ({
+            int createdAt,
+            String creatorPubkey,
+            int? distributionVersion,
+            String? instructions,
+            bool? isReceived,
+            String? lockboxId,
+            String? lockboxName,
+            String? nostrEventId,
+            String? ownerName,
+            List<Map<String, String>>? peers,
+            String primeMod,
+            DateTime? receivedAt,
+            String? recipientPubkey,
+            List<String>? relayUrls,
+            String shard,
+            int shardIndex,
+            int threshold,
+            int totalShards,
+          })>> getRecoveryShards(String? recoveryRequestId) => (super.noSuchMethod(
+        Invocation.method(#getRecoveryShards, [recoveryRequestId]),
+        returnValue: _i5.Future<
             List<
+                ({
+                  int createdAt,
+                  String creatorPubkey,
+                  int? distributionVersion,
+                  String? instructions,
+                  bool? isReceived,
+                  String? lockboxId,
+                  String? lockboxName,
+                  String? nostrEventId,
+                  String? ownerName,
+                  List<Map<String, String>>? peers,
+                  String primeMod,
+                  DateTime? receivedAt,
+                  String? recipientPubkey,
+                  List<String>? relayUrls,
+                  String shard,
+                  int shardIndex,
+                  int threshold,
+                  int totalShards,
+                })>>.value(
+          <({
+            int createdAt,
+            String creatorPubkey,
+            int? distributionVersion,
+            String? instructions,
+            bool? isReceived,
+            String? lockboxId,
+            String? lockboxName,
+            String? nostrEventId,
+            String? ownerName,
+            List<Map<String, String>>? peers,
+            String primeMod,
+            DateTime? receivedAt,
+            String? recipientPubkey,
+            List<String>? relayUrls,
+            String shard,
+            int shardIndex,
+            int threshold,
+            int totalShards,
+          })>[],
+        ),
+      ) as _i5.Future<
+          List<
               ({
                 int createdAt,
                 String creatorPubkey,
@@ -2379,17 +2130,13 @@ class MockLockboxShareService extends _i1.Mock
                 int shardIndex,
                 int threshold,
                 int totalShards,
-              })
-            >
-          >);
+              })>>);
 
   @override
-  _i5.Future<int> getRecoveryShardCount(String? recoveryRequestId) =>
-      (super.noSuchMethod(
-            Invocation.method(#getRecoveryShardCount, [recoveryRequestId]),
-            returnValue: _i5.Future<int>.value(0),
-          )
-          as _i5.Future<int>);
+  _i5.Future<int> getRecoveryShardCount(String? recoveryRequestId) => (super.noSuchMethod(
+        Invocation.method(#getRecoveryShardCount, [recoveryRequestId]),
+        returnValue: _i5.Future<int>.value(0),
+      ) as _i5.Future<int>);
 
   @override
   _i5.Future<bool> hasSufficientRecoveryShards(
@@ -2397,38 +2144,31 @@ class MockLockboxShareService extends _i1.Mock
     int? threshold,
   ) =>
       (super.noSuchMethod(
-            Invocation.method(#hasSufficientRecoveryShards, [
-              recoveryRequestId,
-              threshold,
-            ]),
-            returnValue: _i5.Future<bool>.value(false),
-          )
-          as _i5.Future<bool>);
+        Invocation.method(#hasSufficientRecoveryShards, [
+          recoveryRequestId,
+          threshold,
+        ]),
+        returnValue: _i5.Future<bool>.value(false),
+      ) as _i5.Future<bool>);
 
   @override
-  _i5.Future<void> removeRecoveryShards(String? recoveryRequestId) =>
-      (super.noSuchMethod(
-            Invocation.method(#removeRecoveryShards, [recoveryRequestId]),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+  _i5.Future<void> removeRecoveryShards(String? recoveryRequestId) => (super.noSuchMethod(
+        Invocation.method(#removeRecoveryShards, [recoveryRequestId]),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  _i5.Future<void> clearAll() =>
-      (super.noSuchMethod(
-            Invocation.method(#clearAll, []),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+  _i5.Future<void> clearAll() => (super.noSuchMethod(
+        Invocation.method(#clearAll, []),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  _i5.Future<void> refresh() =>
-      (super.noSuchMethod(
-            Invocation.method(#refresh, []),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+  _i5.Future<void> refresh() => (super.noSuchMethod(
+        Invocation.method(#refresh, []),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 }

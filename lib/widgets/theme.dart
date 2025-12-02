@@ -88,28 +88,27 @@ final ThemeData keydex2 = ThemeData(
   primaryColor: const Color(0xFFDC714E), // Accent for RowButton, etc.
   // Material 3 color scheme with explicit roles
   // Use an inky neutral as the seed so harmonized roles align with the ledger palette.
-  colorScheme:
-      ColorScheme.fromSeed(
-        seedColor: const Color(0xFF21271C),
-        brightness: Brightness.light,
-      ).copyWith(
-        primary: const Color(0xFF243036), // Navy‑Ink as primary
-        onPrimary: const Color(0xFFFDFFF0), // Ivory on inky
-        secondary: const Color(0xFF7A4A2F), // Umber as secondary
-        onSecondary: const Color(0xFFFDFFF0),
-        // Calm, ledger-like olive/sage neutrals
-        surface: const Color(0xFFc1c4b1),
-        onSurface: const Color(0xFF21271C),
-        // Match old keydexTheme chip background for icon container in lists
-        surfaceContainer: const Color(0xFF464D41),
-        // Used around borders and low-contrast elements
-        outline: const Color(0xFF7F8571),
-        // Used by components that reference surface containers
-        surfaceContainerHighest: const Color(0xFF8A917E),
-        // Errors: use Material's standard error color (matches keydexTheme)
-        error: const Color(0xFFBA1A1A),
-        onError: const Color(0xFFFDFFF0),
-      ),
+  colorScheme: ColorScheme.fromSeed(
+    seedColor: const Color(0xFF21271C),
+    brightness: Brightness.light,
+  ).copyWith(
+    primary: const Color(0xFF243036), // Navy‑Ink as primary
+    onPrimary: const Color(0xFFFDFFF0), // Ivory on inky
+    secondary: const Color(0xFF7A4A2F), // Umber as secondary
+    onSecondary: const Color(0xFFFDFFF0),
+    // Calm, ledger-like olive/sage neutrals
+    surface: const Color(0xFFc1c4b1),
+    onSurface: const Color(0xFF21271C),
+    // Match old keydexTheme chip background for icon container in lists
+    surfaceContainer: const Color(0xFF464D41),
+    // Used around borders and low-contrast elements
+    outline: const Color(0xFF7F8571),
+    // Used by components that reference surface containers
+    surfaceContainerHighest: const Color(0xFF8A917E),
+    // Errors: use Material's standard error color (matches keydexTheme)
+    error: const Color(0xFFBA1A1A),
+    onError: const Color(0xFFFDFFF0),
+  ),
   // Keep it flat by removing tint; borderless, lower rounding like list screen
   cardTheme: const CardThemeData(
     color: Color(0xFFc1c4b1), // Match scaffold background
@@ -334,15 +333,9 @@ ThemeData keydex3(Brightness brightness) {
 
   // Color definitions
   final scaffoldBg = isDark ? const Color(0xFF0e0c0d) : const Color(0xFFf4f4f4);
-  final primaryText = isDark
-      ? const Color(0xFFf4f4f4)
-      : const Color(0xFF0e0c0d);
-  final secondaryText = isDark
-      ? const Color(0xFF808080)
-      : const Color(0xFF808080);
-  final dividerColor = isDark
-      ? const Color(0xFF333333)
-      : const Color(0xFFE0E0E0);
+  final primaryText = isDark ? const Color(0xFFf4f4f4) : const Color(0xFF0e0c0d);
+  final secondaryText = isDark ? const Color(0xFF808080) : const Color(0xFF808080);
+  final dividerColor = isDark ? const Color(0xFF333333) : const Color(0xFFE0E0E0);
   final surface = isDark ? const Color(0xFF1A1A1A) : const Color(0xFFFAFAFA);
   // More subtle button colors - medium grays instead of pure white/black
   final buttonBg = isDark ? const Color(0xFF404040) : const Color(0xFF808080);
@@ -355,22 +348,21 @@ ThemeData keydex3(Brightness brightness) {
     scaffoldBackgroundColor: scaffoldBg,
     primaryColor: buttonBg,
 
-    colorScheme:
-        ColorScheme.fromSeed(
-          seedColor: buttonBg,
-          brightness: brightness,
-        ).copyWith(
-          primary: buttonBg,
-          onPrimary: buttonText,
-          secondary: secondaryText,
-          onSecondary: primaryText,
-          surface: surface,
-          onSurface: primaryText,
-          surfaceContainer: surface,
-          outline: dividerColor,
-          error: error,
-          onError: scaffoldBg,
-        ),
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: buttonBg,
+      brightness: brightness,
+    ).copyWith(
+      primary: buttonBg,
+      onPrimary: buttonText,
+      secondary: secondaryText,
+      onSecondary: primaryText,
+      surface: surface,
+      onSurface: primaryText,
+      surfaceContainer: surface,
+      outline: dividerColor,
+      error: error,
+      onError: scaffoldBg,
+    ),
 
     // Typography: Archivo for titles, Fira Sans for body
     fontFamily: 'FiraSans',
@@ -469,8 +461,7 @@ ThemeData keydex3(Brightness brightness) {
       backgroundColor: scaffoldBg,
       foregroundColor: primaryText,
       elevation: 0,
-      surfaceTintColor:
-          Colors.transparent, // Prevent bluish tint when scrolling
+      surfaceTintColor: Colors.transparent, // Prevent bluish tint when scrolling
       toolbarHeight: 100.0,
       titleSpacing: 32.0,
       leadingWidth: 32.0,
@@ -534,9 +525,7 @@ ThemeData keydex3(Brightness brightness) {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         elevation: 2, // Subtle shadow
-        shadowColor: isDark
-            ? buttonBg.withValues(alpha: 0.1)
-            : buttonBg.withValues(alpha: 0.1),
+        shadowColor: isDark ? buttonBg.withValues(alpha: 0.1) : buttonBg.withValues(alpha: 0.1),
       ),
     ),
 
@@ -595,9 +584,7 @@ ThemeData keydex3(Brightness brightness) {
     // Snackbar
     snackBarTheme: SnackBarThemeData(
       behavior: SnackBarBehavior.floating,
-      backgroundColor: isDark
-          ? const Color(0xFF1A1A1A)
-          : const Color(0xFF2C2C2C),
+      backgroundColor: isDark ? const Color(0xFF1A1A1A) : const Color(0xFF2C2C2C),
       contentTextStyle: const TextStyle(
         color: Color(0xFFf4f4f4), // Light text for dark snackbar backgrounds
         fontFamily: 'FiraSans',

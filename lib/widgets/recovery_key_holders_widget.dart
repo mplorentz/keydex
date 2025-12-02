@@ -101,17 +101,14 @@ class RecoveryKeyHoldersWidget extends ConsumerWidget {
 
     // Get key holders with names from backupConfig if available
     if (lockbox.backupConfig?.keyHolders.isNotEmpty == true) {
-      return lockbox.backupConfig!.keyHolders
-          .where((kh) => kh.pubkey != null)
-          .map((kh) {
-            final response = request.keyHolderResponses[kh.pubkey];
-            return _KeyHolderInfo(
-              pubkey: kh.pubkey!,
-              name: kh.displayName,
-              response: response,
-            );
-          })
-          .toList();
+      return lockbox.backupConfig!.keyHolders.where((kh) => kh.pubkey != null).map((kh) {
+        final response = request.keyHolderResponses[kh.pubkey];
+        return _KeyHolderInfo(
+          pubkey: kh.pubkey!,
+          name: kh.displayName,
+          response: response,
+        );
+      }).toList();
     }
 
     // Fallback: use peers from shards

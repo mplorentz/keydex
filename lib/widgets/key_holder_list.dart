@@ -39,8 +39,8 @@ class KeyHolderList extends ConsumerWidget {
                   Text(
                     'Stewards',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Theme.of(context).primaryColor,
-                    ),
+                          color: Theme.of(context).primaryColor,
+                        ),
                   ),
                 ],
               ),
@@ -76,8 +76,7 @@ class KeyHolderList extends ConsumerWidget {
               child: Text('Error loading user info: $error'),
             ),
           ),
-          data: (currentPubkey) =>
-              _buildKeyHolderContent(context, ref, lockbox, currentPubkey),
+          data: (currentPubkey) => _buildKeyHolderContent(context, ref, lockbox, currentPubkey),
         );
       },
     );
@@ -120,8 +119,7 @@ class KeyHolderList extends ConsumerWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) =>
-                            BackupConfigScreen(lockboxId: lockbox.id),
+                        builder: (context) => BackupConfigScreen(lockboxId: lockbox.id),
                       ),
                     );
                   },
@@ -263,11 +261,8 @@ class KeyHolderList extends ConsumerWidget {
     // NEW: Try backupConfig first (owner will have this)
     if (lockbox.backupConfig != null) {
       final keyHolders = lockbox.backupConfig!.keyHolders.map((kh) {
-        final isCurrentUser =
-            currentPubkey != null && kh.pubkey == currentPubkey;
-        final displayName = isCurrentUser
-            ? 'You (${kh.displayName})'
-            : kh.displayName;
+        final isCurrentUser = currentPubkey != null && kh.pubkey == currentPubkey;
+        final displayName = isCurrentUser ? 'You (${kh.displayName})' : kh.displayName;
         return KeyHolderInfo(
           pubkey: kh.pubkey,
           displayName: displayName,
@@ -296,11 +291,8 @@ class KeyHolderList extends ConsumerWidget {
 
     // Add owner first if ownerName is available
     if (shard.ownerName != null) {
-      final isCurrentUser =
-          currentPubkey != null && shard.creatorPubkey == currentPubkey;
-      final ownerDisplayName = isCurrentUser
-          ? 'You (${shard.ownerName})'
-          : shard.ownerName;
+      final isCurrentUser = currentPubkey != null && shard.creatorPubkey == currentPubkey;
+      final ownerDisplayName = isCurrentUser ? 'You (${shard.ownerName})' : shard.ownerName;
       keyHolders.add(
         KeyHolderInfo(
           pubkey: shard.creatorPubkey,
@@ -318,19 +310,15 @@ class KeyHolderList extends ConsumerWidget {
         final peerName = peer['name'];
         if (peerPubkey == null) continue;
 
-        final isCurrentUser =
-            currentPubkey != null && peerPubkey == currentPubkey;
-        final displayName = isCurrentUser && peerName != null
-            ? 'You ($peerName)'
-            : peerName;
+        final isCurrentUser = currentPubkey != null && peerPubkey == currentPubkey;
+        final displayName = isCurrentUser && peerName != null ? 'You ($peerName)' : peerName;
 
         keyHolders.add(
           KeyHolderInfo(
             pubkey: peerPubkey,
             displayName: displayName,
             isOwner: peerPubkey == lockbox.ownerPubkey,
-            status: KeyHolderStatus
-                .holdingKey, // Default for key holders with shards
+            status: KeyHolderStatus.holdingKey, // Default for key holders with shards
           ),
         );
       }

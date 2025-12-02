@@ -9,8 +9,7 @@ import '../utils/backup_distribution_helper.dart';
 import '../utils/invite_code_utils.dart';
 
 /// Mixin for shared lockbox save logic between create and edit screens
-mixin LockboxContentSaveMixin<T extends ConsumerStatefulWidget>
-    on ConsumerState<T> {
+mixin LockboxContentSaveMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   /// Save a lockbox (create new or update existing)
   /// Returns the lockbox ID (newly created ID or the existing one)
   Future<String?> saveLockbox({
@@ -39,9 +38,7 @@ mixin LockboxContentSaveMixin<T extends ConsumerStatefulWidget>
 
         final contentChanged = existingLockbox.content != content;
         final nameChanged = existingLockbox.name != name.trim();
-        final newOwnerName = ownerName?.trim().isEmpty == true
-            ? null
-            : ownerName?.trim();
+        final newOwnerName = ownerName?.trim().isEmpty == true ? null : ownerName?.trim();
         final ownerNameChanged = existingLockbox.ownerName != newOwnerName;
 
         // Check if we need to show the regeneration alert
@@ -53,11 +50,11 @@ mixin LockboxContentSaveMixin<T extends ConsumerStatefulWidget>
           if (!mounted) return null;
           final shouldAutoDistributeResult =
               await BackupDistributionHelper.showRegenerationAlertIfNeeded(
-                context: context,
-                backupConfig: existingLockbox.backupConfig,
-                willChange: true,
-                mounted: mounted,
-              );
+            context: context,
+            backupConfig: existingLockbox.backupConfig,
+            willChange: true,
+            mounted: mounted,
+          );
 
           if (shouldAutoDistributeResult == false) {
             // User cancelled or widget disposed, don't save changes

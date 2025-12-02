@@ -42,8 +42,7 @@ void main() {
     return RecoveryResponse(
       pubkey: pubkey,
       approved: status == RecoveryResponseStatus.approved,
-      respondedAt:
-          respondedAt ?? DateTime.now().subtract(const Duration(minutes: 30)),
+      respondedAt: respondedAt ?? DateTime.now().subtract(const Duration(minutes: 30)),
     );
   }
 
@@ -62,9 +61,7 @@ void main() {
         lockboxId: id,
         threshold: 2,
         totalKeys: keyHolderPubkeys.length,
-        keyHolders: keyHolderPubkeys
-            .map((pubkey) => createKeyHolder(pubkey: pubkey))
-            .toList(),
+        keyHolders: keyHolderPubkeys.map((pubkey) => createKeyHolder(pubkey: pubkey)).toList(),
         relays: ['wss://relay.example.com'],
       ),
     );

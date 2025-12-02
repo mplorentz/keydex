@@ -38,10 +38,8 @@ class LockboxDetailButtonStack extends ConsumerWidget {
           loading: () => const SizedBox.shrink(),
           error: (_, __) => const SizedBox.shrink(),
           data: (currentPubkey) {
-            final isOwned =
-                currentPubkey != null && lockbox.isOwned(currentPubkey);
-            final isSteward =
-                currentPubkey != null &&
+            final isOwned = currentPubkey != null && lockbox.isOwned(currentPubkey);
+            final isSteward = currentPubkey != null &&
                 !lockbox.isOwned(currentPubkey) &&
                 lockbox.shards.isNotEmpty;
 
@@ -86,8 +84,7 @@ class LockboxDetailButtonStack extends ConsumerWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) =>
-                                    EditLockboxScreen(lockboxId: lockboxId),
+                                builder: (context) => EditLockboxScreen(lockboxId: lockboxId),
                               ),
                             );
                           },
@@ -103,8 +100,7 @@ class LockboxDetailButtonStack extends ConsumerWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) =>
-                                    BackupConfigScreen(lockboxId: lockboxId),
+                                builder: (context) => BackupConfigScreen(lockboxId: lockboxId),
                               ),
                             );
                           },
@@ -116,16 +112,13 @@ class LockboxDetailButtonStack extends ConsumerWidget {
                       // Distribute Keys Button - shown when distribution is needed
                       if (currentLockbox != null) {
                         final backupConfig = currentLockbox.backupConfig;
-                        if (backupConfig != null &&
-                            backupConfig.keyHolders.isNotEmpty) {
+                        if (backupConfig != null && backupConfig.keyHolders.isNotEmpty) {
                           final needsDistribution =
-                              backupConfig.needsRedistribution ||
-                              backupConfig.hasVersionMismatch;
+                              backupConfig.needsRedistribution || backupConfig.hasVersionMismatch;
 
                           if (!backupConfig.canDistribute) {
                             // Show "Waiting for stewards" button (disabled)
-                            final pendingCount =
-                                backupConfig.pendingInvitationsCount;
+                            final pendingCount = backupConfig.pendingInvitationsCount;
                             buttons.add(
                               RowButtonConfig(
                                 onPressed: null, // Disabled
@@ -178,8 +171,7 @@ class LockboxDetailButtonStack extends ConsumerWidget {
                     // Recovery buttons - only show for stewards (not owners, since owners already have contents)
                     if (!isOwned) {
                       // Show "Manage Recovery" if user initiated active recovery
-                      if (recoveryStatus.hasActiveRecovery &&
-                          recoveryStatus.isInitiator) {
+                      if (recoveryStatus.hasActiveRecovery && recoveryStatus.isInitiator) {
                         buttons.add(
                           RowButtonConfig(
                             onPressed: () async {
@@ -187,9 +179,7 @@ class LockboxDetailButtonStack extends ConsumerWidget {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => RecoveryStatusScreen(
-                                    recoveryRequestId: recoveryStatus
-                                        .activeRecoveryRequest!
-                                        .id,
+                                    recoveryRequestId: recoveryStatus.activeRecoveryRequest!.id,
                                   ),
                                 ),
                               );
@@ -202,8 +192,7 @@ class LockboxDetailButtonStack extends ConsumerWidget {
                         // Show "Initiate Recovery" if no active recovery or user didn't initiate it
                         buttons.add(
                           RowButtonConfig(
-                            onPressed: () =>
-                                _initiateRecovery(context, ref, lockboxId),
+                            onPressed: () => _initiateRecovery(context, ref, lockboxId),
                             icon: Icons.restore,
                             text: 'Initiate Recovery',
                           ),
@@ -275,14 +264,12 @@ class LockboxDetailButtonStack extends ConsumerWidget {
     final action = isRedistribution ? 'Redistribute' : 'Distribute';
 
     // Build warning message for redistribution
-    String contentMessage =
-        'This will generate ${config.totalKeys} key shares '
+    String contentMessage = 'This will generate ${config.totalKeys} key shares '
         'and distribute them to ${config.keyHolders.length} steward${config.keyHolders.length > 1 ? 's' : ''}.\n\n'
         'Threshold: ${config.threshold} (minimum keys needed for recovery)';
 
     if (isRedistribution) {
-      contentMessage +=
-          '\n\n⚠️ This will invalidate previously distributed keys. '
+      contentMessage += '\n\n⚠️ This will invalidate previously distributed keys. '
           'All stewards will receive new keys.';
     }
 
@@ -500,9 +487,8 @@ class LockboxDetailButtonStack extends ConsumerWidget {
 
       // Get relays and send recovery request via Nostr
       try {
-        final relays = await ref
-            .read(relayScanServiceProvider)
-            .getRelayConfigurations(enabledOnly: true);
+        final relays =
+            await ref.read(relayScanServiceProvider).getRelayConfigurations(enabledOnly: true);
         final relayUrls = relays.map((r) => r.url).toList();
 
         if (relayUrls.isEmpty) {
@@ -549,8 +535,7 @@ class LockboxDetailButtonStack extends ConsumerWidget {
           await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) =>
-                  RecoveryStatusScreen(recoveryRequestId: recoveryRequest.id),
+              builder: (context) => RecoveryStatusScreen(recoveryRequestId: recoveryRequest.id),
             ),
           );
         }

@@ -10,8 +10,7 @@ class LockboxCreateScreen extends ConsumerStatefulWidget {
   const LockboxCreateScreen({super.key});
 
   @override
-  ConsumerState<LockboxCreateScreen> createState() =>
-      _LockboxCreateScreenState();
+  ConsumerState<LockboxCreateScreen> createState() => _LockboxCreateScreenState();
 }
 
 class _LockboxCreateScreenState extends ConsumerState<LockboxCreateScreen>
@@ -65,9 +64,7 @@ class _LockboxCreateScreenState extends ConsumerState<LockboxCreateScreen>
       formKey: _formKey,
       name: _nameController.text,
       content: _contentController.text,
-      ownerName: _ownerNameController.text.trim().isEmpty
-          ? null
-          : _ownerNameController.text.trim(),
+      ownerName: _ownerNameController.text.trim().isEmpty ? null : _ownerNameController.text.trim(),
     );
 
     if (lockboxId != null && mounted) {

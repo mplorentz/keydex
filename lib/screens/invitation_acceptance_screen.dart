@@ -18,12 +18,10 @@ class InvitationAcceptanceScreen extends ConsumerStatefulWidget {
   const InvitationAcceptanceScreen({super.key, required this.inviteCode});
 
   @override
-  ConsumerState<InvitationAcceptanceScreen> createState() =>
-      _InvitationAcceptanceScreenState();
+  ConsumerState<InvitationAcceptanceScreen> createState() => _InvitationAcceptanceScreenState();
 }
 
-class _InvitationAcceptanceScreenState
-    extends ConsumerState<InvitationAcceptanceScreen> {
+class _InvitationAcceptanceScreenState extends ConsumerState<InvitationAcceptanceScreen> {
   bool _isProcessing = false;
   String? _errorMessage;
 
@@ -186,8 +184,7 @@ class _InvitationAcceptanceScreenState
                         padding: const EdgeInsets.only(left: 16.0, top: 4.0),
                         child: Text(
                           relay,
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                 fontFamily: 'monospace',
                                 color: Colors.grey[700],
                               ),
@@ -331,9 +328,7 @@ class _InvitationAcceptanceScreenState
                     const SizedBox(width: 16),
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: canAct
-                            ? () => _acceptInvitation(pubkey)
-                            : null,
+                        onPressed: canAct ? () => _acceptInvitation(pubkey) : null,
                         child: _isProcessing
                             ? const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -378,17 +373,17 @@ class _InvitationAcceptanceScreenState
           child: Text(
             label,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w500,
-              color: Colors.grey[700],
-            ),
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey[700],
+                ),
           ),
         ),
         Expanded(
           child: SelectableText(
             value,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              fontFamily: monospace ? 'monospace' : null,
-            ),
+                  fontFamily: monospace ? 'monospace' : null,
+                ),
           ),
         ),
       ],
@@ -470,8 +465,7 @@ class _InvitationAcceptanceScreenState
       ref.invalidate(invitationByCodeProvider(widget.inviteCode));
     } on InvitationNotFoundException {
       setState(() {
-        _errorMessage =
-            'Invitation not found. It may have expired or been removed.';
+        _errorMessage = 'Invitation not found. It may have expired or been removed.';
         _isProcessing = false;
       });
       ref.invalidate(invitationByCodeProvider(widget.inviteCode));
@@ -555,8 +549,7 @@ class _InvitationAcceptanceScreenState
       }
     } on InvitationNotFoundException {
       setState(() {
-        _errorMessage =
-            'Invitation not found. It may have expired or been removed.';
+        _errorMessage = 'Invitation not found. It may have expired or been removed.';
         _isProcessing = false;
       });
       ref.invalidate(invitationByCodeProvider(widget.inviteCode));

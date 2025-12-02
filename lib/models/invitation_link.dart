@@ -8,12 +8,10 @@ import '../utils/validators.dart';
 typedef InvitationLink = ({
   String inviteCode, // Base64URL encoded 32-byte random string
   String lockboxId, // ID of the lockbox being shared
-  String
-  lockboxName, // Name of the lockbox being shared (null when not available)
+  String lockboxName, // Name of the lockbox being shared (null when not available)
   String ownerPubkey, // Hex format (64 chars) - lockbox owner's public key
   List<String> relayUrls, // Up to 3 relay URLs for communication
-  String?
-  inviteeName, // Name entered by lockbox owner (null when received via deep link)
+  String? inviteeName, // Name entered by lockbox owner (null when received via deep link)
   DateTime createdAt, // When invitation was generated
   InvitationStatus status, // Current status of invitation
   String? redeemedBy, // Hex pubkey of redeemer (null if not redeemed)
@@ -78,9 +76,7 @@ extension InvitationLinkExtension on InvitationLink {
     params.add('owner=${Uri.encodeComponent(ownerPubkey)}');
 
     if (relayUrls.isNotEmpty) {
-      final encodedRelays = relayUrls
-          .map((url) => Uri.encodeComponent(url))
-          .join(',');
+      final encodedRelays = relayUrls.map((url) => Uri.encodeComponent(url)).join(',');
       params.add('relays=$encodedRelays');
     }
 
@@ -118,9 +114,7 @@ InvitationLink invitationLinkFromJson(Map<String, dynamic> json) {
       (e) => e.name == json['status'] as String,
     ),
     redeemedBy: json['redeemedBy'] as String?,
-    redeemedAt: json['redeemedAt'] != null
-        ? DateTime.parse(json['redeemedAt'] as String)
-        : null,
+    redeemedAt: json['redeemedAt'] != null ? DateTime.parse(json['redeemedAt'] as String) : null,
   );
 }
 

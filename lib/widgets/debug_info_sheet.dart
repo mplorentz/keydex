@@ -156,8 +156,7 @@ class DebugInfoSheet extends ConsumerWidget {
                 // Bech32 key
                 publicKeyBech32Async.when(
                   loading: () => Text('Loading...', style: textTheme.bodySmall),
-                  error: (err, _) =>
-                      Text('Error: $err', style: textTheme.bodySmall),
+                  error: (err, _) => Text('Error: $err', style: textTheme.bodySmall),
                   data: (npub) => _KeyDisplay(
                     label: 'Npub (bech32):',
                     value: npub ?? 'Not available',
@@ -168,8 +167,7 @@ class DebugInfoSheet extends ConsumerWidget {
                 // Hex key
                 publicKeyAsync.when(
                   loading: () => Text('Loading...', style: textTheme.bodySmall),
-                  error: (err, _) =>
-                      Text('Error: $err', style: textTheme.bodySmall),
+                  error: (err, _) => Text('Error: $err', style: textTheme.bodySmall),
                   data: (pubkey) => _KeyDisplay(
                     label: 'Public Key (hex):',
                     value: pubkey ?? 'Not available',

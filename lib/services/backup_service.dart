@@ -51,14 +51,12 @@ class BackupService {
     String? contentHash,
   }) async {
     // Validate inputs
-    if (threshold < LockboxBackupConstraints.minThreshold ||
-        threshold > totalKeys) {
+    if (threshold < LockboxBackupConstraints.minThreshold || threshold > totalKeys) {
       throw ArgumentError(
         'Threshold must be >= ${LockboxBackupConstraints.minThreshold} and <= totalKeys',
       );
     }
-    if (totalKeys < threshold ||
-        totalKeys > LockboxBackupConstraints.maxTotalKeys) {
+    if (totalKeys < threshold || totalKeys > LockboxBackupConstraints.maxTotalKeys) {
       throw ArgumentError(
         'TotalKeys must be >= threshold and <= ${LockboxBackupConstraints.maxTotalKeys}',
       );
@@ -387,13 +385,11 @@ class BackupService {
 
     // If distribution version incremented, reset all key holders with pubkeys to awaitingNewKey
     // (preserve invited key holders without pubkeys)
-    final finalKeyHolders =
-        newDistributionVersion > existingConfig.distributionVersion
+    final finalKeyHolders = newDistributionVersion > existingConfig.distributionVersion
         ? mergedKeyHolders.map((holder) {
             // Reset to awaitingNewKey if they have a pubkey and were holding a key
             // Keep as awaitingKey if they were already awaiting (never received a key)
-            if (holder.pubkey != null &&
-                holder.status != KeyHolderStatus.invited) {
+            if (holder.pubkey != null && holder.status != KeyHolderStatus.invited) {
               final newStatus = holder.status == KeyHolderStatus.holdingKey
                   ? KeyHolderStatus.awaitingNewKey
                   : KeyHolderStatus.awaitingKey;
@@ -503,9 +499,7 @@ class BackupService {
     // Add all updated key holders, preserving acknowledgments from existing
     for (final updatedHolder in updated) {
       // Find matching holder in existing list by id
-      final existingHolder = existing
-          .where((h) => h.id == updatedHolder.id)
-          .firstOrNull;
+      final existingHolder = existing.where((h) => h.id == updatedHolder.id).firstOrNull;
 
       if (existingHolder != null) {
         // Preserve important fields from existing (status, acknowledgments, etc)
@@ -515,8 +509,7 @@ class BackupService {
             status: existingHolder.status,
             acknowledgedAt: existingHolder.acknowledgedAt,
             acknowledgmentEventId: existingHolder.acknowledgmentEventId,
-            acknowledgedDistributionVersion:
-                existingHolder.acknowledgedDistributionVersion,
+            acknowledgedDistributionVersion: existingHolder.acknowledgedDistributionVersion,
           ),
         );
       } else {

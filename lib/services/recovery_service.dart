@@ -15,27 +15,26 @@ import 'logger.dart';
 
 /// Provider for RecoveryService
 /// This service depends on LockboxRepository for recovery operations
-final Provider<RecoveryService> recoveryServiceProvider =
-    Provider<RecoveryService>((ref) {
-      final repository = ref.watch(lockboxRepositoryProvider);
-      final backupService = ref.read(backupServiceProvider);
-      // Use ref.read() to break circular dependency with NdkService
-      final NdkService ndkService = ref.read(ndkServiceProvider);
-      final lockboxShareService = ref.read(lockboxShareServiceProvider);
-      final service = RecoveryService(
-        repository,
-        backupService,
-        ndkService,
-        lockboxShareService,
-      );
+final Provider<RecoveryService> recoveryServiceProvider = Provider<RecoveryService>((ref) {
+  final repository = ref.watch(lockboxRepositoryProvider);
+  final backupService = ref.read(backupServiceProvider);
+  // Use ref.read() to break circular dependency with NdkService
+  final NdkService ndkService = ref.read(ndkServiceProvider);
+  final lockboxShareService = ref.read(lockboxShareServiceProvider);
+  final service = RecoveryService(
+    repository,
+    backupService,
+    ndkService,
+    lockboxShareService,
+  );
 
-      // Clean up streams when disposed
-      ref.onDispose(() {
-        service.dispose();
-      });
+  // Clean up streams when disposed
+  ref.onDispose(() {
+    service.dispose();
+  });
 
-      return service;
-    });
+  return service;
+});
 
 /// Service for managing lockbox recovery operations
 /// Includes notification tracking for incoming recovery requests
@@ -45,23 +44,18 @@ class RecoveryService {
   final NdkService _ndkService;
   final LockboxShareService _lockboxShareService;
 
-  static const String _viewedNotificationIdsKey =
-      'viewed_recovery_notification_ids';
+  static const String _viewedNotificationIdsKey = 'viewed_recovery_notification_ids';
 
   Set<String>? _viewedNotificationIds;
   bool _isInitialized = false;
 
   // Stream for real-time notification updates
-  final _notificationController =
-      StreamController<List<RecoveryRequest>>.broadcast();
-  Stream<List<RecoveryRequest>> get notificationStream =>
-      _notificationController.stream;
+  final _notificationController = StreamController<List<RecoveryRequest>>.broadcast();
+  Stream<List<RecoveryRequest>> get notificationStream => _notificationController.stream;
 
   // Stream for recovery request updates (for status screen)
-  final _recoveryRequestController =
-      StreamController<RecoveryRequest>.broadcast();
-  Stream<RecoveryRequest> get recoveryRequestStream =>
-      _recoveryRequestController.stream;
+  final _recoveryRequestController = StreamController<RecoveryRequest>.broadcast();
+  Stream<RecoveryRequest> get recoveryRequestStream => _recoveryRequestController.stream;
 
   RecoveryService(
     this.repository,
@@ -123,7 +117,9 @@ class RecoveryService {
 
   /// Initialize the service
   Future<void> initialize() async {
-    if (_isInitialized) return;
+    if (_isInitialized) {
+      return;
+    }
 
     try {
       await _loadViewedNotificationIds();
@@ -160,7 +156,9 @@ class RecoveryService {
 
   /// Save viewed notification IDs to storage
   Future<void> _saveViewedNotificationIds() async {
-    if (_viewedNotificationIds == null) return;
+    if (_viewedNotificationIds == null) {
+      return;
+    }
 
     try {
       final jsonList = _viewedNotificationIds!.toList();
@@ -177,7 +175,9 @@ class RecoveryService {
 
   /// Emit notification update to stream
   Future<void> _emitNotificationUpdate() async {
-    if (_viewedNotificationIds == null) return;
+    if (_viewedNotificationIds == null) {
+      return;
+    }
 
     // Get current user's pubkey to filter out their own recovery requests
     final currentPubkey = await _ndkService.getCurrentPubkey();
@@ -281,9 +281,7 @@ class RecoveryService {
     final existingRequests = await repository.getRecoveryRequestsForLockbox(
       request.lockboxId,
     );
-    final existingRequest = existingRequests
-        .where((r) => r.id == request.id)
-        .firstOrNull;
+    final existingRequest = existingRequests.where((r) => r.id == request.id).firstOrNull;
 
     if (existingRequest != null) {
       // Since events are immutable, skip processing if we already have this request locally
@@ -389,8 +387,7 @@ class RecoveryService {
     final existingResponse = request.keyHolderResponses[responderPubkey];
     if (existingResponse != null) {
       // Check if this is a duplicate by comparing nostrEventId if provided
-      if (nostrEventId != null &&
-          existingResponse.nostrEventId == nostrEventId) {
+      if (nostrEventId != null && existingResponse.nostrEventId == nostrEventId) {
         Log.info(
           'Ignoring duplicate recovery response for request $recoveryRequestId from $responderPubkey (nostrEventId: $nostrEventId)',
         );
@@ -425,9 +422,7 @@ class RecoveryService {
     }
 
     // Check if we have enough approvals to complete
-    final approvedCount = updatedResponses.values
-        .where((r) => r.approved)
-        .length;
+    final approvedCount = updatedResponses.values.where((r) => r.approved).length;
 
     if (approvedCount >= request.threshold) {
       newStatus = RecoveryRequestStatus.completed;

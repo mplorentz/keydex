@@ -33,8 +33,7 @@ void main() {
       creatorPubkey: testPubkey,
       lockboxId: lockboxId,
       lockboxName: lockboxName,
-      peers:
-          peers ??
+      peers: peers ??
           [
             {'name': 'Peer 1', 'pubkey': otherPubkey},
             {'name': 'Peer 2', 'pubkey': thirdPubkey},

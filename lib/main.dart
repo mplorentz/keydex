@@ -77,15 +77,13 @@ class _KeydexAppState extends ConsumerState<KeydexApp> {
       home: _isInitializing
           ? const _InitializingScreen()
           : _initError != null
-          ? _ErrorScreen(error: _initError!)
-          : isLoggedInAsync.when(
-              data: (isLoggedIn) => isLoggedIn
-                  ? const LockboxListScreen()
-                  : const OnboardingScreen(),
-              loading: () => const _InitializingScreen(),
-              error: (_, __) =>
-                  const LockboxListScreen(), // Fallback to main screen on error
-            ),
+              ? _ErrorScreen(error: _initError!)
+              : isLoggedInAsync.when(
+                  data: (isLoggedIn) =>
+                      isLoggedIn ? const LockboxListScreen() : const OnboardingScreen(),
+                  loading: () => const _InitializingScreen(),
+                  error: (_, __) => const LockboxListScreen(), // Fallback to main screen on error
+                ),
     );
   }
 }

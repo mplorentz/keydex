@@ -13,16 +13,14 @@ typedef KeyHolder = ({
   String id, // Unique identifier for this key holder
   String? pubkey, // Hex format - nullable for invited key holders
   String? name,
-  String?
-  inviteCode, // Invitation code for invited key holders (before they accept)
+  String? inviteCode, // Invitation code for invited key holders (before they accept)
   KeyHolderStatus status,
   DateTime? lastSeen,
   String? keyShare,
   String? giftWrapEventId,
   DateTime? acknowledgedAt,
   String? acknowledgmentEventId,
-  int?
-  acknowledgedDistributionVersion, // Version tracking for redistribution detection (nullable for backward compatibility)
+  int? acknowledgedDistributionVersion, // Version tracking for redistribution detection (nullable for backward compatibility)
 });
 
 /// Create a new KeyHolder with validation
@@ -96,11 +94,9 @@ KeyHolder copyKeyHolder(
     keyShare: keyShare ?? holder.keyShare,
     giftWrapEventId: giftWrapEventId ?? holder.giftWrapEventId,
     acknowledgedAt: acknowledgedAt ?? holder.acknowledgedAt,
-    acknowledgmentEventId:
-        acknowledgmentEventId ?? holder.acknowledgmentEventId,
+    acknowledgmentEventId: acknowledgmentEventId ?? holder.acknowledgmentEventId,
     acknowledgedDistributionVersion:
-        acknowledgedDistributionVersion ??
-        holder.acknowledgedDistributionVersion,
+        acknowledgedDistributionVersion ?? holder.acknowledgedDistributionVersion,
   );
 }
 
@@ -123,8 +119,7 @@ extension KeyHolderExtension on KeyHolder {
     if (lastSeen == null) return false;
     final now = DateTime.now();
     final timeSinceLastSeen = now.difference(lastSeen!);
-    return timeSinceLastSeen.inHours <
-        24; // Consider responsive if seen within 24 hours
+    return timeSinceLastSeen.inHours < 24; // Consider responsive if seen within 24 hours
   }
 
   /// Check if this key holder is invited (no pubkey yet)
@@ -184,35 +179,26 @@ Map<String, dynamic> keyHolderToJson(KeyHolder holder) {
 /// Create from JSON
 KeyHolder keyHolderFromJson(Map<String, dynamic> json) {
   return (
-    id:
-        json['id'] as String? ??
-        _uuid.v4(), // Generate ID if missing for backward compatibility
+    id: json['id'] as String? ?? _uuid.v4(), // Generate ID if missing for backward compatibility
     pubkey: json['pubkey'] as String?, // Hex format without 0x prefix, nullable
     name: json['name'] as String?,
-    inviteCode:
-        json['inviteCode'] as String?, // Nullable for backward compatibility
+    inviteCode: json['inviteCode'] as String?, // Nullable for backward compatibility
     status: KeyHolderStatus.values.firstWhere(
       (s) => s.name == json['status'],
       orElse: () => KeyHolderStatus.awaitingKey,
     ),
-    lastSeen: json['lastSeen'] != null
-        ? DateTime.parse(json['lastSeen'] as String)
-        : null,
+    lastSeen: json['lastSeen'] != null ? DateTime.parse(json['lastSeen'] as String) : null,
     keyShare: json['keyShare'] as String?,
     giftWrapEventId: json['giftWrapEventId'] as String?,
-    acknowledgedAt: json['acknowledgedAt'] != null
-        ? DateTime.parse(json['acknowledgedAt'] as String)
-        : null,
+    acknowledgedAt:
+        json['acknowledgedAt'] != null ? DateTime.parse(json['acknowledgedAt'] as String) : null,
     acknowledgmentEventId: json['acknowledgmentEventId'] as String?,
-    acknowledgedDistributionVersion:
-        json['acknowledgedDistributionVersion'] as int?,
+    acknowledgedDistributionVersion: json['acknowledgedDistributionVersion'] as int?,
   );
 }
 
 /// String representation of KeyHolder
 String keyHolderToString(KeyHolder holder) {
-  final pubkeyPreview = holder.pubkey != null
-      ? '${holder.pubkey!.substring(0, 8)}...'
-      : 'null';
+  final pubkeyPreview = holder.pubkey != null ? '${holder.pubkey!.substring(0, 8)}...' : 'null';
   return 'KeyHolder(id: ${holder.id}, pubkey: $pubkeyPreview, name: ${holder.name}, status: ${holder.status})';
 }

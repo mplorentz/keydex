@@ -35,14 +35,12 @@ BackupConfig createBackupConfig({
   String? contentHash,
 }) {
   // Validate inputs
-  if (threshold < LockboxBackupConstraints.minThreshold ||
-      threshold > totalKeys) {
+  if (threshold < LockboxBackupConstraints.minThreshold || threshold > totalKeys) {
     throw ArgumentError(
       'Threshold must be >= ${LockboxBackupConstraints.minThreshold} and <= totalKeys',
     );
   }
-  if (totalKeys < threshold ||
-      totalKeys > LockboxBackupConstraints.maxTotalKeys) {
+  if (totalKeys < threshold || totalKeys > LockboxBackupConstraints.maxTotalKeys) {
     throw ArgumentError(
       'TotalKeys must be >= threshold and <= ${LockboxBackupConstraints.maxTotalKeys}',
     );
@@ -61,13 +59,8 @@ BackupConfig createBackupConfig({
   }
 
   // Validate key holders with pubkeys have unique npubs
-  final keyHoldersWithPubkeys = keyHolders
-      .where((h) => h.pubkey != null)
-      .toList();
-  final npubs = keyHoldersWithPubkeys
-      .map((h) => h.npub)
-      .where((n) => n != null)
-      .toSet();
+  final keyHoldersWithPubkeys = keyHolders.where((h) => h.pubkey != null).toList();
+  final npubs = keyHoldersWithPubkeys.map((h) => h.npub).where((n) => n != null).toSet();
   if (npubs.length != keyHoldersWithPubkeys.length) {
     throw ArgumentError('All key holders with pubkeys must have unique npubs');
   }
@@ -139,12 +132,10 @@ extension BackupConfigExtension on BackupConfig {
   /// Check if this backup configuration is valid
   bool get isValid {
     try {
-      if (threshold < LockboxBackupConstraints.minThreshold ||
-          threshold > totalKeys) {
+      if (threshold < LockboxBackupConstraints.minThreshold || threshold > totalKeys) {
         return false;
       }
-      if (totalKeys < threshold ||
-          totalKeys > LockboxBackupConstraints.maxTotalKeys) {
+      if (totalKeys < threshold || totalKeys > LockboxBackupConstraints.maxTotalKeys) {
         return false;
       }
       if (keyHolders.length != totalKeys) return false;
@@ -155,18 +146,17 @@ extension BackupConfigExtension on BackupConfig {
       if (ids.length != keyHolders.length) return false;
 
       // Check for unique npubs (only for key holders with pubkeys)
-      final keyHoldersWithPubkeys = keyHolders
-          .where((h) => h.pubkey != null)
-          .toList();
-      final npubs = keyHoldersWithPubkeys
-          .map((h) => h.npub)
-          .where((n) => n != null)
-          .toSet();
-      if (npubs.length != keyHoldersWithPubkeys.length) return false;
+      final keyHoldersWithPubkeys = keyHolders.where((h) => h.pubkey != null).toList();
+      final npubs = keyHoldersWithPubkeys.map((h) => h.npub).where((n) => n != null).toSet();
+      if (npubs.length != keyHoldersWithPubkeys.length) {
+        return false;
+      }
 
       // Check relay URLs
       for (final relay in relays) {
-        if (!_isValidRelayUrl(relay)) return false;
+        if (!_isValidRelayUrl(relay)) {
+          return false;
+        }
       }
 
       return true;
@@ -190,15 +180,12 @@ extension BackupConfigExtension on BackupConfig {
 
   /// Get the number of acknowledged key holders
   int get acknowledgedKeyHoldersCount {
-    return keyHolders
-        .where((h) => h.status == KeyHolderStatus.holdingKey)
-        .length;
+    return keyHolders.where((h) => h.status == KeyHolderStatus.holdingKey).length;
   }
 
   /// Check if backup is ready (all key holders acknowledged)
   bool get isReady {
-    return status == BackupStatus.active &&
-        acknowledgedKeyHoldersCount >= threshold;
+    return status == BackupStatus.active && acknowledgedKeyHoldersCount >= threshold;
   }
 
   /// Check if all key holders are ready for distribution (have pubkeys)
@@ -208,9 +195,7 @@ extension BackupConfigExtension on BackupConfig {
 
   /// Get the number of key holders still pending (invited but not accepted)
   int get pendingInvitationsCount {
-    return keyHolders
-        .where((h) => h.status == KeyHolderStatus.invited && h.pubkey == null)
-        .length;
+    return keyHolders.where((h) => h.status == KeyHolderStatus.invited && h.pubkey == null).length;
   }
 
   /// Check if redistribution is needed (config changed but not redistributed)
@@ -304,8 +289,7 @@ BackupConfig backupConfigFromJson(Map<String, dynamic> json) {
       orElse: () => BackupStatus.pending,
     ),
     distributionVersion:
-        json['distributionVersion'] as int? ??
-        1, // Default to 1 for backward compatibility
+        json['distributionVersion'] as int? ?? 1, // Default to 1 for backward compatibility
   );
 }
 

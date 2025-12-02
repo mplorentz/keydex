@@ -161,9 +161,8 @@ class LockboxRepository {
       final List<dynamic> jsonList = json.decode(decryptedJson);
       Log.info('Decrypted ${jsonList.length} lockboxes');
 
-      _cachedLockboxes = jsonList
-          .map((json) => Lockbox.fromJson(json as Map<String, dynamic>))
-          .toList();
+      _cachedLockboxes =
+          jsonList.map((json) => Lockbox.fromJson(json as Map<String, dynamic>)).toList();
     } catch (e) {
       Log.error('Error decrypting lockboxes', e);
       _cachedLockboxes = [];
@@ -509,8 +508,7 @@ class LockboxRepository {
     }
 
     final lockbox = _cachedLockboxes![index];
-    final updatedRequests = List<RecoveryRequest>.from(lockbox.recoveryRequests)
-      ..add(request);
+    final updatedRequests = List<RecoveryRequest>.from(lockbox.recoveryRequests)..add(request);
 
     _cachedLockboxes![index] = lockbox.copyWith(
       recoveryRequests: updatedRequests,

@@ -17,12 +17,10 @@ class RecoveryRequestDetailScreen extends ConsumerStatefulWidget {
   const RecoveryRequestDetailScreen({super.key, required this.recoveryRequest});
 
   @override
-  ConsumerState<RecoveryRequestDetailScreen> createState() =>
-      _RecoveryRequestDetailScreenState();
+  ConsumerState<RecoveryRequestDetailScreen> createState() => _RecoveryRequestDetailScreenState();
 }
 
-class _RecoveryRequestDetailScreenState
-    extends ConsumerState<RecoveryRequestDetailScreen> {
+class _RecoveryRequestDetailScreenState extends ConsumerState<RecoveryRequestDetailScreen> {
   bool _isLoading = false;
   String? _currentPubkey;
 
@@ -62,9 +60,7 @@ class _RecoveryRequestDetailScreenState
       final approved = status == RecoveryResponseStatus.approved;
 
       // Use the convenience method that handles shard retrieval and Nostr sending
-      await ref
-          .read(recoveryServiceProvider)
-          .respondToRecoveryRequestWithShard(
+      await ref.read(recoveryServiceProvider).respondToRecoveryRequestWithShard(
             widget.recoveryRequest.id,
             _currentPubkey!,
             approved,
@@ -173,8 +169,7 @@ class _RecoveryRequestDetailScreenState
           ? const Center(child: CircularProgressIndicator())
           : lockboxAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, stack) =>
-                  Center(child: Text('Error loading lockbox: $error')),
+              error: (error, stack) => Center(child: Text('Error loading lockbox: $error')),
               data: (lockbox) => _buildContent(context, request, lockbox),
             ),
     );
@@ -262,7 +257,9 @@ class _RecoveryRequestDetailScreenState
                         Expanded(
                           child: Text(
                             'Someone is requesting recovery of a vault you have a key for',
-                            style: Theme.of(context).textTheme.bodyMedium
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
                                 ?.copyWith(fontWeight: FontWeight.bold),
                           ),
                         ),
@@ -356,10 +353,7 @@ class _RecoveryRequestDetailScreenState
                                   if (initiatorName != null)
                                     Text(
                                       initiatorName,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyLarge
-                                          ?.copyWith(
+                                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                                             fontWeight: FontWeight.bold,
                                           ),
                                     ),

@@ -89,9 +89,7 @@ class _EditLockboxScreenState extends ConsumerState<EditLockboxScreen>
       name: _nameController.text,
       content: _contentController.text,
       lockboxId: widget.lockboxId,
-      ownerName: _ownerNameController.text.trim().isEmpty
-          ? null
-          : _ownerNameController.text.trim(),
+      ownerName: _ownerNameController.text.trim().isEmpty ? null : _ownerNameController.text.trim(),
     );
 
     if (savedId != null && mounted) {

@@ -32,9 +32,7 @@ void main() {
         lockboxId: id,
         threshold: 2,
         totalKeys: keyHolderPubkeys.length,
-        keyHolders: keyHolderPubkeys
-            .map((pubkey) => createKeyHolder(pubkey: pubkey))
-            .toList(),
+        keyHolders: keyHolderPubkeys.map((pubkey) => createKeyHolder(pubkey: pubkey)).toList(),
         relays: ['wss://relay.example.com'],
       ),
     );
