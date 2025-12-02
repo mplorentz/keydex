@@ -74,16 +74,16 @@ class RowButtonStack extends StatelessWidget {
     if (isDark) {
       // Dark mode: primary button (#404040) at bottom, progressively lighter grays going up
       const lightestGray = Color(0xFF606060); // Lighter gray for top buttons
-      const darkerGray = Color(0xFF353535); // Slightly darker than primary for buttons above
+      const lighterGray = Color(0xFF505050); // Slightly lighter than primary for buttons above
       
       for (int i = 0; i < count; i++) {
         if (i == count - 1) {
           // Bottom button is always primary (#404040)
           colors.add(primaryColor);
         } else {
-          // Interpolate from lightestGray at top to darkerGray just above primary
+          // Interpolate from lightestGray at top to lighterGray just above primary
           final t = count > 2 ? i / (count - 2) : 0.0;
-          colors.add(Color.lerp(lightestGray, darkerGray, t)!);
+          colors.add(Color.lerp(lightestGray, lighterGray, t)!);
         }
       }
     } else {

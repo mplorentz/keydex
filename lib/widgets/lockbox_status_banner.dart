@@ -339,23 +339,6 @@ class LockboxStatusBanner extends ConsumerWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    // Use lockbox state to determine icon (matching lockbox_card.dart)
-    IconData displayIcon;
-    switch (lockbox.state) {
-      case LockboxState.recovery:
-        displayIcon = Icons.refresh;
-        break;
-      case LockboxState.owned:
-        displayIcon = Icons.lock_open;
-        break;
-      case LockboxState.keyHolder:
-        displayIcon = Icons.key;
-        break;
-      case LockboxState.awaitingKey:
-        displayIcon = Icons.hourglass_empty;
-        break;
-    }
-
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -374,7 +357,7 @@ class LockboxStatusBanner extends ConsumerWidget {
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
-              displayIcon,
+              statusData.icon,
               size: 20,
               color: colorScheme.onSurface,
             ),
