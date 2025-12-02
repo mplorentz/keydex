@@ -37,8 +37,7 @@ class _AccountChoiceScreenState extends ConsumerState<AccountChoiceScreen> {
                 title: 'Create Account',
                 description: 'Generate a new Nostr identity',
                 onTap: () async {
-                  if (!mounted) return;
-                  final navigatorContext = context;
+                  final navigator = Navigator.of(context);
                   
                   final loginService = ref.read(loginServiceProvider);
                   final keyPair = await loginService.generateAndStoreNostrKey();
@@ -51,17 +50,14 @@ class _AccountChoiceScreenState extends ConsumerState<AccountChoiceScreen> {
                   ref.invalidate(currentPublicKeyBech32Provider);
                   ref.invalidate(isLoggedInProvider);
                   
-                  if (mounted) {
-                    Navigator.push(
-                      navigatorContext,
-                      MaterialPageRoute(
-                        builder: (context) => AccountCreatedScreen(
-                          nsec: keyPair.privateKeyBech32!,
-                          isImported: false,
-                        ),
+                  navigator.push(
+                    MaterialPageRoute(
+                      builder: (context) => AccountCreatedScreen(
+                        nsec: keyPair.privateKeyBech32!,
+                        isImported: false,
                       ),
-                    );
-                  }
+                    ),
+                  );
                 },
               ),
               const SizedBox(height: 16),
@@ -86,8 +82,7 @@ class _AccountChoiceScreenState extends ConsumerState<AccountChoiceScreen> {
                 title: 'Continue Without Account',
                 description: 'Use local-only mode (key generated silently)',
                 onTap: () async {
-                  if (!mounted) return;
-                  final navigatorContext = context;
+                  final navigator = Navigator.of(context);
                   
                   // Generate key silently
                   final loginService = ref.read(loginServiceProvider);
@@ -97,12 +92,10 @@ class _AccountChoiceScreenState extends ConsumerState<AccountChoiceScreen> {
                   await initializeAppServices(ref);
 
                   // Navigate to main app, clear onboarding stack
-                  if (mounted) {
-                    Navigator.of(navigatorContext).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: (context) => const LockboxListScreen()),
-                      (route) => false,
-                    );
-                  }
+                  navigator.pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (context) => const LockboxListScreen()),
+                    (route) => false,
+                  );
                 },
               ),
             ],

@@ -95,12 +95,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       ref.invalidate(isLoggedInProvider);
 
       // Navigate to account created screen
-      if (mounted && keyPair?.privateKeyBech32 != null) {
+      if (mounted && keyPair.privateKeyBech32 != null) {
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => AccountCreatedScreen(
-              nsec: keyPair!.privateKeyBech32!,
+              nsec: keyPair.privateKeyBech32!,
               isImported: true,
             ),
           ),
