@@ -78,7 +78,7 @@ class LockboxCard extends ConsumerWidget {
                   color: theme.colorScheme.surfaceContainer,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(stateIcon, color: iconColor ?? theme.scaffoldBackgroundColor, size: 24),
+                child: Icon(stateIcon, color: iconColor ?? theme.colorScheme.onSurface, size: 24),
               ),
               const SizedBox(width: 16),
               // Content

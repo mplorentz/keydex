@@ -26,7 +26,7 @@ class VaultExplainerScreen extends StatelessWidget {
                 children: [
                   // Main explanation paragraph
                   Text(
-                    'A Vault is an encrypted bundle of your sensitive data that Keydex can back up to your friends and family. Each vault requires multiple keys to open. Keydex helps you create these keys and distribute them to other people.',
+                    'A Vault is an encrypted bundle of your sensitive data that Horcrux can back up to your friends and family. Each vault requires multiple keys to open. Horcrux helps you create these keys and distribute them to other people.',
                     style: textTheme.bodyLarge,
                   ),
                   const SizedBox(height: 24),
@@ -50,7 +50,7 @@ class VaultExplainerScreen extends StatelessWidget {
                     number: '2',
                     title: 'Invite stewards',
                     description:
-                        'stewards are the other people who will hold keys to your vault. They\'ll need to download Keydex as well to hold the keys. We\'ll give you a link that makes this easy for them.',
+                        'stewards are the other people who will hold keys to your vault. They\'ll need to download Horcrux as well to hold the keys. We\'ll give you a link that makes this easy for them.',
                   ),
                   const SizedBox(height: 16),
                   // Step 3
@@ -68,7 +68,7 @@ class VaultExplainerScreen extends StatelessWidget {
                     number: '4',
                     title: 'Recover',
                     description:
-                        'if you lose access to your data or your stewards lose access to you any steward can initiate a recovery process. All stewards will receive a notification requesting them to share their key. Assemble enough keys and the steward can unlock the vault.',
+                        'if you lose access to your data or your stewards lose access to you (🪦) any steward can initiate a recovery process. All stewards will receive a notification requesting them to share their key. Assemble enough keys and the steward can unlock the vault.',
                   ),
                   const SizedBox(height: 24),
                   // Learn more button (placeholder)
@@ -127,7 +127,7 @@ class VaultExplainerScreen extends StatelessWidget {
               number,
               style: textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: theme.scaffoldBackgroundColor,
+                color: theme.colorScheme.onSurface,
               ),
             ),
           ),
