@@ -92,12 +92,14 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           // Mock the lockbox provider to return loading state
-          lockboxProvider('test-lockbox')
-              .overrideWith((ref) => Stream.value(null).asyncMap((_) async {
-                    await Future.delayed(
-                        const Duration(seconds: 10)); // Never completes to simulate loading
-                    return null;
-                  })),
+          lockboxProvider('test-lockbox').overrideWith(
+            (ref) => Stream.value(null).asyncMap((_) async {
+              await Future.delayed(
+                const Duration(seconds: 10),
+              ); // Never completes to simulate loading
+              return null;
+            }),
+          ),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
         ],
       );
@@ -110,7 +112,10 @@ void main() {
         waitForSettle: false, // Loading state has infinite animations
       );
 
-      await screenMatchesGolden(tester, 'recovery_request_detail_screen_loading');
+      await screenMatchesGolden(
+        tester,
+        'recovery_request_detail_screen_loading',
+      );
 
       container.dispose();
     });
@@ -124,9 +129,9 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           // Mock provider to throw an error
-          lockboxProvider('test-lockbox').overrideWith(
-            (ref) => Stream.error('Failed to load lockbox'),
-          ),
+          lockboxProvider(
+            'test-lockbox',
+          ).overrideWith((ref) => Stream.error('Failed to load lockbox')),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
         ],
       );
@@ -161,7 +166,8 @@ void main() {
         name: 'My Important Vault',
         ownerPubkey: ownerPubkey,
         ownerName: 'Alice',
-        instructions: 'Please verify the requester\'s identity before approving. Contact me at alice@example.com if you have any questions.',
+        instructions:
+            'Please verify the requester\'s identity before approving. Contact me at alice@example.com if you have any questions.',
         keyHolders: [
           createKeyHolder(pubkey: initiatorPubkey, name: 'Alice'),
           createKeyHolder(pubkey: testPubkey, name: 'Bob'),
@@ -171,9 +177,9 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider('test-lockbox').overrideWith(
-            (ref) => Stream.value(lockbox),
-          ),
+          lockboxProvider(
+            'test-lockbox',
+          ).overrideWith((ref) => Stream.value(lockbox)),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
         ],
       );
@@ -185,7 +191,10 @@ void main() {
         surfaceSize: const Size(375, 1200),
       );
 
-      await screenMatchesGolden(tester, 'recovery_request_detail_screen_active_with_instructions');
+      await screenMatchesGolden(
+        tester,
+        'recovery_request_detail_screen_active_with_instructions',
+      );
 
       container.dispose();
     });
@@ -212,9 +221,9 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider('test-lockbox').overrideWith(
-            (ref) => Stream.value(lockbox),
-          ),
+          lockboxProvider(
+            'test-lockbox',
+          ).overrideWith((ref) => Stream.value(lockbox)),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
         ],
       );
@@ -226,7 +235,10 @@ void main() {
         surfaceSize: const Size(375, 1000),
       );
 
-      await screenMatchesGolden(tester, 'recovery_request_detail_screen_active_no_instructions');
+      await screenMatchesGolden(
+        tester,
+        'recovery_request_detail_screen_active_no_instructions',
+      );
 
       container.dispose();
     });
@@ -252,9 +264,9 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider('test-lockbox').overrideWith(
-            (ref) => Stream.value(lockbox),
-          ),
+          lockboxProvider(
+            'test-lockbox',
+          ).overrideWith((ref) => Stream.value(lockbox)),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
         ],
       );
@@ -266,7 +278,10 @@ void main() {
         surfaceSize: const Size(375, 1000),
       );
 
-      await screenMatchesGolden(tester, 'recovery_request_detail_screen_unknown_initiator');
+      await screenMatchesGolden(
+        tester,
+        'recovery_request_detail_screen_unknown_initiator',
+      );
 
       container.dispose();
     });
@@ -277,7 +292,10 @@ void main() {
         initiatorPubkey: initiatorPubkey,
         status: RecoveryRequestStatus.completed,
         responses: {
-          testPubkey: createTestRecoveryResponse(pubkey: testPubkey, approved: true),
+          testPubkey: createTestRecoveryResponse(
+            pubkey: testPubkey,
+            approved: true,
+          ),
           otherStewardPubkey: createTestRecoveryResponse(
             pubkey: otherStewardPubkey,
             approved: true,
@@ -295,9 +313,9 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider('test-lockbox').overrideWith(
-            (ref) => Stream.value(lockbox),
-          ),
+          lockboxProvider(
+            'test-lockbox',
+          ).overrideWith((ref) => Stream.value(lockbox)),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
         ],
       );
@@ -309,7 +327,10 @@ void main() {
         surfaceSize: const Size(375, 1000),
       );
 
-      await screenMatchesGolden(tester, 'recovery_request_detail_screen_completed');
+      await screenMatchesGolden(
+        tester,
+        'recovery_request_detail_screen_completed',
+      );
 
       container.dispose();
     });
@@ -331,18 +352,17 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider('test-lockbox').overrideWith(
-            (ref) => Stream.value(lockbox),
-          ),
+          lockboxProvider(
+            'test-lockbox',
+          ).overrideWith((ref) => Stream.value(lockbox)),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
         ],
       );
 
       final builder = DeviceBuilder()
-        ..overrideDevicesForAllScenarios(devices: [
-          Device.iphone11,
-          Device.tabletPortrait,
-        ])
+        ..overrideDevicesForAllScenarios(
+          devices: [Device.iphone11, Device.tabletPortrait],
+        )
         ..addScenario(
           widget: RecoveryRequestDetailScreen(recoveryRequest: recoveryRequest),
           name: 'active_request',
@@ -356,10 +376,12 @@ void main() {
         ),
       );
 
-      await screenMatchesGolden(tester, 'recovery_request_detail_screen_multiple_devices');
+      await screenMatchesGolden(
+        tester,
+        'recovery_request_detail_screen_multiple_devices',
+      );
 
       container.dispose();
     });
   });
 }
-

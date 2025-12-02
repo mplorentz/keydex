@@ -26,8 +26,9 @@ class BackupDistributionHelper {
     if (backupConfig == null) return null;
 
     // Check if all key holders have accepted invitations (no one is still invited)
-    final allKeyHoldersHaveAccepted =
-        backupConfig.keyHolders.every((h) => h.status != KeyHolderStatus.invited);
+    final allKeyHoldersHaveAccepted = backupConfig.keyHolders.every(
+      (h) => h.status != KeyHolderStatus.invited,
+    );
 
     // Only show alert if changes will be made AND all key holders have accepted invitations
     // (Skip alert if any key holders are still invited - waiting for them to accept)

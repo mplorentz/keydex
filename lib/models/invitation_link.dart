@@ -136,7 +136,9 @@ bool areValidRelayUrls(List<String> relayUrls) {
 /// Throws ArgumentError with descriptive message if validation fails
 void validateInvitationLink(InvitationLink link) {
   if (!isValidInviteCode(link.inviteCode)) {
-    throw ArgumentError('Invalid invite code format: must be Base64URL encoded');
+    throw ArgumentError(
+      'Invalid invite code format: must be Base64URL encoded',
+    );
   }
 
   if (!isValidHexPubkey(link.ownerPubkey)) {
@@ -144,7 +146,9 @@ void validateInvitationLink(InvitationLink link) {
   }
 
   if (!areValidRelayUrls(link.relayUrls)) {
-    throw ArgumentError('Invalid relay URLs: must be 1-3 valid WebSocket URLs (wss:// or ws://)');
+    throw ArgumentError(
+      'Invalid relay URLs: must be 1-3 valid WebSocket URLs (wss:// or ws://)',
+    );
   }
 
   // inviteeName can be null (for received invitations), but if provided, must not be empty
@@ -153,6 +157,8 @@ void validateInvitationLink(InvitationLink link) {
   }
 
   if (link.redeemedBy != null && !isValidHexPubkey(link.redeemedBy!)) {
-    throw ArgumentError('Invalid redeemed-by pubkey: must be 64 hex characters');
+    throw ArgumentError(
+      'Invalid redeemed-by pubkey: must be 64 hex characters',
+    );
   }
 }

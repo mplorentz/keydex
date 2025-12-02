@@ -139,10 +139,14 @@ class DebugInfoSheet extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
+              color: theme.colorScheme.surfaceContainerHighest.withValues(
+                alpha: 0.1,
+              ),
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                color: theme.colorScheme.surfaceContainerHighest.withValues(
+                  alpha: 0.3,
+                ),
                 width: 1,
               ),
             ),
@@ -151,14 +155,8 @@ class DebugInfoSheet extends ConsumerWidget {
               children: [
                 // Bech32 key
                 publicKeyBech32Async.when(
-                  loading: () => Text(
-                    'Loading...',
-                    style: textTheme.bodySmall,
-                  ),
-                  error: (err, _) => Text(
-                    'Error: $err',
-                    style: textTheme.bodySmall,
-                  ),
+                  loading: () => Text('Loading...', style: textTheme.bodySmall),
+                  error: (err, _) => Text('Error: $err', style: textTheme.bodySmall),
                   data: (npub) => _KeyDisplay(
                     label: 'Npub (bech32):',
                     value: npub ?? 'Not available',
@@ -168,14 +166,8 @@ class DebugInfoSheet extends ConsumerWidget {
                 const SizedBox(height: 12),
                 // Hex key
                 publicKeyAsync.when(
-                  loading: () => Text(
-                    'Loading...',
-                    style: textTheme.bodySmall,
-                  ),
-                  error: (err, _) => Text(
-                    'Error: $err',
-                    style: textTheme.bodySmall,
-                  ),
+                  loading: () => Text('Loading...', style: textTheme.bodySmall),
+                  error: (err, _) => Text('Error: $err', style: textTheme.bodySmall),
                   data: (pubkey) => _KeyDisplay(
                     label: 'Public Key (hex):',
                     value: pubkey ?? 'Not available',

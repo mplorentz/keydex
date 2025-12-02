@@ -32,11 +32,7 @@ void main() {
         lockboxId: id,
         threshold: 2,
         totalKeys: keyHolderPubkeys.length,
-        keyHolders: keyHolderPubkeys
-            .map((pubkey) => createKeyHolder(
-                  pubkey: pubkey,
-                ))
-            .toList(),
+        keyHolders: keyHolderPubkeys.map((pubkey) => createKeyHolder(pubkey: pubkey)).toList(),
         relays: ['wss://relay.example.com'],
       ),
     );
@@ -46,9 +42,9 @@ void main() {
     testGoldens('loading state', (tester) async {
       final container = ProviderContainer(
         overrides: [
-          recoveryRequestByIdProvider('test-request').overrideWith(
-            (ref) => const AsyncValue.loading(),
-          ),
+          recoveryRequestByIdProvider(
+            'test-request',
+          ).overrideWith((ref) => const AsyncValue.loading()),
         ],
       );
 
@@ -73,7 +69,10 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           recoveryRequestByIdProvider('test-request').overrideWith(
-            (ref) => const AsyncValue.error('Failed to load recovery request', StackTrace.empty),
+            (ref) => const AsyncValue.error(
+              'Failed to load recovery request',
+              StackTrace.empty,
+            ),
           ),
         ],
       );
@@ -115,9 +114,12 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          recoveryRequestByIdProvider('test-request')
-              .overrideWith((ref) => AsyncValue.data(request)),
-          lockboxProvider('test-lockbox').overrideWith((ref) => Stream.value(lockbox)),
+          recoveryRequestByIdProvider(
+            'test-request',
+          ).overrideWith((ref) => AsyncValue.data(request)),
+          lockboxProvider(
+            'test-lockbox',
+          ).overrideWith((ref) => Stream.value(lockbox)),
         ],
       );
 
@@ -129,7 +131,10 @@ void main() {
         useScaffold: true,
       );
 
-      await screenMatchesGolden(tester, 'recovery_progress_widget_low_progress');
+      await screenMatchesGolden(
+        tester,
+        'recovery_progress_widget_low_progress',
+      );
 
       container.dispose();
     });
@@ -163,9 +168,12 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          recoveryRequestByIdProvider('test-request')
-              .overrideWith((ref) => AsyncValue.data(request)),
-          lockboxProvider('test-lockbox').overrideWith((ref) => Stream.value(lockbox)),
+          recoveryRequestByIdProvider(
+            'test-request',
+          ).overrideWith((ref) => AsyncValue.data(request)),
+          lockboxProvider(
+            'test-lockbox',
+          ).overrideWith((ref) => Stream.value(lockbox)),
         ],
       );
 
@@ -177,7 +185,10 @@ void main() {
         useScaffold: true,
       );
 
-      await screenMatchesGolden(tester, 'recovery_progress_widget_threshold_met');
+      await screenMatchesGolden(
+        tester,
+        'recovery_progress_widget_threshold_met',
+      );
 
       container.dispose();
     });
@@ -211,9 +222,12 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          recoveryRequestByIdProvider('test-request')
-              .overrideWith((ref) => AsyncValue.data(request)),
-          lockboxProvider('test-lockbox').overrideWith((ref) => Stream.value(lockbox)),
+          recoveryRequestByIdProvider(
+            'test-request',
+          ).overrideWith((ref) => AsyncValue.data(request)),
+          lockboxProvider(
+            'test-lockbox',
+          ).overrideWith((ref) => Stream.value(lockbox)),
         ],
       );
 

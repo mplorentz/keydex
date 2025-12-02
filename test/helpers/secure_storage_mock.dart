@@ -24,8 +24,9 @@ import 'package:flutter_test/flutter_test.dart';
 /// });
 /// ```
 class SecureStorageMock {
-  static const MethodChannel _secureStorageChannel =
-      MethodChannel('plugins.it_nomads.com/flutter_secure_storage');
+  static const MethodChannel _secureStorageChannel = MethodChannel(
+    'plugins.it_nomads.com/flutter_secure_storage',
+  );
 
   final Map<String, String> _store = {};
 

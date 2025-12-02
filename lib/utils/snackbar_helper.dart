@@ -73,7 +73,10 @@ class _TopSnackBarMessengerWrapper extends StatelessWidget {
   final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey;
   final Widget child;
 
-  const _TopSnackBarMessengerWrapper({required this.scaffoldMessengerKey, required this.child});
+  const _TopSnackBarMessengerWrapper({
+    required this.scaffoldMessengerKey,
+    required this.child,
+  });
 
   @override
   Widget build(BuildContext context) {

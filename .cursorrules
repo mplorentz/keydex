@@ -229,3 +229,105 @@ The app uses the **keydex3 theme** defined in `lib/widgets/theme.dart`
 
 **Remember**: Check DESIGN_GUIDE.md for complete details before implementing any UI changes.
 - If you need to manually verify some behavior in the UI you can run the app for web and use Playwright MCP to interact with it. Use the task "Flutter: Build and Serve for Playwright" to start.
+
+## Pull Request Requirements
+
+### Pre-PR Checklist
+Before opening a pull request, you MUST verify ALL of the following requirements:
+
+#### 1. Tests Pass
+- **Run all tests**: `flutter test`
+- All tests must pass with 0 failures
+- No skipped tests unless explicitly documented why they're skipped
+- Test coverage should not decrease for modified code
+
+#### 2. Golden Tests Updated
+- If UI changes were made, regenerate golden test files
+- **Update goldens**: `flutter test --update-goldens`
+- Review the updated golden images to ensure they match expectations
+- Commit the updated golden files with your changes
+- Re-run tests after updating to ensure they pass: `flutter test`
+
+#### 3. No Analyzer Errors
+- **Run analyzer**: `flutter analyze`
+- Output must show: "No issues found!"
+- Zero errors, zero warnings, zero hints
+- Do not suppress analyzer warnings with `// ignore:` comments unless absolutely necessary and documented
+
+#### 4. Code Formatting
+- **Format code**: `dart format .`
+- All code must follow Dart formatting standards
+- No manual formatting that violates `dart format` rules
+
+#### 5. Linter Compliance
+- All linter rules in `analysis_options.yaml` must be followed
+- Fix any linter warnings or errors
+- Do not disable linter rules without team discussion
+
+### Running the Complete Pre-PR Check
+Run these commands in sequence to verify all requirements:
+
+```bash
+# 1. Format code
+dart format .
+
+# 2. Run analyzer
+flutter analyze
+
+# 3. Update golden tests (if UI changes were made)
+flutter test --update-goldens
+
+# 4. Run all tests
+flutter test
+
+# 5. Verify no issues
+flutter analyze
+```
+
+All commands must complete successfully before opening a PR.
+
+### AI Assistant PR Workflow
+When preparing code for a PR, AI assistants should:
+
+1. **After making changes**: Automatically run `flutter analyze` to check for issues
+2. **Fix any analyzer errors** before declaring the task complete
+3. **Run tests** to verify changes don't break existing functionality
+4. **Update golden tests** if UI components were modified
+5. **Format code** using `dart format .`
+6. **Inform the user** if any tests fail or analyzer errors remain
+7. **Do not open/push PRs** with known failing tests or analyzer errors
+
+### Common Pre-PR Issues
+
+#### Golden Test Failures
+If golden tests fail after changes:
+```bash
+# Review the failures
+flutter test
+
+# If changes are intentional, update goldens
+flutter test --update-goldens
+
+# Verify tests now pass
+flutter test
+```
+
+#### Analyzer Errors After Refactoring
+- Unused imports: Remove them
+- Missing `const` constructors: Add `const` where appropriate
+- Type errors: Ensure types are correct throughout the call chain
+- Null safety issues: Handle nullability properly
+
+#### Test Failures
+- Review test output carefully
+- Update test expectations if behavior intentionally changed
+- Fix bugs if tests reveal issues in the implementation
+- Do not skip failing tests to make CI pass
+
+### PR Description Guidelines
+When opening a PR, include:
+- **What**: Brief description of changes
+- **Why**: Reason for the changes
+- **Testing**: How the changes were tested
+- **Screenshots**: For UI changes (before/after if applicable)
+- **Breaking Changes**: Document any breaking API changes

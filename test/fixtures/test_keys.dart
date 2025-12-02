@@ -61,24 +61,23 @@ class TestShardData {
     required int threshold,
   }) {
     return List.generate(
-        totalShards,
-        (index) => {
-              'shard': 'test-shard-data-$index',
-              'threshold': threshold,
-              'shardIndex': index,
-              'totalShards': totalShards,
-              'primeMod': testPrimeMod,
-              'creatorPubkey': testCreatorPubkey,
-            });
+      totalShards,
+      (index) => {
+        'shard': 'test-shard-data-$index',
+        'threshold': threshold,
+        'shardIndex': index,
+        'totalShards': totalShards,
+        'primeMod': testPrimeMod,
+        'creatorPubkey': testCreatorPubkey,
+      },
+    );
   }
 }
 
 /// Test data for creating KeyHolder objects
 class TestKeyHolders {
   /// Creates a list of test key holders using the test keys
-  static List<Map<String, dynamic>> createTestKeyHolders({
-    required int count,
-  }) {
+  static List<Map<String, dynamic>> createTestKeyHolders({required int count}) {
     final keys = [
       {'pubkey': TestHexPubkeys.alice, 'name': 'Alice'},
       {'pubkey': TestHexPubkeys.bob, 'name': 'Bob'},

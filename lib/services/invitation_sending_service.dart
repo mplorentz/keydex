@@ -5,10 +5,10 @@ import '../services/logger.dart';
 import '../models/nostr_kinds.dart';
 
 /// Provider for InvitationSendingService
-final invitationSendingServiceProvider = Provider<InvitationSendingService>((ref) {
-  return InvitationSendingService(
-    ref.read(ndkServiceProvider),
-  );
+final invitationSendingServiceProvider = Provider<InvitationSendingService>((
+  ref,
+) {
+  return InvitationSendingService(ref.read(ndkServiceProvider));
 });
 
 /// Stateless utility service for creating and publishing outgoing invitation-related Nostr events
@@ -49,7 +49,9 @@ class InvitationSendingService {
 
       final rsvpJson = json.encode(rsvpData);
 
-      Log.info('Sending RSVP event for invite code: ${inviteCode.substring(0, 8)}...');
+      Log.info(
+        'Sending RSVP event for invite code: ${inviteCode.substring(0, 8)}...',
+      );
 
       // Publish using NdkService
       return await ndkService.publishEncryptedEvent(
@@ -102,7 +104,9 @@ class InvitationSendingService {
 
       final denialJson = json.encode(denialData);
 
-      Log.info('Sending denial event for invite code: ${inviteCode.substring(0, 8)}...');
+      Log.info(
+        'Sending denial event for invite code: ${inviteCode.substring(0, 8)}...',
+      );
 
       // Publish using NdkService
       return await ndkService.publishEncryptedEvent(
@@ -155,7 +159,8 @@ class InvitationSendingService {
       final confirmationJson = json.encode(confirmationData);
 
       Log.info(
-          'Sending shard confirmation event for lockbox: ${lockboxId.substring(0, 8)}..., shard: $shardIndex');
+        'Sending shard confirmation event for lockbox: ${lockboxId.substring(0, 8)}..., shard: $shardIndex',
+      );
 
       // Publish using NdkService
       final tags = [
@@ -217,7 +222,8 @@ class InvitationSendingService {
       final errorJson = json.encode(errorData);
 
       Log.warning(
-          'Sending shard error event for lockbox: ${lockboxId.substring(0, 8)}..., shard: $shardIndex');
+        'Sending shard error event for lockbox: ${lockboxId.substring(0, 8)}..., shard: $shardIndex',
+      );
 
       // Publish using NdkService
       return await ndkService.publishEncryptedEvent(
@@ -270,7 +276,8 @@ class InvitationSendingService {
       final invalidJson = json.encode(invalidData);
 
       Log.warning(
-          'Sending invitation invalid event for invite code: ${inviteCode.substring(0, 8)}...');
+        'Sending invitation invalid event for invite code: ${inviteCode.substring(0, 8)}...',
+      );
 
       // Publish using NdkService
       return await ndkService.publishEncryptedEvent(
@@ -321,7 +328,8 @@ class InvitationSendingService {
       final removalJson = json.encode(removalData);
 
       Log.warning(
-          'Sending key holder removal event for lockbox: ${lockboxId.substring(0, 8)}..., removed: ${removedKeyHolderPubkey.substring(0, 8)}...');
+        'Sending key holder removal event for lockbox: ${lockboxId.substring(0, 8)}..., removed: ${removedKeyHolderPubkey.substring(0, 8)}...',
+      );
 
       // Publish using NdkService
       return await ndkService.publishEncryptedEvent(

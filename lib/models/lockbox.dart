@@ -123,12 +123,16 @@ class Lockbox {
       ownerName: json['ownerName'] as String?,
       shards: json['shards'] != null
           ? (json['shards'] as List)
-              .map((shardJson) => shardDataFromJson(shardJson as Map<String, dynamic>))
+              .map(
+                (shardJson) => shardDataFromJson(shardJson as Map<String, dynamic>),
+              )
               .toList()
           : [],
       recoveryRequests: json['recoveryRequests'] != null
           ? (json['recoveryRequests'] as List)
-              .map((reqJson) => RecoveryRequest.fromJson(reqJson as Map<String, dynamic>))
+              .map(
+                (reqJson) => RecoveryRequest.fromJson(reqJson as Map<String, dynamic>),
+              )
               .toList()
           : [],
       backupConfig: json['backupConfig'] != null

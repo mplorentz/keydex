@@ -26,7 +26,9 @@ class LoginService {
     await _storage.write(key: _nostrPrivateKeyKey, value: keyPair.privateKey);
 
     _cachedKeyPair = keyPair;
-    Log.info('Generated new Nostr key pair with public key: ${keyPair.publicKeyBech32}');
+    Log.info(
+      'Generated new Nostr key pair with public key: ${keyPair.publicKeyBech32}',
+    );
     return keyPair;
   }
 
@@ -48,8 +50,15 @@ class LoginService {
         final privateKeyBech32 = Helpers.encodeBech32(privateKey, 'nsec');
         final publicKeyBech32 = Helpers.encodeBech32(publicKey, 'npub');
 
-        _cachedKeyPair = KeyPair(privateKey, publicKey, privateKeyBech32, publicKeyBech32);
-        Log.info('Successfully loaded Nostr key pair from secure storage: $publicKey');
+        _cachedKeyPair = KeyPair(
+          privateKey,
+          publicKey,
+          privateKeyBech32,
+          publicKeyBech32,
+        );
+        Log.info(
+          'Successfully loaded Nostr key pair from secure storage: $publicKey',
+        );
         return _cachedKeyPair;
       } else {
         Log.error('No private key found in secure storage');
@@ -175,4 +184,3 @@ class LoginService {
     );
   }
 }
-

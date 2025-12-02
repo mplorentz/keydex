@@ -15,10 +15,7 @@ import '../providers/key_provider.dart';
 class InvitationAcceptanceScreen extends ConsumerStatefulWidget {
   final String inviteCode;
 
-  const InvitationAcceptanceScreen({
-    super.key,
-    required this.inviteCode,
-  });
+  const InvitationAcceptanceScreen({super.key, required this.inviteCode});
 
   @override
   ConsumerState<InvitationAcceptanceScreen> createState() => _InvitationAcceptanceScreenState();
@@ -30,14 +27,13 @@ class _InvitationAcceptanceScreenState extends ConsumerState<InvitationAcceptanc
 
   @override
   Widget build(BuildContext context) {
-    final invitationAsync = ref.watch(invitationByCodeProvider(widget.inviteCode));
+    final invitationAsync = ref.watch(
+      invitationByCodeProvider(widget.inviteCode),
+    );
     final currentPubkeyAsync = ref.watch(currentPublicKeyProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Invitation'),
-        centerTitle: false,
-      ),
+      appBar: AppBar(title: const Text('Invitation'), centerTitle: false),
       body: invitationAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stack) => Padding(
@@ -121,7 +117,9 @@ class _InvitationAcceptanceScreenState extends ConsumerState<InvitationAcceptanc
               padding: const EdgeInsets.all(12.0),
               margin: const EdgeInsets.only(bottom: 16.0),
               decoration: BoxDecoration(
-                color: _getStatusColor(invitation.status).withValues(alpha: 0.1),
+                color: _getStatusColor(
+                  invitation.status,
+                ).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8.0),
                 border: Border.all(
                   color: _getStatusColor(invitation.status),
@@ -160,7 +158,11 @@ class _InvitationAcceptanceScreenState extends ConsumerState<InvitationAcceptanc
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
                   const SizedBox(height: 16),
-                  _buildDetailRow('Invitation Code:', widget.inviteCode, monospace: true),
+                  _buildDetailRow(
+                    'Invitation Code:',
+                    widget.inviteCode,
+                    monospace: true,
+                  ),
                   const SizedBox(height: 12),
                   if (invitation.inviteeName != null)
                     _buildDetailRow('Invitee Name:', invitation.inviteeName!),
@@ -171,7 +173,10 @@ class _InvitationAcceptanceScreenState extends ConsumerState<InvitationAcceptanc
                     monospace: true,
                   ),
                   const SizedBox(height: 12),
-                  _buildDetailRow('Relays:', '${invitation.relayUrls.length} relay(s)'),
+                  _buildDetailRow(
+                    'Relays:',
+                    '${invitation.relayUrls.length} relay(s)',
+                  ),
                   if (invitation.relayUrls.isNotEmpty) ...[
                     const SizedBox(height: 8),
                     ...invitation.relayUrls.map(
@@ -286,7 +291,11 @@ class _InvitationAcceptanceScreenState extends ConsumerState<InvitationAcceptanc
                         ),
                         child: const Row(
                           children: [
-                            Icon(Icons.warning_amber, color: Colors.orange, size: 20),
+                            Icon(
+                              Icons.warning_amber,
+                              color: Colors.orange,
+                              size: 20,
+                            ),
                             SizedBox(width: 8),
                             Expanded(
                               child: Text(
@@ -327,7 +336,9 @@ class _InvitationAcceptanceScreenState extends ConsumerState<InvitationAcceptanc
                                   SizedBox(
                                     width: 16,
                                     height: 16,
-                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
                                   ),
                                   SizedBox(width: 8),
                                   Text('Processing...'),
@@ -500,9 +511,7 @@ class _InvitationAcceptanceScreenState extends ConsumerState<InvitationAcceptanc
           ),
           OutlinedButton(
             onPressed: () => Navigator.pop(context, true),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: Colors.red,
-            ),
+            style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Deny'),
           ),
         ],

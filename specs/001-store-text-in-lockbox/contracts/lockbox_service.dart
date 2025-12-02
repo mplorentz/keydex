@@ -4,10 +4,7 @@
 abstract class LockboxService {
   /// Creates a new encrypted lockbox
   /// Returns the created lockbox ID on success
-  Future<String> createLockbox({
-    required String name,
-    required String content,
-  });
+  Future<String> createLockbox({required String name, required String content});
 
   /// Retrieves all user lockboxes (metadata only)
   /// Returns list of lockbox metadata without decrypted content
