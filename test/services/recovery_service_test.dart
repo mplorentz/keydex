@@ -68,6 +68,9 @@ void main() {
           .thenAnswer((_) => const Stream<RecoveryRequest>.empty());
       when(mockNdkService.recoveryResponseStream)
           .thenAnswer((_) => const Stream<RecoveryResponseEvent>.empty());
+      // Stub getCurrentPubkey for notification filtering
+      when(mockNdkService.getCurrentPubkey())
+          .thenAnswer((_) async => testCreatorPubkey);
 
       backupService = mockBackupService;
       ndkService = mockNdkService;
