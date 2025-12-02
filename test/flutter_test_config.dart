@@ -4,12 +4,12 @@ import 'dart:io';
 import 'package:golden_toolkit/golden_toolkit.dart';
 
 /// Global test configuration for golden tests
-/// Loads bundled fonts from pubspec.yaml (Archivo, OpenSans, RobotoMono)
+/// Loads bundled fonts from pubspec.yaml (Archivo, FiraSans, RobotoMono)
 Future<void> testExecutable(FutureOr<void> Function() testMain) async {
   return GoldenToolkit.runWithConfiguration(
     () async {
       // Load all app fonts from pubspec.yaml fonts section
-      // This includes Archivo, OpenSans, and RobotoMono
+      // This includes Archivo, FiraSans, and RobotoMono
       await loadAppFonts();
 
       await testMain();

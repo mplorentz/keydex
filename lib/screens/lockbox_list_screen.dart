@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/lockbox_provider.dart';
 import '../widgets/row_button.dart';
 import '../widgets/debug_info_sheet.dart';
-import 'lockbox_create_screen.dart';
 import 'relay_management_screen.dart';
 import 'recovery_notification_overlay.dart';
+import 'vault_explainer_screen.dart';
 import '../widgets/lockbox_card.dart';
 
 /// Main list screen showing all lockboxes
@@ -28,7 +28,7 @@ class LockboxListScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Keydex'),
+        title: const Text('Horcrux'),
         centerTitle: false,
         actions: [
           IconButton(
@@ -111,18 +111,23 @@ class LockboxListScreen extends ConsumerWidget {
                               style: textTheme.titleLarge,
                             ),
                             const SizedBox(height: 8),
-                            Text(
-                              'Tap + to create your first secure vault',
-                              style: textTheme.bodySmall,
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 32),
+                              child: Text(
+                                'Tap + to create a vault or if you received an invitation link open it now to join their vault.',
+                                style: textTheme.bodySmall,
+                                textAlign: TextAlign.center,
+                              ),
                             ),
                           ],
                         ),
                       );
                     }
 
-                    return ListView.builder(
+                    return ListView.separated(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       itemCount: lockboxes.length,
+                      separatorBuilder: (context, index) => const Divider(height: 1),
                       itemBuilder: (context, index) {
                         final lockbox = lockboxes[index];
                         return LockboxCard(key: ValueKey(lockbox.id), lockbox: lockbox);
@@ -146,13 +151,13 @@ class LockboxListScreen extends ConsumerWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const LockboxCreateScreen(),
-                  fullscreenDialog: true,
+                  builder: (context) => const VaultExplainerScreen(),
                 ),
               );
             },
             icon: Icons.add,
             text: 'Create Vault',
+            addBottomSafeArea: true,
           ),
         ],
       ),

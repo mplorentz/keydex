@@ -86,9 +86,12 @@ class KeyHolderList extends ConsumerWidget {
       BuildContext context, WidgetRef ref, Lockbox lockbox, String? currentPubkey) {
     final keyHolders = _extractKeyHolders(lockbox, currentPubkey);
 
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       width: double.infinity,
-      color: const Color(0xFF666f62),
+      color: colorScheme.surfaceContainer,
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -96,41 +99,43 @@ class KeyHolderList extends ConsumerWidget {
           Row(
             children: [
               const SizedBox(width: 4),
-              const Icon(Icons.people, color: Color(0xFFd2d7bf)),
+              Icon(Icons.people, color: colorScheme.onSurface),
               const SizedBox(width: 8),
               Text(
                 'Stewards',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: const Color(0xFFd2d7bf),
-                    ),
-              ),
-              const Spacer(),
-              InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => BackupConfigScreen(
-                        lockboxId: lockbox.id,
-                      ),
-                    ),
-                  );
-                },
-                borderRadius: BorderRadius.circular(20),
-                child: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFd2d7bf).withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Icon(
-                    Icons.settings,
-                    color: Color(0xFFd2d7bf),
-                    size: 20,
-                  ),
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: colorScheme.onSurface,
                 ),
               ),
+              const Spacer(),
+              // Only show settings button for owner
+              if (currentPubkey != null && currentPubkey == lockbox.ownerPubkey)
+                InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => BackupConfigScreen(
+                          lockboxId: lockbox.id,
+                        ),
+                      ),
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: colorScheme.onSurface.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Icon(
+                      Icons.settings,
+                      color: colorScheme.onSurface,
+                      size: 20,
+                    ),
+                  ),
+                ),
             ],
           ),
           const SizedBox(height: 16),
@@ -142,36 +147,34 @@ class KeyHolderList extends ConsumerWidget {
                   Icon(
                     Icons.key_off,
                     size: 48,
-                    color: const Color(0xFFd2d7bf).withValues(alpha: 0.6),
+                    color: colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
+                  Text(
                     'No stewards configured',
-                    style: TextStyle(
-                      color: Color(0xFFd2d7bf),
-                      fontSize: 16,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      color: colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     'Change backup settings to add stewards',
-                    style: TextStyle(
-                      color: const Color(0xFFd2d7bf).withValues(alpha: 0.7),
-                      fontSize: 14,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurface.withValues(alpha: 0.7),
                     ),
                   ),
                 ],
               ),
             ),
           ] else ...[
-            // Key holder list
+            // Key holder list with dividers
             Column(
-              children: keyHolders.map((keyHolder) {
-                return _buildKeyHolderItem(
-                  context,
-                  keyHolder,
-                );
-              }).toList(),
+              children: [
+                for (int i = 0; i < keyHolders.length; i++) ...[
+                  _buildKeyHolderItem(context, keyHolders[i]),
+                  if (i < keyHolders.length - 1) const Divider(height: 1),
+                ],
+              ],
             ),
           ],
         ],
@@ -180,19 +183,22 @@ class KeyHolderList extends ConsumerWidget {
   }
 
   Widget _buildKeyHolderItem(BuildContext context, KeyHolderInfo keyHolder) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 4),
       padding: const EdgeInsets.all(12),
-      decoration: const BoxDecoration(
-        color: Color(0xFF666f62),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainer,
       ),
       child: Row(
         children: [
           CircleAvatar(
-            backgroundColor: const Color(0xFFd2d7bf).withValues(alpha: 0.2),
+            backgroundColor: colorScheme.onSurface.withValues(alpha: 0.1),
             child: Icon(
               keyHolder.isOwner ? Icons.person : Icons.key,
-              color: const Color(0xFFd2d7bf),
+              color: colorScheme.onSurface,
               size: 20,
             ),
           ),
@@ -209,10 +215,10 @@ class KeyHolderList extends ConsumerWidget {
                             (keyHolder.pubkey != null
                                 ? Helpers.encodeBech32(keyHolder.pubkey!, 'npub')
                                 : 'Unknown'),
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: const Color(0xFFd2d7bf),
-                            ),
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: colorScheme.onSurface,
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         softWrap: false,
@@ -223,18 +229,16 @@ class KeyHolderList extends ConsumerWidget {
                 if (keyHolder.isOwner) ...[
                   Text(
                     'Owner',
-                    style: TextStyle(
-                      color: const Color(0xFFd2d7bf).withValues(alpha: 0.8),
-                      fontSize: 12,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurface.withValues(alpha: 0.8),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                 ] else if (keyHolder.status != null) ...[
                   Text(
                     keyHolder.status!.label,
-                    style: TextStyle(
-                      color: const Color(0xFFd2d7bf).withValues(alpha: 0.7),
-                      fontSize: 12,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurface.withValues(alpha: 0.7),
                     ),
                   ),
                 ]

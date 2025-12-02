@@ -22,9 +22,8 @@ class DebugInfoSheet extends ConsumerWidget {
         content: const Text(
           'This will permanently delete:\n'
           '• All lockboxes\n'
-          '• All key holder shards\n'
+          '• All vault keys\n'
           '• All recovery requests\n'
-          '• All recovery shards\n'
           '• All relay configurations\n'
           '• Your Nostr keys\n\n'
           'This action cannot be undone!',

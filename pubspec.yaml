@@ -4,7 +4,7 @@ description: "The best way to backup sensitive data."
 # Prevent accidental publishing to pub.dev.
 publish_to: 'none'
 
-version: 1.0.0+1
+version: 1.0.0+7
 
 environment:
   flutter: 3.35.0
@@ -53,9 +53,9 @@ flutter:
         - asset: fonts/Archivo-Regular.ttf
         - asset: fonts/Archivo-Medium.ttf
           weight: 500
-    - family: OpenSans
+    - family: FiraSans
       fonts:
-        - asset: fonts/OpenSans-Regular.ttf
+        - asset: fonts/FiraSans-Regular.ttf
     - family: RobotoMono
       fonts:
         - asset: fonts/RobotoMono-Regular.ttf

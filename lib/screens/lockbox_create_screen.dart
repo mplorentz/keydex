@@ -55,6 +55,7 @@ class _LockboxCreateScreenState extends ConsumerState<LockboxCreateScreen>
             onPressed: () => _saveLockbox(),
             icon: Icons.arrow_forward,
             text: 'Next',
+            addBottomSafeArea: true,
           ),
         ],
       ),
@@ -84,9 +85,10 @@ class _LockboxCreateScreenState extends ConsumerState<LockboxCreateScreen>
       ),
     );
 
-    // After backup configuration is complete, go back to the list screen
+    // After backup configuration is complete, pop all the way back to the list screen
+    // This pops both LockboxCreateScreen and VaultExplainerScreen
     if (mounted) {
-      Navigator.pop(context);
+      Navigator.popUntil(context, (route) => route.isFirst);
     }
   }
 }

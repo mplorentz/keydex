@@ -163,9 +163,23 @@ class RecoveryService {
   Future<void> _emitNotificationUpdate() async {
     if (_viewedNotificationIds == null) return;
 
+    // Get current user's pubkey to filter out their own recovery requests
+    final currentPubkey = await _ndkService.getCurrentPubkey();
+
     // Get all recovery requests from lockbox repository
     final allRequests = await repository.getAllRecoveryRequests();
-    final unviewed = allRequests.where((req) => !_viewedNotificationIds!.contains(req.id)).toList();
+
+    // Filter out viewed notifications and requests initiated by the current user
+    final unviewed = allRequests.where((req) {
+      // Exclude viewed notifications
+      if (_viewedNotificationIds!.contains(req.id)) return false;
+
+      // Exclude requests initiated by the current user (steward's own requests)
+      if (currentPubkey != null && req.initiatorPubkey == currentPubkey) return false;
+
+      return true;
+    }).toList();
+
     _notificationController.add(unviewed);
   }
 
@@ -203,10 +217,7 @@ class RecoveryService {
     // Initialize key holder responses
     final keyHolderResponses = <String, RecoveryResponse>{};
     for (final pubkey in keyHolderPubkeys) {
-      keyHolderResponses[pubkey] = RecoveryResponse(
-        pubkey: pubkey,
-        approved: false,
-      );
+      keyHolderResponses[pubkey] = RecoveryResponse(pubkey: pubkey, approved: false);
     }
 
     final recoveryRequest = RecoveryRequest(
@@ -248,7 +259,8 @@ class RecoveryService {
     if (existingRequest != null) {
       // Since events are immutable, skip processing if we already have this request locally
       Log.info(
-          'Ignoring incoming recovery request ${request.id} - already exists locally (status: ${existingRequest.status.name})');
+        'Ignoring incoming recovery request ${request.id} - already exists locally (status: ${existingRequest.status.name})',
+      );
       return;
     }
 
@@ -350,13 +362,15 @@ class RecoveryService {
       // Check if this is a duplicate by comparing nostrEventId if provided
       if (nostrEventId != null && existingResponse.nostrEventId == nostrEventId) {
         Log.info(
-            'Ignoring duplicate recovery response for request $recoveryRequestId from $responderPubkey (nostrEventId: $nostrEventId)');
+          'Ignoring duplicate recovery response for request $recoveryRequestId from $responderPubkey (nostrEventId: $nostrEventId)',
+        );
         return;
       }
       // If response already exists and has respondedAt, skip processing (immutable event)
       if (existingResponse.respondedAt != null) {
         Log.info(
-            'Ignoring recovery response for request $recoveryRequestId from $responderPubkey - response already exists');
+          'Ignoring recovery response for request $recoveryRequestId from $responderPubkey - response already exists',
+        );
         return;
       }
     }
@@ -407,7 +421,8 @@ class RecoveryService {
     _recoveryRequestController.add(updatedRequest);
 
     Log.info(
-        'Updated recovery request $recoveryRequestId with response from ${responderPubkey.substring(0, 8)}... (approved: $approved)');
+      'Updated recovery request $recoveryRequestId with response from ${responderPubkey.substring(0, 8)}... (approved: $approved)',
+    );
   }
 
   /// Approve or deny a recovery request with automatic shard data retrieval and Nostr sending
@@ -492,9 +507,7 @@ class RecoveryService {
       throw ArgumentError('Recovery request not found: $recoveryRequestId');
     }
 
-    final updatedRequest = request.copyWith(
-      status: status,
-    );
+    final updatedRequest = request.copyWith(status: status);
 
     // Update in lockbox (single source of truth)
     await repository.updateRecoveryRequestInLockbox(
@@ -536,9 +549,7 @@ class RecoveryService {
     // Delete recovered content from lockbox (set to null)
     final lockbox = await repository.getLockbox(request.lockboxId);
     if (lockbox != null) {
-      await repository.saveLockbox(
-        lockbox.copyWith(content: null),
-      );
+      await repository.saveLockbox(lockbox.copyWith(content: null));
       Log.info('Deleted recovered content from lockbox ${request.lockboxId}');
     }
 
@@ -607,17 +618,11 @@ class RecoveryService {
     // Update the lockbox with recovered content
     final lockbox = await repository.getLockbox(request.lockboxId);
     if (lockbox != null) {
-      await repository.updateLockbox(
-        request.lockboxId,
-        lockbox.name,
-        content,
-      );
+      await repository.updateLockbox(request.lockboxId, lockbox.name, content);
     }
 
     // Update the recovery request status to completed
-    final updatedRequest = request.copyWith(
-      status: RecoveryRequestStatus.completed,
-    );
+    final updatedRequest = request.copyWith(status: RecoveryRequestStatus.completed);
 
     // Update in lockbox (single source of truth)
     try {
@@ -691,7 +696,8 @@ class RecoveryService {
       }
 
       Log.info(
-          'Sending recovery request ${request.id} to ${request.keyHolderResponses.length} key holders');
+        'Sending recovery request ${request.id} to ${request.keyHolderResponses.length} key holders',
+      );
 
       // Prepare recovery request data
       final requestData = {
@@ -728,7 +734,8 @@ class RecoveryService {
       );
 
       Log.info(
-          'Successfully sent recovery request ${request.id} to ${eventIds.length} key holders');
+        'Successfully sent recovery request ${request.id} to ${eventIds.length} key holders',
+      );
       return eventIds;
     } catch (e) {
       Log.error('Failed to send recovery request via Nostr', e);
@@ -788,7 +795,8 @@ class RecoveryService {
       }
 
       Log.info(
-          'Sent recovery response to ${request.initiatorPubkey.substring(0, 8)}... (event: ${eventId.substring(0, 8)}..., approved: $approved)');
+        'Sent recovery response to ${request.initiatorPubkey.substring(0, 8)}... (event: ${eventId.substring(0, 8)}..., approved: $approved)',
+      );
       return eventId;
     } catch (e) {
       Log.error('Failed to send recovery response via Nostr', e);
@@ -799,11 +807,23 @@ class RecoveryService {
   // ========== Notification Methods ==========
 
   /// Get pending (unviewed) recovery request notifications
+  /// Excludes recovery requests initiated by the current user (steward's own requests)
   Future<List<RecoveryRequest>> getPendingNotifications() async {
     await initialize();
 
+    // Get current user's pubkey to filter out their own recovery requests
+    final currentPubkey = await _ndkService.getCurrentPubkey();
+
     final allRequests = await repository.getAllRecoveryRequests();
-    return allRequests.where((request) => !_viewedNotificationIds!.contains(request.id)).toList();
+    return allRequests.where((request) {
+      // Exclude viewed notifications
+      if (_viewedNotificationIds!.contains(request.id)) return false;
+
+      // Exclude requests initiated by the current user (steward's own requests)
+      if (currentPubkey != null && request.initiatorPubkey == currentPubkey) return false;
+
+      return true;
+    }).toList();
   }
 
   /// Get all recovery request notifications (including viewed)
@@ -837,14 +857,27 @@ class RecoveryService {
   }
 
   /// Get notification count
+  /// Excludes recovery requests initiated by the current user (steward's own requests)
   Future<int> getNotificationCount({bool unviewedOnly = true}) async {
     await initialize();
 
+    // Get current user's pubkey to filter out their own recovery requests
+    final currentPubkey = await _ndkService.getCurrentPubkey();
+
     final allRequests = await repository.getAllRecoveryRequests();
+
+    // Filter out requests initiated by the current user
+    final filteredRequests = allRequests.where((request) {
+      if (currentPubkey != null && request.initiatorPubkey == currentPubkey) return false;
+      return true;
+    }).toList();
+
     if (unviewedOnly) {
-      return allRequests.where((request) => !_viewedNotificationIds!.contains(request.id)).length;
+      return filteredRequests
+          .where((request) => !_viewedNotificationIds!.contains(request.id))
+          .length;
     } else {
-      return allRequests.length;
+      return filteredRequests.length;
     }
   }
 
