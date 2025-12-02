@@ -8,14 +8,13 @@ import '../services/recovery_service.dart';
 class RecoveryProgressWidget extends ConsumerWidget {
   final String recoveryRequestId;
 
-  const RecoveryProgressWidget({
-    super.key,
-    required this.recoveryRequestId,
-  });
+  const RecoveryProgressWidget({super.key, required this.recoveryRequestId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final requestAsync = ref.watch(recoveryRequestByIdProvider(recoveryRequestId));
+    final requestAsync = ref.watch(
+      recoveryRequestByIdProvider(recoveryRequestId),
+    );
 
     // We need both request and lockbox to calculate proper progress
     return requestAsync.when(
@@ -74,7 +73,9 @@ class RecoveryProgressWidget extends ConsumerWidget {
             final canRecover = approvedCount >= threshold;
 
             // Calculate progress based on threshold
-            final progress = threshold > 0 ? (approvedCount / threshold * 100).clamp(0, 100) : 0.0;
+            final progress = threshold > 0
+                ? (approvedCount / threshold * 100).clamp(0, 100)
+                : 0.0;
 
             return Card(
               child: Padding(
@@ -91,16 +92,15 @@ class RecoveryProgressWidget extends ConsumerWidget {
                       value: progress / 100,
                       backgroundColor: Colors.grey[300],
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        canRecover ? Colors.green : Theme.of(context).primaryColor,
+                        canRecover
+                            ? Colors.green
+                            : Theme.of(context).primaryColor,
                       ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       '${progress.toStringAsFixed(0)}% complete',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                      ),
+                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                     ),
                     const SizedBox(height: 16),
                     _buildProgressRow(
@@ -145,7 +145,10 @@ class RecoveryProgressWidget extends ConsumerWidget {
                           icon: const Icon(Icons.lock_open),
                           label: const Text(
                             'Open Vault',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ),
@@ -259,10 +262,7 @@ class RecoveryProgressWidget extends ConsumerWidget {
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
         );
       }
     }

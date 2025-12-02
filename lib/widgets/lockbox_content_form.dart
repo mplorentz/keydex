@@ -94,7 +94,11 @@ class LockboxContentForm extends StatelessWidget {
                 final length = value.text.length;
                 return Row(
                   children: [
-                    Icon(Icons.info_outline, size: 16, color: theme.colorScheme.onSurfaceVariant),
+                    Icon(
+                      Icons.info_outline,
+                      size: 16,
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(

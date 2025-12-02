@@ -36,19 +36,23 @@ void main() {
       );
     });
 
-    const testSecret = 'This is a test secret that we want to protect with Shamir Secret Sharing!';
-    const testCreatorPubkey = '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
+    const testSecret =
+        'This is a test secret that we want to protect with Shamir Secret Sharing!';
+    const testCreatorPubkey =
+        '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
     const testLockboxId = 'test-lockbox-123';
     const testLockboxName = 'Test Lockbox';
     // Note: peers list excludes the creator
     const testPeers = [
       {
         'name': 'Peer 1',
-        'pubkey': 'fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321'
+        'pubkey':
+            'fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321',
       },
       {
         'name': 'Peer 2',
-        'pubkey': 'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890'
+        'pubkey':
+            'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
       },
     ];
 
@@ -103,82 +107,91 @@ void main() {
       expect(shardStrings.toSet().length, totalShards);
     });
 
-    test('reconstructFromShares recovers original secret with minimum threshold', () async {
-      // Arrange
-      const threshold = 3;
-      const totalShards = 5;
-      final originalShares = await backupService.generateShamirShares(
-        content: testSecret,
-        threshold: threshold,
-        totalShards: totalShards,
-        creatorPubkey: testCreatorPubkey,
-        lockboxId: testLockboxId,
-        lockboxName: testLockboxName,
-        peers: testPeers,
-      );
+    test(
+      'reconstructFromShares recovers original secret with minimum threshold',
+      () async {
+        // Arrange
+        const threshold = 3;
+        const totalShards = 5;
+        final originalShares = await backupService.generateShamirShares(
+          content: testSecret,
+          threshold: threshold,
+          totalShards: totalShards,
+          creatorPubkey: testCreatorPubkey,
+          lockboxId: testLockboxId,
+          lockboxName: testLockboxName,
+          peers: testPeers,
+        );
 
-      // Act - Use exactly threshold number of shares
-      final reconstructed = await backupService.reconstructFromShares(
-        shares: originalShares.sublist(0, threshold),
-      );
+        // Act - Use exactly threshold number of shares
+        final reconstructed = await backupService.reconstructFromShares(
+          shares: originalShares.sublist(0, threshold),
+        );
 
-      // Assert
-      expect(reconstructed, testSecret);
-    });
+        // Assert
+        expect(reconstructed, testSecret);
+      },
+    );
 
-    test('reconstructFromShares recovers original secret with more than threshold', () async {
-      // Arrange
-      const threshold = 2;
-      const totalShards = 4;
-      final originalShares = await backupService.generateShamirShares(
-        content: testSecret,
-        threshold: threshold,
-        totalShards: totalShards,
-        creatorPubkey: testCreatorPubkey,
-        lockboxId: testLockboxId,
-        lockboxName: testLockboxName,
-        peers: testPeers,
-      );
+    test(
+      'reconstructFromShares recovers original secret with more than threshold',
+      () async {
+        // Arrange
+        const threshold = 2;
+        const totalShards = 4;
+        final originalShares = await backupService.generateShamirShares(
+          content: testSecret,
+          threshold: threshold,
+          totalShards: totalShards,
+          creatorPubkey: testCreatorPubkey,
+          lockboxId: testLockboxId,
+          lockboxName: testLockboxName,
+          peers: testPeers,
+        );
 
-      // Act - Use more than threshold shares (all 4)
-      final reconstructed = await backupService.reconstructFromShares(
-        shares: originalShares,
-      );
+        // Act - Use more than threshold shares (all 4)
+        final reconstructed = await backupService.reconstructFromShares(
+          shares: originalShares,
+        );
 
-      // Assert
-      expect(reconstructed, testSecret);
-    });
+        // Assert
+        expect(reconstructed, testSecret);
+      },
+    );
 
-    test('reconstructFromShares works with different share combinations', () async {
-      // Arrange
-      const threshold = 3;
-      const totalShards = 5;
-      final originalShares = await backupService.generateShamirShares(
-        content: testSecret,
-        threshold: threshold,
-        totalShards: totalShards,
-        creatorPubkey: testCreatorPubkey,
-        lockboxId: testLockboxId,
-        lockboxName: testLockboxName,
-        peers: testPeers,
-      );
+    test(
+      'reconstructFromShares works with different share combinations',
+      () async {
+        // Arrange
+        const threshold = 3;
+        const totalShards = 5;
+        final originalShares = await backupService.generateShamirShares(
+          content: testSecret,
+          threshold: threshold,
+          totalShards: totalShards,
+          creatorPubkey: testCreatorPubkey,
+          lockboxId: testLockboxId,
+          lockboxName: testLockboxName,
+          peers: testPeers,
+        );
 
-      // Act - Try different combinations of threshold shares
-      final combination1 = await backupService.reconstructFromShares(
-        shares: [originalShares[0], originalShares[1], originalShares[2]],
-      );
-      final combination2 = await backupService.reconstructFromShares(
-        shares: [originalShares[1], originalShares[3], originalShares[4]],
-      );
-      final combination3 = await backupService.reconstructFromShares(
-        shares: [originalShares[0], originalShares[2], originalShares[4]],
-      );
+        // Act - Try different combinations of threshold shares
+        final combination1 = await backupService.reconstructFromShares(
+          shares: [originalShares[0], originalShares[1], originalShares[2]],
+        );
+        final combination2 = await backupService.reconstructFromShares(
+          shares: [originalShares[1], originalShares[3], originalShares[4]],
+        );
+        final combination3 = await backupService.reconstructFromShares(
+          shares: [originalShares[0], originalShares[2], originalShares[4]],
+        );
 
-      // Assert - All combinations should recover the original secret
-      expect(combination1, testSecret);
-      expect(combination2, testSecret);
-      expect(combination3, testSecret);
-    });
+        // Assert - All combinations should recover the original secret
+        expect(combination1, testSecret);
+        expect(combination2, testSecret);
+        expect(combination3, testSecret);
+      },
+    );
 
     test('reconstructFromShares throws with insufficient shares', () async {
       // Arrange
@@ -218,21 +231,25 @@ void main() {
         content: 'Different secret',
         threshold: 2,
         totalShards: 3,
-        creatorPubkey: 'abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdef1234',
+        creatorPubkey:
+            'abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdef1234',
         lockboxId: 'different-lockbox',
         lockboxName: 'Different Lockbox',
         peers: [
           {
             'name': 'Peer A',
-            'pubkey': 'abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdef1234'
+            'pubkey':
+                'abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdef1234',
           },
           {
             'name': 'Peer B',
-            'pubkey': '1111111111111111111111111111111111111111111111111111111111111111'
+            'pubkey':
+                '1111111111111111111111111111111111111111111111111111111111111111',
           },
           {
             'name': 'Peer C',
-            'pubkey': '2222222222222222222222222222222222222222222222222222222222222222'
+            'pubkey':
+                '2222222222222222222222222222222222222222222222222222222222222222',
           },
         ],
       );
@@ -321,7 +338,8 @@ void main() {
       );
 
       // Create tampered shares with an invalid prime modulus
-      const invalidPrimeMod = 'aW52YWxpZFByaW1lTW9kdWx1cw=='; // "invalidPrimeModulus" in base64
+      const invalidPrimeMod =
+          'aW52YWxpZFByaW1lTW9kdWx1cw=='; // "invalidPrimeModulus" in base64
 
       // Create tampered shares with an invalid prime modulus
       final tamperedShares = validShares.map((share) {

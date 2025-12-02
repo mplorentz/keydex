@@ -10,7 +10,8 @@ class RelayManagementScreen extends ConsumerStatefulWidget {
   const RelayManagementScreen({super.key});
 
   @override
-  ConsumerState<RelayManagementScreen> createState() => _RelayManagementScreenState();
+  ConsumerState<RelayManagementScreen> createState() =>
+      _RelayManagementScreenState();
 }
 
 class _RelayManagementScreenState extends ConsumerState<RelayManagementScreen> {
@@ -27,9 +28,15 @@ class _RelayManagementScreenState extends ConsumerState<RelayManagementScreen> {
 
   Future<void> _loadData() async {
     try {
-      final relays = await ref.read(relayScanServiceProvider).getRelayConfigurations();
-      final scanningStatus = await ref.read(relayScanServiceProvider).getScanningStatus();
-      final isScanning = await ref.read(relayScanServiceProvider).isScanningActive();
+      final relays = await ref
+          .read(relayScanServiceProvider)
+          .getRelayConfigurations();
+      final scanningStatus = await ref
+          .read(relayScanServiceProvider)
+          .getScanningStatus();
+      final isScanning = await ref
+          .read(relayScanServiceProvider)
+          .isScanningActive();
 
       if (mounted) {
         setState(() {
@@ -70,16 +77,16 @@ class _RelayManagementScreenState extends ConsumerState<RelayManagementScreen> {
         await _loadData();
 
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Added relay: ${relay.name}')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Added relay: ${relay.name}')));
         }
       } catch (e) {
         Log.error('Error adding relay', e);
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error adding relay: $e')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Error adding relay: $e')));
         }
       }
     }
@@ -88,7 +95,9 @@ class _RelayManagementScreenState extends ConsumerState<RelayManagementScreen> {
   Future<void> _toggleRelay(RelayConfiguration relay) async {
     try {
       final updatedRelay = relay.copyWith(isEnabled: !relay.isEnabled);
-      await ref.read(relayScanServiceProvider).updateRelayConfiguration(updatedRelay);
+      await ref
+          .read(relayScanServiceProvider)
+          .updateRelayConfiguration(updatedRelay);
       await _loadData();
     } catch (e) {
       Log.error('Error toggling relay', e);
@@ -116,7 +125,9 @@ class _RelayManagementScreenState extends ConsumerState<RelayManagementScreen> {
 
     if (confirmed == true) {
       try {
-        await ref.read(relayScanServiceProvider).removeRelayConfiguration(relay.id);
+        await ref
+            .read(relayScanServiceProvider)
+            .removeRelayConfiguration(relay.id);
         await _loadData();
 
         if (mounted) {
@@ -127,9 +138,9 @@ class _RelayManagementScreenState extends ConsumerState<RelayManagementScreen> {
       } catch (e) {
         Log.error('Error deleting relay', e);
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error deleting relay: $e')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Error deleting relay: $e')));
         }
       }
     }
@@ -147,16 +158,18 @@ class _RelayManagementScreenState extends ConsumerState<RelayManagementScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(_isScanning ? 'Scanning stopped' : 'Scanning started'),
+            content: Text(
+              _isScanning ? 'Scanning stopped' : 'Scanning started',
+            ),
           ),
         );
       }
     } catch (e) {
       Log.error('Error toggling scanning', e);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     }
   }
@@ -167,16 +180,16 @@ class _RelayManagementScreenState extends ConsumerState<RelayManagementScreen> {
       await _loadData();
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Manual scan completed')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Manual scan completed')));
       }
     } catch (e) {
       Log.error('Error scanning relays', e);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error scanning: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error scanning: $e')));
       }
     }
   }
@@ -212,12 +225,17 @@ class _RelayManagementScreenState extends ConsumerState<RelayManagementScreen> {
                         child: ElevatedButton.icon(
                           onPressed: _toggleScanning,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                _isScanning ? Colors.red : Theme.of(context).primaryColor,
+                            backgroundColor: _isScanning
+                                ? Colors.red
+                                : Theme.of(context).primaryColor,
                             foregroundColor: Colors.white,
                           ),
-                          icon: Icon(_isScanning ? Icons.stop : Icons.play_arrow),
-                          label: Text(_isScanning ? 'Stop Scanning' : 'Start Scanning'),
+                          icon: Icon(
+                            _isScanning ? Icons.stop : Icons.play_arrow,
+                          ),
+                          label: Text(
+                            _isScanning ? 'Stop Scanning' : 'Start Scanning',
+                          ),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -241,11 +259,18 @@ class _RelayManagementScreenState extends ConsumerState<RelayManagementScreen> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(Icons.dns_outlined, size: 64, color: Colors.grey),
+                              const Icon(
+                                Icons.dns_outlined,
+                                size: 64,
+                                color: Colors.grey,
+                              ),
                               const SizedBox(height: 16),
                               Text(
                                 'No relays configured',
-                                style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.grey[600],
+                                ),
                               ),
                               const SizedBox(height: 8),
                               Text(
@@ -302,10 +327,7 @@ class _RelayManagementScreenState extends ConsumerState<RelayManagementScreen> {
             _buildStatusRow('Shares Found', '${status.sharesFound}'),
             _buildStatusRow('Requests Found', '${status.requestsFound}'),
             if (status.lastScan != null)
-              _buildStatusRow(
-                'Last Scan',
-                _formatDateTime(status.lastScan!),
-              ),
+              _buildStatusRow('Last Scan', _formatDateTime(status.lastScan!)),
             if (status.lastError != null)
               Padding(
                 padding: const EdgeInsets.only(top: 8),
@@ -343,7 +365,9 @@ class _RelayManagementScreenState extends ConsumerState<RelayManagementScreen> {
               : Colors.grey[300],
           child: Icon(
             Icons.dns,
-            color: relay.isEnabled ? Theme.of(context).primaryColor : Colors.grey,
+            color: relay.isEnabled
+                ? Theme.of(context).primaryColor
+                : Colors.grey,
           ),
         ),
         title: Text(
@@ -353,13 +377,19 @@ class _RelayManagementScreenState extends ConsumerState<RelayManagementScreen> {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(relay.url, style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+            Text(
+              relay.url,
+              style: TextStyle(color: Colors.grey[600], fontSize: 12),
+            ),
             const SizedBox(height: 4),
             Row(
               children: [
                 if (relay.isTrusted)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.green[100],
                       borderRadius: BorderRadius.circular(4),
@@ -371,7 +401,10 @@ class _RelayManagementScreenState extends ConsumerState<RelayManagementScreen> {
                   ),
                 if (!relay.isEnabled)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
                     margin: const EdgeInsets.only(left: 4),
                     decoration: BoxDecoration(
                       color: Colors.grey[200],

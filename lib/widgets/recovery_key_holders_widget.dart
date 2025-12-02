@@ -10,14 +10,13 @@ import '../providers/lockbox_provider.dart';
 class RecoveryKeyHoldersWidget extends ConsumerWidget {
   final String recoveryRequestId;
 
-  const RecoveryKeyHoldersWidget({
-    super.key,
-    required this.recoveryRequestId,
-  });
+  const RecoveryKeyHoldersWidget({super.key, required this.recoveryRequestId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final requestAsync = ref.watch(recoveryRequestByIdProvider(recoveryRequestId));
+    final requestAsync = ref.watch(
+      recoveryRequestByIdProvider(recoveryRequestId),
+    );
 
     return requestAsync.when(
       loading: () => const Card(
@@ -94,19 +93,25 @@ class RecoveryKeyHoldersWidget extends ConsumerWidget {
   }
 
   /// Extract all key holders from lockbox, merge with responses
-  List<_KeyHolderInfo> _extractKeyHolders(Lockbox? lockbox, RecoveryRequest request) {
+  List<_KeyHolderInfo> _extractKeyHolders(
+    Lockbox? lockbox,
+    RecoveryRequest request,
+  ) {
     if (lockbox == null) return [];
 
     // Get key holders with names from backupConfig if available
     if (lockbox.backupConfig?.keyHolders.isNotEmpty == true) {
-      return lockbox.backupConfig!.keyHolders.where((kh) => kh.pubkey != null).map((kh) {
-        final response = request.keyHolderResponses[kh.pubkey];
-        return _KeyHolderInfo(
-          pubkey: kh.pubkey!,
-          name: kh.displayName,
-          response: response,
-        );
-      }).toList();
+      return lockbox.backupConfig!.keyHolders
+          .where((kh) => kh.pubkey != null)
+          .map((kh) {
+            final response = request.keyHolderResponses[kh.pubkey];
+            return _KeyHolderInfo(
+              pubkey: kh.pubkey!,
+              name: kh.displayName,
+              response: response,
+            );
+          })
+          .toList();
     }
 
     // Fallback: use peers from shards
@@ -117,19 +122,23 @@ class RecoveryKeyHoldersWidget extends ConsumerWidget {
       // Add owner if ownerName is present
       if (lockbox.ownerName != null) {
         final response = request.keyHolderResponses[firstShard.creatorPubkey];
-        keyHolders.add(_KeyHolderInfo(
-          pubkey: firstShard.creatorPubkey,
-          name: lockbox.ownerName,
-          response: response,
-        ));
+        keyHolders.add(
+          _KeyHolderInfo(
+            pubkey: firstShard.creatorPubkey,
+            name: lockbox.ownerName,
+            response: response,
+          ),
+        );
       } else if (firstShard.ownerName != null) {
         // Fallback to shard ownerName
         final response = request.keyHolderResponses[firstShard.creatorPubkey];
-        keyHolders.add(_KeyHolderInfo(
-          pubkey: firstShard.creatorPubkey,
-          name: firstShard.ownerName,
-          response: response,
-        ));
+        keyHolders.add(
+          _KeyHolderInfo(
+            pubkey: firstShard.creatorPubkey,
+            name: firstShard.ownerName,
+            response: response,
+          ),
+        );
       }
 
       // Add peers (key holders) - now a list of maps with name and pubkey
@@ -140,11 +149,13 @@ class RecoveryKeyHoldersWidget extends ConsumerWidget {
           if (peerPubkey == null) continue;
 
           final response = request.keyHolderResponses[peerPubkey];
-          keyHolders.add(_KeyHolderInfo(
-            pubkey: peerPubkey,
-            name: peerName,
-            response: response,
-          ));
+          keyHolders.add(
+            _KeyHolderInfo(
+              pubkey: peerPubkey,
+              name: peerName,
+              response: response,
+            ),
+          );
         }
       }
 
@@ -202,7 +213,10 @@ class RecoveryKeyHoldersWidget extends ConsumerWidget {
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: _getResponseColor(status).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(4),
@@ -289,9 +303,5 @@ class _KeyHolderInfo {
   final String? name;
   final RecoveryResponse? response;
 
-  _KeyHolderInfo({
-    required this.pubkey,
-    this.name,
-    this.response,
-  });
+  _KeyHolderInfo({required this.pubkey, this.name, this.response});
 }

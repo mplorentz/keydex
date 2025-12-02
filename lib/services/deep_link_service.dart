@@ -10,9 +10,7 @@ import '../screens/invitation_acceptance_screen.dart';
 
 /// Provider for DeepLinkService
 final deepLinkServiceProvider = Provider<DeepLinkService>((ref) {
-  final service = DeepLinkService(
-    ref.read(invitationServiceProvider),
-  );
+  final service = DeepLinkService(ref.read(invitationServiceProvider));
   ref.onDispose(() => service.dispose());
   return service;
 });
@@ -130,7 +128,8 @@ class DeepLinkService {
       }
 
       Log.info(
-          'Parsed invitation link: inviteCode=${linkData.inviteCode}, lockboxId=${linkData.lockboxId}, lockboxName=${linkData.lockboxName}');
+        'Parsed invitation link: inviteCode=${linkData.inviteCode}, lockboxId=${linkData.lockboxId}, lockboxName=${linkData.lockboxName}',
+      );
 
       // Create/update invitation record on receiving side
       // This allows the invitation acceptance screen to load the invitation
@@ -146,14 +145,15 @@ class DeepLinkService {
       if (_navigatorKey?.currentContext != null) {
         Navigator.of(_navigatorKey!.currentContext!).push(
           MaterialPageRoute(
-            builder: (context) => InvitationAcceptanceScreen(
-              inviteCode: linkData.inviteCode,
-            ),
+            builder: (context) =>
+                InvitationAcceptanceScreen(inviteCode: linkData.inviteCode),
           ),
         );
         Log.info('Navigated to invitation acceptance screen');
       } else {
-        Log.warning('Navigator key not set, cannot navigate to invitation screen');
+        Log.warning(
+          'Navigator key not set, cannot navigate to invitation screen',
+        );
         _showErrorToUser('Unable to open invitation. Please try again.');
       }
     } on InvalidInvitationLinkException catch (e) {
@@ -189,9 +189,13 @@ class DeepLinkService {
   InvitationLinkData? parseInvitationLink(Uri uri) {
     try {
       // Validate scheme: https or keydex
-      if (uri.scheme != 'https' && uri.scheme != 'keydex' && uri.scheme != 'http') {
-        throw InvalidInvitationLinkException(uri.toString(),
-            'Unsupported URL scheme: ${uri.scheme}. Expected https:// or keydex://');
+      if (uri.scheme != 'https' &&
+          uri.scheme != 'keydex' &&
+          uri.scheme != 'http') {
+        throw InvalidInvitationLinkException(
+          uri.toString(),
+          'Unsupported URL scheme: ${uri.scheme}. Expected https:// or keydex://',
+        );
       }
 
       // Validate host: keydex.app (for Universal Links) or keydex.app (for custom scheme)
@@ -199,39 +203,51 @@ class DeepLinkService {
       final allowedHosts = ['keydex.app', 'localhost'];
       if (!allowedHosts.contains(uri.host)) {
         throw InvalidInvitationLinkException(
-            uri.toString(), 'Invalid host: ${uri.host}. Expected keydex.app');
+          uri.toString(),
+          'Invalid host: ${uri.host}. Expected keydex.app',
+        );
       }
 
       // Extract invite code from path: /invite/{code}
       final pathSegments = uri.pathSegments;
       if (pathSegments.length != 2 || pathSegments[0] != 'invite') {
         throw InvalidInvitationLinkException(
-            uri.toString(), 'Invalid path format: ${uri.path}. Expected format: /invite/{code}');
+          uri.toString(),
+          'Invalid path format: ${uri.path}. Expected format: /invite/{code}',
+        );
       }
 
       final inviteCode = pathSegments[1];
       if (!isValidInviteCode(inviteCode)) {
         throw InvalidInvitationLinkException(
-            uri.toString(), 'Invalid invite code format: $inviteCode');
+          uri.toString(),
+          'Invalid invite code format: $inviteCode',
+        );
       }
 
       // Extract owner pubkey from query params
       final ownerPubkey = uri.queryParameters['owner'];
       if (ownerPubkey == null || ownerPubkey.isEmpty) {
         throw InvalidInvitationLinkException(
-            uri.toString(), 'Missing required parameter: owner (pubkey)');
+          uri.toString(),
+          'Missing required parameter: owner (pubkey)',
+        );
       }
 
       if (!isValidHexPubkey(ownerPubkey)) {
-        throw InvalidInvitationLinkException(uri.toString(),
-            'Invalid owner pubkey format: $ownerPubkey (must be 64 hex characters)');
+        throw InvalidInvitationLinkException(
+          uri.toString(),
+          'Invalid owner pubkey format: $ownerPubkey (must be 64 hex characters)',
+        );
       }
 
       // Extract lockboxId from query params
       final lockboxId = uri.queryParameters['lockbox'];
       if (lockboxId == null || lockboxId.isEmpty) {
         throw InvalidInvitationLinkException(
-            uri.toString(), 'Missing required parameter: lockbox (lockbox ID)');
+          uri.toString(),
+          'Missing required parameter: lockbox (lockbox ID)',
+        );
       }
 
       // Extract lockbox name from query params (optional)
@@ -259,23 +275,29 @@ class DeepLinkService {
       // Validate we have at least one relay URL
       if (relayUrls.isEmpty) {
         throw InvalidInvitationLinkException(
-            uri.toString(), 'No valid relay URLs found. At least one relay URL is required.');
+          uri.toString(),
+          'No valid relay URLs found. At least one relay URL is required.',
+        );
       }
 
       // Validate we don't have too many relay URLs (max 3)
       if (relayUrls.length > 3) {
         throw InvalidInvitationLinkException(
-            uri.toString(), 'Too many relay URLs: ${relayUrls.length} (maximum 3 allowed)');
+          uri.toString(),
+          'Too many relay URLs: ${relayUrls.length} (maximum 3 allowed)',
+        );
       }
 
       Log.info(
-          'Successfully parsed invitation link: inviteCode=$inviteCode, lockboxId=$lockboxId, lockboxName=$lockboxName, owner=$ownerPubkey, relays=${relayUrls.length}');
+        'Successfully parsed invitation link: inviteCode=$inviteCode, lockboxId=$lockboxId, lockboxName=$lockboxName, owner=$ownerPubkey, relays=${relayUrls.length}',
+      );
 
       return (
         inviteCode: inviteCode,
         lockboxId: lockboxId,
-        lockboxName:
-            lockboxName != null && lockboxName.isNotEmpty ? Uri.decodeComponent(lockboxName) : null,
+        lockboxName: lockboxName != null && lockboxName.isNotEmpty
+            ? Uri.decodeComponent(lockboxName)
+            : null,
         ownerPubkey: ownerPubkey,
         relayUrls: relayUrls,
       );
@@ -283,7 +305,10 @@ class DeepLinkService {
       rethrow;
     } catch (e) {
       Log.error('Error parsing invitation link: $uri', e);
-      throw InvalidInvitationLinkException(uri.toString(), 'Failed to parse invitation link: $e');
+      throw InvalidInvitationLinkException(
+        uri.toString(),
+        'Failed to parse invitation link: $e',
+      );
     }
   }
 }

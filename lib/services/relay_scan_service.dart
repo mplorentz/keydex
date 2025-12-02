@@ -49,7 +49,9 @@ class ScanningStatus {
   factory ScanningStatus.fromJson(Map<String, dynamic> json) {
     return ScanningStatus(
       isActive: json['isActive'] as bool,
-      lastScan: json['lastScan'] != null ? DateTime.parse(json['lastScan'] as String) : null,
+      lastScan: json['lastScan'] != null
+          ? DateTime.parse(json['lastScan'] as String)
+          : null,
       totalRelays: json['totalRelays'] as int,
       activeRelays: json['activeRelays'] as int,
       sharesFound: json['sharesFound'] as int,
@@ -94,7 +96,9 @@ class RelayScanService {
           // Directly add to cache and save without calling initialize recursively
           _cachedRelays!.add(localhostRelay);
           await _saveRelayConfigurations();
-          Log.info('Auto-added localhost relay in debug mode: ws://localhost:10547');
+          Log.info(
+            'Auto-added localhost relay in debug mode: ws://localhost:10547',
+          );
         } catch (e) {
           Log.error('Error auto-adding localhost relay', e);
         }
@@ -104,7 +108,9 @@ class RelayScanService {
       _isInitialized = true;
 
       // In debug mode with newly added localhost relay, start scanning automatically
-      if (kDebugMode && _cachedRelays!.length == 1 && _cachedRelays![0].id == 'localhost-debug') {
+      if (kDebugMode &&
+          _cachedRelays!.length == 1 &&
+          _cachedRelays![0].id == 'localhost-debug') {
         try {
           await startRelayScanning();
           Log.info('Auto-started scanning with localhost relay');
@@ -119,22 +125,31 @@ class RelayScanService {
           // Check if scanning was previously active (user didn't explicitly stop it)
           // If scanningStatus is null or isActive was true, auto-start
           // If isActive was false, respect the user's explicit stop
-          final shouldAutoStart = _scanningStatus == null || _scanningStatus!.isActive;
+          final shouldAutoStart =
+              _scanningStatus == null || _scanningStatus!.isActive;
 
           if (shouldAutoStart) {
             try {
               await startRelayScanning();
               Log.info(
-                  'Auto-started relay scanning on initialization with ${enabledRelays.length} enabled relay(s)');
+                'Auto-started relay scanning on initialization with ${enabledRelays.length} enabled relay(s)',
+              );
             } catch (e) {
-              Log.error('Error auto-starting relay scanning on initialization', e);
+              Log.error(
+                'Error auto-starting relay scanning on initialization',
+                e,
+              );
             }
           } else {
-            Log.debug('Skipping auto-start: scanning was explicitly stopped by user');
+            Log.debug(
+              'Skipping auto-start: scanning was explicitly stopped by user',
+            );
           }
         }
       }
-      Log.info('RelayScanService initialized with ${_cachedRelays?.length ?? 0} relays');
+      Log.info(
+        'RelayScanService initialized with ${_cachedRelays?.length ?? 0} relays',
+      );
     } catch (e) {
       Log.error('Error initializing RelayScanService', e);
       _cachedRelays = [];
@@ -155,9 +170,13 @@ class RelayScanService {
     try {
       final List<dynamic> jsonList = json.decode(jsonData);
       _cachedRelays = jsonList
-          .map((json) => RelayConfiguration.fromJson(json as Map<String, dynamic>))
+          .map(
+            (json) => RelayConfiguration.fromJson(json as Map<String, dynamic>),
+          )
           .toList();
-      Log.info('Loaded ${_cachedRelays!.length} relay configurations from storage');
+      Log.info(
+        'Loaded ${_cachedRelays!.length} relay configurations from storage',
+      );
     } catch (e) {
       Log.error('Error loading relay configurations', e);
       _cachedRelays = [];
@@ -264,7 +283,9 @@ class RelayScanService {
     }
 
     // Check for duplicate URL
-    final existingRelay = _cachedRelays!.where((r) => r.url == relay.url).firstOrNull;
+    final existingRelay = _cachedRelays!
+        .where((r) => r.url == relay.url)
+        .firstOrNull;
     if (existingRelay != null) {
       throw ArgumentError('Relay with URL ${relay.url} already exists');
     }
@@ -330,7 +351,8 @@ class RelayScanService {
 
     final relay = _cachedRelays!.firstWhere(
       (r) => r.id == relayId,
-      orElse: () => throw ArgumentError('Relay configuration not found: $relayId'),
+      orElse: () =>
+          throw ArgumentError('Relay configuration not found: $relayId'),
     );
 
     _cachedRelays!.removeWhere((r) => r.id == relayId);
@@ -465,12 +487,12 @@ class RelayScanService {
         if (!relay.shouldScan) continue;
 
         try {
-          Log.info('Updating scan timestamp for relay: ${relay.name} (${relay.url})');
+          Log.info(
+            'Updating scan timestamp for relay: ${relay.name} (${relay.url})',
+          );
 
           // Update last scanned timestamp
-          final updatedRelay = relay.copyWith(
-            lastScanned: DateTime.now(),
-          );
+          final updatedRelay = relay.copyWith(lastScanned: DateTime.now());
 
           // Update without triggering NDK changes
           final relayIndex = _cachedRelays!.indexWhere((r) => r.id == relay.id);
@@ -502,7 +524,9 @@ class RelayScanService {
       );
       await _saveScanningStatus();
 
-      Log.info('Relay scan complete. NDK listening on ${ndkRelays.length} relays');
+      Log.info(
+        'Relay scan complete. NDK listening on ${ndkRelays.length} relays',
+      );
     } catch (e) {
       Log.error('Error during relay scan', e);
 
@@ -578,7 +602,9 @@ class RelayScanService {
       }
 
       // Check if relay already exists by URL
-      final existingRelay = _cachedRelays!.where((r) => r.url == relayUrl).firstOrNull;
+      final existingRelay = _cachedRelays!
+          .where((r) => r.url == relayUrl)
+          .firstOrNull;
 
       if (existingRelay == null) {
         // Generate a name from the URL (hostname or full URL if hostname is empty)
@@ -605,11 +631,15 @@ class RelayScanService {
       } else if (!existingRelay.isEnabled) {
         // Enable existing relay if it was disabled
         final updatedRelay = existingRelay.copyWith(isEnabled: true);
-        final relayIndex = _cachedRelays!.indexWhere((r) => r.id == existingRelay.id);
+        final relayIndex = _cachedRelays!.indexWhere(
+          (r) => r.id == existingRelay.id,
+        );
         if (relayIndex != -1) {
           _cachedRelays![relayIndex] = updatedRelay;
           hasChanges = true;
-          Log.info('Enabled existing relay from sync: ${updatedRelay.name} (${updatedRelay.url})');
+          Log.info(
+            'Enabled existing relay from sync: ${updatedRelay.name} (${updatedRelay.url})',
+          );
         }
       }
     }
@@ -621,10 +651,12 @@ class RelayScanService {
       // If scanning is active, add new relays to NDK immediately
       if (_isScanning) {
         final newRelays = _cachedRelays!
-            .where((r) =>
-                relayUrls.contains(r.url) &&
-                r.isEnabled &&
-                !ndkService.getActiveRelays().contains(r.url))
+            .where(
+              (r) =>
+                  relayUrls.contains(r.url) &&
+                  r.isEnabled &&
+                  !ndkService.getActiveRelays().contains(r.url),
+            )
             .toList();
 
         for (final relay in newRelays) {
@@ -662,7 +694,9 @@ class RelayScanService {
     // Start scanning
     try {
       await startRelayScanning();
-      Log.info('Auto-started relay scanning with ${enabledRelays.length} enabled relay(s)');
+      Log.info(
+        'Auto-started relay scanning with ${enabledRelays.length} enabled relay(s)',
+      );
     } catch (e) {
       Log.error('Error auto-starting relay scanning', e);
     }

@@ -43,10 +43,7 @@ class _StatusData {
 class LockboxStatusBanner extends ConsumerWidget {
   final Lockbox lockbox;
 
-  const LockboxStatusBanner({
-    super.key,
-    required this.lockbox,
-  });
+  const LockboxStatusBanner({super.key, required this.lockbox});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -58,13 +55,16 @@ class LockboxStatusBanner extends ConsumerWidget {
       data: (currentPubkey) {
         final isOwner = currentPubkey != null && lockbox.isOwned(currentPubkey);
         final isSteward =
-            currentPubkey != null && !lockbox.isOwned(currentPubkey) && lockbox.shards.isNotEmpty;
+            currentPubkey != null &&
+            !lockbox.isOwned(currentPubkey) &&
+            lockbox.shards.isNotEmpty;
 
         // Handle recovery status - for owners: only when active, for stewards: only if they initiated it
         final hasNonArchivedRecovery = lockbox.recoveryRequests.any(
           (request) => request.status != RecoveryRequestStatus.archived,
         );
-        final stewardInitiatedRecovery = isSteward &&
+        final stewardInitiatedRecovery =
+            isSteward &&
             hasNonArchivedRecovery &&
             lockbox.recoveryRequests.any(
               (request) =>
@@ -124,7 +124,8 @@ class LockboxStatusBanner extends ConsumerWidget {
         context,
         const _StatusData(
           headline: 'Recovery not set up',
-          subtext: 'Step 1 of 3: Choose stewards and rules in your Recovery Plan.',
+          subtext:
+              'Step 1 of 3: Choose stewards and rules in your Recovery Plan.',
           icon: Icons.info_outline,
           accentColor: Color(0xFF676F62), // Secondary text color
           variant: _StatusVariant.noPlan,
@@ -137,12 +138,14 @@ class LockboxStatusBanner extends ConsumerWidget {
     // Plan exists but not ready
     if (!backupConfig.isReady) {
       // Plan is invalid or inactive
-      if (!backupConfig.isValid || backupConfig.status == BackupStatus.inactive) {
+      if (!backupConfig.isValid ||
+          backupConfig.status == BackupStatus.inactive) {
         return _buildBanner(
           context,
           const _StatusData(
             headline: 'Recovery plan needs attention',
-            subtext: 'Fix your stewards, relays, or rules in the Recovery Plan.',
+            subtext:
+                'Fix your stewards, relays, or rules in the Recovery Plan.',
             icon: Icons.warning_amber,
             accentColor: Color(0xFFBA1A1A), // Error color
             variant: _StatusVariant.planNeedsAttention,
@@ -153,7 +156,8 @@ class LockboxStatusBanner extends ConsumerWidget {
       }
 
       // Waiting for stewards to join
-      if ((backupConfig.pendingInvitationsCount > 0 || !backupConfig.canDistribute) &&
+      if ((backupConfig.pendingInvitationsCount > 0 ||
+              !backupConfig.canDistribute) &&
           backupConfig.lastRedistribution == null) {
         final pendingCount = backupConfig.pendingInvitationsCount;
         return _buildBanner(
@@ -180,7 +184,8 @@ class LockboxStatusBanner extends ConsumerWidget {
           context,
           const _StatusData(
             headline: 'Keys not distributed',
-            subtext: 'Step 2 of 3: Generate and distribute keys to stewards from this screen.',
+            subtext:
+                'Step 2 of 3: Generate and distribute keys to stewards from this screen.',
             icon: Icons.send,
             accentColor: Color(0xFF7A4A2F), // Umber
             variant: _StatusVariant.keysNotDistributed,
@@ -193,7 +198,8 @@ class LockboxStatusBanner extends ConsumerWidget {
       // Almost ready - waiting for confirmations
       if (backupConfig.status == BackupStatus.active &&
           backupConfig.acknowledgedKeyHoldersCount < backupConfig.threshold) {
-        final needed = backupConfig.threshold - backupConfig.acknowledgedKeyHoldersCount;
+        final needed =
+            backupConfig.threshold - backupConfig.acknowledgedKeyHoldersCount;
         return _buildBanner(
           context,
           _StatusData(
@@ -279,7 +285,8 @@ class LockboxStatusBanner extends ConsumerWidget {
     }
 
     // Key holder with active backup
-    if (lockbox.state == LockboxState.keyHolder && backupConfig?.status == BackupStatus.active) {
+    if (lockbox.state == LockboxState.keyHolder &&
+        backupConfig?.status == BackupStatus.active) {
       return _buildBanner(
         context,
         const _StatusData(
@@ -305,7 +312,8 @@ class LockboxStatusBanner extends ConsumerWidget {
         context,
         const _StatusData(
           headline: 'Your key may not be usable yet',
-          subtext: 'The owner must finish or fix their recovery plan before recovery can proceed.',
+          subtext:
+              'The owner must finish or fix their recovery plan before recovery can proceed.',
           icon: Icons.warning_amber,
           accentColor: Color(0xFFBA1A1A), // Error color
           variant: _StatusVariant.stewardBlocked,
@@ -341,9 +349,7 @@ class LockboxStatusBanner extends ConsumerWidget {
 
     return Container(
       width: double.infinity,
-      decoration: BoxDecoration(
-        color: theme.scaffoldBackgroundColor,
-      ),
+      decoration: BoxDecoration(color: theme.scaffoldBackgroundColor),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -370,10 +376,7 @@ class LockboxStatusBanner extends ConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 // Headline
-                Text(
-                  statusData.headline,
-                  style: theme.textTheme.headlineSmall,
-                ),
+                Text(statusData.headline, style: theme.textTheme.headlineSmall),
                 // Optional role context (only show if not obvious from context)
                 if (isOwner || isSteward) ...[
                   const SizedBox(height: 4),
@@ -384,10 +387,7 @@ class LockboxStatusBanner extends ConsumerWidget {
                 ],
                 // Subtext
                 const SizedBox(height: 4),
-                Text(
-                  statusData.subtext,
-                  style: theme.textTheme.bodyMedium,
-                ),
+                Text(statusData.subtext, style: theme.textTheme.bodyMedium),
               ],
             ),
           ),
