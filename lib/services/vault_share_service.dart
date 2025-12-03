@@ -3,34 +3,34 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ndk/ndk.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/shard_data.dart';
-import '../models/lockbox.dart';
+import '../models/vault.dart';
 import '../models/nostr_kinds.dart';
-import '../providers/lockbox_provider.dart';
+import '../providers/vault_provider.dart';
 import 'logger.dart';
 import 'ndk_service.dart';
 
-/// Provider for LockboxShareService
-/// This service depends on LockboxRepository for shard management
-final lockboxShareServiceProvider = Provider<LockboxShareService>((ref) {
-  final repository = ref.watch(lockboxRepositoryProvider);
-  return LockboxShareService(repository, () => ref.read(ndkServiceProvider));
+/// Provider for VaultShareService
+/// This service depends on VaultRepository for shard management
+final vaultShareServiceProvider = Provider<VaultShareService>((ref) {
+  final repository = ref.watch(vaultRepositoryProvider);
+  return VaultShareService(repository, () => ref.read(ndkServiceProvider));
 });
 
-/// Service for managing lockbox shares and recovery operations
+/// Service for managing vault shares and recovery operations
 ///
 /// Manages two types of shards:
-/// 1. Key holder shards: Shards we hold as a key holder for others (one per lockbox)
+/// 1. Key holder shards: Shards we hold as a steward for others (one per vault)
 /// 2. Recovery shards: Shards we collect during recovery (multiple per recovery request)
-class LockboxShareService {
-  final LockboxRepository repository;
+class VaultShareService {
+  final VaultRepository repository;
   final NdkService Function() _getNdkService;
 
-  LockboxShareService(this.repository, this._getNdkService);
-  static const String _shardDataKey = 'lockbox_shard_data';
+  VaultShareService(this.repository, this._getNdkService);
+  static const String _shardDataKey = 'vault_shard_data';
   static const String _recoveryShardDataKey = 'recovery_shard_data';
 
-  // Shards we hold as a key holder (one per lockbox)
-  static Map<String, ShardData>? _cachedShardData; // lockboxId -> ShardData
+  // Shards we hold as a steward (one per vault)
+  static Map<String, ShardData>? _cachedShardData; // vaultId -> ShardData
 
   // Shards collected during recovery (multiple per recovery request)
   static Map<String, List<ShardData>>?
@@ -47,10 +47,10 @@ class LockboxShareService {
       await _loadRecoveryShardData();
       _isInitialized = true;
       Log.info(
-        'LockboxShareService initialized with ${_cachedShardData?.length ?? 0} key holder shards and ${_cachedRecoveryShards?.length ?? 0} recovery requests',
+        'VaultShareService initialized with ${_cachedShardData?.length ?? 0} steward shards and ${_cachedRecoveryShards?.length ?? 0} recovery requests',
       );
     } catch (e) {
-      Log.error('Error initializing LockboxShareService', e);
+      Log.error('Error initializing VaultShareService', e);
       _cachedShardData = {};
       _cachedRecoveryShards = {};
       _isInitialized = true;
@@ -69,12 +69,12 @@ class LockboxShareService {
 
     try {
       final Map<String, dynamic> jsonMap = json.decode(jsonData);
-      _cachedShardData = jsonMap.map((lockboxId, shardJson) {
+      _cachedShardData = jsonMap.map((vaultId, shardJson) {
         final shard = shardDataFromJson(shardJson as Map<String, dynamic>);
-        return MapEntry(lockboxId, shard);
+        return MapEntry(vaultId, shard);
       });
       Log.info(
-        'Loaded shard data for ${_cachedShardData!.length} lockboxes from storage',
+        'Loaded shard data for ${_cachedShardData!.length} vaultes from storage',
       );
     } catch (e) {
       Log.error('Error loading shard data', e);
@@ -87,16 +87,16 @@ class LockboxShareService {
     if (_cachedShardData == null) return;
 
     try {
-      final jsonMap = _cachedShardData!.map((lockboxId, shard) {
+      final jsonMap = _cachedShardData!.map((vaultId, shard) {
         final shardJson = shardDataToJson(shard);
-        return MapEntry(lockboxId, shardJson);
+        return MapEntry(vaultId, shardJson);
       });
       final jsonString = json.encode(jsonMap);
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_shardDataKey, jsonString);
       Log.info(
-        'Saved shard data for ${_cachedShardData!.length} lockboxes to storage',
+        'Saved shard data for ${_cachedShardData!.length} vaultes to storage',
       );
     } catch (e) {
       Log.error('Error saving shard data', e);
@@ -156,16 +156,16 @@ class LockboxShareService {
     }
   }
 
-  /// Get all shares for a lockbox
-  /// Now delegates to LockboxService
-  Future<List<ShardData>> getLockboxShares(String lockboxId) async {
-    return await repository.getShardsForLockbox(lockboxId);
+  /// Get all shares for a vault
+  /// Now delegates to VaultService
+  Future<List<ShardData>> getVaultShares(String vaultId) async {
+    return await repository.getShardsForVault(vaultId);
   }
 
-  /// Get the share for a lockbox (returns first shard if multiple exist)
-  /// Now delegates to LockboxRepository
-  Future<ShardData?> getLockboxShare(String lockboxId) async {
-    final shards = await repository.getShardsForLockbox(lockboxId);
+  /// Get the share for a vault (returns first shard if multiple exist)
+  /// Now delegates to VaultRepository
+  Future<ShardData?> getVaultShare(String vaultId) async {
+    final shards = await repository.getShardsForVault(vaultId);
     return shards.isNotEmpty ? shards.first : null;
   }
 
@@ -182,33 +182,33 @@ class LockboxShareService {
     return null;
   }
 
-  /// Add or update shard data for a lockbox
-  /// Now delegates to LockboxService
-  Future<void> addLockboxShare(String lockboxId, ShardData shardData) async {
+  /// Add or update shard data for a vault
+  /// Now delegates to VaultService
+  Future<void> addVaultShare(String vaultId, ShardData shardData) async {
     // Validate shard data
     if (!shardData.isValid) {
       throw ArgumentError('Invalid shard data');
     }
 
-    // Create a lockbox record if one doesn't exist yet
-    await _ensureLockboxExists(lockboxId, shardData);
+    // Create a vault record if one doesn't exist yet
+    await _ensureVaultExists(vaultId, shardData);
 
-    // Add shard to lockbox via LockboxService
-    await repository.addShardToLockbox(lockboxId, shardData);
+    // Add shard to vault via VaultService
+    await repository.addShardToVault(vaultId, shardData);
     Log.info(
-      'Added shard for lockbox $lockboxId (event: ${shardData.nostrEventId})',
+      'Added shard for vault $vaultId (event: ${shardData.nostrEventId})',
     );
   }
 
-  /// Process a received lockbox share (invitation flow)
+  /// Process a received vault share (invitation flow)
   ///
   /// This method handles the complete flow when an invitee receives a shard:
-  /// 1. Stores the shard via addLockboxShare
+  /// 1. Stores the shard via addVaultShare
   /// 2. Sends a confirmation event to notify the owner
   ///
   /// Uses relay URLs from the shard data (included during distribution).
-  Future<void> processLockboxShare(
-    String lockboxId,
+  Future<void> processVaultShare(
+    String vaultId,
     ShardData shardData,
   ) async {
     // Validate shard data
@@ -217,7 +217,7 @@ class LockboxShareService {
     }
 
     // Store the shard first
-    await addLockboxShare(lockboxId, shardData);
+    await addVaultShare(vaultId, shardData);
 
     // Send shard confirmation event after successfully storing the shard
     // This is required for invitation flow - the owner needs to know the invitee received the shard
@@ -229,7 +229,7 @@ class LockboxShareService {
 
         // Send confirmation event
         final eventId = await sendShardConfirmationEvent(
-          lockboxId: lockboxId,
+          vaultId: vaultId,
           shardIndex: shardIndex,
           ownerPubkey: ownerPubkey,
           relayUrls: shardData.relayUrls!,
@@ -237,21 +237,21 @@ class LockboxShareService {
 
         if (eventId != null) {
           Log.info(
-            'Sent shard confirmation event $eventId for lockbox $lockboxId, shard $shardIndex',
+            'Sent shard confirmation event $eventId for vault $vaultId, shard $shardIndex',
           );
         } else {
           Log.warning(
-            'Failed to send shard confirmation event for lockbox $lockboxId, shard $shardIndex',
+            'Failed to send shard confirmation event for vault $vaultId, shard $shardIndex',
           );
         }
       } else {
         Log.warning(
-          'No relay URLs found in shard data for lockbox $lockboxId - cannot send shard confirmation event',
+          'No relay URLs found in shard data for vault $vaultId - cannot send shard confirmation event',
         );
       }
     } catch (e) {
       Log.error(
-        'Error sending shard confirmation event for lockbox $lockboxId',
+        'Error sending shard confirmation event for vault $vaultId',
         e,
       );
       // Don't fail shard storage if confirmation sending fails
@@ -264,11 +264,11 @@ class LockboxShareService {
   /// All confirmation data is stored in tags.
   /// Encrypts using NIP-44.
   /// Creates Nostr event (kind 1342).
-  /// Signs with key holder's private key.
+  /// Signs with steward's private key.
   /// Publishes to relays.
   /// Returns event ID.
   Future<String?> sendShardConfirmationEvent({
-    required String lockboxId,
+    required String vaultId,
     required int shardIndex,
     required String ownerPubkey, // Hex format
     required List<String> relayUrls,
@@ -282,7 +282,7 @@ class LockboxShareService {
       }
 
       Log.info(
-        'Sending shard confirmation event for lockbox: ${lockboxId.substring(0, 8)}..., shard: $shardIndex',
+        'Sending shard confirmation event for vault: ${vaultId.substring(0, 8)}..., shard: $shardIndex',
       );
 
       // Publish using NdkService with empty content, all data in tags
@@ -292,9 +292,9 @@ class LockboxShareService {
         recipientPubkey: ownerPubkey,
         relays: relayUrls,
         tags: [
-          ['lockbox_id', lockboxId],
+          ['vault_id', vaultId],
           ['shard_index', shardIndex.toString()],
-          ['key_holder_pubkey', currentPubkey],
+          ['steward_pubkey', currentPubkey],
           ['confirmed_at', DateTime.now().toIso8601String()],
         ],
       );
@@ -304,41 +304,41 @@ class LockboxShareService {
     }
   }
 
-  /// Ensure a lockbox record exists for received shares
-  Future<void> _ensureLockboxExists(
-    String lockboxId,
+  /// Ensure a vault record exists for received shares
+  Future<void> _ensureVaultExists(
+    String vaultId,
     ShardData shardData,
   ) async {
     try {
-      // Check if lockbox already exists
-      final existingLockbox = await repository.getLockbox(lockboxId);
-      if (existingLockbox != null) {
-        // Lockbox exists - check if it's a stub (no shards, no content)
+      // Check if vault already exists
+      final existingVault = await repository.getVault(vaultId);
+      if (existingVault != null) {
+        // Vault exists - check if it's a stub (no shards, no content)
         // If stub, update it with shard data
-        if (existingLockbox.shards.isEmpty && existingLockbox.content == null) {
-          // This is a stub lockbox created when invitation was accepted
+        if (existingVault.shards.isEmpty && existingVault.content == null) {
+          // This is a stub vault created when invitation was accepted
           // Update it with shard data and name from ShardData if available
-          final updatedLockbox = existingLockbox.copyWith(
-            name: shardData.lockboxName ?? existingLockbox.name,
-            ownerName: shardData.ownerName ?? existingLockbox.ownerName,
+          final updatedVault = existingVault.copyWith(
+            name: shardData.vaultName ?? existingVault.name,
+            ownerName: shardData.ownerName ?? existingVault.ownerName,
             // createdAt stays the same (from invitation)
             // ownerPubkey stays the same (from invitation)
-            // shards will be added via addShardToLockbox below
+            // shards will be added via addShardToVault below
           );
-          await repository.saveLockbox(updatedLockbox);
-          Log.info('Updated stub lockbox $lockboxId with shard data');
+          await repository.saveVault(updatedVault);
+          Log.info('Updated stub vault $vaultId with shard data');
         } else {
-          Log.info('Lockbox $lockboxId already exists with shards/content');
+          Log.info('Vault $vaultId already exists with shards/content');
         }
         return;
       }
 
-      // Create a new lockbox entry for the shared key
-      final lockboxName = shardData.lockboxName ?? 'Shared Lockbox';
+      // Create a new vault entry for the shared key
+      final vaultName = shardData.vaultName ?? 'Shared Vault';
 
-      final lockbox = Lockbox(
-        id: lockboxId,
-        name: lockboxName,
+      final vault = Vault(
+        id: vaultId,
+        name: vaultName,
         content: null, // No decrypted content yet - we only have a shard
         createdAt: DateTime.fromMillisecondsSinceEpoch(
           shardData.createdAt * 1000,
@@ -347,23 +347,23 @@ class LockboxShareService {
         ownerName: shardData.ownerName, // Set owner name from shard data
       );
 
-      await repository.addLockbox(lockbox);
+      await repository.addVault(vault);
       Log.info(
-        'Created lockbox record for shared key: $lockboxId ($lockboxName)',
+        'Created vault record for shared key: $vaultId ($vaultName)',
       );
     } catch (e) {
-      Log.error('Error creating lockbox record for $lockboxId', e);
-      // Don't throw - we don't want to fail shard storage just because lockbox creation failed
+      Log.error('Error creating vault record for $vaultId', e);
+      // Don't throw - we don't want to fail shard storage just because vault creation failed
     }
   }
 
   /// Mark a share as received
-  Future<void> markShareAsReceived(String lockboxId) async {
+  Future<void> markShareAsReceived(String vaultId) async {
     await initialize();
 
-    final shard = _cachedShardData![lockboxId];
+    final shard = _cachedShardData![vaultId];
     if (shard == null) {
-      throw ArgumentError('No share found for lockbox: $lockboxId');
+      throw ArgumentError('No share found for vault: $vaultId');
     }
 
     // Update shard data with received information
@@ -373,10 +373,10 @@ class LockboxShareService {
       receivedAt: DateTime.now(),
     );
 
-    _cachedShardData![lockboxId] = updatedShard;
+    _cachedShardData![vaultId] = updatedShard;
     await _saveShardData();
     Log.info(
-      'Marked share as received for lockbox $lockboxId (event: ${shard.nostrEventId})',
+      'Marked share as received for vault $vaultId (event: ${shard.nostrEventId})',
     );
   }
 
@@ -394,15 +394,15 @@ class LockboxShareService {
     throw ArgumentError('Share not found with nostr event ID: $nostrEventId');
   }
 
-  /// Reassemble lockbox content from collected shares
-  /// Note: This service now only stores a single shard per lockbox.
-  /// For full recovery, you need to collect shards from multiple key holders.
-  Future<String?> reassembleLockboxContent(String lockboxId) async {
+  /// Reassemble vault content from collected shares
+  /// Note: This service now only stores a single shard per vault.
+  /// For full recovery, you need to collect shards from multiple stewards.
+  Future<String?> reassembleVaultContent(String vaultId) async {
     await initialize();
 
-    final shard = _cachedShardData![lockboxId];
+    final shard = _cachedShardData![vaultId];
     if (shard == null) {
-      Log.warning('No shard found for lockbox $lockboxId');
+      Log.warning('No shard found for vault $vaultId');
       return null;
     }
 
@@ -412,43 +412,43 @@ class LockboxShareService {
     return null;
   }
 
-  /// Check if we have a shard for this lockbox
+  /// Check if we have a shard for this vault
   /// Note: This returns true if we have ANY shard, but doesn't indicate if we have sufficient shards for recovery
-  Future<bool> hasShard(String lockboxId) async {
+  Future<bool> hasShard(String vaultId) async {
     await initialize();
-    return _cachedShardData!.containsKey(lockboxId);
+    return _cachedShardData!.containsKey(vaultId);
   }
 
-  /// Get all collected shard data (returns all shards we hold as a key holder)
+  /// Get all collected shard data (returns all shards we hold as a steward)
   Future<List<ShardData>> getAllCollectedShards() async {
     await initialize();
     return _cachedShardData!.values.toList();
   }
 
-  /// Get all lockboxes that have shares (indicating key holder status)
-  Future<List<String>> getLockboxesWithShares() async {
+  /// Get all vaultes that have shares (indicating steward status)
+  Future<List<String>> getVaultesWithShares() async {
     await initialize();
     return _cachedShardData!.keys.toList();
   }
 
-  /// Check if user is a key holder for a lockbox
-  /// Now delegates to LockboxService
-  Future<bool> isKeyHolderForLockbox(String lockboxId) async {
-    return await repository.isKeyHolderForLockbox(lockboxId);
+  /// Check if user is a steward for a vault
+  /// Now delegates to VaultService
+  Future<bool> isKeyHolderForVault(String vaultId) async {
+    return await repository.isKeyHolderForVault(vaultId);
   }
 
-  /// Get shard count for a lockbox
-  /// Now delegates to LockboxService
-  Future<int> getShardCount(String lockboxId) async {
-    final shards = await repository.getShardsForLockbox(lockboxId);
+  /// Get shard count for a vault
+  /// Now delegates to VaultService
+  Future<int> getShardCount(String vaultId) async {
+    final shards = await repository.getShardsForVault(vaultId);
     return shards.length;
   }
 
-  /// Remove shard for a lockbox
-  /// Now delegates to LockboxService
-  Future<void> removeLockboxShare(String lockboxId) async {
-    await repository.clearShardsForLockbox(lockboxId);
-    Log.info('Removed all shards for lockbox $lockboxId');
+  /// Remove shard for a vault
+  /// Now delegates to VaultService
+  Future<void> removeVaultShare(String vaultId) async {
+    await repository.clearShardsForVault(vaultId);
+    Log.info('Removed all shards for vault $vaultId');
   }
 
   /// Remove a specific shard by nostr event ID
@@ -457,7 +457,7 @@ class LockboxShareService {
 
     for (final entry in _cachedShardData!.entries) {
       if (entry.value.nostrEventId == nostrEventId) {
-        await removeLockboxShare(entry.key);
+        await removeVaultShare(entry.key);
         return;
       }
     }
@@ -465,7 +465,7 @@ class LockboxShareService {
     throw ArgumentError('Share not found with nostr event ID: $nostrEventId');
   }
 
-  /// Get total shard count across all lockboxes (equals number of lockboxes we're a key holder for)
+  /// Get total shard count across all vaultes (equals number of vaultes we're a steward for)
   Future<int> getTotalShardCount() async {
     await initialize();
     return _cachedShardData!.length;
@@ -474,7 +474,7 @@ class LockboxShareService {
   // ========== Recovery Shard Methods ==========
   // These methods manage shards collected during recovery
 
-  /// Add a recovery shard (for recovery initiator collecting shards from key holders)
+  /// Add a recovery shard (for recovery initiator collecting shards from stewards)
   Future<void> addRecoveryShard(
     String recoveryRequestId,
     ShardData shardData,
@@ -572,12 +572,12 @@ class LockboxShareService {
     await initialize();
   }
 
-  /// Process a key holder removal event
+  /// Process a steward removal event
   ///
-  /// When a key holder receives a removal event, they should:
-  /// 1. Archive the lockbox (set isArchived=true, archivedAt=now, archivedReason="Removed by owner")
-  /// 2. Delete their shard for that lockbox
-  /// 3. Save the updated lockbox
+  /// When a steward receives a removal event, they should:
+  /// 1. Archive the vault (set isArchived=true, archivedAt=now, archivedReason="Removed by owner")
+  /// 2. Delete their shard for that vault
+  /// 3. Save the updated vault
   Future<void> processKeyHolderRemoval({required Nip01Event event}) async {
     try {
       // Validate event kind
@@ -596,51 +596,51 @@ class LockboxShareService {
           'Key holder removed event payload keys: ${payload.keys.toList()}',
         );
       } catch (e) {
-        Log.error('Error parsing key holder removed event JSON', e);
+        Log.error('Error parsing steward removed event JSON', e);
         throw Exception(
-          'Failed to parse key holder removed event content. The event may be corrupted or encrypted incorrectly: $e',
+          'Failed to parse steward removed event content. The event may be corrupted or encrypted incorrectly: $e',
         );
       }
 
-      // Extract lockbox ID from payload
-      final lockboxId = payload['lockbox_id'] as String?;
-      if (lockboxId == null || lockboxId.isEmpty) {
+      // Extract vault ID from payload
+      final vaultId = payload['vault_id'] as String?;
+      if (vaultId == null || vaultId.isEmpty) {
         throw ArgumentError(
-          'Missing lockbox_id in key holder removed event payload',
+          'Missing vault_id in steward removed event payload',
         );
       }
 
       Log.info(
-        'Processing key holder removal for lockbox: ${lockboxId.substring(0, 8)}...',
+        'Processing steward removal for vault: ${vaultId.substring(0, 8)}...',
       );
 
-      // Get the lockbox
-      final lockbox = await repository.getLockbox(lockboxId);
-      if (lockbox == null) {
+      // Get the vault
+      final vault = await repository.getVault(vaultId);
+      if (vault == null) {
         Log.warning(
-          'Lockbox $lockboxId not found - may have already been deleted',
+          'Vault $vaultId not found - may have already been deleted',
         );
         return;
       }
 
-      // Archive the lockbox
-      final archivedLockbox = lockbox.copyWith(
+      // Archive the vault
+      final archivedVault = vault.copyWith(
         isArchived: true,
         archivedAt: DateTime.now(),
         archivedReason: 'Removed by owner',
       );
-      await repository.saveLockbox(archivedLockbox);
-      Log.info('Archived lockbox $lockboxId');
+      await repository.saveVault(archivedVault);
+      Log.info('Archived vault $vaultId');
 
-      // Delete the shard for this lockbox
-      await removeLockboxShare(lockboxId);
-      Log.info('Removed shard for archived lockbox $lockboxId');
+      // Delete the shard for this vault
+      await removeVaultShare(vaultId);
+      Log.info('Removed shard for archived vault $vaultId');
 
       Log.info(
-        'Successfully processed key holder removal for lockbox $lockboxId',
+        'Successfully processed steward removal for vault $vaultId',
       );
     } catch (e) {
-      Log.error('Error processing key holder removal event ${event.id}', e);
+      Log.error('Error processing steward removal event ${event.id}', e);
       rethrow;
     }
   }

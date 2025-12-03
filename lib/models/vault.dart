@@ -3,7 +3,7 @@ import 'recovery_request.dart';
 import 'backup_config.dart';
 
 /// Backup configuration constraints
-class LockboxBackupConstraints {
+class VaultBackupConstraints {
   /// Minimum threshold value for Shamir's Secret Sharing
   static const int minThreshold = 1;
 
@@ -17,30 +17,30 @@ class LockboxBackupConstraints {
   static const int defaultTotalKeys = 3;
 }
 
-/// Lockbox state enum indicating the current state of a lockbox
-enum LockboxState {
+/// Vault state enum indicating the current state of a vault
+enum VaultState {
   recovery, // Active recovery in progress
   owned, // Has decrypted content
-  keyHolder, // Has shard but no content
+  steward, // Has shard but no content
   awaitingKey, // Invitee has accepted invitation but hasn't received shard yet
 }
 
-/// Data model for a secure lockbox containing encrypted text content
-class Lockbox {
+/// Data model for a secure vault containing encrypted text content
+class Vault {
   final String id;
   final String name;
   final String? content; // Nullable - null when content is not decrypted
   final DateTime createdAt;
   final String ownerPubkey; // Hex format, 64 characters
   final String? ownerName; // Name of the vault owner
-  final List<ShardData> shards; // List of shards (single as key holder, multiple during recovery)
+  final List<ShardData> shards; // List of shards (single as steward, multiple during recovery)
   final List<RecoveryRequest> recoveryRequests; // Embedded recovery requests
   final BackupConfig? backupConfig; // Optional backup configuration
-  final bool isArchived; // Whether this lockbox is archived
-  final DateTime? archivedAt; // When the lockbox was archived
+  final bool isArchived; // Whether this vault is archived
+  final DateTime? archivedAt; // When the vault was archived
   final String? archivedReason; // Reason for archiving
 
-  Lockbox({
+  Vault({
     required this.id,
     required this.name,
     required this.content,
@@ -55,32 +55,32 @@ class Lockbox {
     this.archivedReason,
   });
 
-  /// Get the state of this lockbox based on priority:
+  /// Get the state of this vault based on priority:
   /// 1. Recovery (if has active recovery request)
   /// 2. Owned (if has decrypted content)
-  /// 3. Key holder (if has shards but no content)
+  /// 3. Steward (if has shards but no content)
   /// 4. Awaiting key (if no content and no shards - invitee waiting for shard)
-  LockboxState get state {
+  VaultState get state {
     if (hasActiveRecovery) {
-      return LockboxState.recovery;
+      return VaultState.recovery;
     }
     if (content != null) {
-      return LockboxState.owned;
+      return VaultState.owned;
     }
     if (shards.isNotEmpty) {
-      return LockboxState.keyHolder;
+      return VaultState.steward;
     }
     // No content and no shards - invitee is awaiting key distribution
-    return LockboxState.awaitingKey;
+    return VaultState.awaitingKey;
   }
 
-  /// Check if the given hex key is the owner of this lockbox
+  /// Check if the given hex key is the owner of this vault
   bool isOwned(String hexKey) => ownerPubkey == hexKey;
 
-  /// Check if we are a key holder for this lockbox (have shards)
-  bool get isKeyHolder => shards.isNotEmpty;
+  /// Check if we are a steward for this vault (have shards)
+  bool get isSteward => shards.isNotEmpty;
 
-  /// Check if this lockbox has an active recovery request
+  /// Check if this vault has an active recovery request
   bool get hasActiveRecovery {
     return recoveryRequests.any((request) => request.status.isActive);
   }
@@ -113,8 +113,8 @@ class Lockbox {
   }
 
   /// Create from JSON
-  factory Lockbox.fromJson(Map<String, dynamic> json) {
-    return Lockbox(
+  factory Vault.fromJson(Map<String, dynamic> json) {
+    return Vault(
       id: json['id'] as String,
       name: json['name'] as String,
       content: json['content'] as String?,
@@ -145,7 +145,7 @@ class Lockbox {
   }
 
   /// Create a copy with updated fields
-  Lockbox copyWith({
+  Vault copyWith({
     String? id,
     String? name,
     String? content,
@@ -159,7 +159,7 @@ class Lockbox {
     DateTime? archivedAt,
     String? archivedReason,
   }) {
-    return Lockbox(
+    return Vault(
       id: id ?? this.id,
       name: name ?? this.name,
       content: content ?? this.content,
@@ -178,13 +178,13 @@ class Lockbox {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is Lockbox && runtimeType == other.runtimeType && id == other.id;
+      other is Vault && runtimeType == other.runtimeType && id == other.id;
 
   @override
   int get hashCode => id.hashCode;
 
   @override
   String toString() {
-    return 'Lockbox{id: $id, name: $name, state: ${state.name}, createdAt: $createdAt}';
+    return 'Vault{id: $id, name: $name, state: ${state.name}, createdAt: $createdAt}';
   }
 }

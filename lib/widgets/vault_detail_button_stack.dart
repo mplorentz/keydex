@@ -1,59 +1,59 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/lockbox.dart';
+import '../models/vault.dart';
 import '../models/backup_config.dart';
-import '../providers/lockbox_provider.dart';
+import '../providers/vault_provider.dart';
 import '../providers/key_provider.dart';
 import '../providers/recovery_provider.dart';
 import '../widgets/row_button_stack.dart';
 import '../widgets/instructions_dialog.dart';
 import '../services/backup_service.dart';
 import '../services/recovery_service.dart';
-import '../services/lockbox_share_service.dart';
+import '../services/vault_share_service.dart';
 import '../services/relay_scan_service.dart';
 import '../services/logger.dart';
 import '../screens/backup_config_screen.dart';
-import '../screens/edit_lockbox_screen.dart';
+import '../screens/edit_vault_screen.dart';
 import '../screens/recovery_status_screen.dart';
 
-/// Button stack widget for lockbox detail screen
-class LockboxDetailButtonStack extends ConsumerWidget {
-  final String lockboxId;
+/// Button stack widget for vault detail screen
+class VaultDetailButtonStack extends ConsumerWidget {
+  final String vaultId;
 
-  const LockboxDetailButtonStack({super.key, required this.lockboxId});
+  const VaultDetailButtonStack({super.key, required this.vaultId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Check if user is steward or owner
-    final lockboxAsync = ref.watch(lockboxProvider(lockboxId));
+    final vaultAsync = ref.watch(vaultProvider(vaultId));
     final currentPubkeyAsync = ref.watch(currentPublicKeyProvider);
 
-    return lockboxAsync.when(
+    return vaultAsync.when(
       loading: () => const SizedBox.shrink(),
       error: (_, __) => const SizedBox.shrink(),
-      data: (lockbox) {
-        if (lockbox == null) return const SizedBox.shrink();
+      data: (vault) {
+        if (vault == null) return const SizedBox.shrink();
 
         return currentPubkeyAsync.when(
           loading: () => const SizedBox.shrink(),
           error: (_, __) => const SizedBox.shrink(),
           data: (currentPubkey) {
-            final isOwned = currentPubkey != null && lockbox.isOwned(currentPubkey);
+            final isOwned = currentPubkey != null && vault.isOwned(currentPubkey);
             final isSteward = currentPubkey != null &&
-                !lockbox.isOwned(currentPubkey) &&
-                lockbox.shards.isNotEmpty;
+                !vault.isOwned(currentPubkey) &&
+                vault.shards.isNotEmpty;
 
-            // Watch lockbox for Generate and Distribute Keys button
-            final lockboxAsync = ref.watch(lockboxProvider(lockboxId));
+            // Watch vault for Generate and Distribute Keys button
+            final vaultAsync = ref.watch(vaultProvider(vaultId));
             // Watch recovery status for recovery buttons
             final recoveryStatusAsync = ref.watch(
-              recoveryStatusProvider(lockboxId),
+              recoveryStatusProvider(vaultId),
             );
 
-            return lockboxAsync.when(
+            return vaultAsync.when(
               loading: () => const SizedBox.shrink(),
               error: (_, __) => const SizedBox.shrink(),
-              data: (currentLockbox) {
+              data: (currentVault) {
                 return recoveryStatusAsync.when(
                   loading: () => const SizedBox.shrink(),
                   error: (_, __) => const SizedBox.shrink(),
@@ -62,7 +62,7 @@ class LockboxDetailButtonStack extends ConsumerWidget {
 
                     // View Instructions Button (only show for stewards)
                     if (isSteward) {
-                      final instructions = _getInstructions(lockbox);
+                      final instructions = _getInstructions(vault);
                       if (instructions != null && instructions.isNotEmpty) {
                         buttons.add(
                           RowButtonConfig(
@@ -76,7 +76,7 @@ class LockboxDetailButtonStack extends ConsumerWidget {
                       }
                     }
 
-                    // Edit Lockbox Button (only show if user owns the lockbox)
+                    // Edit Vault Button (only show if user owns the vault)
                     if (isOwned) {
                       buttons.add(
                         RowButtonConfig(
@@ -84,7 +84,7 @@ class LockboxDetailButtonStack extends ConsumerWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => EditLockboxScreen(lockboxId: lockboxId),
+                                builder: (context) => EditVaultScreen(vaultId: vaultId),
                               ),
                             );
                           },
@@ -100,7 +100,7 @@ class LockboxDetailButtonStack extends ConsumerWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => BackupConfigScreen(lockboxId: lockboxId),
+                                builder: (context) => BackupConfigScreen(vaultId: vaultId),
                               ),
                             );
                           },
@@ -110,9 +110,9 @@ class LockboxDetailButtonStack extends ConsumerWidget {
                       );
 
                       // Distribute Keys Button - shown when distribution is needed
-                      if (currentLockbox != null) {
-                        final backupConfig = currentLockbox.backupConfig;
-                        if (backupConfig != null && backupConfig.keyHolders.isNotEmpty) {
+                      if (currentVault != null) {
+                        final backupConfig = currentVault.backupConfig;
+                        if (backupConfig != null && backupConfig.stewards.isNotEmpty) {
                           final needsDistribution =
                               backupConfig.needsRedistribution || backupConfig.hasVersionMismatch;
 
@@ -134,7 +134,7 @@ class LockboxDetailButtonStack extends ConsumerWidget {
                                 onPressed: () => _distributeKeys(
                                   context,
                                   ref,
-                                  currentLockbox,
+                                  currentVault,
                                 ),
                                 icon: Icons.send,
                                 text: 'Distribute Keys',
@@ -192,7 +192,7 @@ class LockboxDetailButtonStack extends ConsumerWidget {
                         // Show "Initiate Recovery" if no active recovery or user didn't initiate it
                         buttons.add(
                           RowButtonConfig(
-                            onPressed: () => _initiateRecovery(context, ref, lockboxId),
+                            onPressed: () => _initiateRecovery(context, ref, vaultId),
                             icon: Icons.restore,
                             text: 'Initiate Recovery',
                           ),
@@ -215,9 +215,9 @@ class LockboxDetailButtonStack extends ConsumerWidget {
     );
   }
 
-  String? _getInstructions(Lockbox lockbox) {
-    if (lockbox.shards.isNotEmpty) {
-      return lockbox.shards.first.instructions;
+  String? _getInstructions(Vault vault) {
+    if (vault.shards.isNotEmpty) {
+      return vault.shards.first.instructions;
     }
     return null;
   }
@@ -225,9 +225,9 @@ class LockboxDetailButtonStack extends ConsumerWidget {
   Future<void> _distributeKeys(
     BuildContext context,
     WidgetRef ref,
-    Lockbox lockbox,
+    Vault vault,
   ) async {
-    if (lockbox.backupConfig == null) {
+    if (vault.backupConfig == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Recovery plan not found'),
@@ -237,8 +237,8 @@ class LockboxDetailButtonStack extends ConsumerWidget {
       return;
     }
 
-    final config = lockbox.backupConfig!;
-    if (config.keyHolders.isEmpty) {
+    final config = vault.backupConfig!;
+    if (config.stewards.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('No stewards in recovery plan'),
@@ -248,7 +248,7 @@ class LockboxDetailButtonStack extends ConsumerWidget {
       return;
     }
 
-    if (lockbox.content == null) {
+    if (vault.content == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Cannot backup: vault content is not available'),
@@ -265,7 +265,7 @@ class LockboxDetailButtonStack extends ConsumerWidget {
 
     // Build warning message for redistribution
     String contentMessage = 'This will generate ${config.totalKeys} key shares '
-        'and distribute them to ${config.keyHolders.length} steward${config.keyHolders.length > 1 ? 's' : ''}.\n\n'
+        'and distribute them to ${config.stewards.length} steward${config.stewards.length > 1 ? 's' : ''}.\n\n'
         'Threshold: ${config.threshold} (minimum keys needed for recovery)';
 
     if (isRedistribution) {
@@ -312,7 +312,7 @@ class LockboxDetailButtonStack extends ConsumerWidget {
 
     try {
       final backupService = ref.read(backupServiceProvider);
-      await backupService.createAndDistributeBackup(lockboxId: lockbox.id);
+      await backupService.createAndDistributeBackup(vaultId: vault.id);
 
       if (context.mounted) {
         Navigator.pop(context); // Close loading dialog
@@ -323,8 +323,8 @@ class LockboxDetailButtonStack extends ConsumerWidget {
           ),
         );
 
-        // Refresh lockbox data
-        ref.invalidate(lockboxProvider(lockbox.id));
+        // Refresh vault data
+        ref.invalidate(vaultProvider(vault.id));
       }
     } catch (e) {
       if (context.mounted) {
@@ -366,7 +366,7 @@ class LockboxDetailButtonStack extends ConsumerWidget {
   Future<void> _initiateRecovery(
     BuildContext context,
     WidgetRef ref,
-    String lockboxId,
+    String vaultId,
   ) async {
     // Show full-screen loading dialog
     if (!context.mounted) return;
@@ -420,8 +420,8 @@ class LockboxDetailButtonStack extends ConsumerWidget {
       }
 
       // Get shard data to extract peers and creator information
-      final shareService = ref.read(lockboxShareServiceProvider);
-      final shards = await shareService.getLockboxShares(lockboxId);
+      final shareService = ref.read(vaultShareServiceProvider);
+      final shards = await shareService.getVaultShares(vaultId);
 
       if (shards.isEmpty) {
         if (context.mounted) {
@@ -453,17 +453,17 @@ class LockboxDetailButtonStack extends ConsumerWidget {
       );
 
       // Use peers list for recovery
-      final keyHolderPubkeys = <String>[];
+      final stewardPubkeys = <String>[];
       if (selectedShard.peers != null) {
         for (final peer in selectedShard.peers!) {
           final pubkey = peer['pubkey'];
           if (pubkey != null) {
-            keyHolderPubkeys.add(pubkey);
+            stewardPubkeys.add(pubkey);
           }
         }
       }
 
-      if (keyHolderPubkeys.isEmpty) {
+      if (stewardPubkeys.isEmpty) {
         if (context.mounted) {
           Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(
@@ -474,14 +474,14 @@ class LockboxDetailButtonStack extends ConsumerWidget {
       }
 
       Log.info(
-        'Initiating recovery with ${keyHolderPubkeys.length} stewards: ${keyHolderPubkeys.map((k) => k.substring(0, 8)).join(", ")}...',
+        'Initiating recovery with ${stewardPubkeys.length} stewards: ${stewardPubkeys.map((k) => k.substring(0, 8)).join(", ")}...',
       );
 
       final recoveryService = ref.read(recoveryServiceProvider);
       final recoveryRequest = await recoveryService.initiateRecovery(
-        lockboxId,
+        vaultId,
         initiatorPubkey: currentPubkey,
-        keyHolderPubkeys: keyHolderPubkeys,
+        stewardPubkeys: stewardPubkeys,
         threshold: selectedShard.threshold,
       );
 
@@ -505,11 +505,11 @@ class LockboxDetailButtonStack extends ConsumerWidget {
         Log.error('Failed to send recovery request via Nostr', e);
       }
 
-      // Auto-approve if the initiator is also a key holder
-      if (keyHolderPubkeys.contains(currentPubkey)) {
+      // Auto-approve if the initiator is also a steward
+      if (stewardPubkeys.contains(currentPubkey)) {
         try {
           Log.info(
-            'Initiator is a key holder, auto-approving recovery request',
+            'Initiator is a steward, auto-approving recovery request',
           );
           await recoveryService.respondToRecoveryRequestWithShard(
             recoveryRequest.id,
@@ -529,7 +529,7 @@ class LockboxDetailButtonStack extends ConsumerWidget {
           const SnackBar(content: Text('Recovery request initiated and sent')),
         );
 
-        ref.invalidate(recoveryStatusProvider(lockboxId));
+        ref.invalidate(recoveryStatusProvider(vaultId));
 
         if (context.mounted) {
           await Navigator.push(

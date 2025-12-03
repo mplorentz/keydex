@@ -1,4 +1,4 @@
-# Research: Distributed Backup of Lockboxes
+# Research: Distributed Backup of Vaultes
 
 ## Shamir's Secret Sharing Implementation
 

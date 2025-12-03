@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/lockbox.dart';
+import '../models/vault.dart';
 import '../models/backup_config.dart';
 import '../models/backup_status.dart';
 import '../models/recovery_request.dart';
@@ -40,10 +40,10 @@ class _StatusData {
 
 /// Banner widget that displays vault recovery readiness status
 /// Shows different messages for owners vs stewards
-class LockboxStatusBanner extends ConsumerWidget {
-  final Lockbox lockbox;
+class VaultStatusBanner extends ConsumerWidget {
+  final Vault vault;
 
-  const LockboxStatusBanner({super.key, required this.lockbox});
+  const VaultStatusBanner({super.key, required this.vault});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -53,23 +53,23 @@ class LockboxStatusBanner extends ConsumerWidget {
       loading: () => const SizedBox.shrink(),
       error: (_, __) => const SizedBox.shrink(),
       data: (currentPubkey) {
-        final isOwner = currentPubkey != null && lockbox.isOwned(currentPubkey);
+        final isOwner = currentPubkey != null && vault.isOwned(currentPubkey);
         final isSteward =
-            currentPubkey != null && !lockbox.isOwned(currentPubkey) && lockbox.shards.isNotEmpty;
+            currentPubkey != null && !vault.isOwned(currentPubkey) && vault.shards.isNotEmpty;
 
         // Handle recovery status - for owners: only when active, for stewards: only if they initiated it
-        final hasNonArchivedRecovery = lockbox.recoveryRequests.any(
+        final hasNonArchivedRecovery = vault.recoveryRequests.any(
           (request) => request.status != RecoveryRequestStatus.archived,
         );
         final stewardInitiatedRecovery = isSteward &&
             hasNonArchivedRecovery &&
-            lockbox.recoveryRequests.any(
+            vault.recoveryRequests.any(
               (request) =>
                   request.status != RecoveryRequestStatus.archived &&
                   request.initiatorPubkey == currentPubkey,
             );
 
-        if (isOwner && lockbox.state == LockboxState.recovery) {
+        if (isOwner && vault.state == VaultState.recovery) {
           const statusData = _StatusData(
             headline: 'Recovery in progress',
             subtext: 'View status and responses on the recovery screen.',
@@ -90,9 +90,9 @@ class LockboxStatusBanner extends ConsumerWidget {
         }
 
         if (isOwner) {
-          return _buildOwnerStatus(context, lockbox);
+          return _buildOwnerStatus(context, vault);
         } else if (isSteward) {
-          return _buildStewardStatus(context, lockbox);
+          return _buildStewardStatus(context, vault);
         } else {
           // Unknown/generic view
           return _buildBanner(
@@ -112,8 +112,8 @@ class LockboxStatusBanner extends ConsumerWidget {
     );
   }
 
-  Widget _buildOwnerStatus(BuildContext context, Lockbox lockbox) {
-    final backupConfig = lockbox.backupConfig;
+  Widget _buildOwnerStatus(BuildContext context, Vault vault) {
+    final backupConfig = vault.backupConfig;
 
     // No recovery plan
     if (backupConfig == null) {
@@ -189,8 +189,8 @@ class LockboxStatusBanner extends ConsumerWidget {
 
       // Almost ready - waiting for confirmations
       if (backupConfig.status == BackupStatus.active &&
-          backupConfig.acknowledgedKeyHoldersCount < backupConfig.threshold) {
-        final needed = backupConfig.threshold - backupConfig.acknowledgedKeyHoldersCount;
+          backupConfig.acknowledgedStewardsCount < backupConfig.threshold) {
+        final needed = backupConfig.threshold - backupConfig.acknowledgedStewardsCount;
         return _buildBanner(
           context,
           _StatusData(
@@ -255,11 +255,11 @@ class LockboxStatusBanner extends ConsumerWidget {
     );
   }
 
-  Widget _buildStewardStatus(BuildContext context, Lockbox lockbox) {
-    final backupConfig = lockbox.backupConfig;
+  Widget _buildStewardStatus(BuildContext context, Vault vault) {
+    final backupConfig = vault.backupConfig;
 
     // Awaiting key
-    if (lockbox.state == LockboxState.awaitingKey) {
+    if (vault.state == VaultState.awaitingKey) {
       return _buildBanner(
         context,
         const _StatusData(
@@ -276,7 +276,7 @@ class LockboxStatusBanner extends ConsumerWidget {
     }
 
     // Key holder with active backup
-    if (lockbox.state == LockboxState.keyHolder && backupConfig?.status == BackupStatus.active) {
+    if (vault.state == VaultState.steward && backupConfig?.status == BackupStatus.active) {
       return _buildBanner(
         context,
         const _StatusData(
@@ -293,7 +293,7 @@ class LockboxStatusBanner extends ConsumerWidget {
     }
 
     // Key holder but plan not fully healthy
-    if (lockbox.state == LockboxState.keyHolder &&
+    if (vault.state == VaultState.steward &&
         backupConfig != null &&
         (backupConfig.status == BackupStatus.pending ||
             backupConfig.status == BackupStatus.inactive ||

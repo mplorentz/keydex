@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/recovery_request.dart';
-import '../models/lockbox.dart';
-import '../models/key_holder.dart';
+import '../models/vault.dart';
+import '../models/steward.dart';
 import '../providers/recovery_provider.dart';
-import '../providers/lockbox_provider.dart';
+import '../providers/vault_provider.dart';
 
-/// Widget displaying key holder responses
-class RecoveryKeyHoldersWidget extends ConsumerWidget {
+/// Widget displaying steward responses
+class RecoveryStewardsWidget extends ConsumerWidget {
   final String recoveryRequestId;
 
-  const RecoveryKeyHoldersWidget({super.key, required this.recoveryRequestId});
+  const RecoveryStewardsWidget({super.key, required this.recoveryRequestId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -41,10 +41,10 @@ class RecoveryKeyHoldersWidget extends ConsumerWidget {
           );
         }
 
-        // Now we have the request, get the lockbox
-        final lockboxAsync = ref.watch(lockboxProvider(request.lockboxId));
+        // Now we have the request, get the vault
+        final vaultAsync = ref.watch(vaultProvider(request.vaultId));
 
-        return lockboxAsync.when(
+        return vaultAsync.when(
           loading: () => const Card(
             child: Padding(
               padding: EdgeInsets.all(16),
@@ -54,19 +54,19 @@ class RecoveryKeyHoldersWidget extends ConsumerWidget {
           error: (error, stack) => Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: Text('Error loading lockbox: $error'),
+              child: Text('Error loading vault: $error'),
             ),
           ),
-          data: (lockbox) {
-            // Get all key holders for this lockbox
-            final keyHolders = _extractKeyHolders(lockbox, request);
+          data: (vault) {
+            // Get all stewards for this vault
+            final stewards = _extractStewards(vault, request);
 
-            if (keyHolders.isEmpty) {
+            if (stewards.isEmpty) {
               return Card(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Text(
-                    'No key holders configured',
+                    'No stewards configured',
                     style: TextStyle(color: Colors.grey[600]),
                   ),
                 ),
@@ -79,8 +79,8 @@ class RecoveryKeyHoldersWidget extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    ...keyHolders.map((info) {
-                      return _buildKeyHolderItem(info);
+                    ...stewards.map((info) {
+                      return _buildStewardItem(info);
                     }),
                   ],
                 ),
@@ -92,18 +92,18 @@ class RecoveryKeyHoldersWidget extends ConsumerWidget {
     );
   }
 
-  /// Extract all key holders from lockbox, merge with responses
-  List<_KeyHolderInfo> _extractKeyHolders(
-    Lockbox? lockbox,
+  /// Extract all stewards from vault, merge with responses
+  List<_StewardInfo> _extractStewards(
+    Vault? vault,
     RecoveryRequest request,
   ) {
-    if (lockbox == null) return [];
+    if (vault == null) return [];
 
-    // Get key holders with names from backupConfig if available
-    if (lockbox.backupConfig?.keyHolders.isNotEmpty == true) {
-      return lockbox.backupConfig!.keyHolders.where((kh) => kh.pubkey != null).map((kh) {
-        final response = request.keyHolderResponses[kh.pubkey];
-        return _KeyHolderInfo(
+    // Get stewards with names from backupConfig if available
+    if (vault.backupConfig?.stewards.isNotEmpty == true) {
+      return vault.backupConfig!.stewards.where((kh) => kh.pubkey != null).map((kh) {
+        final response = request.stewardResponses[kh.pubkey];
+        return _StewardInfo(
           pubkey: kh.pubkey!,
           name: kh.displayName,
           response: response,
@@ -112,25 +112,25 @@ class RecoveryKeyHoldersWidget extends ConsumerWidget {
     }
 
     // Fallback: use peers from shards
-    if (lockbox.shards.isNotEmpty) {
-      final firstShard = lockbox.shards.first;
-      final keyHolders = <_KeyHolderInfo>[];
+    if (vault.shards.isNotEmpty) {
+      final firstShard = vault.shards.first;
+      final stewards = <_StewardInfo>[];
 
       // Add owner if ownerName is present
-      if (lockbox.ownerName != null) {
-        final response = request.keyHolderResponses[firstShard.creatorPubkey];
-        keyHolders.add(
-          _KeyHolderInfo(
+      if (vault.ownerName != null) {
+        final response = request.stewardResponses[firstShard.creatorPubkey];
+        stewards.add(
+          _StewardInfo(
             pubkey: firstShard.creatorPubkey,
-            name: lockbox.ownerName,
+            name: vault.ownerName,
             response: response,
           ),
         );
       } else if (firstShard.ownerName != null) {
         // Fallback to shard ownerName
-        final response = request.keyHolderResponses[firstShard.creatorPubkey];
-        keyHolders.add(
-          _KeyHolderInfo(
+        final response = request.stewardResponses[firstShard.creatorPubkey];
+        stewards.add(
+          _StewardInfo(
             pubkey: firstShard.creatorPubkey,
             name: firstShard.ownerName,
             response: response,
@@ -138,16 +138,16 @@ class RecoveryKeyHoldersWidget extends ConsumerWidget {
         );
       }
 
-      // Add peers (key holders) - now a list of maps with name and pubkey
+      // Add peers (stewards) - now a list of maps with name and pubkey
       if (firstShard.peers != null) {
         for (final peer in firstShard.peers!) {
           final peerPubkey = peer['pubkey'];
           final peerName = peer['name'];
           if (peerPubkey == null) continue;
 
-          final response = request.keyHolderResponses[peerPubkey];
-          keyHolders.add(
-            _KeyHolderInfo(
+          final response = request.stewardResponses[peerPubkey];
+          stewards.add(
+            _StewardInfo(
               pubkey: peerPubkey,
               name: peerName,
               response: response,
@@ -156,13 +156,13 @@ class RecoveryKeyHoldersWidget extends ConsumerWidget {
         }
       }
 
-      return keyHolders;
+      return stewards;
     }
 
     return [];
   }
 
-  Widget _buildKeyHolderItem(_KeyHolderInfo info) {
+  Widget _buildStewardItem(_StewardInfo info) {
     final response = info.response;
     final status = response?.status ?? RecoveryResponseStatus.pending;
 
@@ -294,11 +294,11 @@ class RecoveryKeyHoldersWidget extends ConsumerWidget {
   }
 }
 
-/// Internal data class for key holder info
-class _KeyHolderInfo {
+/// Internal data class for steward info
+class _StewardInfo {
   final String pubkey;
   final String? name;
   final RecoveryResponse? response;
 
-  _KeyHolderInfo({required this.pubkey, this.name, this.response});
+  _StewardInfo({required this.pubkey, this.name, this.response});
 }

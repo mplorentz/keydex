@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:keydex/models/key_holder.dart';
-import 'package:keydex/models/key_holder_status.dart';
+import 'package:horcrux/models/steward.dart';
+import 'package:horcrux/models/steward_status.dart';
 import 'package:uuid/uuid.dart';
 
 const _uuid = Uuid();
@@ -8,13 +8,13 @@ const _uuid = Uuid();
 void main() {
   group('KeyHolder', () {
     // Helper function to create KeyHolder records directly for testing
-    KeyHolder createTestKeyHolder(String pubkey, {String? name}) {
+    Steward createTestKeyHolder(String pubkey, {String? name}) {
       return (
         id: _uuid.v4(),
         pubkey: pubkey,
         name: name,
         inviteCode: null,
-        status: KeyHolderStatus.awaitingKey,
+        status: StewardStatus.awaitingKey,
         lastSeen: null,
         keyShare: null,
         giftWrapEventId: null,
@@ -27,7 +27,7 @@ void main() {
     test('should return bech32 npub when pubkey is in hex format', () {
       // Given: A KeyHolder with valid hex pubkey from the test npub (Nostr convention: no 0x prefix)
       const hexPubkey = 'd0a1ffb8761b974cec4a3be8cbcb2e96a7090dcf465ffeac839aa4ca20c9a59e';
-      final keyHolder = createTestKeyHolder(hexPubkey, name: 'Test Key Holder');
+      final keyHolder = createTestKeyHolder(hexPubkey, name: 'Test Steward');
 
       // When: Getting the npub
       final npub = keyHolder.npub;
@@ -50,7 +50,7 @@ void main() {
     test('should return bech32 npub when pubkey is hex without 0x prefix', () {
       // Given: A KeyHolder with hex pubkey without 0x prefix (Nostr convention)
       const hexPubkey = 'd0a1ffb8761b974cec4a3be8cbcb2e96a7090dcf465ffeac839aa4ca20c9a59e';
-      final keyHolder = createTestKeyHolder(hexPubkey, name: 'Test Key Holder');
+      final keyHolder = createTestKeyHolder(hexPubkey, name: 'Test Steward');
 
       // When: Getting the npub
       final npub = keyHolder.npub;

@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/lockbox_provider.dart';
+import '../providers/vault_provider.dart';
 import '../widgets/row_button.dart';
 import '../widgets/debug_info_sheet.dart';
 import 'relay_management_screen.dart';
 import 'recovery_notification_overlay.dart';
 import 'vault_explainer_screen.dart';
-import '../widgets/lockbox_card.dart';
+import '../widgets/vault_card.dart';
 
-/// Main list screen showing all lockboxes
-class LockboxListScreen extends ConsumerWidget {
-  const LockboxListScreen({super.key});
+/// Main list screen showing all vaultes
+class VaultListScreen extends ConsumerWidget {
+  const VaultListScreen({super.key});
 
   void _showDebugInfo(BuildContext context, WidgetRef ref) {
     showModalBottomSheet(
@@ -23,8 +23,8 @@ class LockboxListScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Watch the lockbox stream provider
-    final lockboxesAsync = ref.watch(lockboxListProvider);
+    // Watch the vault stream provider
+    final vaultesAsync = ref.watch(vaultListProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -56,7 +56,7 @@ class LockboxListScreen extends ConsumerWidget {
             child: Stack(
               children: [
                 // Use AsyncValue.when() to handle loading/error/data states
-                lockboxesAsync.when(
+                vaultesAsync.when(
                   loading: () => Center(
                     child: CircularProgressIndicator(
                       color: Theme.of(context).colorScheme.secondary,
@@ -81,7 +81,7 @@ class LockboxListScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: 16),
                           ElevatedButton(
-                            onPressed: () => ref.refresh(lockboxListProvider),
+                            onPressed: () => ref.refresh(vaultListProvider),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Theme.of(
                                 context,
@@ -94,8 +94,8 @@ class LockboxListScreen extends ConsumerWidget {
                       ),
                     );
                   },
-                  data: (lockboxes) {
-                    if (lockboxes.isEmpty) {
+                  data: (vaultes) {
+                    if (vaultes.isEmpty) {
                       final theme = Theme.of(context);
                       final textTheme = theme.textTheme;
                       return Center(
@@ -130,13 +130,13 @@ class LockboxListScreen extends ConsumerWidget {
                         horizontal: 16,
                         vertical: 12,
                       ),
-                      itemCount: lockboxes.length,
+                      itemCount: vaultes.length,
                       separatorBuilder: (context, index) => const Divider(height: 1),
                       itemBuilder: (context, index) {
-                        final lockbox = lockboxes[index];
-                        return LockboxCard(
-                          key: ValueKey(lockbox.id),
-                          lockbox: lockbox,
+                        final vault = vaultes[index];
+                        return VaultCard(
+                          key: ValueKey(vault.id),
+                          vault: vault,
                         );
                       },
                     );
@@ -152,7 +152,7 @@ class LockboxListScreen extends ConsumerWidget {
               ],
             ),
           ),
-          // Create lockbox button at bottom
+          // Create vault button at bottom
           RowButton(
             onPressed: () {
               Navigator.push(

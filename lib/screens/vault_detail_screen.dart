@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/lockbox.dart';
-import '../providers/lockbox_provider.dart';
-import '../widgets/key_holder_list.dart';
-import '../widgets/lockbox_detail_button_stack.dart';
-import '../widgets/lockbox_status_banner.dart';
+import '../models/vault.dart';
+import '../providers/vault_provider.dart';
+import '../widgets/steward_list.dart';
+import '../widgets/vault_detail_button_stack.dart';
+import '../widgets/vault_status_banner.dart';
 
-/// Detail/view screen for displaying a lockbox
-class LockboxDetailScreen extends ConsumerWidget {
-  final String lockboxId;
+/// Detail/view screen for displaying a vault
+class VaultDetailScreen extends ConsumerWidget {
+  final String vaultId;
 
-  const LockboxDetailScreen({super.key, required this.lockboxId});
+  const VaultDetailScreen({super.key, required this.vaultId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final lockboxAsync = ref.watch(lockboxProvider(lockboxId));
+    final vaultAsync = ref.watch(vaultProvider(vaultId));
 
-    return lockboxAsync.when(
+    return vaultAsync.when(
       loading: () => Scaffold(
         appBar: AppBar(title: const Text('Loading...'), centerTitle: false),
         body: const Center(child: CircularProgressIndicator()),
@@ -32,15 +32,15 @@ class LockboxDetailScreen extends ConsumerWidget {
               Text('Error: $error'),
               const SizedBox(height: 16),
               ElevatedButton(
-                onPressed: () => ref.refresh(lockboxProvider(lockboxId)),
+                onPressed: () => ref.refresh(vaultProvider(vaultId)),
                 child: const Text('Retry'),
               ),
             ],
           ),
         ),
       ),
-      data: (lockbox) {
-        if (lockbox == null) {
+      data: (vault) {
+        if (vault == null) {
           return Scaffold(
             appBar: AppBar(
               title: const Text('Vault Not Found'),
@@ -50,19 +50,19 @@ class LockboxDetailScreen extends ConsumerWidget {
           );
         }
 
-        return _buildLockboxDetail(context, ref, lockbox);
+        return _buildVaultDetail(context, ref, vault);
       },
     );
   }
 
-  Widget _buildLockboxDetail(
+  Widget _buildVaultDetail(
     BuildContext context,
     WidgetRef ref,
-    Lockbox lockbox,
+    Vault vault,
   ) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(lockbox.name),
+        title: Text(vault.name),
         centerTitle: false,
         actions: [
           PopupMenuButton(
@@ -80,7 +80,7 @@ class LockboxDetailScreen extends ConsumerWidget {
             ],
             onSelected: (value) {
               if (value == 'delete') {
-                _showDeleteDialog(context, ref, lockbox);
+                _showDeleteDialog(context, ref, vault);
               }
             },
           ),
@@ -90,7 +90,7 @@ class LockboxDetailScreen extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Status banner showing recovery readiness
-          LockboxStatusBanner(lockbox: lockbox),
+          VaultStatusBanner(vault: vault),
           // Scrollable content
           Expanded(
             child: Container(
@@ -99,27 +99,27 @@ class LockboxDetailScreen extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Key Holder List (extends to edges)
-                    KeyHolderList(lockboxId: lockbox.id),
+                    // Steward List (extends to edges)
+                    StewardList(vaultId: vault.id),
                   ],
                 ),
               ),
             ),
           ),
           // Fixed buttons at bottom
-          LockboxDetailButtonStack(lockboxId: lockbox.id),
+          VaultDetailButtonStack(vaultId: vault.id),
         ],
       ),
     );
   }
 
-  void _showDeleteDialog(BuildContext context, WidgetRef ref, Lockbox lockbox) {
+  void _showDeleteDialog(BuildContext context, WidgetRef ref, Vault vault) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Delete Vault'),
         content: Text(
-          'Are you sure you want to delete "${lockbox.name}"? This action cannot be undone.',
+          'Are you sure you want to delete "${vault.name}"? This action cannot be undone.',
         ),
         actions: [
           TextButton(
@@ -129,8 +129,8 @@ class LockboxDetailScreen extends ConsumerWidget {
           TextButton(
             onPressed: () async {
               // Use Riverpod to get the repository - much better for testing!
-              final repository = ref.read(lockboxRepositoryProvider);
-              await repository.deleteLockbox(lockbox.id);
+              final repository = ref.read(vaultRepositoryProvider);
+              await repository.deleteVault(vault.id);
               if (context.mounted) {
                 Navigator.pop(context); // Close dialog
                 Navigator.pop(context); // Go back to list

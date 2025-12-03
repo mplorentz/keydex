@@ -1,9 +1,9 @@
-# Feature Specification: Lockbox Recovery
+# Feature Specification: Vault Recovery
 
-**Feature Branch**: `003-lockbox-recovery`  
+**Feature Branch**: `003-vault-recovery`  
 **Created**: 2024-12-19  
 **Status**: Draft  
-**Input**: User description: "a new feature: recovering a lockbox."
+**Input**: User description: "a new feature: recovering a vault."
 
 ## Execution Flow (main)
 ```
@@ -55,45 +55,45 @@ When creating this spec from a user prompt:
 ## User Scenarios & Testing *(mandatory)*
 
 ### Primary User Story
-As a key holder, I want to recover a lockbox that I have a key share for, so that I can access the encrypted contents when the original owner is unavailable or when I need to restore the data.
+As a steward, I want to recover a vault that I have a key share for, so that I can access the encrypted contents when the original owner is unavailable or when I need to restore the data.
 
 ### Acceptance Scenarios
-1. **Given** I am a key holder for a lockbox, **When** I initiate recovery from the lockbox detail screen, **Then** the system should send encrypted recovery requests to all other key holders and display their response status
+1. **Given** I am a steward for a vault, **When** I initiate recovery from the vault detail screen, **Then** the system should send encrypted recovery requests to all other stewards and display their response status
 2. **Given** I receive a recovery request notification, **When** I tap on the request, **Then** I should see options to approve or deny the recovery request
-3. **Given** I have been given a key share for a lockbox, **When** I view the lockbox list, **Then** I should see both lockboxes I own and lockboxes I have keys for, clearly distinguished
-4. **Given** I am scanning for keys on configured relays, **When** a new encrypted share is found for me, **Then** a new lockbox record should be created locally and displayed in my lockbox list
-5. **Given** enough key holders have approved a recovery request, **When** their shares are collected, **Then** the lockbox contents should be reassembled and saved locally, marking the lockbox as recovered
+3. **Given** I have been given a key share for a vault, **When** I view the vault list, **Then** I should see both vaultes I own and vaultes I have keys for, clearly distinguished
+4. **Given** I am scanning for keys on configured relays, **When** a new encrypted share is found for me, **Then** a new vault record should be created locally and displayed in my vault list
+5. **Given** enough stewards have approved a recovery request, **When** their shares are collected, **Then** the vault contents should be reassembled and saved locally, marking the vault as recovered
 
 ### Edge Cases
-- What happens when a key holder denies a recovery request? this just blocks the use of that share. The request should no longer be shown for the one who denied it, but future requests may be shown.
-- How does the system handle when some key holders are unresponsive during recovery? if peers are unresponsive then the recovery will just be stuck. The recovery initiator can try to get in contact with them out of band if necessary.
+- What happens when a steward denies a recovery request? this just blocks the use of that share. The request should no longer be shown for the one who denied it, but future requests may be shown.
+- How does the system handle when some stewards are unresponsive during recovery? if peers are unresponsive then the recovery will just be stuck. The recovery initiator can try to get in contact with them out of band if necessary.
 - What happens if the recovery initiator goes offline during the process? that's fine. Because everything is done with nostr events through relays it tolerates folks coming on and offline at any time.
-- How does the system handle duplicate recovery requests for the same lockbox? we can just show all requests. I suppose we can display the timestamp from the nostr event to differentiate between them.
+- How does the system handle duplicate recovery requests for the same vault? we can just show all requests. I suppose we can display the timestamp from the nostr event to differentiate between them.
 
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
-- **FR-001**: System MUST allow any key holder to initiate recovery of a lockbox they have a key share for
-- **FR-002**: System MUST display lockboxes that the user owns differently from lockboxes they only have keys for
-- **FR-003**: System MUST provide a "Scan for Keys" button on the lockbox list screen that navigates to relay management
+- **FR-001**: System MUST allow any steward to initiate recovery of a vault they have a key share for
+- **FR-002**: System MUST display vaultes that the user owns differently from vaultes they only have keys for
+- **FR-003**: System MUST provide a "Scan for Keys" button on the vault list screen that navigates to relay management
 - **FR-004**: System MUST allow users to configure a list of Nostr relays to scan for encrypted key shares
 - **FR-005**: System MUST automatically scan configured relays for encrypted shares addressed to the current user
-- **FR-006**: System MUST create local Lockbox records when encrypted shares are found and addressed to the current user
-- **FR-007**: System MUST provide a "Initiate Recovery" button on lockbox detail screens for lockboxes without local content
-- **FR-008**: System MUST send encrypted Nostr events to all key holders when recovery is initiated
-- **FR-009**: System MUST display key holder status (Unlocked, Waiting, Denied) during recovery mode
+- **FR-006**: System MUST create local Vault records when encrypted shares are found and addressed to the current user
+- **FR-007**: System MUST provide a "Initiate Recovery" button on vault detail screens for vaultes without local content
+- **FR-008**: System MUST send encrypted Nostr events to all stewards when recovery is initiated
+- **FR-009**: System MUST display steward status (Unlocked, Waiting, Denied) during recovery mode
 - **FR-010**: System MUST continuously scan relays for recovery request DMs
-- **FR-011**: System MUST display recovery request notifications in an overlay at the bottom of the lockbox list screen
-- **FR-012**: System MUST allow key holders to approve or deny recovery requests from the notification overlay
-- **FR-013**: System MUST reassemble lockbox contents when sufficient key shares are collected
-- **FR-014**: System MUST save recovered lockbox contents to local storage
-- **FR-015**: System MUST mark lockboxes as recovered when contents are successfully reassembled
+- **FR-011**: System MUST display recovery request notifications in an overlay at the bottom of the vault list screen
+- **FR-012**: System MUST allow stewards to approve or deny recovery requests from the notification overlay
+- **FR-013**: System MUST reassemble vault contents when sufficient key shares are collected
+- **FR-014**: System MUST save recovered vault contents to local storage
+- **FR-015**: System MUST mark vaultes as recovered when contents are successfully reassembled
 
 ### Key Entities *(include if feature involves data)*
-- **Recovery Request**: Represents a request to recover a lockbox, containing the lockbox ID, initiator's public key, timestamp, and current status
-- **Key Share**: Represents an encrypted portion of a lockbox's content that can be used to reconstruct the original data
+- **Recovery Request**: Represents a request to recover a vault, containing the vault ID, initiator's public key, timestamp, and current status
+- **Key Share**: Represents an encrypted portion of a vault's content that can be used to reconstruct the original data
 - **Relay Configuration**: Represents a list of Nostr relays that the app monitors for incoming key shares and recovery requests
-- **Recovery Status**: Represents the current state of a recovery process, including which key holders have responded and their decision
+- **Recovery Status**: Represents the current state of a recovery process, including which stewards have responded and their decision
 
 ---
 
@@ -113,7 +113,7 @@ As a key holder, I want to recover a lockbox that I have a key share for, so tha
 - [x] Scope is clearly bounded
 - [x] Dependencies and assumptions identified
 
-### Keydex-Specific Requirements
+### Horcrux-Specific Requirements
 - [x] Security requirements clearly defined for sensitive data handling
 - [x] Cross-platform functionality specified for all 5 platforms
 - [x] Nostr protocol integration requirements documented

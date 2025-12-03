@@ -3,7 +3,7 @@ import 'shard_data.dart';
 /// Recovery request status enum
 enum RecoveryRequestStatus {
   pending, // Request created but not yet sent
-  sent, // Request sent to key holders via Nostr
+  sent, // Request sent to stewards via Nostr
   inProgress, // Responses being collected
   completed, // Recovery successful, content reassembled
   failed, // Recovery failed (insufficient shares or timeout)
@@ -77,10 +77,10 @@ extension RecoveryResponseStatusExtension on RecoveryResponseStatus {
   }
 }
 
-/// Represents a key holder's response to a recovery request
+/// Represents a steward's response to a recovery request
 class RecoveryResponse {
   final String pubkey; // hex format, 64 characters
-  final bool approved; // Whether the key holder approved the request
+  final bool approved; // Whether the steward approved the request
   final DateTime? respondedAt;
   final ShardData? shardData; // Actual shard data for reassembly (if approved)
   final String? nostrEventId;
@@ -173,29 +173,29 @@ class RecoveryResponse {
   }
 }
 
-/// Represents a request to recover a lockbox
+/// Represents a request to recover a vault
 class RecoveryRequest {
   final String id;
-  final String lockboxId;
+  final String vaultId;
   final String initiatorPubkey; // hex format, 64 characters
   final DateTime requestedAt;
   final RecoveryRequestStatus status;
   final String? nostrEventId;
   final DateTime? expiresAt;
   final int threshold; // Shamir threshold needed for recovery
-  final Map<String, RecoveryResponse> keyHolderResponses; // pubkey -> response
+  final Map<String, RecoveryResponse> stewardResponses; // pubkey -> response
   final String? errorMessage; // Error message if status is failed
 
   const RecoveryRequest({
     required this.id,
-    required this.lockboxId,
+    required this.vaultId,
     required this.initiatorPubkey,
     required this.requestedAt,
     required this.status,
     required this.threshold,
     this.nostrEventId,
     this.expiresAt,
-    this.keyHolderResponses = const {},
+    this.stewardResponses = const {},
     this.errorMessage,
   });
 
@@ -204,8 +204,8 @@ class RecoveryRequest {
     // ID must be non-empty
     if (id.isEmpty) return false;
 
-    // LockboxId must be non-empty
-    if (lockboxId.isEmpty) return false;
+    // VaultId must be non-empty
+    if (vaultId.isEmpty) return false;
 
     // InitiatorPubkey must be valid hex format (64 characters)
     if (initiatorPubkey.length != 64 || !_isHexString(initiatorPubkey)) {
@@ -233,14 +233,14 @@ class RecoveryRequest {
 
   /// Get the count of responses by status
   int getResponseCount(RecoveryResponseStatus status) {
-    return keyHolderResponses.values.where((r) => r.status == status).length;
+    return stewardResponses.values.where((r) => r.status == status).length;
   }
 
-  /// Get total number of key holders
-  int get totalKeyHolders => keyHolderResponses.length;
+  /// Get total number of stewards
+  int get totalStewards => stewardResponses.length;
 
   /// Get number of responses received
-  int get respondedCount => keyHolderResponses.values.where((r) => r.status.isResolved).length;
+  int get respondedCount => stewardResponses.values.where((r) => r.status.isResolved).length;
 
   /// Get number of approvals
   int get approvedCount => getResponseCount(RecoveryResponseStatus.approved);
@@ -252,14 +252,14 @@ class RecoveryRequest {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'lockboxId': lockboxId,
+      'vaultId': vaultId,
       'initiatorPubkey': initiatorPubkey,
       'requestedAt': requestedAt.toIso8601String(),
       'status': status.name,
       'threshold': threshold,
       'nostrEventId': nostrEventId,
       'expiresAt': expiresAt?.toIso8601String(),
-      'keyHolderResponses': keyHolderResponses.map(
+      'stewardResponses': stewardResponses.map(
         (key, value) => MapEntry(key, value.toJson()),
       ),
       'errorMessage': errorMessage,
@@ -268,7 +268,7 @@ class RecoveryRequest {
 
   /// Create from JSON
   factory RecoveryRequest.fromJson(Map<String, dynamic> json) {
-    final responsesJson = json['keyHolderResponses'] as Map<String, dynamic>?;
+    final responsesJson = json['stewardResponses'] as Map<String, dynamic>?;
     final responses = responsesJson?.map(
           (key, value) => MapEntry(
             key,
@@ -279,7 +279,7 @@ class RecoveryRequest {
 
     return RecoveryRequest(
       id: json['id'] as String,
-      lockboxId: json['lockboxId'] as String,
+      vaultId: json['vaultId'] as String,
       initiatorPubkey: json['initiatorPubkey'] as String,
       requestedAt: DateTime.parse(json['requestedAt'] as String),
       status: RecoveryRequestStatus.values.firstWhere(
@@ -290,33 +290,33 @@ class RecoveryRequest {
           1, // Default to 1 if not present (for backwards compatibility)
       nostrEventId: json['nostrEventId'] as String?,
       expiresAt: json['expiresAt'] != null ? DateTime.parse(json['expiresAt'] as String) : null,
-      keyHolderResponses: responses,
+      stewardResponses: responses,
       errorMessage: json['errorMessage'] as String?,
     );
   }
 
   RecoveryRequest copyWith({
     String? id,
-    String? lockboxId,
+    String? vaultId,
     String? initiatorPubkey,
     DateTime? requestedAt,
     RecoveryRequestStatus? status,
     int? threshold,
     String? nostrEventId,
     DateTime? expiresAt,
-    Map<String, RecoveryResponse>? keyHolderResponses,
+    Map<String, RecoveryResponse>? stewardResponses,
     String? errorMessage,
   }) {
     return RecoveryRequest(
       id: id ?? this.id,
-      lockboxId: lockboxId ?? this.lockboxId,
+      vaultId: vaultId ?? this.vaultId,
       initiatorPubkey: initiatorPubkey ?? this.initiatorPubkey,
       requestedAt: requestedAt ?? this.requestedAt,
       status: status ?? this.status,
       threshold: threshold ?? this.threshold,
       nostrEventId: nostrEventId ?? this.nostrEventId,
       expiresAt: expiresAt ?? this.expiresAt,
-      keyHolderResponses: keyHolderResponses ?? this.keyHolderResponses,
+      stewardResponses: stewardResponses ?? this.stewardResponses,
       errorMessage: errorMessage ?? this.errorMessage,
     );
   }
@@ -331,7 +331,7 @@ class RecoveryRequest {
 
   @override
   String toString() {
-    return 'RecoveryRequest(id: $id, lockboxId: $lockboxId, status: ${status.displayName})';
+    return 'RecoveryRequest(id: $id, vaultId: $vaultId, status: ${status.displayName})';
   }
 }
 

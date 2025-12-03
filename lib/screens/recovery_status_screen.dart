@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/recovery_request.dart';
 import '../providers/recovery_provider.dart';
-import '../providers/lockbox_provider.dart';
+import '../providers/vault_provider.dart';
 import '../services/recovery_service.dart';
 import '../widgets/recovery_progress_widget.dart';
-import '../widgets/recovery_key_holders_widget.dart';
+import '../widgets/recovery_stewards_widget.dart';
 
-/// Screen for displaying recovery request status and key holder responses
+/// Screen for displaying recovery request status and steward responses
 class RecoveryStatusScreen extends ConsumerStatefulWidget {
   final String recoveryRequestId;
 
@@ -34,23 +34,23 @@ class _RecoveryStatusScreenState extends ConsumerState<RecoveryStatusScreen> {
             return const Center(child: Text('Recovery request not found'));
           }
 
-          // Get lockbox to extract instructions
-          final lockboxAsync = ref.watch(lockboxProvider(request.lockboxId));
+          // Get vault to extract instructions
+          final vaultAsync = ref.watch(vaultProvider(request.vaultId));
 
-          return lockboxAsync.when(
+          return vaultAsync.when(
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (error, stack) => Center(child: Text('Error loading lockbox: $error')),
-            data: (lockbox) {
-              // Get instructions from lockbox
+            error: (error, stack) => Center(child: Text('Error loading vault: $error')),
+            data: (vault) {
+              // Get instructions from vault
               String? instructions;
-              if (lockbox != null) {
+              if (vault != null) {
                 // First try to get from backupConfig
-                if (lockbox.backupConfig?.instructions != null &&
-                    lockbox.backupConfig!.instructions!.isNotEmpty) {
-                  instructions = lockbox.backupConfig!.instructions;
-                } else if (lockbox.shards.isNotEmpty) {
+                if (vault.backupConfig?.instructions != null &&
+                    vault.backupConfig!.instructions!.isNotEmpty) {
+                  instructions = vault.backupConfig!.instructions;
+                } else if (vault.shards.isNotEmpty) {
                   // Fallback to shard data
-                  instructions = lockbox.shards.first.instructions;
+                  instructions = vault.shards.first.instructions;
                 }
               }
 
@@ -97,7 +97,7 @@ class _RecoveryStatusScreenState extends ConsumerState<RecoveryStatusScreen> {
                       recoveryRequestId: widget.recoveryRequestId,
                     ),
                     const SizedBox(height: 16),
-                    RecoveryKeyHoldersWidget(
+                    RecoveryStewardsWidget(
                       recoveryRequestId: widget.recoveryRequestId,
                     ),
                     const SizedBox(height: 16),
@@ -158,10 +158,10 @@ class _RecoveryStatusScreenState extends ConsumerState<RecoveryStatusScreen> {
 
     if (confirmed == true) {
       try {
-        // Get lockboxId before exiting recovery mode
+        // Get vaultId before exiting recovery mode
         final request =
             await ref.read(recoveryServiceProvider).getRecoveryRequest(widget.recoveryRequestId);
-        final lockboxId = request?.lockboxId;
+        final vaultId = request?.vaultId;
 
         await ref.read(recoveryServiceProvider).exitRecoveryMode(widget.recoveryRequestId);
 
@@ -171,8 +171,8 @@ class _RecoveryStatusScreenState extends ConsumerState<RecoveryStatusScreen> {
           ).showSnackBar(const SnackBar(content: Text('Ended recovery')));
           // Invalidate providers to refresh the UI
           ref.invalidate(recoveryRequestByIdProvider(widget.recoveryRequestId));
-          if (lockboxId != null) {
-            ref.invalidate(lockboxProvider(lockboxId));
+          if (vaultId != null) {
+            ref.invalidate(vaultProvider(vaultId));
           }
           Navigator.pop(context);
         }

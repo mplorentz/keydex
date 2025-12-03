@@ -3,16 +3,16 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
-import 'package:keydex/models/lockbox.dart';
-import 'package:keydex/models/recovery_request.dart';
-import 'package:keydex/models/shard_data.dart';
-import 'package:keydex/services/login_service.dart';
-import 'package:keydex/providers/lockbox_provider.dart';
-import 'package:keydex/services/recovery_service.dart';
-import 'package:keydex/services/backup_service.dart';
-import 'package:keydex/services/shard_distribution_service.dart';
-import 'package:keydex/services/ndk_service.dart';
-import 'package:keydex/services/lockbox_share_service.dart';
+import 'package:horcrux/models/vault.dart';
+import 'package:horcrux/models/recovery_request.dart';
+import 'package:horcrux/models/shard_data.dart';
+import 'package:horcrux/services/login_service.dart';
+import 'package:horcrux/providers/vault_provider.dart';
+import 'package:horcrux/services/recovery_service.dart';
+import 'package:horcrux/services/backup_service.dart';
+import 'package:horcrux/services/shard_distribution_service.dart';
+import 'package:horcrux/services/ndk_service.dart';
+import 'package:horcrux/services/vault_share_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'recovery_service_test.mocks.dart';
@@ -22,7 +22,7 @@ import '../helpers/secure_storage_mock.dart';
   BackupService,
   ShardDistributionService,
   NdkService,
-  LockboxShareService,
+  VaultShareService,
 ])
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -40,14 +40,14 @@ void main() {
   group('RecoveryService - Nostr Event Payload Validation', () {
     late String testCreatorPubkey;
     late LoginService loginService;
-    late LockboxRepository repository;
+    late VaultRepository repository;
     late BackupService backupService;
     late NdkService ndkService;
-    late LockboxShareService lockboxShareService;
+    late VaultShareService vaultShareService;
     late RecoveryService recoveryService;
     const testKeyHolder1 = 'fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321';
     const testKeyHolder2 = 'abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdef1234';
-    const testLockboxId = 'lockbox-test-123';
+    const testVaultId = 'vault-test-123';
 
     setUp(() async {
       secureStorageMock.clear();
@@ -61,12 +61,12 @@ void main() {
       final keyPair = await loginService.generateAndStoreNostrKey();
       testCreatorPubkey = keyPair.publicKey;
 
-      // Clear any existing recovery requests and lockboxes
-      repository = LockboxRepository(loginService);
+      // Clear any existing recovery requests and vaultes
+      repository = VaultRepository(loginService);
       // Create mocks for circular dependency
       final mockBackupService = MockBackupService();
       final mockNdkService = MockNdkService();
-      final mockLockboxShareService = MockLockboxShareService();
+      final mockVaultShareService = MockVaultShareService();
 
       // Stub the streams that RecoveryService accesses in its constructor
       when(
@@ -82,25 +82,25 @@ void main() {
 
       backupService = mockBackupService;
       ndkService = mockNdkService;
-      lockboxShareService = mockLockboxShareService;
+      vaultShareService = mockVaultShareService;
       recoveryService = RecoveryService(
         repository,
         backupService,
         ndkService,
-        lockboxShareService,
+        vaultShareService,
       );
       await recoveryService.clearAll();
       await repository.clearAll();
 
-      // Create a test lockbox for recovery tests
-      final testLockbox = Lockbox(
-        id: testLockboxId,
-        name: 'Test Lockbox',
-        content: 'Test lockbox content',
+      // Create a test vault for recovery tests
+      final testVault = Vault(
+        id: testVaultId,
+        name: 'Test Vault',
+        content: 'Test vault content',
         createdAt: DateTime.now(),
         ownerPubkey: testCreatorPubkey,
       );
-      await repository.addLockbox(testLockbox);
+      await repository.addVault(testVault);
     });
 
     tearDown(() async {
@@ -112,22 +112,22 @@ void main() {
     test('recovery request creation succeeds with valid data', () async {
       // Create a recovery request
       final recoveryRequest = await recoveryService.initiateRecovery(
-        testLockboxId,
+        testVaultId,
         initiatorPubkey: testCreatorPubkey,
-        keyHolderPubkeys: [testKeyHolder1, testKeyHolder2],
+        stewardPubkeys: [testKeyHolder1, testKeyHolder2],
         threshold: 2,
       );
 
       // Verify request was created
-      expect(recoveryRequest.lockboxId, testLockboxId);
+      expect(recoveryRequest.vaultId, testVaultId);
       expect(recoveryRequest.initiatorPubkey, testCreatorPubkey);
-      expect(recoveryRequest.keyHolderResponses.length, 2);
+      expect(recoveryRequest.stewardResponses.length, 2);
       expect(
-        recoveryRequest.keyHolderResponses.containsKey(testKeyHolder1),
+        recoveryRequest.stewardResponses.containsKey(testKeyHolder1),
         true,
       );
       expect(
-        recoveryRequest.keyHolderResponses.containsKey(testKeyHolder2),
+        recoveryRequest.stewardResponses.containsKey(testKeyHolder2),
         true,
       );
     });
@@ -135,9 +135,9 @@ void main() {
     test('recovery request JSON payload has correct structure', () async {
       // Arrange
       final recoveryRequest = await recoveryService.initiateRecovery(
-        testLockboxId,
+        testVaultId,
         initiatorPubkey: testCreatorPubkey,
-        keyHolderPubkeys: [testKeyHolder1, testKeyHolder2],
+        stewardPubkeys: [testKeyHolder1, testKeyHolder2],
         threshold: 2,
       );
 
@@ -145,11 +145,11 @@ void main() {
       final requestData = {
         'type': 'recovery_request',
         'recovery_request_id': recoveryRequest.id,
-        'lockbox_id': recoveryRequest.lockboxId,
+        'vault_id': recoveryRequest.vaultId,
         'initiator_pubkey': recoveryRequest.initiatorPubkey,
         'requested_at': recoveryRequest.requestedAt.toIso8601String(),
         'expires_at': recoveryRequest.expiresAt?.toIso8601String(),
-        'threshold': (recoveryRequest.totalKeyHolders * 0.67).ceil(),
+        'threshold': (recoveryRequest.totalStewards * 0.67).ceil(),
       };
 
       final requestJson = json.encode(requestData);
@@ -159,7 +159,7 @@ void main() {
 
       final decoded = json.decode(requestJson) as Map<String, dynamic>;
       expect(decoded['type'], 'recovery_request');
-      expect(decoded['lockbox_id'], testLockboxId);
+      expect(decoded['vault_id'], testVaultId);
       expect(decoded['initiator_pubkey'], testCreatorPubkey);
       expect(decoded['threshold'], 2);
       expect(decoded['recovery_request_id'], isNotEmpty);
@@ -171,9 +171,9 @@ void main() {
       () async {
         // Arrange
         final recoveryRequest = await recoveryService.initiateRecovery(
-          testLockboxId,
+          testVaultId,
           initiatorPubkey: testCreatorPubkey,
-          keyHolderPubkeys: [testKeyHolder1],
+          stewardPubkeys: [testKeyHolder1],
           threshold: 1,
         );
 
@@ -184,15 +184,15 @@ void main() {
           totalShards: 3,
           primeMod: 'test_prime_mod',
           creatorPubkey: testCreatorPubkey,
-          lockboxId: testLockboxId,
-          lockboxName: 'Test Lockbox',
+          vaultId: testVaultId,
+          vaultName: 'Test Vault',
         );
 
         // Build the expected JSON structure for approval (as would be sent via Nostr)
         final responseData = {
           'type': 'recovery_response',
           'recovery_request_id': recoveryRequest.id,
-          'lockbox_id': recoveryRequest.lockboxId,
+          'vault_id': recoveryRequest.vaultId,
           'responder_pubkey': testKeyHolder1,
           'approved': true,
           'responded_at': DateTime.now().toIso8601String(),
@@ -207,7 +207,7 @@ void main() {
         final decoded = json.decode(responseJson) as Map<String, dynamic>;
         expect(decoded['type'], 'recovery_response');
         expect(decoded['recovery_request_id'], recoveryRequest.id);
-        expect(decoded['lockbox_id'], testLockboxId);
+        expect(decoded['vault_id'], testVaultId);
         expect(decoded['responder_pubkey'], testKeyHolder1);
         expect(decoded['approved'], true);
         expect(decoded['shard_data'], isNotNull);
@@ -219,17 +219,17 @@ void main() {
         expect(shardDataJson['shardIndex'], 0);
         expect(shardDataJson['totalShards'], 3);
         expect(shardDataJson['creatorPubkey'], testCreatorPubkey);
-        expect(shardDataJson['lockboxId'], testLockboxId);
-        expect(shardDataJson['lockboxName'], 'Test Lockbox');
+        expect(shardDataJson['vaultId'], testVaultId);
+        expect(shardDataJson['vaultName'], 'Test Vault');
       },
     );
 
     test('recovery response JSON payload for denial omits shard data', () async {
       // Arrange
       final recoveryRequest = await recoveryService.initiateRecovery(
-        testLockboxId,
+        testVaultId,
         initiatorPubkey: testCreatorPubkey,
-        keyHolderPubkeys: [testKeyHolder1],
+        stewardPubkeys: [testKeyHolder1],
         threshold: 1,
       );
 
@@ -237,7 +237,7 @@ void main() {
       final responseData = {
         'type': 'recovery_response',
         'recovery_request_id': recoveryRequest.id,
-        'lockbox_id': recoveryRequest.lockboxId,
+        'vault_id': recoveryRequest.vaultId,
         'responder_pubkey': testKeyHolder1,
         'approved': false,
         'responded_at': DateTime.now().toIso8601String(),
@@ -254,48 +254,48 @@ void main() {
       expect(decoded.containsKey('shard_data'), false);
     });
 
-    test('recovery request is sent to all key holders', () async {
-      // Create a recovery request with multiple key holders
+    test('recovery request is sent to all stewards', () async {
+      // Create a recovery request with multiple stewards
       final recoveryRequest = await recoveryService.initiateRecovery(
-        testLockboxId,
+        testVaultId,
         initiatorPubkey: testCreatorPubkey,
-        keyHolderPubkeys: [testKeyHolder1, testKeyHolder2],
+        stewardPubkeys: [testKeyHolder1, testKeyHolder2],
         threshold: 2,
       );
 
-      // Verify all key holders are in the request
-      expect(recoveryRequest.keyHolderResponses.length, 2);
+      // Verify all stewards are in the request
+      expect(recoveryRequest.stewardResponses.length, 2);
       expect(
-        recoveryRequest.keyHolderResponses[testKeyHolder1]?.status,
+        recoveryRequest.stewardResponses[testKeyHolder1]?.status,
         RecoveryResponseStatus.pending,
       );
       expect(
-        recoveryRequest.keyHolderResponses[testKeyHolder2]?.status,
+        recoveryRequest.stewardResponses[testKeyHolder2]?.status,
         RecoveryResponseStatus.pending,
       );
 
       // In actual sendRecoveryRequestViaNostr, this would create 2 gift wraps
-      // (one for each key holder)
+      // (one for each steward)
     });
 
     test('recovery response includes threshold information', () async {
       // Arrange
       final recoveryRequest = await recoveryService.initiateRecovery(
-        testLockboxId,
+        testVaultId,
         initiatorPubkey: testCreatorPubkey,
-        keyHolderPubkeys: [testKeyHolder1, testKeyHolder2],
+        stewardPubkeys: [testKeyHolder1, testKeyHolder2],
         threshold: 2,
       );
 
-      expect(recoveryRequest.totalKeyHolders, 2);
+      expect(recoveryRequest.totalStewards, 2);
     });
 
     test('recovery request contains proper expiration', () async {
       // Create request with default expiration
       final recoveryRequest = await recoveryService.initiateRecovery(
-        testLockboxId,
+        testVaultId,
         initiatorPubkey: testCreatorPubkey,
-        keyHolderPubkeys: [testKeyHolder1],
+        stewardPubkeys: [testKeyHolder1],
         threshold: 1,
       );
 
@@ -314,9 +314,9 @@ void main() {
     test('recovery request respects custom expiration duration', () async {
       // Create request with custom 2-hour expiration
       final recoveryRequest = await recoveryService.initiateRecovery(
-        testLockboxId,
+        testVaultId,
         initiatorPubkey: testCreatorPubkey,
-        keyHolderPubkeys: [testKeyHolder1],
+        stewardPubkeys: [testKeyHolder1],
         threshold: 1,
         expirationDuration: const Duration(hours: 2),
       );
@@ -333,9 +333,9 @@ void main() {
     test('recovery response shard data is stored and can be retrieved', () async {
       // Create initial recovery request
       final recoveryRequest = await recoveryService.initiateRecovery(
-        testLockboxId,
+        testVaultId,
         initiatorPubkey: testCreatorPubkey,
-        keyHolderPubkeys: [testKeyHolder1],
+        stewardPubkeys: [testKeyHolder1],
         threshold: 1,
       );
 
@@ -348,10 +348,10 @@ void main() {
         totalShards: 3,
         primeMod: 'test_prime_CCC=',
         creatorPubkey: testCreatorPubkey,
-        lockboxId: testLockboxId,
-        lockboxName: 'Recovered Lockbox',
+        vaultId: testVaultId,
+        vaultName: 'Recovered Vault',
         peers: [
-          {'name': 'Key Holder 1', 'pubkey': testKeyHolder1},
+          {'name': 'Steward 1', 'pubkey': testKeyHolder1},
         ],
       );
 
@@ -369,15 +369,15 @@ void main() {
       );
       expect(updatedRequest, isNotNull);
       expect(
-        updatedRequest!.keyHolderResponses[testKeyHolder1]?.status,
+        updatedRequest!.stewardResponses[testKeyHolder1]?.status,
         RecoveryResponseStatus.approved,
       );
       expect(
-        updatedRequest.keyHolderResponses[testKeyHolder1]?.shardData,
+        updatedRequest.stewardResponses[testKeyHolder1]?.shardData,
         isNotNull,
       );
       expect(
-        updatedRequest.keyHolderResponses[testKeyHolder1]?.shardData?.shard,
+        updatedRequest.stewardResponses[testKeyHolder1]?.shardData?.shard,
         'recovered_shard_AAA=',
       );
     });
@@ -385,9 +385,9 @@ void main() {
     test('recovery response denial does not include shard data', () async {
       // Create initial recovery request
       final recoveryRequest = await recoveryService.initiateRecovery(
-        testLockboxId,
+        testVaultId,
         initiatorPubkey: testCreatorPubkey,
-        keyHolderPubkeys: [testKeyHolder1],
+        stewardPubkeys: [testKeyHolder1],
         threshold: 1,
       );
 
@@ -404,25 +404,25 @@ void main() {
       );
       expect(updatedRequest, isNotNull);
       expect(
-        updatedRequest!.keyHolderResponses[testKeyHolder1]?.status,
+        updatedRequest!.stewardResponses[testKeyHolder1]?.status,
         RecoveryResponseStatus.denied,
       );
       expect(
-        updatedRequest.keyHolderResponses[testKeyHolder1]?.shardData,
+        updatedRequest.stewardResponses[testKeyHolder1]?.shardData,
         isNull,
       );
     });
 
     test('multiple recovery responses accumulate correctly', () async {
-      // Create recovery request with multiple key holders
+      // Create recovery request with multiple stewards
       final recoveryRequest = await recoveryService.initiateRecovery(
-        testLockboxId,
+        testVaultId,
         initiatorPubkey: testCreatorPubkey,
-        keyHolderPubkeys: [testKeyHolder1, testKeyHolder2],
+        stewardPubkeys: [testKeyHolder1, testKeyHolder2],
         threshold: 2,
       );
 
-      // Create shard data for first key holder
+      // Create shard data for first steward
       final shardData1 = createShardData(
         shard: 'shard_data_1_AAA=',
         threshold: 2,
@@ -430,10 +430,10 @@ void main() {
         totalShards: 2,
         primeMod: 'test_prime_DDD=',
         creatorPubkey: testCreatorPubkey,
-        lockboxId: testLockboxId,
+        vaultId: testVaultId,
       );
 
-      // Create shard data for second key holder
+      // Create shard data for second steward
       final shardData2 = createShardData(
         shard: 'shard_data_2_BBB=',
         threshold: 2,
@@ -441,10 +441,10 @@ void main() {
         totalShards: 2,
         primeMod: 'test_prime_DDD=',
         creatorPubkey: testCreatorPubkey,
-        lockboxId: testLockboxId,
+        vaultId: testVaultId,
       );
 
-      // First key holder approves
+      // First steward approves
       await recoveryService.respondToRecoveryRequest(
         recoveryRequest.id,
         testKeyHolder1,
@@ -452,7 +452,7 @@ void main() {
         shardData: shardData1,
       );
 
-      // Second key holder approves
+      // Second steward approves
       await recoveryService.respondToRecoveryRequest(
         recoveryRequest.id,
         testKeyHolder2,
@@ -467,27 +467,27 @@ void main() {
       expect(updatedRequest, isNotNull);
       expect(updatedRequest!.approvedCount, 2);
       expect(
-        updatedRequest.keyHolderResponses[testKeyHolder1]?.status,
+        updatedRequest.stewardResponses[testKeyHolder1]?.status,
         RecoveryResponseStatus.approved,
       );
       expect(
-        updatedRequest.keyHolderResponses[testKeyHolder2]?.status,
+        updatedRequest.stewardResponses[testKeyHolder2]?.status,
         RecoveryResponseStatus.approved,
       );
       expect(
-        updatedRequest.keyHolderResponses[testKeyHolder1]?.shardData,
+        updatedRequest.stewardResponses[testKeyHolder1]?.shardData,
         isNotNull,
       );
       expect(
-        updatedRequest.keyHolderResponses[testKeyHolder2]?.shardData,
+        updatedRequest.stewardResponses[testKeyHolder2]?.shardData,
         isNotNull,
       );
       expect(
-        updatedRequest.keyHolderResponses[testKeyHolder1]?.shardData?.shard,
+        updatedRequest.stewardResponses[testKeyHolder1]?.shardData?.shard,
         'shard_data_1_AAA=',
       );
       expect(
-        updatedRequest.keyHolderResponses[testKeyHolder2]?.shardData?.shard,
+        updatedRequest.stewardResponses[testKeyHolder2]?.shardData?.shard,
         'shard_data_2_BBB=',
       );
 

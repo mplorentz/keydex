@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_toolkit/golden_toolkit.dart';
-import 'package:keydex/models/lockbox.dart';
-import 'package:keydex/models/recovery_request.dart';
-import 'package:keydex/models/backup_config.dart';
-import 'package:keydex/models/key_holder.dart';
-import 'package:keydex/providers/lockbox_provider.dart';
-import 'package:keydex/providers/key_provider.dart';
-import 'package:keydex/screens/recovery_request_detail_screen.dart';
+import 'package:horcrux/models/vault.dart';
+import 'package:horcrux/models/recovery_request.dart';
+import 'package:horcrux/models/backup_config.dart';
+import 'package:horcrux/models/steward.dart';
+import 'package:horcrux/providers/vault_provider.dart';
+import 'package:horcrux/providers/key_provider.dart';
+import 'package:horcrux/screens/recovery_request_detail_screen.dart';
 import '../helpers/golden_test_helpers.dart';
 
 void main() {
@@ -20,19 +20,19 @@ void main() {
 
   // Helper to create recovery request
   RecoveryRequest createTestRecoveryRequest({
-    required String lockboxId,
+    required String vaultId,
     required String initiatorPubkey,
     RecoveryRequestStatus status = RecoveryRequestStatus.inProgress,
     Map<String, RecoveryResponse>? responses,
   }) {
     return RecoveryRequest(
-      id: 'recovery-$lockboxId',
-      lockboxId: lockboxId,
+      id: 'recovery-$vaultId',
+      vaultId: vaultId,
       initiatorPubkey: initiatorPubkey,
       requestedAt: DateTime.now().subtract(const Duration(hours: 2)),
       status: status,
       threshold: 2,
-      keyHolderResponses: responses ?? {},
+      stewardResponses: responses ?? {},
     );
   }
 
@@ -49,8 +49,8 @@ void main() {
     );
   }
 
-  // Helper to create lockbox with backup config
-  Lockbox createTestLockbox({
+  // Helper to create vault with backup config
+  Vault createTestVault({
     required String id,
     required String name,
     required String ownerPubkey,
@@ -64,7 +64,7 @@ void main() {
       createKeyHolder(pubkey: otherStewardPubkey, name: 'Charlie'),
     ];
 
-    return Lockbox(
+    return Vault(
       id: id,
       name: name,
       content: null,
@@ -72,7 +72,7 @@ void main() {
       ownerPubkey: ownerPubkey,
       ownerName: ownerName,
       backupConfig: createBackupConfig(
-        lockboxId: id,
+        vaultId: id,
         threshold: 2,
         totalKeys: (keyHolders ?? defaultKeyHolders).length,
         keyHolders: keyHolders ?? defaultKeyHolders,
@@ -85,14 +85,14 @@ void main() {
   group('RecoveryRequestDetailScreen Golden Tests', () {
     testGoldens('loading state', (tester) async {
       final recoveryRequest = createTestRecoveryRequest(
-        lockboxId: 'test-lockbox',
+        vaultId: 'test-vault',
         initiatorPubkey: initiatorPubkey,
       );
 
       final container = ProviderContainer(
         overrides: [
-          // Mock the lockbox provider to return loading state
-          lockboxProvider('test-lockbox').overrideWith(
+          // Mock the vault provider to return loading state
+          vaultProvider('test-vault').overrideWith(
             (ref) => Stream.value(null).asyncMap((_) async {
               await Future.delayed(
                 const Duration(seconds: 10),
@@ -122,16 +122,16 @@ void main() {
 
     testGoldens('error state', (tester) async {
       final recoveryRequest = createTestRecoveryRequest(
-        lockboxId: 'test-lockbox',
+        vaultId: 'test-vault',
         initiatorPubkey: initiatorPubkey,
       );
 
       final container = ProviderContainer(
         overrides: [
           // Mock provider to throw an error
-          lockboxProvider(
-            'test-lockbox',
-          ).overrideWith((ref) => Stream.error('Failed to load lockbox')),
+          vaultProvider(
+            'test-vault',
+          ).overrideWith((ref) => Stream.error('Failed to load vault')),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
         ],
       );
@@ -150,7 +150,7 @@ void main() {
 
     testGoldens('active request with instructions', (tester) async {
       final recoveryRequest = createTestRecoveryRequest(
-        lockboxId: 'test-lockbox',
+        vaultId: 'test-vault',
         initiatorPubkey: initiatorPubkey,
         status: RecoveryRequestStatus.inProgress,
         responses: {
@@ -161,8 +161,8 @@ void main() {
         },
       );
 
-      final lockbox = createTestLockbox(
-        id: 'test-lockbox',
+      final vault = createTestVault(
+        id: 'test-vault',
         name: 'My Important Vault',
         ownerPubkey: ownerPubkey,
         ownerName: 'Alice',
@@ -177,9 +177,9 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider(
-            'test-lockbox',
-          ).overrideWith((ref) => Stream.value(lockbox)),
+          vaultProvider(
+            'test-vault',
+          ).overrideWith((ref) => Stream.value(vault)),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
         ],
       );
@@ -201,13 +201,13 @@ void main() {
 
     testGoldens('active request without instructions', (tester) async {
       final recoveryRequest = createTestRecoveryRequest(
-        lockboxId: 'test-lockbox',
+        vaultId: 'test-vault',
         initiatorPubkey: initiatorPubkey,
         status: RecoveryRequestStatus.inProgress,
       );
 
-      final lockbox = createTestLockbox(
-        id: 'test-lockbox',
+      final vault = createTestVault(
+        id: 'test-vault',
         name: 'My Important Vault',
         ownerPubkey: ownerPubkey,
         ownerName: 'Alice',
@@ -221,9 +221,9 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider(
-            'test-lockbox',
-          ).overrideWith((ref) => Stream.value(lockbox)),
+          vaultProvider(
+            'test-vault',
+          ).overrideWith((ref) => Stream.value(vault)),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
         ],
       );
@@ -245,13 +245,13 @@ void main() {
 
     testGoldens('request with unknown initiator', (tester) async {
       final recoveryRequest = createTestRecoveryRequest(
-        lockboxId: 'test-lockbox',
+        vaultId: 'test-vault',
         initiatorPubkey: 'x' * 64, // Unknown pubkey
         status: RecoveryRequestStatus.inProgress,
       );
 
-      final lockbox = createTestLockbox(
-        id: 'test-lockbox',
+      final vault = createTestVault(
+        id: 'test-vault',
         name: 'My Important Vault',
         ownerPubkey: ownerPubkey,
         ownerName: 'Alice',
@@ -264,9 +264,9 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider(
-            'test-lockbox',
-          ).overrideWith((ref) => Stream.value(lockbox)),
+          vaultProvider(
+            'test-vault',
+          ).overrideWith((ref) => Stream.value(vault)),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
         ],
       );
@@ -288,7 +288,7 @@ void main() {
 
     testGoldens('completed request (no action buttons)', (tester) async {
       final recoveryRequest = createTestRecoveryRequest(
-        lockboxId: 'test-lockbox',
+        vaultId: 'test-vault',
         initiatorPubkey: initiatorPubkey,
         status: RecoveryRequestStatus.completed,
         responses: {
@@ -303,8 +303,8 @@ void main() {
         },
       );
 
-      final lockbox = createTestLockbox(
-        id: 'test-lockbox',
+      final vault = createTestVault(
+        id: 'test-vault',
         name: 'My Important Vault',
         ownerPubkey: ownerPubkey,
         ownerName: 'Alice',
@@ -313,9 +313,9 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider(
-            'test-lockbox',
-          ).overrideWith((ref) => Stream.value(lockbox)),
+          vaultProvider(
+            'test-vault',
+          ).overrideWith((ref) => Stream.value(vault)),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
         ],
       );
@@ -337,13 +337,13 @@ void main() {
 
     testGoldens('multiple device sizes', (tester) async {
       final recoveryRequest = createTestRecoveryRequest(
-        lockboxId: 'test-lockbox',
+        vaultId: 'test-vault',
         initiatorPubkey: initiatorPubkey,
         status: RecoveryRequestStatus.inProgress,
       );
 
-      final lockbox = createTestLockbox(
-        id: 'test-lockbox',
+      final vault = createTestVault(
+        id: 'test-vault',
         name: 'My Important Vault',
         ownerPubkey: ownerPubkey,
         ownerName: 'Alice',
@@ -352,9 +352,9 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider(
-            'test-lockbox',
-          ).overrideWith((ref) => Stream.value(lockbox)),
+          vaultProvider(
+            'test-vault',
+          ).overrideWith((ref) => Stream.value(vault)),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
         ],
       );

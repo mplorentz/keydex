@@ -4,11 +4,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_toolkit/golden_toolkit.dart';
-import 'package:keydex/models/lockbox.dart';
-import 'package:keydex/models/shard_data.dart';
-import 'package:keydex/providers/key_provider.dart';
-import 'package:keydex/providers/lockbox_provider.dart';
-import 'package:keydex/screens/lockbox_list_screen.dart';
+import 'package:horcrux/models/vault.dart';
+import 'package:horcrux/models/shard_data.dart';
+import 'package:horcrux/providers/key_provider.dart';
+import 'package:horcrux/providers/vault_provider.dart';
+import 'package:horcrux/screens/vault_list_screen.dart';
 import '../helpers/golden_test_helpers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -57,8 +57,8 @@ void main() {
   final testPubkey = 'a' * 64; // 64-char hex pubkey
   final otherPubkey = 'b' * 64;
 
-  final ownedLockbox = Lockbox(
-    id: 'lockbox-1',
+  final ownedVault = Vault(
+    id: 'vault-1',
     name: 'My Private Keys',
     content: 'nsec1...',
     createdAt: DateTime(2024, 10, 1, 10, 30),
@@ -67,8 +67,8 @@ void main() {
     recoveryRequests: [],
   );
 
-  final keyHolderLockbox = Lockbox(
-    id: 'lockbox-2',
+  final keyHolderVault = Vault(
+    id: 'vault-2',
     name: "Alice's Backup",
     content: null,
     createdAt: DateTime(2024, 9, 15, 14, 20),
@@ -86,9 +86,9 @@ void main() {
     recoveryRequests: [],
   );
 
-  final awaitingKeyLockbox = Lockbox(
-    id: 'lockbox-awaiting',
-    name: "Bob's Shared Lockbox",
+  final awaitingKeyVault = Vault(
+    id: 'vault-awaiting',
+    name: "Bob's Shared Vault",
     content: null,
     createdAt: DateTime(2024, 9, 25, 16, 45),
     ownerPubkey: otherPubkey,
@@ -96,12 +96,12 @@ void main() {
     recoveryRequests: [],
   );
 
-  final multipleLockboxes = [
-    ownedLockbox,
-    keyHolderLockbox,
-    awaitingKeyLockbox,
-    Lockbox(
-      id: 'lockbox-3',
+  final multipleVaultes = [
+    ownedVault,
+    keyHolderVault,
+    awaitingKeyVault,
+    Vault(
+      id: 'vault-3',
       name: 'Work Documents',
       content: null,
       createdAt: DateTime(2024, 9, 20, 9, 15),
@@ -111,17 +111,17 @@ void main() {
     ),
   ];
 
-  group('LockboxListScreen Golden Tests', () {
+  group('VaultListScreen Golden Tests', () {
     setUp(() async {
       sharedPreferencesStore.clear();
       SharedPreferences.setMockInitialValues({});
     });
 
-    testGoldens('empty state - no lockboxes', (tester) async {
+    testGoldens('empty state - no vaultes', (tester) async {
       final container = ProviderContainer(
         overrides: [
-          // Mock the lockbox stream provider to return empty list
-          lockboxListProvider.overrideWith((ref) => Stream.value([])),
+          // Mock the vault stream provider to return empty list
+          vaultListProvider.overrideWith((ref) => Stream.value([])),
           // Mock the current user's pubkey
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
         ],
@@ -129,12 +129,12 @@ void main() {
 
       await pumpGoldenWidget(
         tester,
-        const LockboxListScreen(),
+        const VaultListScreen(),
         container: container,
         surfaceSize: const Size(375, 667), // iPhone SE size
       );
 
-      await screenMatchesGolden(tester, 'lockbox_list_screen_empty');
+      await screenMatchesGolden(tester, 'vault_list_screen_empty');
 
       container.dispose();
     });
@@ -147,8 +147,8 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           // Mock provider to throw an error
-          lockboxListProvider.overrideWith(
-            (ref) => Stream.error('Failed to load lockboxes'),
+          vaultListProvider.overrideWith(
+            (ref) => Stream.error('Failed to load vaultes'),
           ),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
         ],
@@ -156,20 +156,20 @@ void main() {
 
       await pumpGoldenWidget(
         tester,
-        const LockboxListScreen(),
+        const VaultListScreen(),
         container: container,
       );
 
-      await screenMatchesGolden(tester, 'lockbox_list_screen_error');
+      await screenMatchesGolden(tester, 'vault_list_screen_error');
 
       container.dispose();
     });
 
-    testGoldens('single owned lockbox', (tester) async {
+    testGoldens('single owned vault', (tester) async {
       final container = ProviderContainer(
         overrides: [
-          lockboxListProvider.overrideWith(
-            (ref) => Stream.value([ownedLockbox]),
+          vaultListProvider.overrideWith(
+            (ref) => Stream.value([ownedVault]),
           ),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
         ],
@@ -177,20 +177,20 @@ void main() {
 
       await pumpGoldenWidget(
         tester,
-        const LockboxListScreen(),
+        const VaultListScreen(),
         container: container,
       );
 
-      await screenMatchesGolden(tester, 'lockbox_list_screen_single_owned');
+      await screenMatchesGolden(tester, 'vault_list_screen_single_owned');
 
       container.dispose();
     });
 
-    testGoldens('single key holder lockbox', (tester) async {
+    testGoldens('single steward vault', (tester) async {
       final container = ProviderContainer(
         overrides: [
-          lockboxListProvider.overrideWith(
-            (ref) => Stream.value([keyHolderLockbox]),
+          vaultListProvider.overrideWith(
+            (ref) => Stream.value([keyHolderVault]),
           ),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
         ],
@@ -198,23 +198,23 @@ void main() {
 
       await pumpGoldenWidget(
         tester,
-        const LockboxListScreen(),
+        const VaultListScreen(),
         container: container,
       );
 
       await screenMatchesGolden(
         tester,
-        'lockbox_list_screen_single_key_holder',
+        'vault_list_screen_single_key_holder',
       );
 
       container.dispose();
     });
 
-    testGoldens('single awaiting key lockbox', (tester) async {
+    testGoldens('single awaiting key vault', (tester) async {
       final container = ProviderContainer(
         overrides: [
-          lockboxListProvider.overrideWith(
-            (ref) => Stream.value([awaitingKeyLockbox]),
+          vaultListProvider.overrideWith(
+            (ref) => Stream.value([awaitingKeyVault]),
           ),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
         ],
@@ -222,23 +222,23 @@ void main() {
 
       await pumpGoldenWidget(
         tester,
-        const LockboxListScreen(),
+        const VaultListScreen(),
         container: container,
       );
 
       await screenMatchesGolden(
         tester,
-        'lockbox_list_screen_single_awaiting_key',
+        'vault_list_screen_single_awaiting_key',
       );
 
       container.dispose();
     });
 
-    testGoldens('multiple lockboxes', (tester) async {
+    testGoldens('multiple vaultes', (tester) async {
       final container = ProviderContainer(
         overrides: [
-          lockboxListProvider.overrideWith(
-            (ref) => Stream.value(multipleLockboxes),
+          vaultListProvider.overrideWith(
+            (ref) => Stream.value(multipleVaultes),
           ),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
         ],
@@ -246,11 +246,11 @@ void main() {
 
       await pumpGoldenWidget(
         tester,
-        const LockboxListScreen(),
+        const VaultListScreen(),
         container: container,
       );
 
-      await screenMatchesGolden(tester, 'lockbox_list_screen_multiple');
+      await screenMatchesGolden(tester, 'vault_list_screen_multiple');
 
       container.dispose();
     });
@@ -258,8 +258,8 @@ void main() {
     testGoldens('multiple device sizes', (tester) async {
       final container = ProviderContainer(
         overrides: [
-          lockboxListProvider.overrideWith(
-            (ref) => Stream.value(multipleLockboxes),
+          vaultListProvider.overrideWith(
+            (ref) => Stream.value(multipleVaultes),
           ),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
         ],
@@ -270,8 +270,8 @@ void main() {
           devices: [Device.phone, Device.iphone11, Device.tabletPortrait],
         )
         ..addScenario(
-          widget: const LockboxListScreen(),
-          name: 'multiple_lockboxes',
+          widget: const VaultListScreen(),
+          name: 'multiple_vaultes',
         );
 
       await tester.pumpDeviceBuilder(
@@ -282,7 +282,7 @@ void main() {
         ),
       );
 
-      await screenMatchesGolden(tester, 'lockbox_list_screen_multiple_devices');
+      await screenMatchesGolden(tester, 'vault_list_screen_multiple_devices');
 
       container.dispose();
     });

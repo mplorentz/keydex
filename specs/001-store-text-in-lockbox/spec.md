@@ -1,9 +1,9 @@
-# Feature Specification: Encrypted Text Lockbox
+# Feature Specification: Encrypted Text Vault
 
-**Feature Branch**: `001-store-text-in-lockbox`  
+**Feature Branch**: `001-store-text-in-vault`  
 **Created**: 2024-12-19  
 **Status**: Draft  
-**Input**: User description: "user should be able to store text in an encrypted 'lockbox'"
+**Input**: User description: "user should be able to store text in an encrypted 'vault'"
 
 ## Execution Flow (main)
 ```
@@ -55,37 +55,37 @@ When creating this spec from a user prompt:
 ## User Scenarios & Testing *(mandatory)*
 
 ### Primary User Story
-As a user, I want to securely store sensitive text information in an encrypted lockbox so that I can back up my private data recover it when needed.
+As a user, I want to securely store sensitive text information in an encrypted vault so that I can back up my private data recover it when needed.
 
 ### Acceptance Scenarios
-1. **Given** a user wants to store sensitive text, **When** they create a new lockbox and enter their text, **Then** the text is encrypted and stored securely
-2. **Given** a user has created a lockbox with encrypted text, **When** they access the lockbox, **Then** they can view the decrypted text content
-3. **Given** a user has multiple lockboxes, **When** they view their lockbox list, **Then** they can see all their lockboxes by name and select the one they want to access
-4. **Given** a user wants to update their stored text, **When** they edit the lockbox content, **Then** the new text is encrypted and replaces the previous content
-5. **Given** a user no longer needs a lockbox, **When** they delete it, **Then** the encrypted data is permanently removed
+1. **Given** a user wants to store sensitive text, **When** they create a new vault and enter their text, **Then** the text is encrypted and stored securely
+2. **Given** a user has created a vault with encrypted text, **When** they access the vault, **Then** they can view the decrypted text content
+3. **Given** a user has multiple vaultes, **When** they view their vault list, **Then** they can see all their vaultes by name and select the one they want to access
+4. **Given** a user wants to update their stored text, **When** they edit the vault content, **Then** the new text is encrypted and replaces the previous content
+5. **Given** a user no longer needs a vault, **When** they delete it, **Then** the encrypted data is permanently removed
 
 ### Edge Cases
-- What happens when a user tries to create a lockbox with empty text? We allow this. Maybe they want to share it with peers before adding data to it.
+- What happens when a user tries to create a vault with empty text? We allow this. Maybe they want to share it with peers before adding data to it.
 - How does the system handle very large text content? For now, content is limited to 4k. Later on we will add features to increase the size.
 - What happens if encryption/decryption fails during storage or retrieval? Show the user an error message explaining that something has gone wrong and they should contact support with the given error code.
-- How does the system handle concurrent access to the same lockbox? Only one user should be using the app at a time, and only that user can update the lockbox.
+- How does the system handle concurrent access to the same vault? Only one user should be using the app at a time, and only that user can update the vault.
 
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
-- **FR-001**: System MUST allow users to create new encrypted lockboxes for storing text content
+- **FR-001**: System MUST allow users to create new encrypted vaultes for storing text content
 - **FR-002**: System MUST encrypt all text content before storage using NIP-44.
-- **FR-003**: System MUST allow users to name their lockboxes for easy identification
+- **FR-003**: System MUST allow users to name their vaultes for easy identification
 - **FR-004**: System MUST provide a secure method for users to access and decrypt their stored text
-- **FR-005**: System MUST allow users to edit and update the text content in existing lockboxes
-- **FR-006**: System MUST allow users to delete lockboxes and permanently remove encrypted data
-- **FR-007**: System MUST display a list of all user's lockboxes with their names
-- **FR-008**: System MUST require biometric authentication or password to access lockboxes
+- **FR-005**: System MUST allow users to edit and update the text content in existing vaultes
+- **FR-006**: System MUST allow users to delete vaultes and permanently remove encrypted data
+- **FR-007**: System MUST display a list of all user's vaultes with their names
+- **FR-008**: System MUST require biometric authentication or password to access vaultes
 - **FR-009**: System MUST handle encryption/decryption errors gracefully and inform the user
-- **FR-010**: System MUST prevent unauthorized access to encrypted lockbox content
+- **FR-010**: System MUST prevent unauthorized access to encrypted vault content
 
 ### Key Entities *(include if feature involves data)*
-- **Lockbox**: A secure container that holds encrypted text content, identified by a user-provided name and containing the encrypted data
+- **Vault**: A secure container that holds encrypted text content, identified by a user-provided name and containing the encrypted data
 - **Text Content**: The actual sensitive information that users want to store securely, which gets encrypted before storage
 - **Encryption Key**: The Nostr key used to encrypt and decrypt the text content. 
 
@@ -107,7 +107,7 @@ As a user, I want to securely store sensitive text information in an encrypted l
 - [x] Scope is clearly bounded
 - [x] Dependencies and assumptions identified
 
-### Keydex-Specific Requirements
+### Horcrux-Specific Requirements
 - [x] Security requirements clearly defined for sensitive data handling
 - [x] Cross-platform functionality specified for all 5 platforms
 - [x] Nostr protocol integration requirements documented

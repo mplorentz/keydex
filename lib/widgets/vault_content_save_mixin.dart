@@ -1,48 +1,48 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/lockbox.dart';
+import '../models/vault.dart';
 import '../models/backup_config.dart';
-import '../providers/lockbox_provider.dart';
+import '../providers/vault_provider.dart';
 import '../providers/key_provider.dart';
 import '../services/backup_service.dart';
 import '../utils/backup_distribution_helper.dart';
 import '../utils/invite_code_utils.dart';
 
-/// Mixin for shared lockbox save logic between create and edit screens
-mixin LockboxContentSaveMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
-  /// Save a lockbox (create new or update existing)
-  /// Returns the lockbox ID (newly created ID or the existing one)
-  Future<String?> saveLockbox({
+/// Mixin for shared vault save logic between create and edit screens
+mixin VaultContentSaveMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
+  /// Save a vault (create new or update existing)
+  /// Returns the vault ID (newly created ID or the existing one)
+  Future<String?> saveVault({
     required GlobalKey<FormState> formKey,
     required String name,
     required String content,
-    String? lockboxId, // null for create, value for update
+    String? vaultId, // null for create, value for update
     String? ownerName,
   }) async {
     if (!formKey.currentState!.validate()) return null;
 
     try {
-      final repository = ref.read(lockboxRepositoryProvider);
+      final repository = ref.read(vaultRepositoryProvider);
 
-      if (lockboxId == null) {
-        // Create new lockbox
-        final lockbox = await _createNewLockbox(name, content, ownerName);
-        await repository.addLockbox(lockbox);
-        return lockbox.id;
+      if (vaultId == null) {
+        // Create new vault
+        final vault = await _createNewVault(name, content, ownerName);
+        await repository.addVault(vault);
+        return vault.id;
       } else {
-        // Update existing lockbox - check if content, name, or ownerName changed
-        final existingLockbox = await repository.getLockbox(lockboxId);
-        if (existingLockbox == null) {
-          throw Exception('Lockbox not found: $lockboxId');
+        // Update existing vault - check if content, name, or ownerName changed
+        final existingVault = await repository.getVault(vaultId);
+        if (existingVault == null) {
+          throw Exception('Vault not found: $vaultId');
         }
 
-        final contentChanged = existingLockbox.content != content;
-        final nameChanged = existingLockbox.name != name.trim();
+        final contentChanged = existingVault.content != content;
+        final nameChanged = existingVault.name != name.trim();
         final newOwnerName = ownerName?.trim().isEmpty == true ? null : ownerName?.trim();
-        final ownerNameChanged = existingLockbox.ownerName != newOwnerName;
+        final ownerNameChanged = existingVault.ownerName != newOwnerName;
 
         // Check if we need to show the regeneration alert
-        // Show alert if content/name/ownerName changed AND all key holders have accepted invitations
+        // Show alert if content/name/ownerName changed AND all stewards have accepted invitations
         bool shouldAutoDistribute = false;
         final willChange = contentChanged || nameChanged || ownerNameChanged;
 
@@ -51,7 +51,7 @@ mixin LockboxContentSaveMixin<T extends ConsumerStatefulWidget> on ConsumerState
           final shouldAutoDistributeResult =
               await BackupDistributionHelper.showRegenerationAlertIfNeeded(
             context: context,
-            backupConfig: existingLockbox.backupConfig,
+            backupConfig: existingVault.backupConfig,
             willChange: true,
             mounted: mounted,
           );
@@ -66,27 +66,27 @@ mixin LockboxContentSaveMixin<T extends ConsumerStatefulWidget> on ConsumerState
           }
         }
 
-        // Update lockbox
-        await repository.updateLockbox(lockboxId, name, content);
+        // Update vault
+        await repository.updateVault(vaultId, name, content);
 
         // Also update ownerName (even if null, to clear it)
-        await repository.saveLockbox(
-          existingLockbox.copyWith(ownerName: newOwnerName),
+        await repository.saveVault(
+          existingVault.copyWith(ownerName: newOwnerName),
         );
 
         // If content, name, or ownerName changed, increment distributionVersion
         if (contentChanged || nameChanged || ownerNameChanged) {
           final backupService = ref.read(backupServiceProvider);
-          await backupService.handleContentChange(lockboxId);
+          await backupService.handleContentChange(vaultId);
 
           // If user confirmed, auto-distribute
           if (shouldAutoDistribute) {
             // Reload config to get updated version
-            final updatedConfig = await repository.getBackupConfig(lockboxId);
+            final updatedConfig = await repository.getBackupConfig(vaultId);
             if (updatedConfig != null && updatedConfig.canDistribute) {
               try {
                 await backupService.createAndDistributeBackup(
-                  lockboxId: lockboxId,
+                  vaultId: vaultId,
                 );
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -112,16 +112,16 @@ mixin LockboxContentSaveMixin<T extends ConsumerStatefulWidget> on ConsumerState
           }
         }
 
-        return lockboxId;
+        return vaultId;
       }
     } catch (e) {
-      showError('Failed to save lockbox: ${e.toString()}');
+      showError('Failed to save vault: ${e.toString()}');
       return null;
     }
   }
 
-  /// Create a new lockbox with the current user's public key
-  Future<Lockbox> _createNewLockbox(
+  /// Create a new vault with the current user's public key
+  Future<Vault> _createNewVault(
     String name,
     String content,
     String? ownerName,
@@ -132,12 +132,12 @@ mixin LockboxContentSaveMixin<T extends ConsumerStatefulWidget> on ConsumerState
       throw Exception('Unable to get current user public key');
     }
 
-    // Generate cryptographically secure lockbox ID
-    // Lockbox IDs are exposed in invitation URLs, so they must be unguessable
-    final lockboxId = generateSecureID();
+    // Generate cryptographically secure vault ID
+    // Vault IDs are exposed in invitation URLs, so they must be unguessable
+    final vaultId = generateSecureID();
 
-    return Lockbox(
-      id: lockboxId,
+    return Vault(
+      id: vaultId,
       name: name.trim(),
       content: content,
       createdAt: DateTime.now(),

@@ -1,19 +1,19 @@
-# Quickstart: Lockbox Recovery
+# Quickstart: Vault Recovery
 
-**Feature**: 003-lockbox-recovery  
+**Feature**: 003-vault-recovery  
 **Date**: 2024-12-19  
 **Status**: Complete
 
 ## Overview
 
-This quickstart guide demonstrates the complete lockbox recovery workflow, from setting up relay scanning to successfully recovering a lockbox.
+This quickstart guide demonstrates the complete vault recovery workflow, from setting up relay scanning to successfully recovering a vault.
 
 ## Prerequisites
 
-- Keydex app installed and configured
-- At least one lockbox with distributed backup
+- Horcrux app installed and configured
+- At least one vault with distributed backup
 - Access to Nostr relays
-- Key shares distributed to other key holders
+- Key shares distributed to other stewards
 
 ## Step-by-Step Workflow
 
@@ -22,8 +22,8 @@ This quickstart guide demonstrates the complete lockbox recovery workflow, from 
 **Objective**: Set up relay scanning to receive key shares and recovery requests
 
 **Steps**:
-1. Open Keydex app
-2. Navigate to lockbox list screen
+1. Open Horcrux app
+2. Navigate to vault list screen
 3. Tap "Scan for Keys" button
 4. Add relay configurations:
    - Tap "Add Relay"
@@ -41,13 +41,13 @@ This quickstart guide demonstrates the complete lockbox recovery workflow, from 
 
 ### 2. Receive Key Share
 
-**Objective**: Receive and accept a key share for a lockbox
+**Objective**: Receive and accept a key share for a vault
 
 **Steps**:
 1. Wait for incoming key share notification
 2. Tap notification to view details
-3. Review lockbox information:
-   - Lockbox name
+3. Review vault information:
+   - Vault name
    - Key holder information
    - Share details
 4. Tap "Accept Share"
@@ -55,40 +55,40 @@ This quickstart guide demonstrates the complete lockbox recovery workflow, from 
 6. Share is added to local storage
 
 **Expected Result**:
-- New lockbox appears in list with "Key Holder" badge
-- Lockbox shows "Recovery Available" status
+- New vault appears in list with "Steward" badge
+- Vault shows "Recovery Available" status
 - Share is securely stored locally
 
 ### 3. Initiate Recovery
 
-**Objective**: Start recovery process for a lockbox you have a key share for
+**Objective**: Start recovery process for a vault you have a key share for
 
 **Steps**:
-1. Navigate to lockbox detail screen
+1. Navigate to vault detail screen
 2. Tap "Initiate Recovery" button
 3. Review recovery information:
-   - Required key holders
+   - Required stewards
    - Current status
    - Recovery progress
 4. Confirm recovery initiation
-5. Recovery requests are sent to all key holders
+5. Recovery requests are sent to all stewards
 
 **Expected Result**:
 - Recovery request created
 - Status shows "Waiting for Responses"
 - Key holder list shows "Pending" for all holders
-- Nostr events sent to key holders
+- Nostr events sent to stewards
 
 ### 4. Respond to Recovery Request
 
-**Objective**: Approve or deny a recovery request from another key holder
+**Objective**: Approve or deny a recovery request from another steward
 
 **Steps**:
 1. Receive recovery request notification
 2. Tap notification to view request details
 3. Review request information:
    - Initiator information
-   - Lockbox details
+   - Vault details
    - Request timestamp
 4. Choose response:
    - Tap "Approve" to share your shard data
@@ -103,13 +103,13 @@ This quickstart guide demonstrates the complete lockbox recovery workflow, from 
 
 ### 5. Monitor Recovery Progress
 
-**Objective**: Track recovery progress and key holder responses
+**Objective**: Track recovery progress and steward responses
 
 **Steps**:
 1. Navigate to recovery request detail screen
-2. View key holder status:
-   - "Approved" - key holder shared their shard data
-   - "Denied" - key holder rejected request
+2. View steward status:
+   - "Approved" - steward shared their shard data
+   - "Denied" - steward rejected request
    - "Pending" - waiting for response
 3. Monitor progress indicator
 4. Check if threshold is met for recovery
@@ -121,18 +121,18 @@ This quickstart guide demonstrates the complete lockbox recovery workflow, from 
 
 ### 6. Complete Recovery
 
-**Objective**: Successfully recover lockbox content when sufficient shares are collected
+**Objective**: Successfully recover vault content when sufficient shares are collected
 
 **Steps**:
-1. Wait for sufficient key holder approvals
+1. Wait for sufficient steward approvals
 2. System automatically reassembles content from collected shard data
 3. Recovery status changes to "Completed"
-4. Navigate to lockbox detail screen
+4. Navigate to vault detail screen
 5. View recovered content
 6. Content is now available locally
 
 **Expected Result**:
-- Lockbox status shows "Recovered"
+- Vault status shows "Recovered"
 - Content is accessible and readable
 - Recovery request marked as completed
 - Local storage updated with recovered content
@@ -140,22 +140,22 @@ This quickstart guide demonstrates the complete lockbox recovery workflow, from 
 ## Test Scenarios
 
 ### Scenario 1: Successful Recovery
-- **Given**: 3 key holders, threshold of 2
-- **When**: 2 key holders approve recovery with shard data
-- **Then**: Lockbox content is successfully recovered
+- **Given**: 3 stewards, threshold of 2
+- **When**: 2 stewards approve recovery with shard data
+- **Then**: Vault content is successfully recovered
 
 ### Scenario 2: Partial Recovery
-- **Given**: 3 key holders, threshold of 2
-- **When**: 1 key holder approves, 1 denies
+- **Given**: 3 stewards, threshold of 2
+- **When**: 1 steward approves, 1 denies
 - **Then**: Recovery remains in progress, waiting for more approvals
 
 ### Scenario 3: Recovery Denial
-- **Given**: Recovery request sent to key holder
+- **Given**: Recovery request sent to steward
 - **When**: Key holder denies request
 - **Then**: Request is marked as denied, no shard data provided
 
 ### Scenario 4: Timeout Handling
-- **Given**: Recovery request sent to unresponsive key holder
+- **Given**: Recovery request sent to unresponsive steward
 - **When**: No response within timeout period
 - **Then**: Status shows "Timeout", recovery continues with other holders
 
@@ -176,14 +176,14 @@ This quickstart guide demonstrates the complete lockbox recovery workflow, from 
 - **Prevention**: Ensure sufficient local storage space
 
 **Issue**: Recovery stuck in progress
-- **Solution**: Check key holder responsiveness, verify threshold settings
-- **Prevention**: Maintain contact with key holders
+- **Solution**: Check steward responsiveness, verify threshold settings
+- **Prevention**: Maintain contact with stewards
 
 ### Error Messages
 
 - **"Relay connection failed"**: Check network and relay URL
 - **"Invalid shard data format"**: Shard data may be corrupted, request new share
-- **"Insufficient shares for recovery"**: Need more key holder approvals
+- **"Insufficient shares for recovery"**: Need more steward approvals
 - **"Recovery request expired"**: Request timed out, initiate new recovery
 
 ## Security Considerations

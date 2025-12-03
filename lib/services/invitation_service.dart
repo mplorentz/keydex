@@ -6,12 +6,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/invitation_link.dart';
 import '../models/invitation_status.dart';
 import '../models/invitation_exceptions.dart';
-import '../models/key_holder.dart';
-import '../models/key_holder_status.dart';
+import '../models/steward.dart';
+import '../models/steward_status.dart';
 import '../models/backup_config.dart';
-import '../models/lockbox.dart';
+import '../models/vault.dart';
 import '../models/nostr_kinds.dart';
-import '../providers/lockbox_provider.dart';
+import '../providers/vault_provider.dart';
 import '../providers/key_provider.dart';
 import '../services/login_service.dart';
 import '../services/logger.dart';
@@ -24,7 +24,7 @@ import 'relay_scan_service.dart';
 /// Provider for InvitationService
 final invitationServiceProvider = Provider<InvitationService>((ref) {
   final service = InvitationService(
-    ref.read(lockboxRepositoryProvider),
+    ref.read(vaultRepositoryProvider),
     ref.read(invitationSendingServiceProvider),
     ref.read(loginServiceProvider),
     () => ref.read(ndkServiceProvider),
@@ -41,7 +41,7 @@ final invitationServiceProvider = Provider<InvitationService>((ref) {
 
 /// Service for managing invitation links and processing invitation-related events
 class InvitationService {
-  final LockboxRepository repository;
+  final VaultRepository repository;
   final InvitationSendingService invitationSendingService;
   final LoginService _loginService;
   final NdkService Function() _getNdkService;
@@ -52,7 +52,7 @@ class InvitationService {
 
   // SharedPreferences keys
   static String _invitationKey(String inviteCode) => 'invitation_$inviteCode';
-  static String _lockboxInvitationsKey(String lockboxId) => 'lockbox_invitations_$lockboxId';
+  static String _vaultInvitationsKey(String vaultId) => 'vault_invitations_$vaultId';
 
   InvitationService(
     this.repository,
@@ -78,12 +78,12 @@ class InvitationService {
 
   /// Generates a new invitation link for a given invitee
   ///
-  /// Validates lockbox exists and user is owner.
+  /// Validates vault exists and user is owner.
   /// Generates cryptographically secure invite code.
   /// Creates InvitationLink and stores in SharedPreferences.
   /// Returns invitation link with URL.
   Future<InvitationLink> generateInvitationLink({
-    required String lockboxId,
+    required String vaultId,
     required String inviteeName,
     required List<String> relayUrls,
   }) async {
@@ -104,14 +104,14 @@ class InvitationService {
       throw Exception('No key pair available. Cannot generate invitation.');
     }
 
-    // Validate lockbox exists and user is owner
-    final lockbox = await repository.getLockbox(lockboxId);
-    if (lockbox == null) {
-      throw ArgumentError('Lockbox not found: $lockboxId');
+    // Validate vault exists and user is owner
+    final vault = await repository.getVault(vaultId);
+    if (vault == null) {
+      throw ArgumentError('Vault not found: $vaultId');
     }
 
-    if (lockbox.ownerPubkey != ownerPubkey) {
-      throw ArgumentError('User is not the owner of this lockbox');
+    if (vault.ownerPubkey != ownerPubkey) {
+      throw ArgumentError('User is not the owner of this vault');
     }
 
     // Generate secure invite code
@@ -120,8 +120,8 @@ class InvitationService {
     // Create invitation link
     final invitation = createInvitationLink(
       inviteCode: inviteCode,
-      lockboxId: lockboxId,
-      lockboxName: lockbox.name,
+      vaultId: vaultId,
+      vaultName: vault.name,
       ownerPubkey: ownerPubkey,
       relayUrls: relayUrls,
       inviteeName: inviteeName.trim(),
@@ -136,8 +136,8 @@ class InvitationService {
     // Store invitation
     await _saveInvitation(pendingInvitation);
 
-    // Add to lockbox invitations index
-    await _addToLockboxIndex(lockboxId, inviteCode);
+    // Add to vault invitations index
+    await _addToVaultIndex(vaultId, inviteCode);
 
     // Ensure relay URLs are added to NDK service so we can receive RSVP events
     // Add relays asynchronously - don't fail invitation generation if relay addition fails
@@ -155,20 +155,20 @@ class InvitationService {
       // Don't fail invitation generation if relay sync fails
     }
 
-    // Add invited key holder placeholder to backup config immediately
+    // Add invited steward placeholder to backup config immediately
     // This allows the RSVP handler to find and update it when the invitee accepts
     try {
       await _addInvitedKeyHolderToBackupConfig(
-        lockboxId: lockboxId,
+        vaultId: vaultId,
         inviteCode: inviteCode,
         inviteeName: inviteeName.trim(),
         relayUrls: relayUrls,
       );
       Log.info(
-        'Added invited key holder placeholder for $inviteeName to backup config',
+        'Added invited steward placeholder for $inviteeName to backup config',
       );
     } catch (e) {
-      Log.error('Error adding invited key holder to backup config', e);
+      Log.error('Error adding invited steward to backup config', e);
       // Don't fail invitation generation if this fails
     }
 
@@ -176,20 +176,20 @@ class InvitationService {
     _notifyInvitationsChanged();
 
     Log.info(
-      'Generated invitation link for lockbox $lockboxId, invitee: $inviteeName',
+      'Generated invitation link for vault $vaultId, invitee: $inviteeName',
     );
 
     return pendingInvitation;
   }
 
-  /// Retrieves all pending invitations for a lockbox
+  /// Retrieves all pending invitations for a vault
   ///
   /// Loads invitations from SharedPreferences.
   /// Filters to pending status.
   /// Returns sorted by creation date.
-  Future<List<InvitationLink>> getPendingInvitations(String lockboxId) async {
-    // Get all invite codes for this lockbox
-    final inviteCodes = await _getLockboxInviteCodes(lockboxId);
+  Future<List<InvitationLink>> getPendingInvitations(String vaultId) async {
+    // Get all invite codes for this vault
+    final inviteCodes = await _getVaultInviteCodes(vaultId);
 
     // Load all invitations
     final invitations = <InvitationLink>[];
@@ -230,10 +230,10 @@ class InvitationService {
   /// If the invitation already exists, updates it with the latest data.
   Future<void> createReceivedInvitation({
     required String inviteCode,
-    required String lockboxId,
+    required String vaultId,
     required String ownerPubkey,
     required List<String> relayUrls,
-    String? lockboxName,
+    String? vaultName,
   }) async {
     // Check if invitation already exists
     final existing = await _loadInvitation(inviteCode);
@@ -246,8 +246,8 @@ class InvitationService {
     // Note: inviteeName is not known on the receiving side, so we pass null
     final invitation = createInvitationLink(
       inviteCode: inviteCode,
-      lockboxId: lockboxId,
-      lockboxName: lockboxName,
+      vaultId: vaultId,
+      vaultName: vaultName,
       ownerPubkey: ownerPubkey,
       relayUrls: relayUrls,
       inviteeName: null, // Not available on receiving side
@@ -262,14 +262,14 @@ class InvitationService {
     // Store invitation locally
     await _saveInvitation(pendingInvitation);
 
-    // Note: We don't add to lockbox invitations index on the receiving side
-    // because the invitee doesn't own the lockbox - that index is owner-only
+    // Note: We don't add to vault invitations index on the receiving side
+    // because the invitee doesn't own the vault - that index is owner-only
 
     // Notify listeners
     _notifyInvitationsChanged();
 
     Log.info(
-      'Created received invitation record for inviteCode=$inviteCode, lockboxId=$lockboxId',
+      'Created received invitation record for inviteCode=$inviteCode, vaultId=$vaultId',
     );
   }
 
@@ -278,7 +278,7 @@ class InvitationService {
   /// Validates invite code exists and is pending.
   /// Checks if already redeemed.
   /// Updates invitation status to redeemed.
-  /// Adds invitee to backup config as key holder.
+  /// Adds invitee to backup config as steward.
   /// Sends RSVP event via InvitationSendingService.
   /// Updates invitation tracking.
   Future<void> redeemInvitation({
@@ -323,44 +323,44 @@ class InvitationService {
       );
     }
 
-    // Check if user is trying to redeem their own invitation (lockbox owner)
+    // Check if user is trying to redeem their own invitation (vault owner)
     final ownerPubkey = await _loginService.getCurrentPublicKey();
     if (ownerPubkey != null && invitation.ownerPubkey == ownerPubkey) {
       throw ArgumentError(
-        'You cannot redeem an invitation to your own lockbox. You are already the owner.',
+        'You cannot redeem an invitation to your own vault. You are already the owner.',
       );
     }
 
-    // Check if user is already a key holder
-    // Note: On the invitee side, the lockbox may not exist yet, so we check if it exists first
-    final lockbox = await repository.getLockbox(invitation.lockboxId);
-    if (lockbox != null) {
-      final backupConfig = lockbox.backupConfig;
-      final isAlreadyKeyHolder = backupConfig?.keyHolders.any(
+    // Check if user is already a steward
+    // Note: On the invitee side, the vault may not exist yet, so we check if it exists first
+    final vault = await repository.getVault(invitation.vaultId);
+    if (vault != null) {
+      final backupConfig = vault.backupConfig;
+      final isAlreadyKeyHolder = backupConfig?.stewards.any(
             (holder) => holder.pubkey == inviteePubkey,
           ) ??
           false;
 
       if (isAlreadyKeyHolder) {
         throw ArgumentError(
-          'You are already a key holder for this lockbox. This invitation has already been accepted.',
+          'You are already a steward for this vault. This invitation has already been accepted.',
         );
       }
 
-      // Lockbox exists - add invitee to backup config
+      // Vault exists - add invitee to backup config
       // This happens on the owner's side when they accept their own invitation
       await _addKeyHolderToBackupConfig(
-        invitation.lockboxId,
+        invitation.vaultId,
         inviteePubkey,
         invitation.inviteeName, // Can be null for received invitations
         invitation.relayUrls,
       );
     } else {
-      // Lockbox doesn't exist yet - this is the invitee side
-      // Create a lockbox stub so invitee can see it in their list
-      final lockboxStub = Lockbox(
-        id: invitation.lockboxId,
-        name: invitation.lockboxName,
+      // Vault doesn't exist yet - this is the invitee side
+      // Create a vault stub so invitee can see it in their list
+      final vaultStub = Vault(
+        id: invitation.vaultId,
+        name: invitation.vaultName,
         content: null, // No content yet - waiting for shard
         createdAt: invitation.createdAt,
         ownerPubkey: invitation.ownerPubkey,
@@ -368,9 +368,9 @@ class InvitationService {
         backupConfig: null,
       );
 
-      await repository.addLockbox(lockboxStub);
+      await repository.addVault(vaultStub);
       Log.info(
-        'Created lockbox stub for invitee: ${invitation.lockboxId} (${invitation.lockboxName})',
+        'Created vault stub for invitee: ${invitation.vaultId} (${invitation.vaultName})',
       );
     }
 
@@ -545,7 +545,7 @@ class InvitationService {
   /// Validates invite code and invitee pubkey.
   /// Updates invitation status to redeemed.
   /// Adds invitee to backup config if not already present.
-  /// Updates key holder status to "awaiting key".
+  /// Updates steward status to "awaiting key".
   Future<void> processRsvpEvent({required Nip01Event event}) async {
     // Validate event kind
     if (event.kind != NostrKind.invitationRsvp.value) {
@@ -607,54 +607,54 @@ class InvitationService {
     await _saveInvitation(redeemedInvitation);
 
     // Add invitee to backup config if not already present
-    // This will update invited key holders or add new ones
+    // This will update invited stewards or add new ones
     await _addKeyHolderToBackupConfig(
-      invitation.lockboxId,
+      invitation.vaultId,
       inviteePubkey,
       invitation.inviteeName, // Can be null for received invitations
       invitation.relayUrls, // Pass relay URLs from invitation
       inviteCode: inviteCode, // Pass invite code for matching
     );
 
-    // Also update status to awaitingKey if key holder already exists with invited status
-    // This handles the case where the key holder was added to the backup config
+    // Also update status to awaitingKey if steward already exists with invited status
+    // This handles the case where the steward was added to the backup config
     // but the UI hasn't saved yet
     try {
       final backupConfig = await repository.getBackupConfig(
-        invitation.lockboxId,
+        invitation.vaultId,
       );
       if (backupConfig != null) {
-        final keyHolderIndex = backupConfig.keyHolders.indexWhere(
-          (holder) => holder.pubkey == inviteePubkey,
+        final stewardIndex = backupConfig.stewards.indexWhere(
+          (steward) => steward.pubkey == inviteePubkey,
         );
-        if (keyHolderIndex != -1) {
-          final holder = backupConfig.keyHolders[keyHolderIndex];
-          if (holder.status == KeyHolderStatus.invited) {
+        if (stewardIndex != -1) {
+          final steward = backupConfig.stewards[stewardIndex];
+          if (steward.status == StewardStatus.invited) {
             // Update status to awaitingKey
-            final updatedKeyHolders = List<KeyHolder>.from(
-              backupConfig.keyHolders,
+            final updatedStewards = List<Steward>.from(
+              backupConfig.stewards,
             );
-            updatedKeyHolders[keyHolderIndex] = copyKeyHolder(
-              holder,
-              status: KeyHolderStatus.awaitingKey,
+            updatedStewards[stewardIndex] = copySteward(
+              steward,
+              status: StewardStatus.awaitingKey,
             );
             final updatedConfig = copyBackupConfig(
               backupConfig,
-              keyHolders: updatedKeyHolders,
+              stewards: updatedStewards,
               lastUpdated: DateTime.now(),
             );
             await repository.updateBackupConfig(
-              invitation.lockboxId,
+              invitation.vaultId,
               updatedConfig,
             );
             Log.info(
-              'Updated key holder $inviteePubkey status from invited to awaitingKey',
+              'Updated steward $inviteePubkey status from invited to awaitingKey',
             );
           }
         }
       }
     } catch (e) {
-      Log.warning('Error updating key holder status after RSVP: $e');
+      Log.warning('Error updating steward status after RSVP: $e');
       // Don't fail RSVP processing if status update fails
     }
 
@@ -758,96 +758,96 @@ class InvitationService {
     }
   }
 
-  /// Add invite code to lockbox invitations index
-  Future<void> _addToLockboxIndex(String lockboxId, String inviteCode) async {
+  /// Add invite code to vault invitations index
+  Future<void> _addToVaultIndex(String vaultId, String inviteCode) async {
     final prefs = await SharedPreferences.getInstance();
-    final key = _lockboxInvitationsKey(lockboxId);
+    final key = _vaultInvitationsKey(vaultId);
 
     final existingCodes = prefs.getStringList(key) ?? [];
     if (!existingCodes.contains(inviteCode)) {
       existingCodes.add(inviteCode);
       await prefs.setStringList(key, existingCodes);
-      Log.debug('Added invite code $inviteCode to lockbox $lockboxId index');
+      Log.debug('Added invite code $inviteCode to vault $vaultId index');
     }
   }
 
-  /// Get all invite codes for a lockbox
-  Future<List<String>> _getLockboxInviteCodes(String lockboxId) async {
+  /// Get all invite codes for a vault
+  Future<List<String>> _getVaultInviteCodes(String vaultId) async {
     final prefs = await SharedPreferences.getInstance();
-    final key = _lockboxInvitationsKey(lockboxId);
+    final key = _vaultInvitationsKey(vaultId);
     return prefs.getStringList(key) ?? [];
   }
 
-  /// Add a key holder to backup config (or create config if it doesn't exist)
+  /// Add a steward to backup config (or create config if it doesn't exist)
   ///
   /// When an RSVP is received:
-  /// - If a key holder with this pubkey already exists, do nothing
-  /// - If a key holder with matching inviteCode exists but no pubkey (invited status),
+  /// - If a steward with this pubkey already exists, do nothing
+  /// - If a steward with matching inviteCode exists but no pubkey (invited status),
   ///   update it with the pubkey and change status to awaitingKey
-  /// - Otherwise, add a new key holder
+  /// - Otherwise, add a new steward
   Future<void> _addKeyHolderToBackupConfig(
-    String lockboxId,
+    String vaultId,
     String pubkey,
     String? name, // Can be null for received invitations
     List<String> relayUrls, {
-    String? inviteCode, // Invite code for matching invited key holders
+    String? inviteCode, // Invite code for matching invited stewards
   }) async {
-    var backupConfig = await repository.getBackupConfig(lockboxId);
+    var backupConfig = await repository.getBackupConfig(vaultId);
 
     if (backupConfig == null) {
-      // Create new backup config with this key holder
+      // Create new backup config with this steward
       // We'll use default values - owner can adjust later
-      final newKeyHolder = createKeyHolder(pubkey: pubkey, name: name);
+      final newSteward = createSteward(pubkey: pubkey, name: name);
       backupConfig = createBackupConfig(
-        lockboxId: lockboxId,
-        threshold: 1, // Start with 1-of-1, will be updated when more key holders are added
-        totalKeys: 1, // Will be updated when more key holders are added
-        keyHolders: [newKeyHolder],
+        vaultId: vaultId,
+        threshold: 1, // Start with 1-of-1, will be updated when more stewards are added
+        totalKeys: 1, // Will be updated when more stewards are added
+        stewards: [newSteward],
         relays: relayUrls, // Use relay URLs from invitation
       );
-      await repository.updateBackupConfig(lockboxId, backupConfig);
+      await repository.updateBackupConfig(vaultId, backupConfig);
       Log.info(
-        'Created new backup config for lockbox $lockboxId with key holder $pubkey',
+        'Created new backup config for vault $vaultId with steward $pubkey',
       );
 
       // Sync relays from backup config to RelayScanService
       await _syncRelaysFromBackupConfig(backupConfig);
     } else {
-      // FIRST: Check if there's an invited key holder (no pubkey) with matching invite code
+      // FIRST: Check if there's an invited steward (no pubkey) with matching invite code
       // This must be checked BEFORE checking for existing pubkey, otherwise we'll miss
-      // updating invited key holders when RSVP comes in
+      // updating invited stewards when RSVP comes in
       if (inviteCode != null) {
         Log.debug(
-          'Looking for invited key holder with invite code: "$inviteCode"',
+          'Looking for invited steward with invite code: "$inviteCode"',
         );
 
-        final invitedHolderIndex = backupConfig.keyHolders.indexWhere(
-          (holder) =>
-              holder.inviteCode == inviteCode &&
-              holder.pubkey == null &&
-              holder.status == KeyHolderStatus.invited,
+        final invitedStewardIndex = backupConfig.stewards.indexWhere(
+          (steward) =>
+              steward.inviteCode == inviteCode &&
+              steward.pubkey == null &&
+              steward.status == StewardStatus.invited,
         );
 
-        if (invitedHolderIndex != -1) {
-          // Update the invited key holder with pubkey and change status to awaitingKey
-          final updatedKeyHolders = List<KeyHolder>.from(
-            backupConfig.keyHolders,
+        if (invitedStewardIndex != -1) {
+          // Update the invited steward with pubkey and change status to awaitingKey
+          final updatedStewards = List<Steward>.from(
+            backupConfig.stewards,
           );
-          updatedKeyHolders[invitedHolderIndex] = copyKeyHolder(
-            updatedKeyHolders[invitedHolderIndex],
+          updatedStewards[invitedStewardIndex] = copySteward(
+            updatedStewards[invitedStewardIndex],
             pubkey: pubkey,
-            status: KeyHolderStatus.awaitingKey,
+            status: StewardStatus.awaitingKey,
             // Keep inviteCode for reference, but it's no longer needed after acceptance
           );
 
           final updatedConfig = copyBackupConfig(
             backupConfig,
-            keyHolders: updatedKeyHolders,
+            stewards: updatedStewards,
             lastUpdated: DateTime.now(),
           );
-          await repository.updateBackupConfig(lockboxId, updatedConfig);
+          await repository.updateBackupConfig(vaultId, updatedConfig);
           Log.info(
-            'Updated invited key holder with invite code "$inviteCode" - added pubkey $pubkey and changed status to awaitingKey',
+            'Updated invited steward with invite code "$inviteCode" - added pubkey $pubkey and changed status to awaitingKey',
           );
 
           // Sync relays from backup config to RelayScanService
@@ -855,22 +855,22 @@ class InvitationService {
           return;
         } else {
           Log.debug(
-            'No invited key holder found with invite code "$inviteCode"',
+            'No invited steward found with invite code "$inviteCode"',
           );
         }
       } else {
-        Log.debug('No invite code provided, skipping invited key holder check');
+        Log.debug('No invite code provided, skipping invited steward check');
       }
 
-      // SECOND: Check if key holder with this pubkey already exists
+      // SECOND: Check if steward with this pubkey already exists
       final existingByPubkey =
-          backupConfig.keyHolders.where((holder) => holder.pubkey == pubkey).toList();
+          backupConfig.stewards.where((holder) => holder.pubkey == pubkey).toList();
       if (existingByPubkey.isNotEmpty) {
-        // Check if this key holder needs status update (e.g., was invited, now accepting)
+        // Check if this steward needs status update (e.g., was invited, now accepting)
         final existingHolder = existingByPubkey.first;
-        if (existingHolder.status == KeyHolderStatus.invited ||
-            existingHolder.status == KeyHolderStatus.awaitingKey ||
-            existingHolder.status == KeyHolderStatus.awaitingNewKey) {
+        if (existingHolder.status == StewardStatus.invited ||
+            existingHolder.status == StewardStatus.awaitingKey ||
+            existingHolder.status == StewardStatus.awaitingNewKey) {
           // Status is already appropriate or will be updated elsewhere
           Log.debug(
             'Key holder $pubkey already exists in backup config with status ${existingHolder.status}',
@@ -881,18 +881,18 @@ class InvitationService {
         return;
       }
 
-      // THIRD: Add new key holder and update totalKeys
-      final newKeyHolder = createKeyHolder(pubkey: pubkey, name: name);
-      final updatedKeyHolders = [...backupConfig.keyHolders, newKeyHolder];
+      // THIRD: Add new steward and update totalKeys
+      final newSteward = createSteward(pubkey: pubkey, name: name);
+      final updatedStewards = [...backupConfig.stewards, newSteward];
       final updatedConfig = copyBackupConfig(
         backupConfig,
-        keyHolders: updatedKeyHolders,
-        totalKeys: updatedKeyHolders.length,
+        stewards: updatedStewards,
+        totalKeys: updatedStewards.length,
         lastUpdated: DateTime.now(),
       );
-      await repository.updateBackupConfig(lockboxId, updatedConfig);
+      await repository.updateBackupConfig(vaultId, updatedConfig);
       Log.info(
-        'Added key holder $pubkey to backup config for lockbox $lockboxId',
+        'Added steward $pubkey to backup config for vault $vaultId',
       );
 
       // Sync relays from backup config to RelayScanService
@@ -922,62 +922,62 @@ class InvitationService {
     }
   }
 
-  /// Add an invited key holder placeholder to the backup config
+  /// Add an invited steward placeholder to the backup config
   ///
   /// This is called when an invitation is generated, before the invitee has accepted.
-  /// It creates a key holder with null pubkey and invited status, which will be
+  /// It creates a steward with null pubkey and invited status, which will be
   /// updated when the RSVP is received.
   Future<void> _addInvitedKeyHolderToBackupConfig({
-    required String lockboxId,
+    required String vaultId,
     required String inviteCode,
     required String inviteeName,
     required List<String> relayUrls,
   }) async {
-    var backupConfig = await repository.getBackupConfig(lockboxId);
+    var backupConfig = await repository.getBackupConfig(vaultId);
 
-    // Create the invited key holder
-    final invitedKeyHolder = createInvitedKeyHolder(
+    // Create the invited steward
+    final invitedSteward = createInvitedSteward(
       name: inviteeName,
       inviteCode: inviteCode,
     );
 
     if (backupConfig == null) {
-      // Create new backup config with just this invited key holder
+      // Create new backup config with just this invited steward
       backupConfig = createBackupConfig(
-        lockboxId: lockboxId,
+        vaultId: vaultId,
         threshold: 1,
         totalKeys: 1,
-        keyHolders: [invitedKeyHolder],
+        stewards: [invitedSteward],
         relays: relayUrls,
       );
-      await repository.updateBackupConfig(lockboxId, backupConfig);
+      await repository.updateBackupConfig(vaultId, backupConfig);
       Log.info(
-        'Created backup config with invited key holder for $inviteeName',
+        'Created backup config with invited steward for $inviteeName',
       );
     } else {
       // Check if this invite code already exists (avoid duplicates)
       final existingWithCode =
-          backupConfig.keyHolders.where((holder) => holder.inviteCode == inviteCode).toList();
+          backupConfig.stewards.where((holder) => holder.inviteCode == inviteCode).toList();
 
       if (existingWithCode.isNotEmpty) {
         Log.info(
-          'Invited key holder with invite code $inviteCode already exists, skipping',
+          'Invited steward with invite code $inviteCode already exists, skipping',
         );
         return;
       }
 
-      // Add the invited key holder
-      final updatedKeyHolders = [...backupConfig.keyHolders, invitedKeyHolder];
+      // Add the invited steward
+      final updatedStewards = [...backupConfig.stewards, invitedSteward];
       final updatedConfig = copyBackupConfig(
         backupConfig,
-        keyHolders: updatedKeyHolders,
-        totalKeys: updatedKeyHolders.length,
+        stewards: updatedStewards,
+        totalKeys: updatedStewards.length,
         relays: relayUrls.isNotEmpty ? relayUrls : backupConfig.relays,
         lastUpdated: DateTime.now(),
       );
-      await repository.updateBackupConfig(lockboxId, updatedConfig);
+      await repository.updateBackupConfig(vaultId, updatedConfig);
       Log.info(
-        'Added invited key holder for $inviteeName to existing backup config',
+        'Added invited steward for $inviteeName to existing backup config',
       );
 
       // Sync relays from updated backup config

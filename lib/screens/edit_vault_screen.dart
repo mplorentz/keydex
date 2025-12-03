@@ -1,43 +1,43 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/lockbox.dart';
-import '../providers/lockbox_provider.dart';
-import '../widgets/lockbox_content_form.dart';
-import '../widgets/lockbox_content_save_mixin.dart';
+import '../models/vault.dart';
+import '../providers/vault_provider.dart';
+import '../widgets/vault_content_form.dart';
+import '../widgets/vault_content_save_mixin.dart';
 
-/// Edit existing lockbox screen
-class EditLockboxScreen extends ConsumerStatefulWidget {
-  final String lockboxId;
+/// Edit existing vault screen
+class EditVaultScreen extends ConsumerStatefulWidget {
+  final String vaultId;
 
-  const EditLockboxScreen({super.key, required this.lockboxId});
+  const EditVaultScreen({super.key, required this.vaultId});
 
   @override
-  ConsumerState<EditLockboxScreen> createState() => _EditLockboxScreenState();
+  ConsumerState<EditVaultScreen> createState() => _EditVaultScreenState();
 }
 
-class _EditLockboxScreenState extends ConsumerState<EditLockboxScreen>
-    with LockboxContentSaveMixin {
+class _EditVaultScreenState extends ConsumerState<EditVaultScreen>
+    with VaultContentSaveMixin {
   final _nameController = TextEditingController();
   final _contentController = TextEditingController();
   final _ownerNameController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  Lockbox? _lockbox;
+  Vault? _vault;
 
   @override
   void initState() {
     super.initState();
-    _loadLockbox();
+    _loadVault();
   }
 
-  Future<void> _loadLockbox() async {
-    final repository = ref.read(lockboxRepositoryProvider);
-    final lockbox = await repository.getLockbox(widget.lockboxId);
-    if (mounted && lockbox != null) {
+  Future<void> _loadVault() async {
+    final repository = ref.read(vaultRepositoryProvider);
+    final vault = await repository.getVault(widget.vaultId);
+    if (mounted && vault != null) {
       setState(() {
-        _lockbox = lockbox;
-        _nameController.text = lockbox.name;
-        _contentController.text = lockbox.content ?? '';
-        _ownerNameController.text = lockbox.ownerName ?? '';
+        _vault = vault;
+        _nameController.text = vault.name;
+        _contentController.text = vault.content ?? '';
+        _ownerNameController.text = vault.ownerName ?? '';
       });
     }
   }
@@ -52,7 +52,7 @@ class _EditLockboxScreenState extends ConsumerState<EditLockboxScreen>
 
   @override
   Widget build(BuildContext context) {
-    if (_lockbox == null) {
+    if (_vault == null) {
       return Scaffold(
         appBar: AppBar(title: const Text('Vault Not Found')),
         body: const Center(child: Text('This vault no longer exists.')),
@@ -65,7 +65,7 @@ class _EditLockboxScreenState extends ConsumerState<EditLockboxScreen>
         centerTitle: false,
         actions: [
           TextButton(
-            onPressed: () => _saveLockbox(),
+            onPressed: () => _saveVault(),
             child: const Text(
               'Save',
               style: TextStyle(fontWeight: FontWeight.bold),
@@ -73,7 +73,7 @@ class _EditLockboxScreenState extends ConsumerState<EditLockboxScreen>
           ),
         ],
       ),
-      body: LockboxContentForm(
+      body: VaultContentForm(
         formKey: _formKey,
         nameController: _nameController,
         contentController: _contentController,
@@ -83,12 +83,12 @@ class _EditLockboxScreenState extends ConsumerState<EditLockboxScreen>
     );
   }
 
-  Future<void> _saveLockbox() async {
-    final savedId = await saveLockbox(
+  Future<void> _saveVault() async {
+    final savedId = await saveVault(
       formKey: _formKey,
       name: _nameController.text,
       content: _contentController.text,
-      lockboxId: widget.lockboxId,
+      vaultId: widget.vaultId,
       ownerName: _ownerNameController.text.trim().isEmpty ? null : _ownerNameController.text.trim(),
     );
 

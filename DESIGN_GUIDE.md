@@ -1,10 +1,10 @@
-# Keydex Design Guide (keydex3 Theme)
+# Horcrux Design Guide (horcrux3 Theme)
 
 ## Design Philosophy
 
 **Keywords**: Stark monochrome, terminal-inspired, brutalist, confident typography, high contrast
 
-The keydex3 theme emphasizes a **minimalist, brutalist aesthetic** with a stark black and white palette. The design is deliberately restrained, using only shades of gray for UI elements. Both light and dark modes are supported, following system preferences for a modern, accessible experience.
+The horcrux3 theme emphasizes a **minimalist, brutalist aesthetic** with a stark black and white palette. The design is deliberately restrained, using only shades of gray for UI elements. Both light and dark modes are supported, following system preferences for a modern, accessible experience.
 
 ---
 
@@ -219,7 +219,7 @@ labelMedium:    Fira Sans, weight 600
 ## Color Usage Rules
 
 ### Monochrome Philosophy
-**Keydex3 uses only grayscale colors - no accent colors.**
+**Horcrux3 uses only grayscale colors - no accent colors.**
 - All UI elements use shades of gray
 - High contrast between text and background
 - Subtle shadows provide depth (2pt elevation on buttons)

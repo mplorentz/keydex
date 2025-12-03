@@ -1,5 +1,5 @@
 import '../utils/validators.dart';
-import 'key_holder_status.dart';
+import 'steward_status.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:uuid/uuid.dart';
 
@@ -7,14 +7,14 @@ const _uuid = Uuid();
 
 /// Represents a trusted contact who holds a backup key
 ///
-/// This model contains information about a key holder including
+/// This model contains information about a steward including
 /// their Nostr public key, status, and acknowledgment details.
-typedef KeyHolder = ({
-  String id, // Unique identifier for this key holder
-  String? pubkey, // Hex format - nullable for invited key holders
+typedef Steward = ({
+  String id, // Unique identifier for this steward
+  String? pubkey, // Hex format - nullable for invited stewards
   String? name,
-  String? inviteCode, // Invitation code for invited key holders (before they accept)
-  KeyHolderStatus status,
+  String? inviteCode, // Invitation code for invited stewards (before they accept)
+  StewardStatus status,
   DateTime? lastSeen,
   String? keyShare,
   String? giftWrapEventId,
@@ -23,8 +23,8 @@ typedef KeyHolder = ({
   int? acknowledgedDistributionVersion, // Version tracking for redistribution detection (nullable for backward compatibility)
 });
 
-/// Create a new KeyHolder with validation
-KeyHolder createKeyHolder({
+/// Create a new Steward with validation
+Steward createSteward({
   required String pubkey, // Takes hex format directly
   String? name,
   String? id, // Optional - will be generated if not provided
@@ -38,7 +38,7 @@ KeyHolder createKeyHolder({
     pubkey: pubkey,
     name: name,
     inviteCode: null,
-    status: KeyHolderStatus.awaitingKey,
+    status: StewardStatus.awaitingKey,
     lastSeen: null,
     keyShare: null,
     giftWrapEventId: null,
@@ -48,8 +48,8 @@ KeyHolder createKeyHolder({
   );
 }
 
-/// Create a new KeyHolder for an invited person (no pubkey yet)
-KeyHolder createInvitedKeyHolder({
+/// Create a new Steward for an invited person (no pubkey yet)
+Steward createInvitedSteward({
   required String name,
   required String inviteCode,
   String? id, // Optional - will be generated if not provided
@@ -59,7 +59,7 @@ KeyHolder createInvitedKeyHolder({
     pubkey: null,
     name: name,
     inviteCode: inviteCode,
-    status: KeyHolderStatus.invited,
+    status: StewardStatus.invited,
     lastSeen: null,
     keyShare: null,
     giftWrapEventId: null,
@@ -69,14 +69,14 @@ KeyHolder createInvitedKeyHolder({
   );
 }
 
-/// Create a copy of this KeyHolder with updated fields
-KeyHolder copyKeyHolder(
-  KeyHolder holder, {
+/// Create a copy of this Steward with updated fields
+Steward copySteward(
+  Steward steward, {
   String? id,
   String? pubkey, // Hex format
   String? name,
   String? inviteCode,
-  KeyHolderStatus? status,
+  StewardStatus? status,
   DateTime? lastSeen,
   String? keyShare,
   String? giftWrapEventId,
@@ -85,36 +85,36 @@ KeyHolder copyKeyHolder(
   int? acknowledgedDistributionVersion,
 }) {
   return (
-    id: id ?? holder.id,
-    pubkey: pubkey ?? holder.pubkey,
-    name: name ?? holder.name,
-    inviteCode: inviteCode ?? holder.inviteCode,
-    status: status ?? holder.status,
-    lastSeen: lastSeen ?? holder.lastSeen,
-    keyShare: keyShare ?? holder.keyShare,
-    giftWrapEventId: giftWrapEventId ?? holder.giftWrapEventId,
-    acknowledgedAt: acknowledgedAt ?? holder.acknowledgedAt,
-    acknowledgmentEventId: acknowledgmentEventId ?? holder.acknowledgmentEventId,
+    id: id ?? steward.id,
+    pubkey: pubkey ?? steward.pubkey,
+    name: name ?? steward.name,
+    inviteCode: inviteCode ?? steward.inviteCode,
+    status: status ?? steward.status,
+    lastSeen: lastSeen ?? steward.lastSeen,
+    keyShare: keyShare ?? steward.keyShare,
+    giftWrapEventId: giftWrapEventId ?? steward.giftWrapEventId,
+    acknowledgedAt: acknowledgedAt ?? steward.acknowledgedAt,
+    acknowledgmentEventId: acknowledgmentEventId ?? steward.acknowledgmentEventId,
     acknowledgedDistributionVersion:
-        acknowledgedDistributionVersion ?? holder.acknowledgedDistributionVersion,
+        acknowledgedDistributionVersion ?? steward.acknowledgedDistributionVersion,
   );
 }
 
-/// Extension methods for KeyHolder
-extension KeyHolderExtension on KeyHolder {
-  /// Check if this key holder is active
+/// Extension methods for Steward
+extension StewardExtension on Steward {
+  /// Check if this steward is active
   bool get isActive {
-    return status == KeyHolderStatus.awaitingKey ||
-        status == KeyHolderStatus.awaitingNewKey ||
-        status == KeyHolderStatus.holdingKey;
+    return status == StewardStatus.awaitingKey ||
+        status == StewardStatus.awaitingNewKey ||
+        status == StewardStatus.holdingKey;
   }
 
-  /// Check if this key holder has acknowledged receipt
+  /// Check if this steward has acknowledged receipt
   bool get hasAcknowledged {
-    return status == KeyHolderStatus.holdingKey && acknowledgedAt != null;
+    return status == StewardStatus.holdingKey && acknowledgedAt != null;
   }
 
-  /// Check if this key holder is responsive (seen recently)
+  /// Check if this steward is responsive (seen recently)
   bool get isResponsive {
     if (lastSeen == null) return false;
     final now = DateTime.now();
@@ -122,9 +122,9 @@ extension KeyHolderExtension on KeyHolder {
     return timeSinceLastSeen.inHours < 24; // Consider responsive if seen within 24 hours
   }
 
-  /// Check if this key holder is invited (no pubkey yet)
+  /// Check if this steward is invited (no pubkey yet)
   bool get isInvited {
-    return status == KeyHolderStatus.invited && pubkey == null;
+    return status == StewardStatus.invited && pubkey == null;
   }
 
   /// Get the bech32-encoded npub for display
@@ -139,7 +139,7 @@ extension KeyHolderExtension on KeyHolder {
     if (name != null && name!.isNotEmpty) {
       return name!;
     }
-    // For invited key holders without a real pubkey, show "Pending"
+    // For invited stewards without a real pubkey, show "Pending"
     if (isInvited) {
       return 'Pending';
     }
@@ -150,7 +150,7 @@ extension KeyHolderExtension on KeyHolder {
     return '${displayNpub.substring(0, 8)}...${displayNpub.substring(displayNpub.length - 8)}';
   }
 
-  /// Get display subtitle (npub for real key holders, status for invited)
+  /// Get display subtitle (npub for real stewards, status for invited)
   String get displaySubtitle {
     if (isInvited) {
       return 'Pending';
@@ -160,32 +160,32 @@ extension KeyHolderExtension on KeyHolder {
 }
 
 /// Convert to JSON for storage
-Map<String, dynamic> keyHolderToJson(KeyHolder holder) {
+Map<String, dynamic> stewardToJson(Steward steward) {
   return {
-    'id': holder.id,
-    'pubkey': holder.pubkey, // Store hex format, nullable
-    'name': holder.name,
-    'inviteCode': holder.inviteCode,
-    'status': holder.status.name,
-    'lastSeen': holder.lastSeen?.toIso8601String(),
-    'keyShare': holder.keyShare,
-    'giftWrapEventId': holder.giftWrapEventId,
-    'acknowledgedAt': holder.acknowledgedAt?.toIso8601String(),
-    'acknowledgmentEventId': holder.acknowledgmentEventId,
-    'acknowledgedDistributionVersion': holder.acknowledgedDistributionVersion,
+    'id': steward.id,
+    'pubkey': steward.pubkey, // Store hex format, nullable
+    'name': steward.name,
+    'inviteCode': steward.inviteCode,
+    'status': steward.status.name,
+    'lastSeen': steward.lastSeen?.toIso8601String(),
+    'keyShare': steward.keyShare,
+    'giftWrapEventId': steward.giftWrapEventId,
+    'acknowledgedAt': steward.acknowledgedAt?.toIso8601String(),
+    'acknowledgmentEventId': steward.acknowledgmentEventId,
+    'acknowledgedDistributionVersion': steward.acknowledgedDistributionVersion,
   };
 }
 
 /// Create from JSON
-KeyHolder keyHolderFromJson(Map<String, dynamic> json) {
+Steward stewardFromJson(Map<String, dynamic> json) {
   return (
     id: json['id'] as String? ?? _uuid.v4(), // Generate ID if missing for backward compatibility
     pubkey: json['pubkey'] as String?, // Hex format without 0x prefix, nullable
     name: json['name'] as String?,
     inviteCode: json['inviteCode'] as String?, // Nullable for backward compatibility
-    status: KeyHolderStatus.values.firstWhere(
+    status: StewardStatus.values.firstWhere(
       (s) => s.name == json['status'],
-      orElse: () => KeyHolderStatus.awaitingKey,
+      orElse: () => StewardStatus.awaitingKey,
     ),
     lastSeen: json['lastSeen'] != null ? DateTime.parse(json['lastSeen'] as String) : null,
     keyShare: json['keyShare'] as String?,
@@ -197,8 +197,8 @@ KeyHolder keyHolderFromJson(Map<String, dynamic> json) {
   );
 }
 
-/// String representation of KeyHolder
-String keyHolderToString(KeyHolder holder) {
-  final pubkeyPreview = holder.pubkey != null ? '${holder.pubkey!.substring(0, 8)}...' : 'null';
-  return 'KeyHolder(id: ${holder.id}, pubkey: $pubkeyPreview, name: ${holder.name}, status: ${holder.status})';
+/// String representation of Steward
+String stewardToString(Steward steward) {
+  final pubkeyPreview = steward.pubkey != null ? '${steward.pubkey!.substring(0, 8)}...' : 'null';
+  return 'Steward(id: ${steward.id}, pubkey: $pubkeyPreview, name: ${steward.name}, status: ${steward.status})';
 }

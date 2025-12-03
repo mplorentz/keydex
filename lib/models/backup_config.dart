@@ -1,18 +1,18 @@
-import 'key_holder.dart';
-import 'key_holder_status.dart';
+import 'steward.dart';
+import 'steward_status.dart';
 import 'backup_status.dart';
-import 'lockbox.dart';
+import 'vault.dart';
 
-/// Represents the backup configuration for a lockbox
+/// Represents the backup configuration for a vault
 ///
 /// This model contains all the settings and metadata needed to configure
 /// distributed backup using Shamir's Secret Sharing and Nostr protocol.
 typedef BackupConfig = ({
-  String lockboxId,
+  String vaultId,
   String specVersion,
   int threshold,
   int totalKeys,
-  List<KeyHolder> keyHolders,
+  List<Steward> stewards,
   List<String> relays,
   String? instructions,
   DateTime createdAt,
@@ -26,43 +26,43 @@ typedef BackupConfig = ({
 
 /// Create a new BackupConfig with validation
 BackupConfig createBackupConfig({
-  required String lockboxId,
+  required String vaultId,
   required int threshold,
   required int totalKeys,
-  required List<KeyHolder> keyHolders,
+  required List<Steward> stewards,
   required List<String> relays,
   String? instructions,
   String? contentHash,
 }) {
   // Validate inputs
-  if (threshold < LockboxBackupConstraints.minThreshold || threshold > totalKeys) {
+  if (threshold < VaultBackupConstraints.minThreshold || threshold > totalKeys) {
     throw ArgumentError(
-      'Threshold must be >= ${LockboxBackupConstraints.minThreshold} and <= totalKeys',
+      'Threshold must be >= ${VaultBackupConstraints.minThreshold} and <= totalKeys',
     );
   }
-  if (totalKeys < threshold || totalKeys > LockboxBackupConstraints.maxTotalKeys) {
+  if (totalKeys < threshold || totalKeys > VaultBackupConstraints.maxTotalKeys) {
     throw ArgumentError(
-      'TotalKeys must be >= threshold and <= ${LockboxBackupConstraints.maxTotalKeys}',
+      'TotalKeys must be >= threshold and <= ${VaultBackupConstraints.maxTotalKeys}',
     );
   }
-  if (keyHolders.length != totalKeys) {
-    throw ArgumentError('KeyHolders length must equal totalKeys');
+  if (stewards.length != totalKeys) {
+    throw ArgumentError('Stewards length must equal totalKeys');
   }
   if (relays.isEmpty) {
     throw ArgumentError('At least one relay must be provided');
   }
 
-  // Validate key holders have unique IDs
-  final ids = keyHolders.map((h) => h.id).toSet();
-  if (ids.length != keyHolders.length) {
-    throw ArgumentError('All key holders must have unique IDs');
+  // Validate stewards have unique IDs
+  final ids = stewards.map((h) => h.id).toSet();
+  if (ids.length != stewards.length) {
+    throw ArgumentError('All stewards must have unique IDs');
   }
 
-  // Validate key holders with pubkeys have unique npubs
-  final keyHoldersWithPubkeys = keyHolders.where((h) => h.pubkey != null).toList();
-  final npubs = keyHoldersWithPubkeys.map((h) => h.npub).where((n) => n != null).toSet();
-  if (npubs.length != keyHoldersWithPubkeys.length) {
-    throw ArgumentError('All key holders with pubkeys must have unique npubs');
+  // Validate stewards with pubkeys have unique npubs
+  final stewardsWithPubkeys = stewards.where((h) => h.pubkey != null).toList();
+  final npubs = stewardsWithPubkeys.map((h) => h.npub).where((n) => n != null).toSet();
+  if (npubs.length != stewardsWithPubkeys.length) {
+    throw ArgumentError('All stewards with pubkeys must have unique npubs');
   }
 
   // Validate relay URLs
@@ -74,11 +74,11 @@ BackupConfig createBackupConfig({
 
   final now = DateTime.now();
   return (
-    lockboxId: lockboxId,
+    vaultId: vaultId,
     specVersion: '1.0.0', // Current specification version
     threshold: threshold,
     totalKeys: totalKeys,
-    keyHolders: keyHolders,
+    stewards: stewards,
     relays: relays,
     instructions: instructions,
     createdAt: now,
@@ -94,11 +94,11 @@ BackupConfig createBackupConfig({
 /// Create a copy of this BackupConfig with updated fields
 BackupConfig copyBackupConfig(
   BackupConfig config, {
-  String? lockboxId,
+  String? vaultId,
   String? specVersion,
   int? threshold,
   int? totalKeys,
-  List<KeyHolder>? keyHolders,
+  List<Steward>? stewards,
   List<String>? relays,
   String? instructions,
   DateTime? createdAt,
@@ -110,11 +110,11 @@ BackupConfig copyBackupConfig(
   int? distributionVersion,
 }) {
   return (
-    lockboxId: lockboxId ?? config.lockboxId,
+    vaultId: vaultId ?? config.vaultId,
     specVersion: specVersion ?? config.specVersion,
     threshold: threshold ?? config.threshold,
     totalKeys: totalKeys ?? config.totalKeys,
-    keyHolders: keyHolders ?? config.keyHolders,
+    stewards: stewards ?? config.stewards,
     relays: relays ?? config.relays,
     instructions: instructions ?? config.instructions,
     createdAt: createdAt ?? config.createdAt,
@@ -132,23 +132,23 @@ extension BackupConfigExtension on BackupConfig {
   /// Check if this backup configuration is valid
   bool get isValid {
     try {
-      if (threshold < LockboxBackupConstraints.minThreshold || threshold > totalKeys) {
+      if (threshold < VaultBackupConstraints.minThreshold || threshold > totalKeys) {
         return false;
       }
-      if (totalKeys < threshold || totalKeys > LockboxBackupConstraints.maxTotalKeys) {
+      if (totalKeys < threshold || totalKeys > VaultBackupConstraints.maxTotalKeys) {
         return false;
       }
-      if (keyHolders.length != totalKeys) return false;
+      if (stewards.length != totalKeys) return false;
       if (relays.isEmpty) return false;
 
       // Check for unique IDs
-      final ids = keyHolders.map((h) => h.id).toSet();
-      if (ids.length != keyHolders.length) return false;
+      final ids = stewards.map((h) => h.id).toSet();
+      if (ids.length != stewards.length) return false;
 
-      // Check for unique npubs (only for key holders with pubkeys)
-      final keyHoldersWithPubkeys = keyHolders.where((h) => h.pubkey != null).toList();
-      final npubs = keyHoldersWithPubkeys.map((h) => h.npub).where((n) => n != null).toSet();
-      if (npubs.length != keyHoldersWithPubkeys.length) {
+      // Check for unique npubs (only for stewards with pubkeys)
+      final stewardsWithPubkeys = stewards.where((h) => h.pubkey != null).toList();
+      final npubs = stewardsWithPubkeys.map((h) => h.npub).where((n) => n != null).toSet();
+      if (npubs.length != stewardsWithPubkeys.length) {
         return false;
       }
 
@@ -173,29 +173,29 @@ extension BackupConfigExtension on BackupConfig {
     return lastContentChange!.isAfter(lastRedistribution!);
   }
 
-  /// Get the number of active key holders
-  int get activeKeyHoldersCount {
-    return keyHolders.where((h) => h.isActive).length;
+  /// Get the number of active stewards
+  int get activeStewardsCount {
+    return stewards.where((h) => h.isActive).length;
   }
 
-  /// Get the number of acknowledged key holders
-  int get acknowledgedKeyHoldersCount {
-    return keyHolders.where((h) => h.status == KeyHolderStatus.holdingKey).length;
+  /// Get the number of acknowledged stewards
+  int get acknowledgedStewardsCount {
+    return stewards.where((h) => h.status == StewardStatus.holdingKey).length;
   }
 
-  /// Check if backup is ready (all key holders acknowledged)
+  /// Check if backup is ready (all stewards acknowledged)
   bool get isReady {
-    return status == BackupStatus.active && acknowledgedKeyHoldersCount >= threshold;
+    return status == BackupStatus.active && acknowledgedStewardsCount >= threshold;
   }
 
-  /// Check if all key holders are ready for distribution (have pubkeys)
+  /// Check if all stewards are ready for distribution (have pubkeys)
   bool get canDistribute {
-    return keyHolders.every((h) => h.pubkey != null);
+    return stewards.every((h) => h.pubkey != null);
   }
 
-  /// Get the number of key holders still pending (invited but not accepted)
+  /// Get the number of stewards still pending (invited but not accepted)
   int get pendingInvitationsCount {
-    return keyHolders.where((h) => h.status == KeyHolderStatus.invited && h.pubkey == null).length;
+    return stewards.where((h) => h.status == StewardStatus.invited && h.pubkey == null).length;
   }
 
   /// Check if redistribution is needed (config changed but not redistributed)
@@ -209,9 +209,9 @@ extension BackupConfigExtension on BackupConfig {
     return lastUpdated.isAfter(lastRedistribution!);
   }
 
-  /// Check if there are version mismatches with key holders
+  /// Check if there are version mismatches with stewards
   bool get hasVersionMismatch {
-    return keyHolders.any(
+    return stewards.any(
       (h) =>
           h.acknowledgedDistributionVersion != null &&
           h.acknowledgedDistributionVersion != distributionVersion,
@@ -219,15 +219,15 @@ extension BackupConfigExtension on BackupConfig {
   }
 
   /// Check if config parameters differ from another config
-  /// Compares threshold, relays, instructions, and key holder IDs (not status/acknowledgments)
+  /// Compares threshold, relays, instructions, and steward IDs (not status/acknowledgments)
   bool configParamsDifferFrom(BackupConfig other) {
     if (threshold != other.threshold) return true;
     if (!_areRelaysEqual(relays, other.relays)) return true;
     if (instructions != other.instructions) return true;
 
-    // Compare key holder IDs (not full key holders, since status may differ)
-    final thisIds = keyHolders.map((h) => h.id).toSet();
-    final otherIds = other.keyHolders.map((h) => h.id).toSet();
+    // Compare steward IDs (not full stewards, since status may differ)
+    final thisIds = stewards.map((h) => h.id).toSet();
+    final otherIds = other.stewards.map((h) => h.id).toSet();
     if (thisIds.length != otherIds.length) return true;
     if (!thisIds.containsAll(otherIds)) return true;
 
@@ -246,11 +246,11 @@ extension BackupConfigExtension on BackupConfig {
 /// Convert to JSON for storage
 Map<String, dynamic> backupConfigToJson(BackupConfig config) {
   return {
-    'lockboxId': config.lockboxId,
+    'vaultId': config.vaultId,
     'specVersion': config.specVersion,
     'threshold': config.threshold,
     'totalKeys': config.totalKeys,
-    'keyHolders': config.keyHolders.map((h) => keyHolderToJson(h)).toList(),
+    'stewards': config.stewards.map((h) => stewardToJson(h)).toList(),
     'relays': config.relays,
     if (config.instructions != null) 'instructions': config.instructions,
     'createdAt': config.createdAt.toIso8601String(),
@@ -266,13 +266,13 @@ Map<String, dynamic> backupConfigToJson(BackupConfig config) {
 /// Create from JSON
 BackupConfig backupConfigFromJson(Map<String, dynamic> json) {
   return (
-    lockboxId: json['lockboxId'] as String,
+    vaultId: json['vaultId'] as String? ?? json['vaultId'] as String, // Backward compatibility
     specVersion: json['specVersion'] as String,
     threshold: json['threshold'] as int,
     totalKeys: json['totalKeys'] as int,
-    keyHolders: (json['keyHolders'] as List)
-        .map((h) => keyHolderFromJson(h as Map<String, dynamic>))
-        .toList(),
+    stewards: ((json['stewards'] as List?) ?? (json['keyHolders'] as List?))
+        ?.map((h) => stewardFromJson(h as Map<String, dynamic>))
+        .toList() ?? [],
     relays: (json['relays'] as List).cast<String>(),
     instructions: json['instructions'] as String?,
     createdAt: DateTime.parse(json['createdAt'] as String),
@@ -295,8 +295,8 @@ BackupConfig backupConfigFromJson(Map<String, dynamic> json) {
 
 /// String representation of BackupConfig
 String backupConfigToString(BackupConfig config) {
-  return 'BackupConfig(lockboxId: ${config.lockboxId}, threshold: ${config.threshold}/${config.totalKeys}, '
-      'status: ${config.status}, keyHolders: ${config.keyHolders.length})';
+  return 'BackupConfig(vaultId: ${config.vaultId}, threshold: ${config.threshold}/${config.totalKeys}, '
+      'status: ${config.status}, stewards: ${config.stewards.length})';
 }
 
 /// Validate relay URL format

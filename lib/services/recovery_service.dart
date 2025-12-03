@@ -6,26 +6,26 @@ import '../models/nostr_kinds.dart';
 import '../models/recovery_request.dart';
 import '../models/recovery_status.dart';
 import '../models/shard_data.dart';
-import '../providers/lockbox_provider.dart';
+import '../providers/vault_provider.dart';
 import '../utils/invite_code_utils.dart';
 import 'backup_service.dart';
 import 'ndk_service.dart';
-import 'lockbox_share_service.dart';
+import 'vault_share_service.dart';
 import 'logger.dart';
 
 /// Provider for RecoveryService
-/// This service depends on LockboxRepository for recovery operations
+/// This service depends on VaultRepository for recovery operations
 final Provider<RecoveryService> recoveryServiceProvider = Provider<RecoveryService>((ref) {
-  final repository = ref.watch(lockboxRepositoryProvider);
+  final repository = ref.watch(vaultRepositoryProvider);
   final backupService = ref.read(backupServiceProvider);
   // Use ref.read() to break circular dependency with NdkService
   final NdkService ndkService = ref.read(ndkServiceProvider);
-  final lockboxShareService = ref.read(lockboxShareServiceProvider);
+  final vaultShareService = ref.read(vaultShareServiceProvider);
   final service = RecoveryService(
     repository,
     backupService,
     ndkService,
-    lockboxShareService,
+    vaultShareService,
   );
 
   // Clean up streams when disposed
@@ -36,13 +36,13 @@ final Provider<RecoveryService> recoveryServiceProvider = Provider<RecoveryServi
   return service;
 });
 
-/// Service for managing lockbox recovery operations
+/// Service for managing vault recovery operations
 /// Includes notification tracking for incoming recovery requests
 class RecoveryService {
-  final LockboxRepository repository;
+  final VaultRepository repository;
   final BackupService backupService;
   final NdkService _ndkService;
-  final LockboxShareService _lockboxShareService;
+  final VaultShareService _vaultShareService;
 
   static const String _viewedNotificationIdsKey = 'viewed_recovery_notification_ids';
 
@@ -61,7 +61,7 @@ class RecoveryService {
     this.repository,
     this.backupService,
     this._ndkService,
-    this._lockboxShareService,
+    this._vaultShareService,
   ) {
     _loadViewedNotificationIds();
     _setupNdkStreamListeners();
@@ -182,7 +182,7 @@ class RecoveryService {
     // Get current user's pubkey to filter out their own recovery requests
     final currentPubkey = await _ndkService.getCurrentPubkey();
 
-    // Get all recovery requests from lockbox repository
+    // Get all recovery requests from vault repository
     final allRequests = await repository.getAllRecoveryRequests();
 
     // Filter out viewed notifications and requests initiated by the current user
@@ -201,21 +201,21 @@ class RecoveryService {
     _notificationController.add(unviewed);
   }
 
-  /// Initiate recovery for a lockbox
+  /// Initiate recovery for a vault
   /// Returns the created recovery request
-  /// Throws an exception if the user already has an active recovery request for this lockbox
+  /// Throws an exception if the user already has an active recovery request for this vault
   Future<RecoveryRequest> initiateRecovery(
-    String lockboxId, {
+    String vaultId, {
     required String initiatorPubkey,
-    required List<String> keyHolderPubkeys,
+    required List<String> stewardPubkeys,
     required int threshold,
     Duration? expirationDuration,
   }) async {
     await initialize();
 
-    // Check if user already has an active recovery request for this lockbox
-    final existingRequests = await repository.getRecoveryRequestsForLockbox(
-      lockboxId,
+    // Check if user already has an active recovery request for this vault
+    final existingRequests = await repository.getRecoveryRequestsForVault(
+      vaultId,
     );
     final hasActiveRequest = existingRequests.any(
       (r) => r.initiatorPubkey == initiatorPubkey && r.status.isActive,
@@ -223,23 +223,23 @@ class RecoveryService {
 
     if (hasActiveRequest) {
       throw StateError(
-        'You already have an active recovery request for this lockbox. Please manage your existing recovery request.',
+        'You already have an active recovery request for this vault. Please manage your existing recovery request.',
       );
     }
 
     // Create recovery request
     // Generate cryptographically secure request ID
-    final requestId = '${generateSecureID()}_$lockboxId';
+    final requestId = '${generateSecureID()}_$vaultId';
     final expiresAt = expirationDuration != null
         ? DateTime.now().add(expirationDuration)
         : DateTime.now().add(
             const Duration(hours: 24),
           ); // Default 24 hour expiration
 
-    // Initialize key holder responses
-    final keyHolderResponses = <String, RecoveryResponse>{};
-    for (final pubkey in keyHolderPubkeys) {
-      keyHolderResponses[pubkey] = RecoveryResponse(
+    // Initialize steward responses
+    final stewardResponses = <String, RecoveryResponse>{};
+    for (final pubkey in stewardPubkeys) {
+      stewardResponses[pubkey] = RecoveryResponse(
         pubkey: pubkey,
         approved: false,
       );
@@ -247,13 +247,13 @@ class RecoveryService {
 
     final recoveryRequest = RecoveryRequest(
       id: requestId,
-      lockboxId: lockboxId,
+      vaultId: vaultId,
       initiatorPubkey: initiatorPubkey,
       requestedAt: DateTime.now(),
       status: RecoveryRequestStatus.pending,
       threshold: threshold,
       expiresAt: expiresAt,
-      keyHolderResponses: keyHolderResponses,
+      stewardResponses: stewardResponses,
     );
 
     // Validate and save
@@ -261,13 +261,13 @@ class RecoveryService {
       throw ArgumentError('Invalid recovery request');
     }
 
-    // Add to lockbox (single source of truth)
-    await repository.addRecoveryRequestToLockbox(lockboxId, recoveryRequest);
+    // Add to vault (single source of truth)
+    await repository.addRecoveryRequestToVault(vaultId, recoveryRequest);
 
     // Emit notification update
     await _emitNotificationUpdate();
 
-    Log.info('Created recovery request $requestId for lockbox $lockboxId');
+    Log.info('Created recovery request $requestId for vault $vaultId');
     return recoveryRequest;
   }
 
@@ -277,9 +277,9 @@ class RecoveryService {
   Future<void> addIncomingRecoveryRequest(RecoveryRequest request) async {
     await initialize();
 
-    // Check if request already exists in lockbox (source of truth)
-    final existingRequests = await repository.getRecoveryRequestsForLockbox(
-      request.lockboxId,
+    // Check if request already exists in vault (source of truth)
+    final existingRequests = await repository.getRecoveryRequestsForVault(
+      request.vaultId,
     );
     final existingRequest = existingRequests.where((r) => r.id == request.id).firstOrNull;
 
@@ -291,8 +291,8 @@ class RecoveryService {
       return;
     }
 
-    // Add new request to lockbox
-    await repository.addRecoveryRequestToLockbox(request.lockboxId, request);
+    // Add new request to vault
+    await repository.addRecoveryRequestToVault(request.vaultId, request);
     Log.info('Added incoming recovery request ${request.id}');
 
     // Emit notification update
@@ -301,18 +301,18 @@ class RecoveryService {
 
   /// Get all recovery requests for the current user
   Future<List<RecoveryRequest>> getRecoveryRequests({
-    String? lockboxId,
+    String? vaultId,
     RecoveryRequestStatus? status,
   }) async {
     await initialize();
 
-    // Get requests from lockbox repository (source of truth)
+    // Get requests from vault repository (source of truth)
     List<RecoveryRequest> requests;
-    if (lockboxId != null) {
-      // Get requests for a specific lockbox
-      requests = await repository.getRecoveryRequestsForLockbox(lockboxId);
+    if (vaultId != null) {
+      // Get requests for a specific vault
+      requests = await repository.getRecoveryRequestsForVault(vaultId);
     } else {
-      // Get all requests across all lockboxes
+      // Get all requests across all vaultes
       requests = await repository.getAllRecoveryRequests();
     }
 
@@ -328,7 +328,7 @@ class RecoveryService {
   Future<RecoveryRequest?> getRecoveryRequest(String recoveryRequestId) async {
     await initialize();
 
-    // Get all requests from lockbox repository and find the matching one
+    // Get all requests from vault repository and find the matching one
     final allRequests = await repository.getAllRecoveryRequests();
     try {
       return allRequests.firstWhere((r) => r.id == recoveryRequestId);
@@ -345,7 +345,7 @@ class RecoveryService {
     if (request == null) return null;
 
     // Count responses that have shard data (approved responses)
-    final collectedShardIds = request.keyHolderResponses.values
+    final collectedShardIds = request.stewardResponses.values
         .where((r) => r.shardData != null)
         .map((r) => r.pubkey) // Use pubkey as identifier
         .toList();
@@ -355,7 +355,7 @@ class RecoveryService {
 
     return RecoveryStatus(
       recoveryRequestId: recoveryRequestId,
-      totalKeyHolders: request.totalKeyHolders,
+      totalStewards: request.totalStewards,
       respondedCount: request.respondedCount,
       approvedCount: request.approvedCount,
       deniedCount: request.deniedCount,
@@ -366,7 +366,7 @@ class RecoveryService {
     );
   }
 
-  /// Respond to a recovery request (from a key holder)
+  /// Respond to a recovery request (from a steward)
   /// Since events are immutable, we skip processing if the response already exists
   Future<void> respondToRecoveryRequest(
     String recoveryRequestId,
@@ -377,14 +377,14 @@ class RecoveryService {
   }) async {
     await initialize();
 
-    // Get the request from lockbox repository (source of truth)
+    // Get the request from vault repository (source of truth)
     final request = await getRecoveryRequest(recoveryRequestId);
     if (request == null) {
       throw ArgumentError('Recovery request not found: $recoveryRequestId');
     }
 
     // Check if response already exists for this pubkey
-    final existingResponse = request.keyHolderResponses[responderPubkey];
+    final existingResponse = request.stewardResponses[responderPubkey];
     if (existingResponse != null) {
       // Check if this is a duplicate by comparing nostrEventId if provided
       if (nostrEventId != null && existingResponse.nostrEventId == nostrEventId) {
@@ -404,7 +404,7 @@ class RecoveryService {
 
     // Update the response
     final updatedResponses = Map<String, RecoveryResponse>.from(
-      request.keyHolderResponses,
+      request.stewardResponses,
     );
     updatedResponses[responderPubkey] = RecoveryResponse(
       pubkey: responderPubkey,
@@ -431,18 +431,18 @@ class RecoveryService {
     // Update the request
     final updatedRequest = request.copyWith(
       status: newStatus,
-      keyHolderResponses: updatedResponses,
+      stewardResponses: updatedResponses,
     );
 
-    // Update in lockbox (single source of truth)
+    // Update in vault (single source of truth)
     try {
-      await repository.updateRecoveryRequestInLockbox(
-        request.lockboxId,
+      await repository.updateRecoveryRequestInVault(
+        request.vaultId,
         recoveryRequestId,
         updatedRequest,
       );
     } catch (e) {
-      Log.error('Error updating recovery request in lockbox', e);
+      Log.error('Error updating recovery request in vault', e);
       rethrow;
     }
 
@@ -466,7 +466,7 @@ class RecoveryService {
   ) async {
     await initialize();
 
-    // Get the recovery request to find the lockbox ID
+    // Get the recovery request to find the vault ID
     final request = await getRecoveryRequest(recoveryRequestId);
     if (request == null) {
       throw ArgumentError('Recovery request not found: $recoveryRequestId');
@@ -474,12 +474,12 @@ class RecoveryService {
 
     ShardData? shardData;
 
-    // If approving, get the shard data for this lockbox
+    // If approving, get the shard data for this vault
     if (approved) {
-      final shards = await repository.getShardsForLockbox(request.lockboxId);
+      final shards = await repository.getShardsForVault(request.vaultId);
       if (shards.isEmpty) {
         throw ArgumentError(
-          'No shard data found for lockbox ${request.lockboxId}',
+          'No shard data found for vault ${request.vaultId}',
         );
       }
       // Select the shard with the highest distributionVersion (most recent)
@@ -535,7 +535,7 @@ class RecoveryService {
   ) async {
     await initialize();
 
-    // Get the request from lockbox repository (source of truth)
+    // Get the request from vault repository (source of truth)
     final request = await getRecoveryRequest(recoveryRequestId);
     if (request == null) {
       throw ArgumentError('Recovery request not found: $recoveryRequestId');
@@ -543,9 +543,9 @@ class RecoveryService {
 
     final updatedRequest = request.copyWith(status: status);
 
-    // Update in lockbox (single source of truth)
-    await repository.updateRecoveryRequestInLockbox(
-      request.lockboxId,
+    // Update in vault (single source of truth)
+    await repository.updateRecoveryRequestInVault(
+      request.vaultId,
       recoveryRequestId,
       updatedRequest,
     );
@@ -563,10 +563,10 @@ class RecoveryService {
     );
 
     // Delete all recovery shards for this recovery request
-    // Note: User's own shard is stored separately in _cachedShardData (keyed by lockboxId)
+    // Note: User's own shard is stored separately in _cachedShardData (keyed by vaultId)
     // and won't be affected by removeRecoveryShards() which only deletes recovery shards
     // (keyed by recoveryRequestId)
-    await _lockboxShareService.removeRecoveryShards(recoveryRequestId);
+    await _vaultShareService.removeRecoveryShards(recoveryRequestId);
     Log.info(
       'Deleted recovery shards for cancelled recovery request $recoveryRequestId',
     );
@@ -574,11 +574,11 @@ class RecoveryService {
 
   /// Exit recovery mode after successful recovery
   /// Archives the recovery request, deletes recovered content and recovery shards,
-  /// while preserving the user's own key holder shard
+  /// while preserving the user's own steward shard
   Future<void> exitRecoveryMode(String recoveryRequestId) async {
     await initialize();
 
-    // Get the request from lockbox repository (source of truth)
+    // Get the request from vault repository (source of truth)
     final request = await getRecoveryRequest(recoveryRequestId);
     if (request == null) {
       throw ArgumentError('Recovery request not found: $recoveryRequestId');
@@ -590,29 +590,29 @@ class RecoveryService {
       RecoveryRequestStatus.archived,
     );
 
-    // Delete recovered content from lockbox (set to null)
-    final lockbox = await repository.getLockbox(request.lockboxId);
-    if (lockbox != null) {
-      await repository.saveLockbox(lockbox.copyWith(content: null));
-      Log.info('Deleted recovered content from lockbox ${request.lockboxId}');
+    // Delete recovered content from vault (set to null)
+    final vault = await repository.getVault(request.vaultId);
+    if (vault != null) {
+      await repository.saveVault(vault.copyWith(content: null));
+      Log.info('Deleted recovered content from vault ${request.vaultId}');
     }
 
     // Delete all recovery shards for this recovery request
-    // Note: User's own shard is stored separately in _cachedShardData (keyed by lockboxId)
+    // Note: User's own shard is stored separately in _cachedShardData (keyed by vaultId)
     // and won't be affected by removeRecoveryShards() which only deletes recovery shards
     // (keyed by recoveryRequestId)
-    await _lockboxShareService.removeRecoveryShards(recoveryRequestId);
+    await _vaultShareService.removeRecoveryShards(recoveryRequestId);
     Log.info('Deleted recovery shards for recovery request $recoveryRequestId');
 
     Log.info('Exited recovery mode for recovery request $recoveryRequestId');
   }
 
-  /// Check if recovery is possible for a lockbox
-  Future<bool> canRecoverLockbox(String lockboxId) async {
+  /// Check if recovery is possible for a vault
+  Future<bool> canRecoverVault(String vaultId) async {
     await initialize();
 
-    // Check if there are any active recovery requests for this lockbox
-    final requests = await getRecoveryRequests(lockboxId: lockboxId);
+    // Check if there are any active recovery requests for this vault
+    final requests = await getRecoveryRequests(vaultId: vaultId);
 
     for (final request in requests) {
       if (request.status.isActive) {
@@ -626,8 +626,8 @@ class RecoveryService {
     return false;
   }
 
-  /// Perform lockbox recovery using collected shards
-  /// Returns the recovered lockbox content
+  /// Perform vault recovery using collected shards
+  /// Returns the recovered vault content
   Future<String> performRecovery(String recoveryRequestId) async {
     await initialize();
 
@@ -645,7 +645,7 @@ class RecoveryService {
     }
 
     // Collect shards from approved responses
-    final shards = request.keyHolderResponses.values
+    final shards = request.stewardResponses.values
         .where((r) => r.approved && r.shardData != null)
         .map((r) => r.shardData!)
         .toList();
@@ -660,13 +660,13 @@ class RecoveryService {
       );
     }
 
-    // Reconstruct the lockbox content from the shards
+    // Reconstruct the vault content from the shards
     final content = await backupService.reconstructFromShares(shares: shards);
 
-    // Update the lockbox with recovered content
-    final lockbox = await repository.getLockbox(request.lockboxId);
-    if (lockbox != null) {
-      await repository.updateLockbox(request.lockboxId, lockbox.name, content);
+    // Update the vault with recovered content
+    final vault = await repository.getVault(request.vaultId);
+    if (vault != null) {
+      await repository.updateVault(request.vaultId, vault.name, content);
     }
 
     // Update the recovery request status to completed
@@ -674,25 +674,25 @@ class RecoveryService {
       status: RecoveryRequestStatus.completed,
     );
 
-    // Update in lockbox (single source of truth)
+    // Update in vault (single source of truth)
     try {
-      await repository.updateRecoveryRequestInLockbox(
-        request.lockboxId,
+      await repository.updateRecoveryRequestInVault(
+        request.vaultId,
         recoveryRequestId,
         updatedRequest,
       );
     } catch (e) {
-      Log.error('Error updating completed recovery request in lockbox', e);
+      Log.error('Error updating completed recovery request in vault', e);
       rethrow;
     }
 
     Log.info(
-      'Successfully recovered lockbox ${request.lockboxId} from $recoveryRequestId',
+      'Successfully recovered vault ${request.vaultId} from $recoveryRequestId',
     );
     return content;
   }
 
-  /// Get key holder responses for a recovery request
+  /// Get steward responses for a recovery request
   Future<List<RecoveryResponse>> getKeyHolderResponses(
     String recoveryRequestId,
   ) async {
@@ -701,7 +701,7 @@ class RecoveryService {
     final request = await getRecoveryRequest(recoveryRequestId);
     if (request == null) return [];
 
-    return request.keyHolderResponses.values.toList();
+    return request.stewardResponses.values.toList();
   }
 
   /// Update recovery request status (for Nostr event tracking)
@@ -722,15 +722,15 @@ class RecoveryService {
       nostrEventId: nostrEventId ?? request.nostrEventId,
     );
 
-    // Update in lockbox (single source of truth)
+    // Update in vault (single source of truth)
     try {
-      await repository.updateRecoveryRequestInLockbox(
-        request.lockboxId,
+      await repository.updateRecoveryRequestInVault(
+        request.vaultId,
         recoveryRequestId,
         updatedRequest,
       );
     } catch (e) {
-      Log.error('Error updating recovery request status in lockbox', e);
+      Log.error('Error updating recovery request status in vault', e);
       rethrow;
     }
 
@@ -739,7 +739,7 @@ class RecoveryService {
     );
   }
 
-  /// Send recovery request to key holders via Nostr gift wraps
+  /// Send recovery request to stewards via Nostr gift wraps
   /// Returns the list of gift wrap event IDs
   Future<List<String>> sendRecoveryRequestViaNostr(
     RecoveryRequest request, {
@@ -752,14 +752,14 @@ class RecoveryService {
       }
 
       Log.info(
-        'Sending recovery request ${request.id} to ${request.keyHolderResponses.length} key holders',
+        'Sending recovery request ${request.id} to ${request.stewardResponses.length} stewards',
       );
 
       // Prepare recovery request data
       final requestData = {
         'type': 'recovery_request',
         'recovery_request_id': request.id,
-        'lockbox_id': request.lockboxId,
+        'vault_id': request.vaultId,
         'initiator_pubkey': request.initiatorPubkey,
         'requested_at': request.requestedAt.toIso8601String(),
         'expires_at': request.expiresAt?.toIso8601String(),
@@ -768,15 +768,15 @@ class RecoveryService {
 
       final requestJson = json.encode(requestData);
 
-      // Send gift wrap to each key holder using NdkService
+      // Send gift wrap to each steward using NdkService
       final eventIds = await _ndkService.publishEncryptedEventToMultiple(
         content: requestJson,
         kind: NostrKind.recoveryRequest.value,
-        recipientPubkeys: request.keyHolderResponses.keys.toList(),
+        recipientPubkeys: request.stewardResponses.keys.toList(),
         relays: relays,
         tags: [
           ['d', 'recovery_request_${request.id}'],
-          ['lockbox_id', request.lockboxId],
+          ['vault_id', request.vaultId],
           ['recovery_request_id', request.id],
         ],
         customPubkey: currentPubkey,
@@ -790,7 +790,7 @@ class RecoveryService {
       );
 
       Log.info(
-        'Successfully sent recovery request ${request.id} to ${eventIds.length} key holders',
+        'Successfully sent recovery request ${request.id} to ${eventIds.length} stewards',
       );
       return eventIds;
     } catch (e) {
@@ -817,7 +817,7 @@ class RecoveryService {
       final responseData = {
         'type': 'recovery_response',
         'recovery_request_id': request.id,
-        'lockbox_id': request.lockboxId,
+        'vault_id': request.vaultId,
         'responder_pubkey': currentPubkey,
         'approved': approved,
         'responded_at': DateTime.now().toIso8601String(),
@@ -842,7 +842,7 @@ class RecoveryService {
         relays: relays,
         tags: [
           ['d', 'recovery_response_${request.id}_$currentPubkey'],
-          ['lockbox_id', request.lockboxId],
+          ['vault_id', request.vaultId],
           ['recovery_request_id', request.id],
           ['approved', approved.toString()],
         ],

@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_toolkit/golden_toolkit.dart';
-import 'package:keydex/models/lockbox.dart';
-import 'package:keydex/models/shard_data.dart';
-import 'package:keydex/providers/lockbox_provider.dart';
-import 'package:keydex/providers/key_provider.dart';
-import 'package:keydex/widgets/key_holder_list.dart';
+import 'package:horcrux/models/vault.dart';
+import 'package:horcrux/models/shard_data.dart';
+import 'package:horcrux/providers/vault_provider.dart';
+import 'package:horcrux/providers/key_provider.dart';
+import 'package:horcrux/widgets/steward_list.dart';
 import 'dart:async';
 import '../helpers/golden_test_helpers.dart';
 
@@ -21,8 +21,8 @@ void main() {
   ShardData createTestShard({
     required int shardIndex,
     required String recipientPubkey,
-    required String lockboxId,
-    String lockboxName = 'Test Lockbox',
+    required String vaultId,
+    String vaultName = 'Test Vault',
     int threshold = 2,
     List<Map<String, String>>? peers,
   }) {
@@ -33,8 +33,8 @@ void main() {
       totalShards: peers?.length ?? 3,
       primeMod: 'test_prime_mod',
       creatorPubkey: testPubkey,
-      lockboxId: lockboxId,
-      lockboxName: lockboxName,
+      vaultId: vaultId,
+      vaultName: vaultName,
       peers: peers ??
           [
             {'name': 'Peer 1', 'pubkey': otherPubkey},
@@ -46,28 +46,28 @@ void main() {
     );
   }
 
-  // Helper to create lockbox
-  Lockbox createTestLockbox({
+  // Helper to create vault
+  Vault createTestVault({
     required String id,
     required String ownerPubkey,
     List<ShardData>? shards,
   }) {
-    return Lockbox(
+    return Vault(
       id: id,
-      name: 'Test Lockbox',
-      content: null, // No decrypted content for key holder state
+      name: 'Test Vault',
+      content: null, // No decrypted content for steward state
       createdAt: DateTime.now().subtract(const Duration(days: 1)),
       ownerPubkey: ownerPubkey,
       shards: shards ?? [],
     );
   }
 
-  group('KeyHolderList Golden Tests', () {
+  group('StewardList Golden Tests', () {
     testGoldens('loading state', (tester) async {
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider(
-            'test-lockbox',
+          vaultProvider(
+            'test-vault',
           ).overrideWith((ref) => Stream.value(null)),
           currentPublicKeyProvider.overrideWith(
             (ref) => Future.value('test-pubkey'),
@@ -77,16 +77,16 @@ void main() {
 
       await pumpGoldenWidget(
         tester,
-        const KeyHolderList(lockboxId: 'test-lockbox'),
+        const StewardList(vaultId: 'test-vault'),
         container: container,
         surfaceSize: const Size(375, 200),
         useScaffold: true,
         waitForSettle: false,
       );
 
-      await screenMatchesGoldenWithoutSettle<KeyHolderList>(
+      await screenMatchesGoldenWithoutSettle<StewardList>(
         tester,
-        'key_holder_list_loading',
+        'steward_list_loading',
       );
 
       container.dispose();
@@ -95,9 +95,9 @@ void main() {
     testGoldens('error state', (tester) async {
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider(
-            'test-lockbox',
-          ).overrideWith((ref) => Stream.error('Failed to load lockbox')),
+          vaultProvider(
+            'test-vault',
+          ).overrideWith((ref) => Stream.error('Failed to load vault')),
           currentPublicKeyProvider.overrideWith(
             (ref) => Future.value('test-pubkey'),
           ),
@@ -106,55 +106,55 @@ void main() {
 
       await pumpGoldenWidget(
         tester,
-        const KeyHolderList(lockboxId: 'test-lockbox'),
+        const StewardList(vaultId: 'test-vault'),
         container: container,
         surfaceSize: const Size(375, 200),
         useScaffold: true,
       );
 
-      await screenMatchesGolden(tester, 'key_holder_list_error');
+      await screenMatchesGolden(tester, 'steward_list_error');
 
       container.dispose();
     });
 
     testGoldens('empty state', (tester) async {
-      final lockbox = createTestLockbox(
-        id: 'test-lockbox',
+      final vault = createTestVault(
+        id: 'test-vault',
         ownerPubkey: testPubkey,
         shards: [], // No shards
       );
 
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider(
-            'test-lockbox',
-          ).overrideWith((ref) => Stream.value(lockbox)),
+          vaultProvider(
+            'test-vault',
+          ).overrideWith((ref) => Stream.value(vault)),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
         ],
       );
 
       await pumpGoldenWidget(
         tester,
-        const KeyHolderList(lockboxId: 'test-lockbox'),
+        const StewardList(vaultId: 'test-vault'),
         container: container,
         surfaceSize: const Size(375, 300),
         useScaffold: true,
       );
 
-      await screenMatchesGolden(tester, 'key_holder_list_empty');
+      await screenMatchesGolden(tester, 'steward_list_empty');
 
       container.dispose();
     });
 
-    testGoldens('single key holder', (tester) async {
-      final lockbox = createTestLockbox(
-        id: 'test-lockbox',
+    testGoldens('single steward', (tester) async {
+      final vault = createTestVault(
+        id: 'test-vault',
         ownerPubkey: testPubkey,
         shards: [
           createTestShard(
             shardIndex: 0,
             recipientPubkey: otherPubkey,
-            lockboxId: 'test-lockbox',
+            vaultId: 'test-vault',
             peers: [
               {'name': 'Peer 1', 'pubkey': otherPubkey},
             ], // Only one peer
@@ -165,35 +165,35 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider(
-            'test-lockbox',
-          ).overrideWith((ref) => Stream.value(lockbox)),
+          vaultProvider(
+            'test-vault',
+          ).overrideWith((ref) => Stream.value(vault)),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
         ],
       );
 
       await pumpGoldenWidget(
         tester,
-        const KeyHolderList(lockboxId: 'test-lockbox'),
+        const StewardList(vaultId: 'test-vault'),
         container: container,
         surfaceSize: const Size(375, 300),
         useScaffold: true,
       );
 
-      await screenMatchesGolden(tester, 'key_holder_list_single');
+      await screenMatchesGolden(tester, 'steward_list_single');
 
       container.dispose();
     });
 
-    testGoldens('multiple key holders', (tester) async {
-      final lockbox = createTestLockbox(
-        id: 'test-lockbox',
+    testGoldens('multiple stewards', (tester) async {
+      final vault = createTestVault(
+        id: 'test-vault',
         ownerPubkey: testPubkey,
         shards: [
           createTestShard(
             shardIndex: 0,
             recipientPubkey: otherPubkey,
-            lockboxId: 'test-lockbox',
+            vaultId: 'test-vault',
             peers: [
               {'name': 'Peer 1', 'pubkey': otherPubkey},
               {'name': 'Peer 2', 'pubkey': thirdPubkey},
@@ -205,35 +205,35 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider(
-            'test-lockbox',
-          ).overrideWith((ref) => Stream.value(lockbox)),
+          vaultProvider(
+            'test-vault',
+          ).overrideWith((ref) => Stream.value(vault)),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
         ],
       );
 
       await pumpGoldenWidget(
         tester,
-        const KeyHolderList(lockboxId: 'test-lockbox'),
+        const StewardList(vaultId: 'test-vault'),
         container: container,
         surfaceSize: const Size(375, 400),
         useScaffold: true,
       );
 
-      await screenMatchesGolden(tester, 'key_holder_list_multiple');
+      await screenMatchesGolden(tester, 'steward_list_multiple');
 
       container.dispose();
     });
 
-    testGoldens('key holder viewing list with owner in peers', (tester) async {
-      final lockbox = createTestLockbox(
-        id: 'test-lockbox',
+    testGoldens('steward viewing list with owner in peers', (tester) async {
+      final vault = createTestVault(
+        id: 'test-vault',
         ownerPubkey: otherPubkey, // Different owner
         shards: [
           createTestShard(
             shardIndex: 0,
             recipientPubkey: testPubkey, // Current user is recipient
-            lockboxId: 'test-lockbox',
+            vaultId: 'test-vault',
             peers: [
               {'name': 'Peer 1', 'pubkey': otherPubkey},
               {'name': 'Peer 2', 'pubkey': thirdPubkey},
@@ -244,37 +244,37 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider(
-            'test-lockbox',
-          ).overrideWith((ref) => Stream.value(lockbox)),
+          vaultProvider(
+            'test-vault',
+          ).overrideWith((ref) => Stream.value(vault)),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
         ],
       );
 
       await pumpGoldenWidget(
         tester,
-        const KeyHolderList(lockboxId: 'test-lockbox'),
+        const StewardList(vaultId: 'test-vault'),
         container: container,
         surfaceSize: const Size(375, 350),
         useScaffold: true,
       );
 
-      await screenMatchesGolden(tester, 'key_holder_list_with_owner');
+      await screenMatchesGolden(tester, 'steward_list_with_owner');
 
       container.dispose();
     });
 
-    testGoldens('key holder viewing list without owner in peers', (
+    testGoldens('steward viewing list without owner in peers', (
       tester,
     ) async {
-      final lockbox = createTestLockbox(
-        id: 'test-lockbox',
+      final vault = createTestVault(
+        id: 'test-vault',
         ownerPubkey: fourthPubkey, // Owner not in peers
         shards: [
           createTestShard(
             shardIndex: 0,
             recipientPubkey: testPubkey, // Current user is recipient
-            lockboxId: 'test-lockbox',
+            vaultId: 'test-vault',
             peers: [
               {'name': 'Peer 1', 'pubkey': otherPubkey},
               {'name': 'Peer 2', 'pubkey': thirdPubkey},
@@ -285,35 +285,35 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider(
-            'test-lockbox',
-          ).overrideWith((ref) => Stream.value(lockbox)),
+          vaultProvider(
+            'test-vault',
+          ).overrideWith((ref) => Stream.value(vault)),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
         ],
       );
 
       await pumpGoldenWidget(
         tester,
-        const KeyHolderList(lockboxId: 'test-lockbox'),
+        const StewardList(vaultId: 'test-vault'),
         container: container,
         surfaceSize: const Size(375, 350),
         useScaffold: true,
       );
 
-      await screenMatchesGolden(tester, 'key_holder_list_without_owner');
+      await screenMatchesGolden(tester, 'steward_list_without_owner');
 
       container.dispose();
     });
 
     testGoldens('current user key loading', (tester) async {
-      final lockbox = createTestLockbox(
-        id: 'test-lockbox',
+      final vault = createTestVault(
+        id: 'test-vault',
         ownerPubkey: testPubkey,
         shards: [
           createTestShard(
             shardIndex: 0,
             recipientPubkey: otherPubkey,
-            lockboxId: 'test-lockbox',
+            vaultId: 'test-vault',
           ),
         ],
       );
@@ -323,25 +323,25 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider(
-            'test-lockbox',
-          ).overrideWith((ref) => Stream.value(lockbox)),
+          vaultProvider(
+            'test-vault',
+          ).overrideWith((ref) => Stream.value(vault)),
           currentPublicKeyProvider.overrideWith((ref) => completer.future),
         ],
       );
 
       await pumpGoldenWidget(
         tester,
-        const KeyHolderList(lockboxId: 'test-lockbox'),
+        const StewardList(vaultId: 'test-vault'),
         container: container,
         surfaceSize: const Size(375, 200),
         useScaffold: true,
         waitForSettle: false,
       );
 
-      await screenMatchesGoldenWithoutSettle<KeyHolderList>(
+      await screenMatchesGoldenWithoutSettle<StewardList>(
         tester,
-        'key_holder_list_user_loading',
+        'steward_list_user_loading',
       );
 
       container.dispose();

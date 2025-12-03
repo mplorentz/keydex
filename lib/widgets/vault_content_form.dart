@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-/// Reusable form widget for creating and editing lockbox content
-class LockboxContentForm extends StatelessWidget {
+/// Reusable form widget for creating and editing vault content
+class VaultContentForm extends StatelessWidget {
   final GlobalKey<FormState> formKey;
   final TextEditingController nameController;
   final TextEditingController contentController;
@@ -9,13 +9,13 @@ class LockboxContentForm extends StatelessWidget {
   final String? nameHintText;
   final String? contentHintText;
 
-  const LockboxContentForm({
+  const VaultContentForm({
     super.key,
     required this.formKey,
     required this.nameController,
     required this.contentController,
     required this.ownerNameController,
-    this.nameHintText = 'Give your lockbox a memorable name',
+    this.nameHintText = 'Give your vault a memorable name',
     this.contentHintText =
         'Enter your sensitive text here...\n\nThis content will be encrypted and stored securely.',
   });

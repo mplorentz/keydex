@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_toolkit/golden_toolkit.dart';
-import 'package:keydex/screens/vault_explainer_screen.dart';
+import 'package:horcrux/screens/vault_explainer_screen.dart';
 import '../helpers/golden_test_helpers.dart';
 
 void main() {

@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
-import '../models/lockbox.dart';
-import '../providers/lockbox_provider.dart';
+import '../models/vault.dart';
+import '../providers/vault_provider.dart';
 import '../providers/key_provider.dart';
 
-/// Widget for displaying lockbox metadata (ownership info)
-class LockboxMetadataSection extends ConsumerWidget {
-  final String lockboxId;
+/// Widget for displaying vault metadata (ownership info)
+class VaultMetadataSection extends ConsumerWidget {
+  final String vaultId;
 
-  const LockboxMetadataSection({super.key, required this.lockboxId});
+  const VaultMetadataSection({super.key, required this.vaultId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final lockboxAsync = ref.watch(lockboxProvider(lockboxId));
+    final vaultAsync = ref.watch(vaultProvider(vaultId));
     final currentPubkeyAsync = ref.watch(currentPublicKeyProvider);
 
-    return lockboxAsync.when(
+    return vaultAsync.when(
       loading: () => const Card(
         child: Padding(
           padding: EdgeInsets.all(16),
@@ -37,7 +37,7 @@ class LockboxMetadataSection extends ConsumerWidget {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'Lockbox Information',
+                    'Vault Information',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           color: Theme.of(context).primaryColor,
                         ),
@@ -46,19 +46,19 @@ class LockboxMetadataSection extends ConsumerWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'Error loading lockbox: $error',
+                'Error loading vault: $error',
                 style: TextStyle(color: Colors.red[600]),
               ),
             ],
           ),
         ),
       ),
-      data: (lockbox) {
-        if (lockbox == null) {
+      data: (vault) {
+        if (vault == null) {
           return const Card(
             child: Padding(
               padding: EdgeInsets.all(16),
-              child: Text('Lockbox not found'),
+              child: Text('Vault not found'),
             ),
           );
         }
@@ -76,7 +76,7 @@ class LockboxMetadataSection extends ConsumerWidget {
               child: Text('Error loading user info: $error'),
             ),
           ),
-          data: (currentPubkey) => _buildMetadataContent(context, lockbox, currentPubkey),
+          data: (currentPubkey) => _buildMetadataContent(context, vault, currentPubkey),
         );
       },
     );
@@ -84,11 +84,11 @@ class LockboxMetadataSection extends ConsumerWidget {
 
   Widget _buildMetadataContent(
     BuildContext context,
-    Lockbox lockbox,
+    Vault vault,
     String? currentPubkey,
   ) {
-    final isOwner = currentPubkey == lockbox.ownerPubkey;
-    final threshold = lockbox.shards.firstOrNull?.threshold;
+    final isOwner = currentPubkey == vault.ownerPubkey;
+    final threshold = vault.shards.firstOrNull?.threshold;
 
     return Card(
       child: Padding(
@@ -132,7 +132,7 @@ class LockboxMetadataSection extends ConsumerWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'Owner: ${Helpers.encodeBech32(lockbox.ownerPubkey, 'npub')}',
+                'Owner: ${Helpers.encodeBech32(vault.ownerPubkey, 'npub')}',
                 style: Theme.of(context).textTheme.bodyMedium,
                 overflow: TextOverflow.ellipsis,
               ),

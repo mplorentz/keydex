@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_toolkit/golden_toolkit.dart';
-import 'package:keydex/models/lockbox.dart';
-import 'package:keydex/models/recovery_request.dart';
-import 'package:keydex/models/shard_data.dart';
-import 'package:keydex/providers/lockbox_provider.dart';
-import 'package:keydex/providers/key_provider.dart';
-import 'package:keydex/providers/recovery_provider.dart';
-import 'package:keydex/screens/lockbox_detail_screen.dart';
+import 'package:horcrux/models/vault.dart';
+import 'package:horcrux/models/recovery_request.dart';
+import 'package:horcrux/models/shard_data.dart';
+import 'package:horcrux/providers/vault_provider.dart';
+import 'package:horcrux/providers/key_provider.dart';
+import 'package:horcrux/providers/recovery_provider.dart';
+import 'package:horcrux/screens/vault_detail_screen.dart';
 import '../helpers/golden_test_helpers.dart';
 
 void main() {
@@ -21,8 +21,8 @@ void main() {
   ShardData createTestShard({
     required int shardIndex,
     required String recipientPubkey,
-    required String lockboxId,
-    String lockboxName = 'Test Lockbox',
+    required String vaultId,
+    String vaultName = 'Test Vault',
   }) {
     return createShardData(
       shard: 'test_shard_$shardIndex',
@@ -31,8 +31,8 @@ void main() {
       totalShards: 3,
       primeMod: 'test_prime_mod',
       creatorPubkey: testPubkey,
-      lockboxId: lockboxId,
-      lockboxName: lockboxName,
+      vaultId: vaultId,
+      vaultName: vaultName,
       peers: [
         {'name': 'Peer 1', 'pubkey': otherPubkey},
         {'name': 'Peer 2', 'pubkey': thirdPubkey},
@@ -45,19 +45,19 @@ void main() {
 
   // Helper to create recovery request
   RecoveryRequest createTestRecoveryRequest({
-    required String lockboxId,
+    required String vaultId,
     required String initiatorPubkey,
     RecoveryRequestStatus status = RecoveryRequestStatus.inProgress,
     Map<String, RecoveryResponse>? responses,
   }) {
     return RecoveryRequest(
-      id: 'recovery-$lockboxId',
-      lockboxId: lockboxId,
+      id: 'recovery-$vaultId',
+      vaultId: vaultId,
       initiatorPubkey: initiatorPubkey,
       requestedAt: DateTime.now().subtract(const Duration(hours: 2)),
       status: status,
       threshold: 2,
-      keyHolderResponses: responses ?? {},
+      stewardResponses: responses ?? {},
     );
   }
 
@@ -75,18 +75,18 @@ void main() {
           ? createTestShard(
               shardIndex: 0,
               recipientPubkey: pubkey,
-              lockboxId: 'test-lockbox',
+              vaultId: 'test-vault',
             )
           : null,
     );
   }
 
-  group('LockboxDetailScreen Golden Tests', () {
+  group('VaultDetailScreen Golden Tests', () {
     testGoldens('loading state', (tester) async {
       final container = ProviderContainer(
         overrides: [
-          // Mock the lockbox provider to return loading state
-          lockboxProvider('test-lockbox').overrideWith(
+          // Mock the vault provider to return loading state
+          vaultProvider('test-vault').overrideWith(
             (ref) => Stream.value(null).asyncMap((_) async {
               await Future.delayed(
                 const Duration(seconds: 10),
@@ -99,7 +99,7 @@ void main() {
 
       await pumpGoldenWidget(
         tester,
-        const LockboxDetailScreen(lockboxId: 'test-lockbox'),
+        const VaultDetailScreen(vaultId: 'test-vault'),
         container: container,
         surfaceSize: const Size(
           375,
@@ -108,7 +108,7 @@ void main() {
         waitForSettle: false, // Loading state has infinite animations
       );
 
-      await screenMatchesGolden(tester, 'lockbox_detail_screen_loading');
+      await screenMatchesGolden(tester, 'vault_detail_screen_loading');
 
       container.dispose();
     });
@@ -117,15 +117,15 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           // Mock provider to throw an error
-          lockboxProvider(
-            'test-lockbox',
-          ).overrideWith((ref) => Stream.error('Failed to load lockbox')),
+          vaultProvider(
+            'test-vault',
+          ).overrideWith((ref) => Stream.error('Failed to load vault')),
         ],
       );
 
       await pumpGoldenWidget(
         tester,
-        const LockboxDetailScreen(lockboxId: 'test-lockbox'),
+        const VaultDetailScreen(vaultId: 'test-vault'),
         container: container,
         surfaceSize: const Size(
           375,
@@ -133,24 +133,24 @@ void main() {
         ), // Increased height to handle overflow
       );
 
-      await screenMatchesGolden(tester, 'lockbox_detail_screen_error');
+      await screenMatchesGolden(tester, 'vault_detail_screen_error');
 
       container.dispose();
     });
 
-    testGoldens('lockbox not found', (tester) async {
+    testGoldens('vault not found', (tester) async {
       final container = ProviderContainer(
         overrides: [
-          // Mock provider to return null (lockbox not found)
-          lockboxProvider(
-            'test-lockbox',
+          // Mock provider to return null (vault not found)
+          vaultProvider(
+            'test-vault',
           ).overrideWith((ref) => Stream.value(null)),
         ],
       );
 
       await pumpGoldenWidget(
         tester,
-        const LockboxDetailScreen(lockboxId: 'test-lockbox'),
+        const VaultDetailScreen(vaultId: 'test-vault'),
         container: container,
         surfaceSize: const Size(
           375,
@@ -158,14 +158,14 @@ void main() {
         ), // Increased height to handle overflow
       );
 
-      await screenMatchesGolden(tester, 'lockbox_detail_screen_not_found');
+      await screenMatchesGolden(tester, 'vault_detail_screen_not_found');
 
       container.dispose();
     });
 
     testGoldens('owner - no backup configured', (tester) async {
-      final ownedLockbox = Lockbox(
-        id: 'test-lockbox',
+      final ownedVault = Vault(
+        id: 'test-vault',
         name: 'My Private Keys',
         content: null, // Content is encrypted, not shown in detail view
         createdAt: DateTime(2024, 10, 1, 10, 30),
@@ -176,16 +176,16 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider(
-            'test-lockbox',
-          ).overrideWith((ref) => Stream.value(ownedLockbox)),
+          vaultProvider(
+            'test-vault',
+          ).overrideWith((ref) => Stream.value(ownedVault)),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
         ],
       );
 
       await pumpGoldenWidget(
         tester,
-        const LockboxDetailScreen(lockboxId: 'test-lockbox'),
+        const VaultDetailScreen(vaultId: 'test-vault'),
         container: container,
         surfaceSize: const Size(
           375,
@@ -195,15 +195,15 @@ void main() {
 
       await screenMatchesGolden(
         tester,
-        'lockbox_detail_screen_owner_no_backup',
+        'vault_detail_screen_owner_no_backup',
       );
 
       container.dispose();
     });
 
     testGoldens('owner - backup configured, not in recovery', (tester) async {
-      final ownedLockbox = Lockbox(
-        id: 'test-lockbox',
+      final ownedVault = Vault(
+        id: 'test-vault',
         name: 'My Private Keys',
         content: null, // Content is encrypted, not shown in detail view
         createdAt: DateTime(2024, 10, 1, 10, 30),
@@ -212,12 +212,12 @@ void main() {
           createTestShard(
             shardIndex: 0,
             recipientPubkey: otherPubkey,
-            lockboxId: 'test-lockbox',
+            vaultId: 'test-vault',
           ),
           createTestShard(
             shardIndex: 1,
             recipientPubkey: thirdPubkey,
-            lockboxId: 'test-lockbox',
+            vaultId: 'test-vault',
           ),
         ],
         recoveryRequests: [], // No active recovery
@@ -225,12 +225,12 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider(
-            'test-lockbox',
-          ).overrideWith((ref) => Stream.value(ownedLockbox)),
+          vaultProvider(
+            'test-vault',
+          ).overrideWith((ref) => Stream.value(ownedVault)),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
           // Mock recovery status to show no active recovery
-          recoveryStatusProvider.overrideWith((ref, lockboxId) {
+          recoveryStatusProvider.overrideWith((ref, vaultId) {
             return const AsyncValue.data(
               RecoveryStatus(
                 hasActiveRecovery: false,
@@ -245,7 +245,7 @@ void main() {
 
       await pumpGoldenWidget(
         tester,
-        const LockboxDetailScreen(lockboxId: 'test-lockbox'),
+        const VaultDetailScreen(vaultId: 'test-vault'),
         container: container,
         surfaceSize: const Size(
           375,
@@ -255,7 +255,7 @@ void main() {
 
       await screenMatchesGolden(
         tester,
-        'lockbox_detail_screen_owner_backup_no_recovery',
+        'vault_detail_screen_owner_backup_no_recovery',
       );
 
       container.dispose();
@@ -263,7 +263,7 @@ void main() {
 
     testGoldens('owner - in recovery', (tester) async {
       final recoveryRequest = createTestRecoveryRequest(
-        lockboxId: 'test-lockbox',
+        vaultId: 'test-vault',
         initiatorPubkey: testPubkey,
         status: RecoveryRequestStatus.inProgress,
         responses: {
@@ -278,8 +278,8 @@ void main() {
         },
       );
 
-      final ownedLockbox = Lockbox(
-        id: 'test-lockbox',
+      final ownedVault = Vault(
+        id: 'test-vault',
         name: 'My Private Keys',
         content: null, // Content is encrypted, not shown in detail view
         createdAt: DateTime(2024, 10, 1, 10, 30),
@@ -288,12 +288,12 @@ void main() {
           createTestShard(
             shardIndex: 0,
             recipientPubkey: otherPubkey,
-            lockboxId: 'test-lockbox',
+            vaultId: 'test-vault',
           ),
           createTestShard(
             shardIndex: 1,
             recipientPubkey: thirdPubkey,
-            lockboxId: 'test-lockbox',
+            vaultId: 'test-vault',
           ),
         ],
         recoveryRequests: [recoveryRequest],
@@ -301,12 +301,12 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider(
-            'test-lockbox',
-          ).overrideWith((ref) => Stream.value(ownedLockbox)),
+          vaultProvider(
+            'test-vault',
+          ).overrideWith((ref) => Stream.value(ownedVault)),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
           // Mock recovery status to show active recovery
-          recoveryStatusProvider.overrideWith((ref, lockboxId) {
+          recoveryStatusProvider.overrideWith((ref, vaultId) {
             return AsyncValue.data(
               RecoveryStatus(
                 hasActiveRecovery: true,
@@ -321,7 +321,7 @@ void main() {
 
       await pumpGoldenWidget(
         tester,
-        const LockboxDetailScreen(lockboxId: 'test-lockbox'),
+        const VaultDetailScreen(vaultId: 'test-vault'),
         container: container,
         surfaceSize: const Size(
           375,
@@ -331,15 +331,15 @@ void main() {
 
       await screenMatchesGolden(
         tester,
-        'lockbox_detail_screen_owner_in_recovery',
+        'vault_detail_screen_owner_in_recovery',
       );
 
       container.dispose();
     });
 
     testGoldens('shard holder - not in recovery', (tester) async {
-      final shardHolderLockbox = Lockbox(
-        id: 'test-lockbox',
+      final shardHolderVault = Vault(
+        id: 'test-vault',
         name: "Alice's Backup",
         content: null,
         createdAt: DateTime(2024, 9, 15, 14, 20),
@@ -348,7 +348,7 @@ void main() {
           createTestShard(
             shardIndex: 1,
             recipientPubkey: testPubkey,
-            lockboxId: 'test-lockbox',
+            vaultId: 'test-vault',
           ),
         ],
         recoveryRequests: [], // No active recovery
@@ -356,12 +356,12 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider(
-            'test-lockbox',
-          ).overrideWith((ref) => Stream.value(shardHolderLockbox)),
+          vaultProvider(
+            'test-vault',
+          ).overrideWith((ref) => Stream.value(shardHolderVault)),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
           // Mock recovery status to show no active recovery
-          recoveryStatusProvider.overrideWith((ref, lockboxId) {
+          recoveryStatusProvider.overrideWith((ref, vaultId) {
             return const AsyncValue.data(
               RecoveryStatus(
                 hasActiveRecovery: false,
@@ -376,7 +376,7 @@ void main() {
 
       await pumpGoldenWidget(
         tester,
-        const LockboxDetailScreen(lockboxId: 'test-lockbox'),
+        const VaultDetailScreen(vaultId: 'test-vault'),
         container: container,
         surfaceSize: const Size(
           375,
@@ -386,7 +386,7 @@ void main() {
 
       await screenMatchesGolden(
         tester,
-        'lockbox_detail_screen_shard_holder_no_recovery',
+        'vault_detail_screen_shard_holder_no_recovery',
       );
 
       container.dispose();
@@ -394,7 +394,7 @@ void main() {
 
     testGoldens('shard holder - in recovery', (tester) async {
       final recoveryRequest = createTestRecoveryRequest(
-        lockboxId: 'test-lockbox',
+        vaultId: 'test-vault',
         initiatorPubkey: testPubkey, // testPubkey (shard holder) is the initiator
         status: RecoveryRequestStatus.inProgress,
         responses: {
@@ -409,8 +409,8 @@ void main() {
         },
       );
 
-      final shardHolderLockbox = Lockbox(
-        id: 'test-lockbox',
+      final shardHolderVault = Vault(
+        id: 'test-vault',
         name: "Alice's Backup",
         content: null,
         createdAt: DateTime(2024, 9, 15, 14, 20),
@@ -419,7 +419,7 @@ void main() {
           createTestShard(
             shardIndex: 1,
             recipientPubkey: testPubkey,
-            lockboxId: 'test-lockbox',
+            vaultId: 'test-vault',
           ),
         ],
         recoveryRequests: [recoveryRequest],
@@ -427,12 +427,12 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider(
-            'test-lockbox',
-          ).overrideWith((ref) => Stream.value(shardHolderLockbox)),
+          vaultProvider(
+            'test-vault',
+          ).overrideWith((ref) => Stream.value(shardHolderVault)),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
           // Mock recovery status to show active recovery
-          recoveryStatusProvider.overrideWith((ref, lockboxId) {
+          recoveryStatusProvider.overrideWith((ref, vaultId) {
             return AsyncValue.data(
               RecoveryStatus(
                 hasActiveRecovery: true,
@@ -447,7 +447,7 @@ void main() {
 
       await pumpGoldenWidget(
         tester,
-        const LockboxDetailScreen(lockboxId: 'test-lockbox'),
+        const VaultDetailScreen(vaultId: 'test-vault'),
         container: container,
         surfaceSize: const Size(
           375,
@@ -457,7 +457,7 @@ void main() {
 
       await screenMatchesGolden(
         tester,
-        'lockbox_detail_screen_shard_holder_in_recovery',
+        'vault_detail_screen_shard_holder_in_recovery',
       );
 
       container.dispose();
@@ -466,9 +466,9 @@ void main() {
     testGoldens('awaiting key state - invitee waiting for shard', (
       tester,
     ) async {
-      final awaitingKeyLockbox = Lockbox(
-        id: 'test-lockbox',
-        name: "Bob's Shared Lockbox",
+      final awaitingKeyVault = Vault(
+        id: 'test-vault',
+        name: "Bob's Shared Vault",
         content: null, // No content - invitee doesn't have access yet
         createdAt: DateTime(2024, 9, 25, 16, 45),
         ownerPubkey: otherPubkey, // Different owner
@@ -478,12 +478,12 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider(
-            'test-lockbox',
-          ).overrideWith((ref) => Stream.value(awaitingKeyLockbox)),
+          vaultProvider(
+            'test-vault',
+          ).overrideWith((ref) => Stream.value(awaitingKeyVault)),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
           // Mock recovery status to show no active recovery
-          recoveryStatusProvider.overrideWith((ref, lockboxId) {
+          recoveryStatusProvider.overrideWith((ref, vaultId) {
             return const AsyncValue.data(
               RecoveryStatus(
                 hasActiveRecovery: false,
@@ -498,7 +498,7 @@ void main() {
 
       await pumpGoldenWidget(
         tester,
-        const LockboxDetailScreen(lockboxId: 'test-lockbox'),
+        const VaultDetailScreen(vaultId: 'test-vault'),
         container: container,
         surfaceSize: const Size(
           375,
@@ -506,14 +506,14 @@ void main() {
         ), // Increased height to handle overflow
       );
 
-      await screenMatchesGolden(tester, 'lockbox_detail_screen_awaiting_key');
+      await screenMatchesGolden(tester, 'vault_detail_screen_awaiting_key');
 
       container.dispose();
     });
 
     testGoldens('multiple device sizes', (tester) async {
-      final ownedLockbox = Lockbox(
-        id: 'test-lockbox',
+      final ownedVault = Vault(
+        id: 'test-vault',
         name: 'My Private Keys',
         content: null,
         createdAt: DateTime(2024, 10, 1, 10, 30),
@@ -522,12 +522,12 @@ void main() {
           createTestShard(
             shardIndex: 0,
             recipientPubkey: otherPubkey,
-            lockboxId: 'test-lockbox',
+            vaultId: 'test-vault',
           ),
           createTestShard(
             shardIndex: 1,
             recipientPubkey: thirdPubkey,
-            lockboxId: 'test-lockbox',
+            vaultId: 'test-vault',
           ),
         ],
         recoveryRequests: [],
@@ -535,12 +535,12 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          lockboxProvider(
-            'test-lockbox',
-          ).overrideWith((ref) => Stream.value(ownedLockbox)),
+          vaultProvider(
+            'test-vault',
+          ).overrideWith((ref) => Stream.value(ownedVault)),
           currentPublicKeyProvider.overrideWith((ref) => testPubkey),
           // Mock recovery status to show no active recovery
-          recoveryStatusProvider.overrideWith((ref, lockboxId) {
+          recoveryStatusProvider.overrideWith((ref, vaultId) {
             return const AsyncValue.data(
               RecoveryStatus(
                 hasActiveRecovery: false,
@@ -558,7 +558,7 @@ void main() {
           devices: [Device.iphone11, Device.tabletPortrait],
         )
         ..addScenario(
-          widget: const LockboxDetailScreen(lockboxId: 'test-lockbox'),
+          widget: const VaultDetailScreen(vaultId: 'test-vault'),
           name: 'owner_backup_no_recovery',
         );
 
@@ -572,7 +572,7 @@ void main() {
 
       await screenMatchesGolden(
         tester,
-        'lockbox_detail_screen_multiple_devices',
+        'vault_detail_screen_multiple_devices',
       );
 
       container.dispose();

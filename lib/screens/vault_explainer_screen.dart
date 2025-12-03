@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/row_button.dart';
-import 'lockbox_create_screen.dart';
+import 'vault_create_screen.dart';
 
 /// Screen explaining vault terminology and setup process
 class VaultExplainerScreen extends StatelessWidget {
@@ -90,7 +90,7 @@ class VaultExplainerScreen extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => LockboxCreateScreen(
+                  builder: (context) => VaultCreateScreen(
                     initialContent: initialContent,
                     initialName: initialName,
                   ),

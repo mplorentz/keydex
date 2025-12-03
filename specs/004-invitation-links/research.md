@@ -1,4 +1,4 @@
-# Research: Invitation Links for Key Holders
+# Research: Invitation Links for Stewards
 
 **Feature**: 004-invitation-links  
 **Date**: 2025-01-27
@@ -27,15 +27,15 @@
 
 **Implementation Notes**:
 - Add `app_links: ^5.0.0` to `pubspec.yaml`
-- Configure Universal Links on iOS (requires apple-app-site-association file on keydex.app)
-- Configure App Links on Android (requires assetlinks.json on keydex.app)
+- Configure Universal Links on iOS (requires apple-app-site-association file on horcrux.app)
+- Configure App Links on Android (requires assetlinks.json on horcrux.app)
 - Handle link parsing in app initialization and when app is already running
 
 ### 2. Invitation Link URL Format
 
 **Question**: What format should invitation links use?
 
-**Decision**: Use human-readable format: `https://keydex.app/invite/{inviteCode}`
+**Decision**: Use human-readable format: `https://horcrux.app/invite/{inviteCode}`
 
 **Rationale**:
 - Human-readable URLs are easier to debug and verify
@@ -44,10 +44,10 @@
 - Can add query parameters for additional data if needed: `?owner={ownerPubkey}&relays={relayUrls}`
 
 **Format Details**:
-- Base URL: `https://keydex.app/invite/`
+- Base URL: `https://horcrux.app/invite/`
 - Invite code: Base64URL encoded 32-byte random string (43 characters)
 - Optional query params: `owner` (hex pubkey), `relays` (comma-separated URLs, URL-encoded)
-- Example: `https://keydex.app/invite/abc123...xyz?owner=789abc...def&relays=wss%3A%2F%2Frelay1.com`
+- Example: `https://horcrux.app/invite/abc123...xyz?owner=789abc...def&relays=wss%3A%2F%2Frelay1.com`
 
 **Security Considerations**:
 - Invite codes must be cryptographically random (use `dart:math` Random.secure or `crypto` package)
@@ -62,19 +62,19 @@
 **Decision**: 
 - Generate using cryptographically secure random: 32 bytes = 256 bits
 - Encode as Base64URL (URL-safe, no padding needed)
-- Store in SharedPreferences with structure: `{lockboxId}_{inviteCode}: {inviteeName, createdAt, status, redeemedBy}`
-- Store mapping: `invitation_{inviteCode}: {lockboxId, ownerPubkey, relayUrls, createdAt}`
+- Store in SharedPreferences with structure: `{vaultId}_{inviteCode}: {inviteeName, createdAt, status, redeemedBy}`
+- Store mapping: `invitation_{inviteCode}: {vaultId, ownerPubkey, relayUrls, createdAt}`
 
 **Rationale**:
 - 32 bytes provides 256 bits of entropy (sufficient security)
 - Base64URL encoding creates human-readable but secure codes
 - SharedPreferences is sufficient for non-sensitive tracking data
-- Separate storage allows lookup by invite code (for redemption) and by lockboxId (for management)
+- Separate storage allows lookup by invite code (for redemption) and by vaultId (for management)
 
 **Storage Structure**:
 ```json
 {
-  "invitations_lockbox_abc123": {
+  "invitations_vault_abc123": {
     "inviteCode1": {
       "inviteeName": "Alice",
       "createdAt": "2025-01-27T10:00:00Z",
@@ -83,7 +83,7 @@
     }
   },
   "invitation_inviteCode1": {
-    "lockboxId": "abc123",
+    "vaultId": "abc123",
     "ownerPubkey": "owner_pubkey_hex",
     "relayUrls": ["wss://relay1.com", "wss://relay2.com"],
     "createdAt": "2025-01-27T10:00:00Z"
@@ -95,7 +95,7 @@
 
 **Question**: What Nostr event kinds should be used for RSVP, denial, and confirmation events?
 
-**Decision**: Use Keydex custom event kinds:
+**Decision**: Use Horcrux custom event kinds:
 - `invitationRsvp`: 1340 (for accepting invitations)
 - `invitationDenial`: 1341 (for denying invitations)
 - `shardConfirmation`: 1342 (for confirming shard receipt)
@@ -111,8 +111,8 @@
 **Event Structure**:
 - RSVP: Encrypted content contains `{inviteCode, pubkey, timestamp}`
 - Denial: Encrypted content contains `{inviteCode, timestamp, reason?}`
-- Confirmation: Encrypted content contains `{lockboxId, shardIndex, timestamp}`
-- Error: Encrypted content contains `{lockboxId, shardIndex, error, timestamp}`
+- Confirmation: Encrypted content contains `{vaultId, shardIndex, timestamp}`
+- Error: Encrypted content contains `{vaultId, shardIndex, error, timestamp}`
 - Invalid: Encrypted content contains `{inviteCode, reason}`
 
 ### 5. Relay URL Handling in Links
@@ -138,18 +138,18 @@
 **Question**: What configuration is needed for Universal Links (iOS) and App Links (Android)?
 
 **Decision**: 
-- iOS: Requires `apple-app-site-association` file hosted at `https://keydex.app/.well-known/apple-app-site-association`
-- Android: Requires `assetlinks.json` file hosted at `https://keydex.app/.well-known/assetlinks.json`
+- iOS: Requires `apple-app-site-association` file hosted at `https://horcrux.app/.well-known/apple-app-site-association`
+- Android: Requires `assetlinks.json` file hosted at `https://horcrux.app/.well-known/assetlinks.json`
 - Both files must be served with correct Content-Type headers
 - App must be configured with associated domains (iOS) and intent filters (Android)
 
 **Rationale**:
 - Standard approach for Universal Links/App Links
-- Requires domain ownership and ability to host files at keydex.app
+- Requires domain ownership and ability to host files at horcrux.app
 - File contents must match app's bundle identifier and signing certificate
 - Configuration files are platform-specific JSON formats
 
-**Configuration Files** (to be hosted on keydex.app):
+**Configuration Files** (to be hosted on horcrux.app):
 - `apple-app-site-association`: Contains app ID and paths to handle
 - `assetlinks.json`: Contains package name, SHA-256 fingerprints, and paths
 
@@ -162,18 +162,18 @@
 
 **Question**: How should we handle local testing and debugging before Universal Links are configured?
 
-**Decision**: Support custom URL scheme `keydex://` as fallback for local testing and development
+**Decision**: Support custom URL scheme `horcrux://` as fallback for local testing and development
 
 **Rationale**:
 - Universal Links require domain configuration (apple-app-site-association, assetlinks.json) which can be complex to set up
 - Custom URL schemes work immediately without domain configuration
 - Allows testing deep linking functionality during development
 - Can be used as fallback if Universal Links fail
-- Easy to test locally with command line or browser: `keydex://keydex.app/invite/{code}?owner={pubkey}&relays={urls}`
+- Easy to test locally with command line or browser: `horcrux://horcrux.app/invite/{code}?owner={pubkey}&relays={urls}`
 
 **URL Format**:
-- Production: `https://keydex.app/invite/{inviteCode}?owner={pubkey}&relays={urls}`
-- Development/Testing: `keydex://keydex.app/invite/{inviteCode}?owner={pubkey}&relays={urls}`
+- Production: `https://horcrux.app/invite/{inviteCode}?owner={pubkey}&relays={urls}`
+- Development/Testing: `horcrux://horcrux.app/invite/{inviteCode}?owner={pubkey}&relays={urls}`
 - Maintains same path structure (`/invite/{code}`) for code reuse
 
 **Implementation**:
@@ -183,14 +183,14 @@
 - Prefer Universal Links when available, fall back to custom scheme
 
 **Platform Configuration**:
-- iOS: Add URL scheme `keydex` to Info.plist CFBundleURLSchemes
-- Android: Add intent filter with scheme `keydex` to MainActivity
+- iOS: Add URL scheme `horcrux` to Info.plist CFBundleURLSchemes
+- Android: Add intent filter with scheme `horcrux` to MainActivity
 - macOS/Windows: Similar URL scheme registration
 
 **Testing**:
-- Can test locally with: `flutter run` and then open `keydex://keydex.app/invite/test123`
-- iOS Simulator: `xcrun simctl openurl booted "keydex://keydex.app/invite/test123"`
-- Android Emulator: `adb shell am start -a android.intent.action.VIEW -d "keydex://keydex.app/invite/test123"`
+- Can test locally with: `flutter run` and then open `horcrux://horcrux.app/invite/test123`
+- iOS Simulator: `xcrun simctl openurl booted "horcrux://horcrux.app/invite/test123"`
+- Android Emulator: `adb shell am start -a android.intent.action.VIEW -d "horcrux://horcrux.app/invite/test123"`
 - Desktop: Can open from terminal or browser (if configured)
 
 **Benefits**:
@@ -226,6 +226,6 @@
 The following items will be determined during implementation:
 - Error recovery UI actions (retry distribution, revoke invitation, etc.)
 - Invitation expiration timeout (if any)
-- Maximum number of pending invitations per lockbox
+- Maximum number of pending invitations per vault
 - UI/UX for invitation acceptance flow for new users
 

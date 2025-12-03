@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../widgets/row_button_stack.dart';
 
-class KeydexGallery extends StatelessWidget {
-  const KeydexGallery({super.key});
+class HorcruxGallery extends StatelessWidget {
+  const HorcruxGallery({super.key});
 
   @override
   Widget build(BuildContext context) {

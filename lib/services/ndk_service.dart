@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ndk/ndk.dart';
 import '../providers/key_provider.dart';
 import 'login_service.dart';
-import 'lockbox_share_service.dart';
+import 'vault_share_service.dart';
 import 'invitation_service.dart';
 import 'shard_distribution_service.dart';
 import 'logger.dart';
@@ -16,7 +16,7 @@ import '../models/recovery_request.dart';
 /// Event emitted when a recovery response is received
 class RecoveryResponseEvent {
   final String recoveryRequestId;
-  final String lockboxId;
+  final String vaultId;
   final String senderPubkey;
   final bool approved;
   final ShardData? shardData;
@@ -24,7 +24,7 @@ class RecoveryResponseEvent {
 
   RecoveryResponseEvent({
     required this.recoveryRequestId,
-    required this.lockboxId,
+    required this.vaultId,
     required this.senderPubkey,
     required this.approved,
     this.shardData,
@@ -188,7 +188,7 @@ class NdkService {
     Log.info('Setting up NDK subscriptions on ${_activeRelays.length} relays');
 
     // Subscribe to all gift wrap events (kind 1059)
-    // All Keydex data (shards, recovery requests, recovery responses) are sent as gift wraps
+    // All Horcrux data (shards, recovery requests, recovery responses) are sent as gift wraps
     _giftWrapSubscription = _ndk!.requests.subscription(
       filters: [
         Filter(
@@ -261,16 +261,16 @@ class NdkService {
 
       // Store the shard data and send confirmation event
       // This handles the complete invitation flow
-      final lockboxId = shardData.lockboxId;
-      if (lockboxId == null || lockboxId.isEmpty) {
+      final vaultId = shardData.vaultId;
+      if (vaultId == null || vaultId.isEmpty) {
         Log.error(
-          'Cannot process shard data event ${event.id}: missing lockboxId in shard data',
+          'Cannot process shard data event ${event.id}: missing vaultId in shard data',
         );
         return;
       }
 
-      final lockboxShareService = _ref.read(lockboxShareServiceProvider);
-      await lockboxShareService.processLockboxShare(lockboxId, shardData);
+      final vaultShareService = _ref.read(vaultShareServiceProvider);
+      await vaultShareService.processVaultShare(vaultId, shardData);
     } catch (e) {
       Log.error('Error handling shard data event ${event.id}', e);
     }
@@ -286,7 +286,7 @@ class NdkService {
       // Create RecoveryRequest object
       final recoveryRequest = RecoveryRequest(
         id: requestData['recovery_request_id'] as String? ?? event.id,
-        lockboxId: requestData['lockbox_id'] as String,
+        vaultId: requestData['vault_id'] as String,
         initiatorPubkey: senderPubkey,
         requestedAt: DateTime.parse(requestData['requested_at'] as String),
         status: RecoveryRequestStatus.sent,
@@ -295,7 +295,7 @@ class NdkService {
         expiresAt: requestData['expires_at'] != null
             ? DateTime.parse(requestData['expires_at'] as String)
             : null,
-        keyHolderResponses: {}, // Will be populated later
+        stewardResponses: {}, // Will be populated later
       );
 
       // Emit recovery request to stream (RecoveryService will listen)
@@ -315,11 +315,11 @@ class NdkService {
       final senderPubkey = event.pubKey;
 
       final recoveryRequestId = responseData['recovery_request_id'] as String;
-      final lockboxId = responseData['lockbox_id'] as String;
+      final vaultId = responseData['vault_id'] as String;
       final approved = responseData['approved'] as bool;
 
       Log.info(
-        'Received recovery response from $senderPubkey for lockbox $lockboxId: approved=$approved',
+        'Received recovery response from $senderPubkey for vault $vaultId: approved=$approved',
       );
 
       ShardData? shardData;
@@ -329,9 +329,9 @@ class NdkService {
         final shardDataJson = responseData['shard_data'] as Map<String, dynamic>;
         shardData = shardDataFromJson(shardDataJson);
 
-        // Store as a recovery shard (not a key holder shard)
-        final lockboxShareService = _ref.read(lockboxShareServiceProvider);
-        await lockboxShareService.addRecoveryShard(
+        // Store as a recovery shard (not a steward shard)
+        final vaultShareService = _ref.read(vaultShareServiceProvider);
+        await vaultShareService.addRecoveryShard(
           recoveryRequestId,
           shardData,
         );
@@ -344,7 +344,7 @@ class NdkService {
       // Emit recovery response to stream (RecoveryService will listen)
       final responseEvent = RecoveryResponseEvent(
         recoveryRequestId: recoveryRequestId,
-        lockboxId: lockboxId,
+        vaultId: vaultId,
         senderPubkey: senderPubkey,
         approved: approved,
         shardData: shardData,
@@ -404,23 +404,23 @@ class NdkService {
     }
   }
 
-  /// Handle incoming key holder removed event (kind 1345)
+  /// Handle incoming steward removed event (kind 1345)
   Future<void> _handleKeyHolderRemoved(Nip01Event event) async {
     try {
-      Log.info('Processing key holder removed event: ${event.id}');
+      Log.info('Processing steward removed event: ${event.id}');
       Log.debug('Key holder removed event tags: ${event.tags}');
-      final lockboxShareService = _ref.read(lockboxShareServiceProvider);
-      await lockboxShareService.processKeyHolderRemoval(event: event);
-      Log.info('Successfully processed key holder removed event: ${event.id}');
+      final vaultShareService = _ref.read(vaultShareServiceProvider);
+      await vaultShareService.processKeyHolderRemoval(event: event);
+      Log.info('Successfully processed steward removed event: ${event.id}');
     } catch (e) {
-      Log.error('Error handling key holder removed event ${event.id}', e);
+      Log.error('Error handling steward removed event ${event.id}', e);
     }
   }
 
-  /// Publish a recovery request to key holders
+  /// Publish a recovery request to stewards
   Future<String?> publishRecoveryRequest({
-    required String lockboxId,
-    required List<String> keyHolderPubkeys,
+    required String vaultId,
+    required List<String> stewardPubkeys,
     DateTime? expiresAt,
   }) async {
     if (!_isInitialized || _ndk == null) {
@@ -435,7 +435,7 @@ class NdkService {
 
       // Create recovery request payload
       final requestPayload = {
-        'lockboxId': lockboxId,
+        'vaultId': vaultId,
         'requestType': 'recovery',
         'expiresAt': expiresAt?.toIso8601String(),
         'timestamp': DateTime.now().toIso8601String(),
@@ -443,11 +443,11 @@ class NdkService {
 
       final requestJson = json.encode(requestPayload);
 
-      // Send encrypted DM to each key holder
+      // Send encrypted DM to each steward
       final publishedEventIds = <String>[];
 
-      for (final keyHolderPubkey in keyHolderPubkeys) {
-        // Encrypt the request for this key holder
+      for (final keyHolderPubkey in stewardPubkeys) {
+        // Encrypt the request for this steward
         final encryptedContent = await _loginService.encryptForRecipient(
           plaintext: requestJson,
           recipientPubkey: keyHolderPubkey,

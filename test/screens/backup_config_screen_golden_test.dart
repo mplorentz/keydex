@@ -4,12 +4,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_toolkit/golden_toolkit.dart';
-import 'package:keydex/models/backup_config.dart';
-import 'package:keydex/models/key_holder.dart';
-import 'package:keydex/models/key_holder_status.dart';
-import 'package:keydex/providers/lockbox_provider.dart';
-import 'package:keydex/screens/backup_config_screen.dart';
-import 'package:keydex/services/login_service.dart';
+import 'package:horcrux/models/backup_config.dart';
+import 'package:horcrux/models/steward.dart';
+import 'package:horcrux/models/steward_status.dart';
+import 'package:horcrux/providers/vault_provider.dart';
+import 'package:horcrux/screens/backup_config_screen.dart';
+import 'package:horcrux/services/login_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../helpers/golden_test_helpers.dart';
 
@@ -58,7 +58,7 @@ void main() {
   final keyHolder1Pubkey = 'b' * 64;
   final keyHolder2Pubkey = 'c' * 64;
 
-  // Helper to create key holders
+  // Helper to create stewards
   KeyHolder createTestKeyHolder({
     required String pubkey,
     String? name,
@@ -76,13 +76,13 @@ void main() {
 
   // Helper to create backup config
   BackupConfig createTestBackupConfig({
-    required String lockboxId,
+    required String vaultId,
     required int threshold,
     required List<KeyHolder> keyHolders,
     required List<String> relays,
   }) {
     return createBackupConfig(
-      lockboxId: lockboxId,
+      vaultId: vaultId,
       threshold: threshold,
       totalKeys: keyHolders.length,
       keyHolders: keyHolders,
@@ -98,17 +98,17 @@ void main() {
 
     testGoldens('loading state', (tester) async {
       // Create a repository that never completes loading
-      final mockRepository = _MockLockboxRepository(null, neverCompletes: true);
+      final mockRepository = _MockVaultRepository(null, neverCompletes: true);
 
       final container = ProviderContainer(
         overrides: [
-          lockboxRepositoryProvider.overrideWith((ref) => mockRepository),
+          vaultRepositoryProvider.overrideWith((ref) => mockRepository),
         ],
       );
 
       await pumpGoldenWidget(
         tester,
-        const BackupConfigScreen(lockboxId: 'test-lockbox'),
+        const BackupConfigScreen(vaultId: 'test-vault'),
         container: container,
         waitForSettle: false, // Loading state
       );
@@ -123,17 +123,17 @@ void main() {
 
     testGoldens('empty state - no existing config', (tester) async {
       // Create a repository that returns null (no existing config)
-      final mockRepository = _MockLockboxRepository(null);
+      final mockRepository = _MockVaultRepository(null);
 
       final container = ProviderContainer(
         overrides: [
-          lockboxRepositoryProvider.overrideWith((ref) => mockRepository),
+          vaultRepositoryProvider.overrideWith((ref) => mockRepository),
         ],
       );
 
       await pumpGoldenWidget(
         tester,
-        const BackupConfigScreen(lockboxId: 'test-lockbox'),
+        const BackupConfigScreen(vaultId: 'test-vault'),
         container: container,
         surfaceSize: const Size(375, 1000), // Taller to show full form
       );
@@ -143,7 +143,7 @@ void main() {
       container.dispose();
     });
 
-    testGoldens('with existing config - manual key holders', (tester) async {
+    testGoldens('with existing config - manual stewards', (tester) async {
       final keyHolders = [
         createTestKeyHolder(
           pubkey: keyHolder1Pubkey,
@@ -158,25 +158,25 @@ void main() {
       ];
 
       final backupConfig = createTestBackupConfig(
-        lockboxId: 'test-lockbox',
+        vaultId: 'test-vault',
         threshold: 2,
         keyHolders: keyHolders,
         relays: ['wss://relay1.example.com', 'wss://relay2.example.com'],
       );
 
-      final mockRepository = _MockLockboxRepository(backupConfig);
+      final mockRepository = _MockVaultRepository(backupConfig);
 
       final container = ProviderContainer(
         overrides: [
-          lockboxRepositoryProvider.overrideWith((ref) => mockRepository),
+          vaultRepositoryProvider.overrideWith((ref) => mockRepository),
         ],
       );
 
       await pumpGoldenWidget(
         tester,
-        const BackupConfigScreen(lockboxId: 'test-lockbox'),
+        const BackupConfigScreen(vaultId: 'test-vault'),
         container: container,
-        surfaceSize: const Size(375, 1200), // Taller to show all key holders
+        surfaceSize: const Size(375, 1200), // Taller to show all stewards
       );
 
       await screenMatchesGolden(
@@ -187,7 +187,7 @@ void main() {
       container.dispose();
     });
 
-    testGoldens('with existing config - invited key holders', (tester) async {
+    testGoldens('with existing config - invited stewards', (tester) async {
       final keyHolders = [
         createTestInvitedKeyHolder(
           name: 'Charlie',
@@ -200,23 +200,23 @@ void main() {
       ];
 
       final backupConfig = createTestBackupConfig(
-        lockboxId: 'test-lockbox',
+        vaultId: 'test-vault',
         threshold: 2,
         keyHolders: keyHolders,
         relays: ['wss://relay.example.com'],
       );
 
-      final mockRepository = _MockLockboxRepository(backupConfig);
+      final mockRepository = _MockVaultRepository(backupConfig);
 
       final container = ProviderContainer(
         overrides: [
-          lockboxRepositoryProvider.overrideWith((ref) => mockRepository),
+          vaultRepositoryProvider.overrideWith((ref) => mockRepository),
         ],
       );
 
       await pumpGoldenWidget(
         tester,
-        const BackupConfigScreen(lockboxId: 'test-lockbox'),
+        const BackupConfigScreen(vaultId: 'test-vault'),
         container: container,
         surfaceSize: const Size(375, 1200),
       );
@@ -229,7 +229,7 @@ void main() {
       container.dispose();
     });
 
-    testGoldens('with existing config - mixed key holders', (tester) async {
+    testGoldens('with existing config - mixed stewards', (tester) async {
       final keyHolders = [
         createTestKeyHolder(
           pubkey: keyHolder1Pubkey,
@@ -243,7 +243,7 @@ void main() {
       ];
 
       final backupConfig = createTestBackupConfig(
-        lockboxId: 'test-lockbox',
+        vaultId: 'test-vault',
         threshold: 2,
         keyHolders: keyHolders,
         relays: [
@@ -253,17 +253,17 @@ void main() {
         ],
       );
 
-      final mockRepository = _MockLockboxRepository(backupConfig);
+      final mockRepository = _MockVaultRepository(backupConfig);
 
       final container = ProviderContainer(
         overrides: [
-          lockboxRepositoryProvider.overrideWith((ref) => mockRepository),
+          vaultRepositoryProvider.overrideWith((ref) => mockRepository),
         ],
       );
 
       await pumpGoldenWidget(
         tester,
-        const BackupConfigScreen(lockboxId: 'test-lockbox'),
+        const BackupConfigScreen(vaultId: 'test-vault'),
         container: container,
         surfaceSize: const Size(375, 1200),
       );
@@ -282,7 +282,7 @@ void main() {
       ];
 
       final backupConfig = createTestBackupConfig(
-        lockboxId: 'test-lockbox',
+        vaultId: 'test-vault',
         threshold: 1,
         keyHolders: keyHolders,
         relays: [
@@ -292,17 +292,17 @@ void main() {
         ],
       );
 
-      final mockRepository = _MockLockboxRepository(backupConfig);
+      final mockRepository = _MockVaultRepository(backupConfig);
 
       final container = ProviderContainer(
         overrides: [
-          lockboxRepositoryProvider.overrideWith((ref) => mockRepository),
+          vaultRepositoryProvider.overrideWith((ref) => mockRepository),
         ],
       );
 
       await pumpGoldenWidget(
         tester,
-        const BackupConfigScreen(lockboxId: 'test-lockbox'),
+        const BackupConfigScreen(vaultId: 'test-vault'),
         container: container,
         surfaceSize: const Size(375, 1000),
       );
@@ -319,17 +319,17 @@ void main() {
       ];
 
       final backupConfig = createTestBackupConfig(
-        lockboxId: 'test-lockbox',
+        vaultId: 'test-vault',
         threshold: 2,
         keyHolders: keyHolders,
         relays: ['wss://relay.example.com'],
       );
 
-      final mockRepository = _MockLockboxRepository(backupConfig);
+      final mockRepository = _MockVaultRepository(backupConfig);
 
       final container = ProviderContainer(
         overrides: [
-          lockboxRepositoryProvider.overrideWith((ref) => mockRepository),
+          vaultRepositoryProvider.overrideWith((ref) => mockRepository),
         ],
       );
 
@@ -338,7 +338,7 @@ void main() {
           devices: [Device.phone, Device.iphone11, Device.tabletPortrait],
         )
         ..addScenario(
-          widget: const BackupConfigScreen(lockboxId: 'test-lockbox'),
+          widget: const BackupConfigScreen(vaultId: 'test-vault'),
           name: 'with_key_holders',
         );
 
@@ -360,17 +360,17 @@ void main() {
   });
 }
 
-/// Mock LockboxRepository for testing
-class _MockLockboxRepository extends LockboxRepository {
+/// Mock VaultRepository for testing
+class _MockVaultRepository extends VaultRepository {
   final BackupConfig? _backupConfig;
   final bool _neverCompletes;
 
-  _MockLockboxRepository(this._backupConfig, {bool neverCompletes = false})
+  _MockVaultRepository(this._backupConfig, {bool neverCompletes = false})
       : _neverCompletes = neverCompletes,
         super(LoginService());
 
   @override
-  Future<BackupConfig?> getBackupConfig(String lockboxId) async {
+  Future<BackupConfig?> getBackupConfig(String vaultId) async {
     if (_neverCompletes) {
       // Use a Completer that never completes to simulate loading state
       final completer = Completer<BackupConfig?>();

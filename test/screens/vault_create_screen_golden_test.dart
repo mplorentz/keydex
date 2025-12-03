@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_toolkit/golden_toolkit.dart';
-import 'package:keydex/screens/lockbox_create_screen.dart';
+import 'package:horcrux/screens/vault_create_screen.dart';
 import '../helpers/golden_test_helpers.dart';
 
 void main() {
-  group('LockboxCreateScreen Golden Tests', () {
+  group('VaultCreateScreen Golden Tests', () {
     testGoldens('empty state - no input', (tester) async {
-      await pumpGoldenWidget(tester, const LockboxCreateScreen());
+      await pumpGoldenWidget(tester, const VaultCreateScreen());
 
-      await screenMatchesGolden(tester, 'lockbox_create_screen_empty');
+      await screenMatchesGolden(tester, 'vault_create_screen_empty');
     });
 
     testGoldens('filled state - with content', (tester) async {
-      await pumpGoldenWidget(tester, const LockboxCreateScreen());
+      await pumpGoldenWidget(tester, const VaultCreateScreen());
 
       // Fill in the name field (first TextFormField)
       await tester.enterText(
@@ -29,11 +29,11 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      await screenMatchesGolden(tester, 'lockbox_create_screen_filled');
+      await screenMatchesGolden(tester, 'vault_create_screen_filled');
     });
 
     testGoldens('validation errors - empty name', (tester) async {
-      await pumpGoldenWidget(tester, const LockboxCreateScreen());
+      await pumpGoldenWidget(tester, const VaultCreateScreen());
 
       // Tap the Next button without entering any data
       await tester.tap(find.text('Next'));
@@ -41,15 +41,15 @@ void main() {
 
       await screenMatchesGolden(
         tester,
-        'lockbox_create_screen_validation_empty_name',
+        'vault_create_screen_validation_empty_name',
       );
     });
 
     testGoldens('validation errors - content too long', (tester) async {
-      await pumpGoldenWidget(tester, const LockboxCreateScreen());
+      await pumpGoldenWidget(tester, const VaultCreateScreen());
 
       // Fill in the name field (first TextFormField)
-      await tester.enterText(find.byType(TextFormField).first, 'Test Lockbox');
+      await tester.enterText(find.byType(TextFormField).first, 'Test Vault');
 
       // Fill in content that exceeds 4000 characters
       final longContent = 'a' * 4100;
@@ -63,7 +63,7 @@ void main() {
 
       await screenMatchesGolden(
         tester,
-        'lockbox_create_screen_validation_content_too_long',
+        'vault_create_screen_validation_content_too_long',
       );
     });
 
@@ -72,7 +72,7 @@ void main() {
         ..overrideDevicesForAllScenarios(
           devices: [Device.phone, Device.iphone11, Device.tabletPortrait],
         )
-        ..addScenario(widget: const LockboxCreateScreen(), name: 'empty');
+        ..addScenario(widget: const VaultCreateScreen(), name: 'empty');
 
       await tester.pumpDeviceBuilder(
         builder,
@@ -81,12 +81,12 @@ void main() {
 
       await screenMatchesGolden(
         tester,
-        'lockbox_create_screen_multiple_devices',
+        'vault_create_screen_multiple_devices',
       );
     });
 
     testGoldens('filled content with character count', (tester) async {
-      await pumpGoldenWidget(tester, const LockboxCreateScreen());
+      await pumpGoldenWidget(tester, const VaultCreateScreen());
 
       // Fill in the name field (first TextFormField)
       await tester.enterText(
@@ -102,7 +102,7 @@ void main() {
 
       await screenMatchesGolden(
         tester,
-        'lockbox_create_screen_with_char_count',
+        'vault_create_screen_with_char_count',
       );
     });
   });

@@ -1,26 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
-import '../models/lockbox.dart';
+import '../models/vault.dart';
 import '../providers/key_provider.dart';
-import '../screens/lockbox_detail_screen.dart';
+import '../screens/vault_detail_screen.dart';
 
-class LockboxCard extends ConsumerWidget {
-  final Lockbox lockbox;
+class VaultCard extends ConsumerWidget {
+  final Vault vault;
 
-  const LockboxCard({super.key, required this.lockbox});
+  const VaultCard({super.key, required this.vault});
 
   String _getOwnerDisplayText(String? currentPubkey) {
     if (currentPubkey == null) {
-      return Helpers.encodeBech32(lockbox.ownerPubkey, 'npub');
+      return Helpers.encodeBech32(vault.ownerPubkey, 'npub');
     }
-    if (currentPubkey == lockbox.ownerPubkey) {
+    if (currentPubkey == vault.ownerPubkey) {
       return 'You';
     }
-    if (lockbox.ownerName != null && lockbox.ownerName!.isNotEmpty) {
-      return lockbox.ownerName!;
+    if (vault.ownerName != null && vault.ownerName!.isNotEmpty) {
+      return vault.ownerName!;
     }
-    return Helpers.encodeBech32(lockbox.ownerPubkey, 'npub');
+    return Helpers.encodeBech32(vault.ownerPubkey, 'npub');
   }
 
   @override
@@ -28,21 +28,21 @@ class LockboxCard extends ConsumerWidget {
     final theme = Theme.of(context);
     final textTheme = theme.textTheme;
 
-    // Determine icon based on lockbox state
+    // Determine icon based on vault state
     IconData stateIcon;
     Color? iconColor;
 
-    switch (lockbox.state) {
-      case LockboxState.recovery:
+    switch (vault.state) {
+      case VaultState.recovery:
         stateIcon = Icons.refresh;
         break;
-      case LockboxState.owned:
+      case VaultState.owned:
         stateIcon = Icons.lock_open;
         break;
-      case LockboxState.keyHolder:
+      case VaultState.steward:
         stateIcon = Icons.key;
         break;
-      case LockboxState.awaitingKey:
+      case VaultState.awaitingKey:
         stateIcon = Icons.hourglass_empty;
         break;
     }
@@ -64,7 +64,7 @@ class LockboxCard extends ConsumerWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => LockboxDetailScreen(lockboxId: lockbox.id),
+              builder: (context) => VaultDetailScreen(vaultId: vault.id),
             ),
           );
         },
@@ -93,7 +93,7 @@ class LockboxCard extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      lockbox.name,
+                      vault.name,
                       style: textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),

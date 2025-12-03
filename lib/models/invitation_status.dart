@@ -12,7 +12,7 @@ enum InvitationStatus {
   /// Invitation denied by invitee
   denied,
 
-  /// Invitation invalidated by lockbox owner
+  /// Invitation invalidated by vault owner
   invalidated,
 
   /// Error occurred during redemption
@@ -33,7 +33,7 @@ extension InvitationStatusExtension on InvitationStatus {
       case InvitationStatus.denied:
         return 'Invitation was denied by the invitee';
       case InvitationStatus.invalidated:
-        return 'Invitation has been invalidated by the lockbox owner';
+        return 'Invitation has been invalidated by the vault owner';
       case InvitationStatus.error:
         return 'An error occurred during invitation redemption';
     }
