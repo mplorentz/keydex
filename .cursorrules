@@ -124,6 +124,91 @@ final currentKeyProvider = FutureProvider<String?>((ref) async {
 });
 ```
 
+## Code Verification Requirements (MANDATORY)
+
+**CRITICAL**: AI assistants MUST verify code quality after EVERY change before responding to the user.
+
+### Verification Checklist (Execute After Every Change)
+
+After making ANY code changes, you MUST run the following verification steps IN ORDER:
+
+1. **Check Linter Errors**
+   ```bash
+   # Use ReadLints tool on all modified files
+   ReadLints(paths: ["lib/path/to/modified/file.dart"])
+   # Or check entire lib directory for comprehensive verification
+   ReadLints(paths: ["lib"])
+   ```
+   - MUST show "No linter errors found"
+   - Fix ALL errors and warnings before proceeding
+   - Re-run ReadLints after fixes to confirm
+
+2. **Verify Analyzer Passes** (when ReadLints is insufficient)
+   - ReadLints should catch most issues, but for build-breaking errors, analyzer may be needed
+   - Only if ReadLints shows clean but user reports analyzer errors
+   - Check specific error messages and fix root cause
+
+3. **Run Unit Tests** (for significant logic changes)
+   ```bash
+   # Run tests excluding golden tests
+   flutter test --exclude-tags=golden
+   ```
+   - MUST show all tests passing
+   - Fix failing tests before proceeding
+   - Update test expectations if behavior intentionally changed
+
+4. **Update Golden Tests** (for UI changes)
+   ```bash
+   # Only if you modified UI screens or widgets
+   flutter test test/screens --update-goldens --tags=golden
+   ```
+   - Note: Golden tests require macOS - inform user if you can't run them
+   - Commit updated golden PNG files with your changes
+
+### Enforcement Rules
+
+**DO NOT**:
+- ❌ Tell the user "the code is clean" without running ReadLints
+- ❌ Claim "no analyzer errors" without verification
+- ❌ Say "tests should pass" without running them
+- ❌ Mark a task complete with known linter/analyzer errors
+
+**ALWAYS**:
+- ✅ Run ReadLints on modified files after every change
+- ✅ Show verification results in your response
+- ✅ Fix all issues before claiming completion
+- ✅ Re-verify after fixes to ensure they worked
+- ✅ Inform user if verification fails and you need guidance
+
+### Example Verification Workflow
+
+```dart
+// 1. Make code changes
+StrReplace(...)
+
+// 2. IMMEDIATELY verify
+ReadLints(paths: ["lib/screens/my_screen.dart"])
+
+// 3. If issues found, fix them
+StrReplace(...) // fix the issues
+
+// 4. Re-verify
+ReadLints(paths: ["lib/screens/my_screen.dart"])
+
+// 5. Only NOW respond to user with "✅ Verified clean"
+```
+
+### When Verification Fails
+
+If verification reveals errors:
+1. **Do not hide them** - inform the user immediately
+2. **Attempt to fix** the errors automatically
+3. **Re-verify** after fixes
+4. **Report results** honestly (success or remaining issues)
+5. **Ask for help** if stuck, don't pretend the issue doesn't exist
+
+This verification requirement applies to ALL code changes, no exceptions.
+
 ## Nostr Key Format Conventions
 
 ### Hex Format (Internal)
