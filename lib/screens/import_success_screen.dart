@@ -20,7 +20,11 @@ class ImportSuccessScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false, // No back button
-        title: const Text('Account Imported'),
+        title: const Text(
+          'Account Imported Successfully',
+          maxLines: 2,
+          overflow: TextOverflow.visible,
+        ),
         centerTitle: false,
       ),
       body: SafeArea(
@@ -33,14 +37,6 @@ class ImportSuccessScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 24),
-                    // Title
-                    Text(
-                      'Account Imported Successfully',
-                      style: textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
                     // Explanation text
                     Text(
                       'Your Nostr account has been imported. You can now back it up '
