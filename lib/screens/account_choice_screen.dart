@@ -57,7 +57,6 @@ class _AccountChoiceScreenState extends ConsumerState<AccountChoiceScreen> {
                     MaterialPageRoute(
                       builder: (context) => AccountCreatedScreen(
                         nsec: keyPair.privateKeyBech32!,
-                        isImported: false,
                       ),
                     ),
                   );
