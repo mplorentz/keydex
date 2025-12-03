@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../widgets/row_button_stack.dart';
 import '../screens/vault_explainer_screen.dart';
 import '../screens/lockbox_list_screen.dart';
+import '../services/logger.dart';
 
 /// Screen shown after account creation or import, allowing user to back up their key
 class AccountCreatedScreen extends ConsumerStatefulWidget {
@@ -61,6 +62,16 @@ class _AccountCreatedScreenState extends ConsumerState<AccountCreatedScreen> {
             ),
           ),
           (route) => false, // Clear all previous routes
+        );
+      }
+    } catch (e) {
+      Log.error('Error navigating to vault backup', e);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error starting vault backup: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } finally {
