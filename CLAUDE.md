@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Horcrux (branded as "Horcrux" in UI) is a Flutter app for backup and recovery of sensitive data using Shamir's Secret Sharing. Instead of cloud backups, data is distributed in encrypted shards to friends and family via the Nostr protocol. Recovery requires consent from multiple stewards to reassemble the data.
+Horcrux is a Flutter app for backup and recovery of sensitive data using Shamir's Secret Sharing. Instead of cloud backups, data is distributed in encrypted shards to friends and family via the Nostr protocol. Recovery requires consent from multiple stewards to reassemble the data.
 
 **Key Technologies:**
 - Flutter 3.35.0 with Dart SDK ^3.5.3
