@@ -39,3 +39,19 @@ Future<void> initializeAppServices(
     ref.invalidate(isLoggedInProvider);
   }
 }
+
+/// Initializes app services and invalidates key providers after login/account creation
+///
+/// This is a convenience function that combines service initialization with
+/// provider invalidation, commonly used after account creation or login.
+///
+/// Parameters:
+/// - [ref] - WidgetRef to access providers
+Future<void> initializeAppAndRefreshKeys(WidgetRef ref) async {
+  await initializeAppServices(ref);
+  
+  // Invalidate providers to trigger rebuild
+  ref.invalidate(currentPublicKeyProvider);
+  ref.invalidate(currentPublicKeyBech32Provider);
+  ref.invalidate(isLoggedInProvider);
+}

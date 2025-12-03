@@ -69,7 +69,7 @@ class _KeydexAppState extends ConsumerState<KeydexApp> {
 
     return MaterialApp(
       navigatorKey: navigatorKey,
-      title: 'Horcrux Lockbox',
+      title: 'Horcrux',
       theme: keydex3Light,
       darkTheme: keydex3Dark,
       themeMode: ThemeMode.system,

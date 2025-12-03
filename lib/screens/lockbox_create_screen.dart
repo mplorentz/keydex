@@ -4,10 +4,18 @@ import '../widgets/row_button.dart';
 import '../widgets/lockbox_content_form.dart';
 import '../widgets/lockbox_content_save_mixin.dart';
 import 'backup_config_screen.dart';
+import 'lockbox_detail_screen.dart';
 
 /// Enhanced lockbox creation screen with integrated backup configuration
 class LockboxCreateScreen extends ConsumerStatefulWidget {
-  const LockboxCreateScreen({super.key});
+  final String? initialContent;
+  final String? initialName;
+
+  const LockboxCreateScreen({
+    super.key,
+    this.initialContent,
+    this.initialName,
+  });
 
   @override
   ConsumerState<LockboxCreateScreen> createState() => _LockboxCreateScreenState();
@@ -19,6 +27,18 @@ class _LockboxCreateScreenState extends ConsumerState<LockboxCreateScreen>
   final _contentController = TextEditingController();
   final _ownerNameController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    super.initState();
+    // Prefill fields if initial values provided
+    if (widget.initialName != null) {
+      _nameController.text = widget.initialName!;
+    }
+    if (widget.initialContent != null) {
+      _contentController.text = widget.initialContent!;
+    }
+  }
 
   @override
   void dispose() {
@@ -82,10 +102,15 @@ class _LockboxCreateScreenState extends ConsumerState<LockboxCreateScreen>
       ),
     );
 
-    // After backup configuration is complete, pop all the way back to the list screen
-    // This pops both LockboxCreateScreen and VaultExplainerScreen
+    // After backup configuration is complete, navigate to lockbox detail screen
     if (mounted) {
-      Navigator.popUntil(context, (route) => route.isFirst);
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (context) => LockboxDetailScreen(lockboxId: lockboxId),
+        ),
+        (route) => false, // Clear all previous routes (onboarding, etc.)
+      );
     }
   }
 }
