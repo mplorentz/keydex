@@ -86,13 +86,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         throw Exception('Invalid key format');
       }
 
-      // Initialize services
-      await initializeAppServices(ref);
-
-      // Invalidate providers to trigger rebuild
-      ref.invalidate(currentPublicKeyProvider);
-      ref.invalidate(currentPublicKeyBech32Provider);
-      ref.invalidate(isLoggedInProvider);
+      // Initialize services and refresh key providers
+      await initializeAppAndRefreshKeys(ref);
 
       // Navigate to import success screen
       final privateKey = keyPair.privateKeyBech32;
@@ -143,7 +138,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Supported formats: nsec (bech32), hex private key, or bunker URL',
+                      'Supported formats: nsec, hex, or bunker URL',
                       style: textTheme.bodySmall,
                     ),
                     const SizedBox(height: 24),

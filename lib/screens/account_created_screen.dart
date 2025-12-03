@@ -6,15 +6,13 @@ import '../screens/vault_explainer_screen.dart';
 import '../screens/lockbox_list_screen.dart';
 import '../services/logger.dart';
 
-/// Screen shown after account creation or import, allowing user to back up their key
+/// Screen shown after account creation, allowing user to back up their key
 class AccountCreatedScreen extends ConsumerStatefulWidget {
   final String nsec;
-  final bool isImported;
 
   const AccountCreatedScreen({
     super.key,
     required this.nsec,
-    this.isImported = false,
   });
 
   @override
@@ -100,7 +98,7 @@ class _AccountCreatedScreenState extends ConsumerState<AccountCreatedScreen> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false, // No back button
-        title: Text(widget.isImported ? 'Account Imported' : 'Account Created'),
+        title: const Text('Account Created'),
         centerTitle: false,
       ),
       body: SafeArea(
@@ -115,7 +113,7 @@ class _AccountCreatedScreenState extends ConsumerState<AccountCreatedScreen> {
                     const SizedBox(height: 24),
                     // Title
                     Text(
-                      widget.isImported ? 'Account Imported' : 'Account Created',
+                      'Account Created',
                       style: textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),

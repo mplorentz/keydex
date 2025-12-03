@@ -26,7 +26,7 @@ void main() {
       SharedPreferences.setMockInitialValues({});
     });
 
-    testGoldens('account created screen - new account', (tester) async {
+    testGoldens('account created screen - default', (tester) async {
       const testNsec =
           'nsec1vl029mgpspedva04g90vltkh6fvh240zqtv9k0t9af8935ke9laqsnlfe5';
 
@@ -34,36 +34,12 @@ void main() {
 
       await pumpGoldenWidget(
         tester,
-        const AccountCreatedScreen(
-          nsec: testNsec,
-          isImported: false,
-        ),
+        const AccountCreatedScreen(nsec: testNsec),
         container: container,
         surfaceSize: const Size(375, 667), // iPhone SE size
       );
 
-      await screenMatchesGolden(tester, 'account_created_screen_new_account');
-
-      container.dispose();
-    });
-
-    testGoldens('account created screen - imported account', (tester) async {
-      const testNsec =
-          'nsec1vl029mgpspedva04g90vltkh6fvh240zqtv9k0t9af8935ke9laqsnlfe5';
-
-      final container = ProviderContainer();
-
-      await pumpGoldenWidget(
-        tester,
-        const AccountCreatedScreen(
-          nsec: testNsec,
-          isImported: true,
-        ),
-        container: container,
-        surfaceSize: const Size(375, 667), // iPhone SE size
-      );
-
-      await screenMatchesGolden(tester, 'account_created_screen_imported');
+      await screenMatchesGolden(tester, 'account_created_screen_default');
 
       container.dispose();
     });
@@ -79,18 +55,8 @@ void main() {
           devices: [Device.phone, Device.iphone11, Device.tabletPortrait],
         )
         ..addScenario(
-          widget: const AccountCreatedScreen(
-            nsec: testNsec,
-            isImported: false,
-          ),
-          name: 'new_account',
-        )
-        ..addScenario(
-          widget: const AccountCreatedScreen(
-            nsec: testNsec,
-            isImported: true,
-          ),
-          name: 'imported',
+          widget: const AccountCreatedScreen(nsec: testNsec),
+          name: 'account_created',
         );
 
       await tester.pumpDeviceBuilder(

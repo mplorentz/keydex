@@ -50,13 +50,8 @@ class _AccountChoiceScreenState extends ConsumerState<AccountChoiceScreen> {
                   final loginService = ref.read(loginServiceProvider);
                   final keyPair = await loginService.generateAndStoreNostrKey();
                   
-                  // Initialize services
-                  await initializeAppServices(ref);
-                  
-                  // Invalidate providers to trigger rebuild
-                  ref.invalidate(currentPublicKeyProvider);
-                  ref.invalidate(currentPublicKeyBech32Provider);
-                  ref.invalidate(isLoggedInProvider);
+                  // Initialize services and refresh key providers
+                  await initializeAppAndRefreshKeys(ref);
                   
                   navigator.push(
                     MaterialPageRoute(
@@ -96,13 +91,9 @@ class _AccountChoiceScreenState extends ConsumerState<AccountChoiceScreen> {
                   final confirmed = await showDialog<bool>(
                     context: context,
                     builder: (context) => AlertDialog(
-                      title: const Text('Limited Functionality'),
+                      title: const Text('Are You Sure?'),
                       content: const Text(
-                        'Without a Nostr account, you won\'t be able to:\n\n'
-                        '• Back up your vaults to the Nostr network\n'
-                        '• Distribute shards to key holders\n'
-                        '• Recover vaults from key holders\n\n'
-                        'You can only use local-only vaults on this device.',
+                        'Without an account you will only be able to use Horcrux on this device and you will need to manually migrate your vaults to new devices. If you change your mind you can always back up your account keys from the app settings.',
                       ),
                       actions: [
                         TextButton(
