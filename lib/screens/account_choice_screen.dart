@@ -20,7 +20,7 @@ class _AccountChoiceScreenState extends ConsumerState<AccountChoiceScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Choose Account Option'),
+        title: const Text('Setup'),
         centerTitle: false,
       ),
       body: SafeArea(
