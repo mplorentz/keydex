@@ -56,7 +56,8 @@ ShardData createShardData({
   }
   if (threshold < LockboxBackupConstraints.minThreshold || threshold > totalShards) {
     throw ArgumentError(
-        'Threshold must be >= ${LockboxBackupConstraints.minThreshold} and <= totalShards');
+      'Threshold must be >= ${LockboxBackupConstraints.minThreshold} and <= totalShards',
+    );
   }
   if (shardIndex < 0 || shardIndex >= totalShards) {
     throw ArgumentError('ShardIndex must be >= 0 and < totalShards');
@@ -70,7 +71,9 @@ ShardData createShardData({
 
   // Validate recovery metadata if provided
   if (recipientPubkey != null && (recipientPubkey.length != 64 || !_isHexString(recipientPubkey))) {
-    throw ArgumentError('RecipientPubkey must be valid hex format (64 characters)');
+    throw ArgumentError(
+      'RecipientPubkey must be valid hex format (64 characters)',
+    );
   }
   if (isReceived == true && receivedAt != null && receivedAt.isAfter(DateTime.now())) {
     throw ArgumentError('ReceivedAt must be in the past if isReceived is true');
@@ -78,11 +81,15 @@ ShardData createShardData({
   if (peers != null) {
     for (final peer in peers) {
       if (!peer.containsKey('name') || !peer.containsKey('pubkey')) {
-        throw ArgumentError('All peers must have both "name" and "pubkey" keys');
+        throw ArgumentError(
+          'All peers must have both "name" and "pubkey" keys',
+        );
       }
       final pubkey = peer['pubkey']!;
       if (pubkey.length != 64 || !_isHexString(pubkey)) {
-        throw ArgumentError('All peer pubkeys must be valid hex format (64 characters): $pubkey');
+        throw ArgumentError(
+          'All peer pubkeys must be valid hex format (64 characters): $pubkey',
+        );
       }
       if (peer['name'] == null || peer['name']!.isEmpty) {
         throw ArgumentError('All peers must have a non-empty name');
@@ -172,25 +179,31 @@ extension ShardDataExtension on ShardData {
       }
 
       if (threshold < LockboxBackupConstraints.minThreshold) {
-        Log.error('ShardData validation failed: threshold ($threshold) is below minimum '
-            '(${LockboxBackupConstraints.minThreshold})');
+        Log.error(
+          'ShardData validation failed: threshold ($threshold) is below minimum '
+          '(${LockboxBackupConstraints.minThreshold})',
+        );
         return false;
       }
 
       if (threshold > totalShards) {
         Log.error(
-            'ShardData validation failed: threshold ($threshold) exceeds totalShards ($totalShards)');
+          'ShardData validation failed: threshold ($threshold) exceeds totalShards ($totalShards)',
+        );
         return false;
       }
 
       if (shardIndex < 0) {
-        Log.error('ShardData validation failed: shardIndex ($shardIndex) is negative');
+        Log.error(
+          'ShardData validation failed: shardIndex ($shardIndex) is negative',
+        );
         return false;
       }
 
       if (shardIndex >= totalShards) {
         Log.error(
-            'ShardData validation failed: shardIndex ($shardIndex) is out of bounds (should be 0 to ${totalShards - 1})');
+          'ShardData validation failed: shardIndex ($shardIndex) is out of bounds (should be 0 to ${totalShards - 1})',
+        );
         return false;
       }
 
@@ -205,7 +218,9 @@ extension ShardDataExtension on ShardData {
       }
 
       if (createdAt <= 0) {
-        Log.error('ShardData validation failed: createdAt ($createdAt) is invalid (must be > 0)');
+        Log.error(
+          'ShardData validation failed: createdAt ($createdAt) is invalid (must be > 0)',
+        );
         return false;
       }
 

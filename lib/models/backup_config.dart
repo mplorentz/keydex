@@ -37,11 +37,13 @@ BackupConfig createBackupConfig({
   // Validate inputs
   if (threshold < LockboxBackupConstraints.minThreshold || threshold > totalKeys) {
     throw ArgumentError(
-        'Threshold must be >= ${LockboxBackupConstraints.minThreshold} and <= totalKeys');
+      'Threshold must be >= ${LockboxBackupConstraints.minThreshold} and <= totalKeys',
+    );
   }
   if (totalKeys < threshold || totalKeys > LockboxBackupConstraints.maxTotalKeys) {
     throw ArgumentError(
-        'TotalKeys must be >= threshold and <= ${LockboxBackupConstraints.maxTotalKeys}');
+      'TotalKeys must be >= threshold and <= ${LockboxBackupConstraints.maxTotalKeys}',
+    );
   }
   if (keyHolders.length != totalKeys) {
     throw ArgumentError('KeyHolders length must equal totalKeys');
@@ -130,8 +132,12 @@ extension BackupConfigExtension on BackupConfig {
   /// Check if this backup configuration is valid
   bool get isValid {
     try {
-      if (threshold < LockboxBackupConstraints.minThreshold || threshold > totalKeys) return false;
-      if (totalKeys < threshold || totalKeys > LockboxBackupConstraints.maxTotalKeys) return false;
+      if (threshold < LockboxBackupConstraints.minThreshold || threshold > totalKeys) {
+        return false;
+      }
+      if (totalKeys < threshold || totalKeys > LockboxBackupConstraints.maxTotalKeys) {
+        return false;
+      }
       if (keyHolders.length != totalKeys) return false;
       if (relays.isEmpty) return false;
 
@@ -142,11 +148,15 @@ extension BackupConfigExtension on BackupConfig {
       // Check for unique npubs (only for key holders with pubkeys)
       final keyHoldersWithPubkeys = keyHolders.where((h) => h.pubkey != null).toList();
       final npubs = keyHoldersWithPubkeys.map((h) => h.npub).where((n) => n != null).toSet();
-      if (npubs.length != keyHoldersWithPubkeys.length) return false;
+      if (npubs.length != keyHoldersWithPubkeys.length) {
+        return false;
+      }
 
       // Check relay URLs
       for (final relay in relays) {
-        if (!_isValidRelayUrl(relay)) return false;
+        if (!_isValidRelayUrl(relay)) {
+          return false;
+        }
       }
 
       return true;
@@ -201,9 +211,11 @@ extension BackupConfigExtension on BackupConfig {
 
   /// Check if there are version mismatches with key holders
   bool get hasVersionMismatch {
-    return keyHolders.any((h) =>
-        h.acknowledgedDistributionVersion != null &&
-        h.acknowledgedDistributionVersion != distributionVersion);
+    return keyHolders.any(
+      (h) =>
+          h.acknowledgedDistributionVersion != null &&
+          h.acknowledgedDistributionVersion != distributionVersion,
+    );
   }
 
   /// Check if config parameters differ from another config

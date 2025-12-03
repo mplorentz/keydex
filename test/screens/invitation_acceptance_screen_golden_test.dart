@@ -52,7 +52,9 @@ void main() {
               // Don't await anything - just return without emitting
             }),
           ),
-          currentPublicKeyProvider.overrideWith((ref) => Future.value(testPubkey)),
+          currentPublicKeyProvider.overrideWith(
+            (ref) => Future.value(testPubkey),
+          ),
         ],
       );
 
@@ -74,10 +76,12 @@ void main() {
     testGoldens('error state', (tester) async {
       final container = ProviderContainer(
         overrides: [
-          invitationByCodeProvider('test-code').overrideWith(
-            (ref) => Stream.error('Failed to load invitation'),
+          invitationByCodeProvider(
+            'test-code',
+          ).overrideWith((ref) => Stream.error('Failed to load invitation')),
+          currentPublicKeyProvider.overrideWith(
+            (ref) => Future.value(testPubkey),
           ),
-          currentPublicKeyProvider.overrideWith((ref) => Future.value(testPubkey)),
         ],
       );
 
@@ -95,10 +99,12 @@ void main() {
     testGoldens('invitation not found', (tester) async {
       final container = ProviderContainer(
         overrides: [
-          invitationByCodeProvider('invalid-code').overrideWith(
-            (ref) => Stream.value(null),
+          invitationByCodeProvider(
+            'invalid-code',
+          ).overrideWith((ref) => Stream.value(null)),
+          currentPublicKeyProvider.overrideWith(
+            (ref) => Future.value(testPubkey),
           ),
-          currentPublicKeyProvider.overrideWith((ref) => Future.value(testPubkey)),
         ],
       );
 
@@ -108,7 +114,10 @@ void main() {
         container: container,
       );
 
-      await screenMatchesGolden(tester, 'invitation_acceptance_screen_not_found');
+      await screenMatchesGolden(
+        tester,
+        'invitation_acceptance_screen_not_found',
+      );
 
       container.dispose();
     });
@@ -122,10 +131,12 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          invitationByCodeProvider('active-code').overrideWith(
-            (ref) => Stream.value(invitation),
+          invitationByCodeProvider(
+            'active-code',
+          ).overrideWith((ref) => Stream.value(invitation)),
+          currentPublicKeyProvider.overrideWith(
+            (ref) => Future.value(testPubkey),
           ),
-          currentPublicKeyProvider.overrideWith((ref) => Future.value(testPubkey)),
         ],
       );
 
@@ -135,7 +146,10 @@ void main() {
         container: container,
       );
 
-      await screenMatchesGolden(tester, 'invitation_acceptance_screen_active_logged_in');
+      await screenMatchesGolden(
+        tester,
+        'invitation_acceptance_screen_active_logged_in',
+      );
 
       container.dispose();
     });
@@ -149,10 +163,12 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          invitationByCodeProvider('active-code-2').overrideWith(
-            (ref) => Stream.value(invitation),
+          invitationByCodeProvider(
+            'active-code-2',
+          ).overrideWith((ref) => Stream.value(invitation)),
+          currentPublicKeyProvider.overrideWith(
+            (ref) => Future.value(testPubkey),
           ),
-          currentPublicKeyProvider.overrideWith((ref) => Future.value(testPubkey)),
         ],
       );
 
@@ -162,7 +178,10 @@ void main() {
         container: container,
       );
 
-      await screenMatchesGolden(tester, 'invitation_acceptance_screen_active_no_name');
+      await screenMatchesGolden(
+        tester,
+        'invitation_acceptance_screen_active_no_name',
+      );
 
       container.dispose();
     });
@@ -181,10 +200,12 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          invitationByCodeProvider('active-code-3').overrideWith(
-            (ref) => Stream.value(invitation),
+          invitationByCodeProvider(
+            'active-code-3',
+          ).overrideWith((ref) => Stream.value(invitation)),
+          currentPublicKeyProvider.overrideWith(
+            (ref) => Future.value(testPubkey),
           ),
-          currentPublicKeyProvider.overrideWith((ref) => Future.value(testPubkey)),
         ],
       );
 
@@ -194,7 +215,10 @@ void main() {
         container: container,
       );
 
-      await screenMatchesGolden(tester, 'invitation_acceptance_screen_active_multiple_relays');
+      await screenMatchesGolden(
+        tester,
+        'invitation_acceptance_screen_active_multiple_relays',
+      );
 
       container.dispose();
     });
@@ -208,9 +232,9 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          invitationByCodeProvider('active-code-4').overrideWith(
-            (ref) => Stream.value(invitation),
-          ),
+          invitationByCodeProvider(
+            'active-code-4',
+          ).overrideWith((ref) => Stream.value(invitation)),
           currentPublicKeyProvider.overrideWith((ref) => Future.value(null)),
         ],
       );
@@ -221,7 +245,10 @@ void main() {
         container: container,
       );
 
-      await screenMatchesGolden(tester, 'invitation_acceptance_screen_active_not_logged_in');
+      await screenMatchesGolden(
+        tester,
+        'invitation_acceptance_screen_active_not_logged_in',
+      );
 
       container.dispose();
     });
@@ -235,16 +262,14 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          invitationByCodeProvider('active-code-5').overrideWith(
-            (ref) => Stream.value(invitation),
-          ),
-          currentPublicKeyProvider.overrideWith(
-            (ref) {
-              // Use a Completer that never completes to simulate loading state
-              final completer = Completer<String?>();
-              return completer.future; // This will never complete
-            },
-          ),
+          invitationByCodeProvider(
+            'active-code-5',
+          ).overrideWith((ref) => Stream.value(invitation)),
+          currentPublicKeyProvider.overrideWith((ref) {
+            // Use a Completer that never completes to simulate loading state
+            final completer = Completer<String?>();
+            return completer.future; // This will never complete
+          }),
         ],
       );
 
@@ -272,9 +297,9 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          invitationByCodeProvider('active-code-6').overrideWith(
-            (ref) => Stream.value(invitation),
-          ),
+          invitationByCodeProvider(
+            'active-code-6',
+          ).overrideWith((ref) => Stream.value(invitation)),
           currentPublicKeyProvider.overrideWith(
             (ref) => Future.error('Failed to check account'),
           ),
@@ -287,7 +312,10 @@ void main() {
         container: container,
       );
 
-      await screenMatchesGolden(tester, 'invitation_acceptance_screen_active_account_error');
+      await screenMatchesGolden(
+        tester,
+        'invitation_acceptance_screen_active_account_error',
+      );
 
       container.dispose();
     });
@@ -303,10 +331,12 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          invitationByCodeProvider('redeemed-code').overrideWith(
-            (ref) => Stream.value(invitation),
+          invitationByCodeProvider(
+            'redeemed-code',
+          ).overrideWith((ref) => Stream.value(invitation)),
+          currentPublicKeyProvider.overrideWith(
+            (ref) => Future.value(testPubkey),
           ),
-          currentPublicKeyProvider.overrideWith((ref) => Future.value(testPubkey)),
         ],
       );
 
@@ -316,7 +346,10 @@ void main() {
         container: container,
       );
 
-      await screenMatchesGolden(tester, 'invitation_acceptance_screen_redeemed');
+      await screenMatchesGolden(
+        tester,
+        'invitation_acceptance_screen_redeemed',
+      );
 
       container.dispose();
     });
@@ -330,10 +363,12 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          invitationByCodeProvider('denied-code').overrideWith(
-            (ref) => Stream.value(invitation),
+          invitationByCodeProvider(
+            'denied-code',
+          ).overrideWith((ref) => Stream.value(invitation)),
+          currentPublicKeyProvider.overrideWith(
+            (ref) => Future.value(testPubkey),
           ),
-          currentPublicKeyProvider.overrideWith((ref) => Future.value(testPubkey)),
         ],
       );
 
@@ -357,10 +392,12 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          invitationByCodeProvider('invalidated-code').overrideWith(
-            (ref) => Stream.value(invitation),
+          invitationByCodeProvider(
+            'invalidated-code',
+          ).overrideWith((ref) => Stream.value(invitation)),
+          currentPublicKeyProvider.overrideWith(
+            (ref) => Future.value(testPubkey),
           ),
-          currentPublicKeyProvider.overrideWith((ref) => Future.value(testPubkey)),
         ],
       );
 
@@ -370,7 +407,10 @@ void main() {
         container: container,
       );
 
-      await screenMatchesGolden(tester, 'invitation_acceptance_screen_invalidated');
+      await screenMatchesGolden(
+        tester,
+        'invitation_acceptance_screen_invalidated',
+      );
 
       container.dispose();
     });
@@ -384,10 +424,12 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          invitationByCodeProvider('error-code').overrideWith(
-            (ref) => Stream.value(invitation),
+          invitationByCodeProvider(
+            'error-code',
+          ).overrideWith((ref) => Stream.value(invitation)),
+          currentPublicKeyProvider.overrideWith(
+            (ref) => Future.value(testPubkey),
           ),
-          currentPublicKeyProvider.overrideWith((ref) => Future.value(testPubkey)),
         ],
       );
 
@@ -397,7 +439,10 @@ void main() {
         container: container,
       );
 
-      await screenMatchesGolden(tester, 'invitation_acceptance_screen_error_status');
+      await screenMatchesGolden(
+        tester,
+        'invitation_acceptance_screen_error_status',
+      );
 
       container.dispose();
     });
@@ -407,29 +452,28 @@ void main() {
         inviteCode: 'device-test-code',
         status: InvitationStatus.pending,
         inviteeName: 'Jane',
-        relayUrls: [
-          'wss://relay1.example.com',
-          'wss://relay2.example.com',
-        ],
+        relayUrls: ['wss://relay1.example.com', 'wss://relay2.example.com'],
       );
 
       final container = ProviderContainer(
         overrides: [
-          invitationByCodeProvider('device-test-code').overrideWith(
-            (ref) => Stream.value(invitation),
+          invitationByCodeProvider(
+            'device-test-code',
+          ).overrideWith((ref) => Stream.value(invitation)),
+          currentPublicKeyProvider.overrideWith(
+            (ref) => Future.value(testPubkey),
           ),
-          currentPublicKeyProvider.overrideWith((ref) => Future.value(testPubkey)),
         ],
       );
 
       final builder = DeviceBuilder()
-        ..overrideDevicesForAllScenarios(devices: [
-          Device.phone,
-          Device.iphone11,
-          Device.tabletPortrait,
-        ])
+        ..overrideDevicesForAllScenarios(
+          devices: [Device.phone, Device.iphone11, Device.tabletPortrait],
+        )
         ..addScenario(
-          widget: const InvitationAcceptanceScreen(inviteCode: 'device-test-code'),
+          widget: const InvitationAcceptanceScreen(
+            inviteCode: 'device-test-code',
+          ),
           name: 'active_invitation',
         );
 
@@ -441,7 +485,10 @@ void main() {
         ),
       );
 
-      await screenMatchesGolden(tester, 'invitation_acceptance_screen_multiple_devices');
+      await screenMatchesGolden(
+        tester,
+        'invitation_acceptance_screen_multiple_devices',
+      );
 
       container.dispose();
     });

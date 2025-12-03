@@ -17,10 +17,7 @@ import '../widgets/row_button.dart';
 class InvitationAcceptanceScreen extends ConsumerStatefulWidget {
   final String inviteCode;
 
-  const InvitationAcceptanceScreen({
-    super.key,
-    required this.inviteCode,
-  });
+  const InvitationAcceptanceScreen({super.key, required this.inviteCode});
 
   @override
   ConsumerState<InvitationAcceptanceScreen> createState() => _InvitationAcceptanceScreenState();
@@ -32,11 +29,14 @@ class _InvitationAcceptanceScreenState extends ConsumerState<InvitationAcceptanc
 
   @override
   Widget build(BuildContext context) {
-    final invitationAsync = ref.watch(invitationByCodeProvider(widget.inviteCode));
+    final invitationAsync = ref.watch(
+      invitationByCodeProvider(widget.inviteCode),
+    );
     final currentPubkeyAsync = ref.watch(currentPublicKeyProvider);
 
     return Scaffold(
       appBar: AppBar(
+        title: const Text('Invitation'),
         centerTitle: false,
       ),
       body: invitationAsync.when(
@@ -348,7 +348,6 @@ class _InvitationAcceptanceScreenState extends ConsumerState<InvitationAcceptanc
     );
   }
 
-
   Color _getStatusColor(InvitationStatus status) {
     switch (status) {
       case InvitationStatus.redeemed:
@@ -470,9 +469,7 @@ class _InvitationAcceptanceScreenState extends ConsumerState<InvitationAcceptanc
           ),
           OutlinedButton(
             onPressed: () => Navigator.pop(context, true),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: Colors.red,
-            ),
+            style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Deny'),
           ),
         ],

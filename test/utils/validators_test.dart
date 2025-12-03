@@ -24,12 +24,14 @@ void main() {
     });
 
     test('rejects pubkey with wrong length (too long)', () {
-      const pubkey = '3bf0c63fcb93463407af97a5e5ee64fa883d107ef9e558472c4eb9aaaefa459da'; // 65 chars
+      const pubkey =
+          '3bf0c63fcb93463407af97a5e5ee64fa883d107ef9e558472c4eb9aaaefa459da'; // 65 chars
       expect(isValidHexPubkey(pubkey), isFalse);
     });
 
     test('rejects pubkey with invalid characters', () {
-      const pubkey = '3bf0c63fcb93463407af97a5e5ee64fa883d107ef9e558472c4eb9aaaefa459g'; // contains 'g'
+      const pubkey =
+          '3bf0c63fcb93463407af97a5e5ee64fa883d107ef9e558472c4eb9aaaefa459g'; // contains 'g'
       expect(isValidHexPubkey(pubkey), isFalse);
     });
 
@@ -65,7 +67,10 @@ void main() {
       const invalidKey = 'invalid';
 
       expect(isValidHexPrivkey(validKey), equals(isValidHexPubkey(validKey)));
-      expect(isValidHexPrivkey(invalidKey), equals(isValidHexPubkey(invalidKey)));
+      expect(
+        isValidHexPrivkey(invalidKey),
+        equals(isValidHexPubkey(invalidKey)),
+      );
     });
   });
 
@@ -96,7 +101,12 @@ void main() {
       expect(isValidHexString('ab'), isTrue);
       expect(isValidHexString('abc'), isTrue);
       expect(isValidHexString('1234567890abcdef'), isTrue);
-      expect(isValidHexString('3bf0c63fcb93463407af97a5e5ee64fa883d107ef9e558472c4eb9aaaefa459d'), isTrue);
+      expect(
+        isValidHexString(
+          '3bf0c63fcb93463407af97a5e5ee64fa883d107ef9e558472c4eb9aaaefa459d',
+        ),
+        isTrue,
+      );
     });
 
     test('validates uppercase hex string', () {
@@ -225,9 +235,18 @@ void main() {
 
   group('isValidBase64', () {
     test('validates correct Base64 string', () {
-      expect(isValidBase64('SGVsbG8gV29ybGQ='), isTrue); // "Hello World" (16 chars, multiple of 4)
-      expect(isValidBase64('SGVsbG8='), isTrue); // "Hello" (8 chars, multiple of 4)
-      expect(isValidBase64('SGVsbG8g'), isTrue); // "Hello " (8 chars, multiple of 4, no padding)
+      expect(
+        isValidBase64('SGVsbG8gV29ybGQ='),
+        isTrue,
+      ); // "Hello World" (16 chars, multiple of 4)
+      expect(
+        isValidBase64('SGVsbG8='),
+        isTrue,
+      ); // "Hello" (8 chars, multiple of 4)
+      expect(
+        isValidBase64('SGVsbG8g'),
+        isTrue,
+      ); // "Hello " (8 chars, multiple of 4, no padding)
     });
 
     test('validates Base64 with single padding', () {
@@ -364,4 +383,3 @@ void main() {
     });
   });
 }
-

@@ -61,9 +61,7 @@ class RowButton extends StatelessWidget {
 
     // Calculate effective padding with safe area
     final effectivePadding = padding != null
-        ? padding!.copyWith(
-            bottom: padding!.bottom + bottomSafeArea,
-          )
+        ? padding!.copyWith(bottom: padding!.bottom + bottomSafeArea)
         : EdgeInsets.only(
             top: 20,
             bottom: 20 + bottomSafeArea,
@@ -80,10 +78,7 @@ class RowButton extends StatelessWidget {
           padding: effectivePadding,
           decoration: BoxDecoration(
             color: effectiveFill, // Subtle background fill
-            border: Border.all(
-              color: effectiveBorderColor,
-              width: 0.5,
-            ),
+            border: Border.all(color: effectiveBorderColor, width: 0.5),
             boxShadow: isDisabled
                 ? null
                 : [
@@ -97,11 +92,7 @@ class RowButton extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Icon(
-                icon,
-                color: effectiveForegroundColor,
-                size: iconSize,
-              ),
+              Icon(icon, color: effectiveForegroundColor, size: iconSize),
               const SizedBox(width: 12),
               Text(
                 text,

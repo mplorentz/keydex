@@ -83,7 +83,11 @@ class KeyHolderList extends ConsumerWidget {
   }
 
   Widget _buildKeyHolderContent(
-      BuildContext context, WidgetRef ref, Lockbox lockbox, String? currentPubkey) {
+    BuildContext context,
+    WidgetRef ref,
+    Lockbox lockbox,
+    String? currentPubkey,
+  ) {
     final keyHolders = _extractKeyHolders(lockbox, currentPubkey);
 
     final theme = Theme.of(context);
@@ -115,9 +119,7 @@ class KeyHolderList extends ConsumerWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => BackupConfigScreen(
-                          lockboxId: lockbox.id,
-                        ),
+                        builder: (context) => BackupConfigScreen(lockboxId: lockbox.id),
                       ),
                     );
                   },
@@ -189,9 +191,7 @@ class KeyHolderList extends ConsumerWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 4),
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainer,
-      ),
+      decoration: BoxDecoration(color: colorScheme.surfaceContainer),
       child: Row(
         children: [
           CircleAvatar(
@@ -213,7 +213,10 @@ class KeyHolderList extends ConsumerWidget {
                       child: Text(
                         keyHolder.displayName ??
                             (keyHolder.pubkey != null
-                                ? Helpers.encodeBech32(keyHolder.pubkey!, 'npub')
+                                ? Helpers.encodeBech32(
+                                    keyHolder.pubkey!,
+                                    'npub',
+                                  )
                                 : 'Unknown'),
                         style: theme.textTheme.bodyMedium?.copyWith(
                           fontWeight: FontWeight.bold,
@@ -241,7 +244,7 @@ class KeyHolderList extends ConsumerWidget {
                       color: colorScheme.onSurface.withValues(alpha: 0.7),
                     ),
                   ),
-                ]
+                ],
               ],
             ),
           ),
@@ -251,7 +254,10 @@ class KeyHolderList extends ConsumerWidget {
   }
 
   /// Extract key holders from lockbox shard data
-  List<KeyHolderInfo> _extractKeyHolders(Lockbox lockbox, String? currentPubkey) {
+  List<KeyHolderInfo> _extractKeyHolders(
+    Lockbox lockbox,
+    String? currentPubkey,
+  ) {
     // NEW: Try backupConfig first (owner will have this)
     if (lockbox.backupConfig != null) {
       final keyHolders = lockbox.backupConfig!.keyHolders.map((kh) {
@@ -287,12 +293,14 @@ class KeyHolderList extends ConsumerWidget {
     if (shard.ownerName != null) {
       final isCurrentUser = currentPubkey != null && shard.creatorPubkey == currentPubkey;
       final ownerDisplayName = isCurrentUser ? 'You (${shard.ownerName})' : shard.ownerName;
-      keyHolders.add(KeyHolderInfo(
-        pubkey: shard.creatorPubkey,
-        displayName: ownerDisplayName,
-        isOwner: true,
-        status: KeyHolderStatus.holdingKey,
-      ));
+      keyHolders.add(
+        KeyHolderInfo(
+          pubkey: shard.creatorPubkey,
+          displayName: ownerDisplayName,
+          isOwner: true,
+          status: KeyHolderStatus.holdingKey,
+        ),
+      );
     }
 
     // Add peers (key holders) - now a list of maps with name and pubkey
@@ -305,12 +313,14 @@ class KeyHolderList extends ConsumerWidget {
         final isCurrentUser = currentPubkey != null && peerPubkey == currentPubkey;
         final displayName = isCurrentUser && peerName != null ? 'You ($peerName)' : peerName;
 
-        keyHolders.add(KeyHolderInfo(
-          pubkey: peerPubkey,
-          displayName: displayName,
-          isOwner: peerPubkey == lockbox.ownerPubkey,
-          status: KeyHolderStatus.holdingKey, // Default for key holders with shards
-        ));
+        keyHolders.add(
+          KeyHolderInfo(
+            pubkey: peerPubkey,
+            displayName: displayName,
+            isOwner: peerPubkey == lockbox.ownerPubkey,
+            status: KeyHolderStatus.holdingKey, // Default for key holders with shards
+          ),
+        );
       }
     }
 

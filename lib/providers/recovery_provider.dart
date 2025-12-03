@@ -7,8 +7,10 @@ import 'key_provider.dart';
 
 /// Provider for recovery status of a specific lockbox
 /// This provides information about whether recovery is available and active recovery requests
-final recoveryStatusProvider =
-    Provider.family<AsyncValue<RecoveryStatus>, String>((ref, lockboxId) {
+final recoveryStatusProvider = Provider.family<AsyncValue<RecoveryStatus>, String>((
+  ref,
+  lockboxId,
+) {
   // Watch the lockbox async value and transform it to recovery status
   final lockboxAsync = ref.watch(lockboxProvider(lockboxId));
   final currentPubkeyAsync = ref.watch(currentPublicKeyProvider);
@@ -16,12 +18,14 @@ final recoveryStatusProvider =
   return lockboxAsync.when(
     data: (lockbox) {
       if (lockbox == null) {
-        return const AsyncValue.data(RecoveryStatus(
-          hasActiveRecovery: false,
-          canRecover: false,
-          activeRecoveryRequest: null,
-          isInitiator: false,
-        ));
+        return const AsyncValue.data(
+          RecoveryStatus(
+            hasActiveRecovery: false,
+            canRecover: false,
+            activeRecoveryRequest: null,
+            isInitiator: false,
+          ),
+        );
       }
 
       // Get active OR completed recovery requests
@@ -29,12 +33,16 @@ final recoveryStatusProvider =
       // Sort by requestedAt descending to get the most recent request first
       RecoveryRequest? manageableRequest;
       final manageableRequests = lockbox.recoveryRequests
-          .where((r) => r.status.isActive || r.status == RecoveryRequestStatus.completed)
+          .where(
+            (r) => r.status.isActive || r.status == RecoveryRequestStatus.completed,
+          )
           .toList();
 
       if (manageableRequests.isNotEmpty) {
         // Sort by requestedAt descending (most recent first)
-        manageableRequests.sort((a, b) => b.requestedAt.compareTo(a.requestedAt));
+        manageableRequests.sort(
+          (a, b) => b.requestedAt.compareTo(a.requestedAt),
+        );
         manageableRequest = manageableRequests.first;
       }
 
@@ -48,12 +56,14 @@ final recoveryStatusProvider =
           currentPubkey != null &&
           manageableRequest.initiatorPubkey == currentPubkey;
 
-      return AsyncValue.data(RecoveryStatus(
-        hasActiveRecovery: manageableRequest != null,
-        canRecover: canRecover,
-        activeRecoveryRequest: manageableRequest,
-        isInitiator: isInitiator,
-      ));
+      return AsyncValue.data(
+        RecoveryStatus(
+          hasActiveRecovery: manageableRequest != null,
+          canRecover: canRecover,
+          activeRecoveryRequest: manageableRequest,
+          isInitiator: isInitiator,
+        ),
+      );
     },
     loading: () => const AsyncValue.loading(),
     error: (error, stack) => AsyncValue.error(error, stack),
@@ -79,8 +89,10 @@ class RecoveryStatus {
 /// This watches the lockbox stream and extracts the recovery request, so it updates automatically
 // TODO: This should probably be a StreamProvider? I don't really understand the point of
 // providers that don't live update.
-final recoveryRequestByIdProvider =
-    Provider.family<AsyncValue<RecoveryRequest?>, String>((ref, recoveryRequestId) {
+final recoveryRequestByIdProvider = Provider.family<AsyncValue<RecoveryRequest?>, String>((
+  ref,
+  recoveryRequestId,
+) {
   // We need to find which lockbox contains this recovery request
   // Since we don't know the lockbox ID upfront, we get it from the service once
   // then watch that lockbox's stream
@@ -101,8 +113,9 @@ final recoveryRequestByIdProvider =
 
               // Find the recovery request in the lockbox
               try {
-                final request =
-                    lockbox.recoveryRequests.firstWhere((r) => r.id == recoveryRequestId);
+                final request = lockbox.recoveryRequests.firstWhere(
+                  (r) => r.id == recoveryRequestId,
+                );
                 return AsyncValue.data(request);
               } catch (e) {
                 return const AsyncValue.data(null);
@@ -129,8 +142,13 @@ final _recoveryRequestLockboxIdProvider =
 /// Provider for recovery status by recovery request ID
 /// This watches the recovery request and computes the status automatically
 final recoveryStatusByIdProvider =
-    Provider.family<AsyncValue<recovery_status.RecoveryStatus?>, String>((ref, recoveryRequestId) {
-  final requestAsync = ref.watch(recoveryRequestByIdProvider(recoveryRequestId));
+    Provider.family<AsyncValue<recovery_status.RecoveryStatus?>, String>((
+  ref,
+  recoveryRequestId,
+) {
+  final requestAsync = ref.watch(
+    recoveryRequestByIdProvider(recoveryRequestId),
+  );
 
   return requestAsync.when(
     data: (request) {
@@ -149,17 +167,19 @@ final recoveryStatusByIdProvider =
       final deniedCount = request.deniedCount;
       final canRecover = approvedCount >= threshold;
 
-      return AsyncValue.data(recovery_status.RecoveryStatus(
-        recoveryRequestId: recoveryRequestId,
-        totalKeyHolders: totalKeyHolders,
-        respondedCount: respondedCount,
-        approvedCount: approvedCount,
-        deniedCount: deniedCount,
-        collectedShardIds: collectedShardIds,
-        threshold: threshold,
-        canRecover: canRecover,
-        lastUpdated: DateTime.now(),
-      ));
+      return AsyncValue.data(
+        recovery_status.RecoveryStatus(
+          recoveryRequestId: recoveryRequestId,
+          totalKeyHolders: totalKeyHolders,
+          respondedCount: respondedCount,
+          approvedCount: approvedCount,
+          deniedCount: deniedCount,
+          collectedShardIds: collectedShardIds,
+          threshold: threshold,
+          canRecover: canRecover,
+          lastUpdated: DateTime.now(),
+        ),
+      );
     },
     loading: () => const AsyncValue.loading(),
     error: (error, stack) => AsyncValue.error(error, stack),

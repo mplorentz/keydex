@@ -19,17 +19,36 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
+      - name: Restore Pub cache with fallback
+        uses: actions/cache@v4
+        id: pub_cache_restore
+        with:
+          path: ~/.pub-cache
+          # Use explicit path instead of wildcard to avoid macOS hashFiles issues
+          key: pub-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
+          restore-keys: |
+            pub-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
+            pub-${{ runner.os }}-
+      
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version-file: 'pubspec.yaml'
           channel: 'stable'
           cache: true
-          cache-key: flutter-${{ runner.os }}-${{ hashFiles('**/pubspec.lock') }}
-          pub-cache-key: flutter-pub-${{ runner.os }}-${{ hashFiles('**/pubspec.lock') }}
+          # Use explicit path instead of wildcard to avoid macOS hashFiles issues
+          cache-key: flutter-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
+          pub-cache-key: flutter-pub-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
       
-      - name: Install dependencies
-        run: flutter pub get
+      - name: Save Pub cache (if updated)
+        if: steps.pub_cache_restore.outputs.cache-hit != 'true'
+        uses: actions/cache@v4
+        continue-on-error: true
+        with:
+          path: ~/.pub-cache
+          key: pub-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
+          restore-keys: |
+            pub-${{ runner.os }}-
       
       - name: Verify formatting
         run: dart format --set-exit-if-changed .

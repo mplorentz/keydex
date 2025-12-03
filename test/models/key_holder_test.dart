@@ -39,7 +39,12 @@ void main() {
       expect(npub.length, lessThan(70));
 
       // Verify it matches the expected npub
-      expect(npub, equals('npub16zsllwrkrwt5emz2805vhjewj6nsjrw0ge0latyrn2jv5gxf5k0q5l92l7'));
+      expect(
+        npub,
+        equals(
+          'npub16zsllwrkrwt5emz2805vhjewj6nsjrw0ge0latyrn2jv5gxf5k0q5l92l7',
+        ),
+      );
     });
 
     test('should return bech32 npub when pubkey is hex without 0x prefix', () {
@@ -57,14 +62,21 @@ void main() {
       expect(npub.length, lessThan(70));
 
       // Verify it matches the expected npub
-      expect(npub, equals('npub16zsllwrkrwt5emz2805vhjewj6nsjrw0ge0latyrn2jv5gxf5k0q5l92l7'));
+      expect(
+        npub,
+        equals(
+          'npub16zsllwrkrwt5emz2805vhjewj6nsjrw0ge0latyrn2jv5gxf5k0q5l92l7',
+        ),
+      );
     });
 
     test('displayName uses npub when name is null', () {
       // Given: A KeyHolder with hex pubkey (Nostr convention: no 0x prefix)
       const hexPubkey = 'd0a1ffb8761b974cec4a3be8cbcb2e96a7090dcf465ffeac839aa4ca20c9a59e';
-      final keyHolder =
-          createTestKeyHolder(hexPubkey, name: null); // No name, should use npub for display
+      final keyHolder = createTestKeyHolder(
+        hexPubkey,
+        name: null,
+      ); // No name, should use npub for display
 
       // When: Getting the display name
       final displayName = keyHolder.displayName;

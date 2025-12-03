@@ -27,54 +27,18 @@ final keydexTheme = ThemeData(
       color: Color(0xFF676f62), // Secondary text color
       fontFamily: 'OpenSans', // Override to OpenSans for labels
     ),
-    displayLarge: TextStyle(
-      color: Color(0xFF21271C),
-      fontFamily: 'Archivo',
-    ),
-    displayMedium: TextStyle(
-      color: Color(0xFF21271C),
-      fontFamily: 'Archivo',
-    ),
-    displaySmall: TextStyle(
-      color: Color(0xFF21271C),
-      fontFamily: 'Archivo',
-    ),
-    headlineLarge: TextStyle(
-      color: Color(0xFF21271C),
-      fontFamily: 'Archivo',
-    ),
-    headlineMedium: TextStyle(
-      color: Color(0xFF21271C),
-      fontFamily: 'Archivo',
-    ),
-    headlineSmall: TextStyle(
-      color: Color(0xFF21271C),
-      fontFamily: 'Archivo',
-    ),
-    titleLarge: TextStyle(
-      color: Color(0xFF21271C),
-      fontFamily: 'Archivo',
-    ),
-    titleMedium: TextStyle(
-      color: Color(0xFF21271C),
-      fontFamily: 'Archivo',
-    ),
-    titleSmall: TextStyle(
-      color: Color(0xFF21271C),
-      fontFamily: 'Archivo',
-    ),
-    bodyLarge: TextStyle(
-      color: Color(0xFF21271C),
-      fontFamily: 'Archivo',
-    ),
-    labelLarge: TextStyle(
-      color: Color(0xFF21271C),
-      fontFamily: 'Archivo',
-    ),
-    labelMedium: TextStyle(
-      color: Color(0xFF21271C),
-      fontFamily: 'Archivo',
-    ),
+    displayLarge: TextStyle(color: Color(0xFF21271C), fontFamily: 'Archivo'),
+    displayMedium: TextStyle(color: Color(0xFF21271C), fontFamily: 'Archivo'),
+    displaySmall: TextStyle(color: Color(0xFF21271C), fontFamily: 'Archivo'),
+    headlineLarge: TextStyle(color: Color(0xFF21271C), fontFamily: 'Archivo'),
+    headlineMedium: TextStyle(color: Color(0xFF21271C), fontFamily: 'Archivo'),
+    headlineSmall: TextStyle(color: Color(0xFF21271C), fontFamily: 'Archivo'),
+    titleLarge: TextStyle(color: Color(0xFF21271C), fontFamily: 'Archivo'),
+    titleMedium: TextStyle(color: Color(0xFF21271C), fontFamily: 'Archivo'),
+    titleSmall: TextStyle(color: Color(0xFF21271C), fontFamily: 'Archivo'),
+    bodyLarge: TextStyle(color: Color(0xFF21271C), fontFamily: 'Archivo'),
+    labelLarge: TextStyle(color: Color(0xFF21271C), fontFamily: 'Archivo'),
+    labelMedium: TextStyle(color: Color(0xFF21271C), fontFamily: 'Archivo'),
   ),
   cardTheme: const CardThemeData(
     color: Color(0xFFc1c4b1), // Same as scaffold background
@@ -106,7 +70,11 @@ final keydexTheme = ThemeData(
     ),
     hintStyle: TextStyle(
       color: Color.fromRGBO(
-          103, 111, 98, 0.6), // Lighter version of secondary text (0xFF676f62 at 60%)
+        103,
+        111,
+        98,
+        0.6,
+      ), // Lighter version of secondary text (0xFF676f62 at 60%)
       fontFamily: 'Archivo',
     ),
   ),
@@ -202,7 +170,9 @@ final ThemeData keydex2 = ThemeData(
   // Primary buttons: accent with ivory text
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ElevatedButton.styleFrom(
-      backgroundColor: const Color(0xFF243036), // Default Elevated = neutral primary
+      backgroundColor: const Color(
+        0xFF243036,
+      ), // Default Elevated = neutral primary
       foregroundColor: const Color(0xFFFDFFF0), // Ivory text
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -229,7 +199,10 @@ final ThemeData keydex2 = ThemeData(
   snackBarTheme: const SnackBarThemeData(
     behavior: SnackBarBehavior.floating,
     backgroundColor: Color(0xFF2C3227),
-    contentTextStyle: TextStyle(color: Color(0xFFE9EDD9), fontFamily: 'OpenSans'),
+    contentTextStyle: TextStyle(
+      color: Color(0xFFE9EDD9),
+      fontFamily: 'OpenSans',
+    ),
   ),
   // List tiles to align with LockboxCard spacing/shape and icon emphasis
   listTileTheme: ListTileThemeData(
@@ -260,62 +233,95 @@ final ThemeData keydex2 = ThemeData(
   fontFamily: 'OpenSans',
   textTheme: const TextTheme(
     // Big/section titles
-    displayLarge:
-        TextStyle(fontFamily: 'Archivo', fontWeight: FontWeight.w700, color: Color(0xFF21271C)),
-    displayMedium:
-        TextStyle(fontFamily: 'Archivo', fontWeight: FontWeight.w700, color: Color(0xFF21271C)),
+    displayLarge: TextStyle(
+      fontFamily: 'Archivo',
+      fontWeight: FontWeight.w700,
+      color: Color(0xFF21271C),
+    ),
+    displayMedium: TextStyle(
+      fontFamily: 'Archivo',
+      fontWeight: FontWeight.w700,
+      color: Color(0xFF21271C),
+    ),
     displaySmall: TextStyle(
-        fontFamily: 'Archivo',
-        fontWeight: FontWeight.w700,
-        fontSize: 28,
-        height: 36 / 28,
-        color: Color(0xFF21271C)),
-    headlineLarge:
-        TextStyle(fontFamily: 'Archivo', fontWeight: FontWeight.w600, color: Color(0xFF21271C)),
-    headlineMedium:
-        TextStyle(fontFamily: 'Archivo', fontWeight: FontWeight.w600, color: Color(0xFF21271C)),
-    headlineSmall:
-        TextStyle(fontFamily: 'Archivo', fontWeight: FontWeight.w500, color: Color(0xFF21271C)),
+      fontFamily: 'Archivo',
+      fontWeight: FontWeight.w700,
+      fontSize: 28,
+      height: 36 / 28,
+      color: Color(0xFF21271C),
+    ),
+    headlineLarge: TextStyle(
+      fontFamily: 'Archivo',
+      fontWeight: FontWeight.w600,
+      color: Color(0xFF21271C),
+    ),
+    headlineMedium: TextStyle(
+      fontFamily: 'Archivo',
+      fontWeight: FontWeight.w600,
+      color: Color(0xFF21271C),
+    ),
+    headlineSmall: TextStyle(
+      fontFamily: 'Archivo',
+      fontWeight: FontWeight.w500,
+      color: Color(0xFF21271C),
+    ),
     // Body content
     bodyLarge: TextStyle(
-        fontFamily: 'OpenSans',
-        fontWeight: FontWeight.w500,
-        fontSize: 14,
-        height: 22 / 14,
-        color: Color(0xFF21271C)),
+      fontFamily: 'OpenSans',
+      fontWeight: FontWeight.w500,
+      fontSize: 14,
+      height: 22 / 14,
+      color: Color(0xFF21271C),
+    ),
     bodyMedium: TextStyle(
-        fontFamily: 'OpenSans',
-        fontWeight: FontWeight.w400,
-        fontSize: 14,
-        height: 20 / 14,
-        color: Color(0xFF21271C)),
+      fontFamily: 'OpenSans',
+      fontWeight: FontWeight.w400,
+      fontSize: 14,
+      height: 20 / 14,
+      color: Color(0xFF21271C),
+    ),
     bodySmall: TextStyle(
-        fontFamily: 'OpenSans',
-        fontWeight: FontWeight.w400,
-        fontSize: 12,
-        height: 16 / 12,
-        color: Color(0xFF676F62)),
+      fontFamily: 'OpenSans',
+      fontWeight: FontWeight.w400,
+      fontSize: 12,
+      height: 16 / 12,
+      color: Color(0xFF676F62),
+    ),
     // Labels
     labelSmall: TextStyle(
-        fontFamily: 'OpenSans',
-        fontWeight: FontWeight.w500,
-        fontSize: 12,
-        height: 16 / 12,
-        color: Color(0xFF5D695E)),
-    labelMedium:
-        TextStyle(fontFamily: 'OpenSans', fontWeight: FontWeight.w600, color: Color(0xFF21271C)),
-    labelLarge:
-        TextStyle(fontFamily: 'OpenSans', fontWeight: FontWeight.w600, color: Color(0xFF21271C)),
+      fontFamily: 'OpenSans',
+      fontWeight: FontWeight.w500,
+      fontSize: 12,
+      height: 16 / 12,
+      color: Color(0xFF5D695E),
+    ),
+    labelMedium: TextStyle(
+      fontFamily: 'OpenSans',
+      fontWeight: FontWeight.w600,
+      color: Color(0xFF21271C),
+    ),
+    labelLarge: TextStyle(
+      fontFamily: 'OpenSans',
+      fontWeight: FontWeight.w600,
+      color: Color(0xFF21271C),
+    ),
     titleLarge: TextStyle(
-        fontFamily: 'Archivo',
-        fontWeight: FontWeight.w600,
-        fontSize: 22,
-        height: 24 / 18,
-        color: Color(0xFF21271C)),
-    titleMedium:
-        TextStyle(fontFamily: 'Archivo', fontWeight: FontWeight.w600, color: Color(0xFF21271C)),
-    titleSmall:
-        TextStyle(fontFamily: 'Archivo', fontWeight: FontWeight.w600, color: Color(0xFF21271C)),
+      fontFamily: 'Archivo',
+      fontWeight: FontWeight.w600,
+      fontSize: 22,
+      height: 24 / 18,
+      color: Color(0xFF21271C),
+    ),
+    titleMedium: TextStyle(
+      fontFamily: 'Archivo',
+      fontWeight: FontWeight.w600,
+      color: Color(0xFF21271C),
+    ),
+    titleSmall: TextStyle(
+      fontFamily: 'Archivo',
+      fontWeight: FontWeight.w600,
+      color: Color(0xFF21271C),
+    ),
   ),
   visualDensity: VisualDensity.adaptivePlatformDensity,
 );
@@ -473,9 +479,7 @@ ThemeData keydex3(Brightness brightness) {
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(4),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
     ),
 
     // Input fields: subtle borders
@@ -519,9 +523,7 @@ ThemeData keydex3(Brightness brightness) {
         backgroundColor: buttonBg,
         foregroundColor: buttonText,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         elevation: 2, // Subtle shadow
         shadowColor: isDark ? buttonBg.withValues(alpha: 0.1) : buttonBg.withValues(alpha: 0.1),
       ),
@@ -532,9 +534,7 @@ ThemeData keydex3(Brightness brightness) {
       style: OutlinedButton.styleFrom(
         foregroundColor: primaryText,
         side: BorderSide(color: primaryText, width: 1),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
     ),
@@ -543,9 +543,7 @@ ThemeData keydex3(Brightness brightness) {
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
         foregroundColor: primaryText,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       ),
     ),
@@ -560,9 +558,7 @@ ThemeData keydex3(Brightness brightness) {
     // List tiles
     listTileTheme: ListTileThemeData(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(4),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
       iconColor: primaryText, // Icons use primary text color for high contrast
       textColor: primaryText,
       titleTextStyle: TextStyle(

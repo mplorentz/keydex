@@ -93,7 +93,9 @@ class InvitationService {
     }
 
     if (!areValidRelayUrls(relayUrls)) {
-      throw ArgumentError('Invalid relay URLs: must be 1-3 valid WebSocket URLs');
+      throw ArgumentError(
+        'Invalid relay URLs: must be 1-3 valid WebSocket URLs',
+      );
     }
 
     // Get current user's pubkey
@@ -145,7 +147,9 @@ class InvitationService {
     try {
       await _relayScanService.syncRelaysFromUrls(relayUrls);
       await _relayScanService.ensureScanningStarted();
-      Log.info('Synced ${relayUrls.length} relay(s) from invitation to RelayScanService');
+      Log.info(
+        'Synced ${relayUrls.length} relay(s) from invitation to RelayScanService',
+      );
     } catch (e) {
       Log.error('Error syncing relays from invitation to RelayScanService', e);
       // Don't fail invitation generation if relay sync fails
@@ -160,7 +164,9 @@ class InvitationService {
         inviteeName: inviteeName.trim(),
         relayUrls: relayUrls,
       );
-      Log.info('Added invited key holder placeholder for $inviteeName to backup config');
+      Log.info(
+        'Added invited key holder placeholder for $inviteeName to backup config',
+      );
     } catch (e) {
       Log.error('Error adding invited key holder to backup config', e);
       // Don't fail invitation generation if this fails
@@ -169,7 +175,9 @@ class InvitationService {
     // Notify listeners
     _notifyInvitationsChanged();
 
-    Log.info('Generated invitation link for lockbox $lockboxId, invitee: $inviteeName');
+    Log.info(
+      'Generated invitation link for lockbox $lockboxId, invitee: $inviteeName',
+    );
 
     return pendingInvitation;
   }
@@ -208,7 +216,8 @@ class InvitationService {
     // Validate invite code format first
     if (!isValidInviteCodeFormat(inviteCode)) {
       throw ArgumentError(
-          'Invalid invitation code format. The code must be a valid Base64URL string.');
+        'Invalid invitation code format. The code must be a valid Base64URL string.',
+      );
     }
 
     return await _loadInvitation(inviteCode);
@@ -259,7 +268,9 @@ class InvitationService {
     // Notify listeners
     _notifyInvitationsChanged();
 
-    Log.info('Created received invitation record for inviteCode=$inviteCode, lockboxId=$lockboxId');
+    Log.info(
+      'Created received invitation record for inviteCode=$inviteCode, lockboxId=$lockboxId',
+    );
   }
 
   /// Processes invitation redemption when invitee accepts
@@ -277,12 +288,15 @@ class InvitationService {
     // Validate invite code format first
     if (!isValidInviteCodeFormat(inviteCode)) {
       throw ArgumentError(
-          'Invalid invitation code format. The code must be a valid Base64URL string.');
+        'Invalid invitation code format. The code must be a valid Base64URL string.',
+      );
     }
 
     // Validate invitee pubkey format
     if (!isValidHexPubkey(inviteePubkey)) {
-      throw ArgumentError('Invalid invitee pubkey format: must be 64 hex characters');
+      throw ArgumentError(
+        'Invalid invitee pubkey format: must be 64 hex characters',
+      );
     }
 
     // Load invitation
@@ -297,18 +311,24 @@ class InvitationService {
     }
 
     if (invitation.status == InvitationStatus.invalidated) {
-      throw InvitationInvalidatedException(inviteCode, 'Invitation has been invalidated');
+      throw InvitationInvalidatedException(
+        inviteCode,
+        'Invitation has been invalidated',
+      );
     }
 
     if (!invitation.status.canRedeem) {
-      throw ArgumentError('Invitation cannot be redeemed in current status: ${invitation.status}');
+      throw ArgumentError(
+        'Invitation cannot be redeemed in current status: ${invitation.status}',
+      );
     }
 
     // Check if user is trying to redeem their own invitation (lockbox owner)
     final ownerPubkey = await _loginService.getCurrentPublicKey();
     if (ownerPubkey != null && invitation.ownerPubkey == ownerPubkey) {
       throw ArgumentError(
-          'You cannot redeem an invitation to your own lockbox. You are already the owner.');
+        'You cannot redeem an invitation to your own lockbox. You are already the owner.',
+      );
     }
 
     // Check if user is already a key holder
@@ -316,12 +336,15 @@ class InvitationService {
     final lockbox = await repository.getLockbox(invitation.lockboxId);
     if (lockbox != null) {
       final backupConfig = lockbox.backupConfig;
-      final isAlreadyKeyHolder =
-          backupConfig?.keyHolders.any((holder) => holder.pubkey == inviteePubkey) ?? false;
+      final isAlreadyKeyHolder = backupConfig?.keyHolders.any(
+            (holder) => holder.pubkey == inviteePubkey,
+          ) ??
+          false;
 
       if (isAlreadyKeyHolder) {
         throw ArgumentError(
-            'You are already a key holder for this lockbox. This invitation has already been accepted.');
+          'You are already a key holder for this lockbox. This invitation has already been accepted.',
+        );
       }
 
       // Lockbox exists - add invitee to backup config
@@ -347,7 +370,8 @@ class InvitationService {
 
       await repository.addLockbox(lockboxStub);
       Log.info(
-          'Created lockbox stub for invitee: ${invitation.lockboxId} (${invitation.lockboxName})');
+        'Created lockbox stub for invitee: ${invitation.lockboxId} (${invitation.lockboxName})',
+      );
     }
 
     // Update invitation status to redeemed
@@ -371,7 +395,8 @@ class InvitationService {
       if (rsvpEventId == null) {
         // RSVP event failed to publish - throw error so UI can show appropriate message
         throw Exception(
-            'Failed to publish RSVP event to relays. Please check your relay connections.');
+          'Failed to publish RSVP event to relays. Please check your relay connections.',
+        );
       }
 
       Log.info('RSVP event published successfully: $rsvpEventId');
@@ -379,7 +404,9 @@ class InvitationService {
       Log.error('Error sending RSVP event for invitation $inviteCode', e);
       // Re-throw so the UI can handle it appropriately
       // The invitation is already marked as redeemed, but RSVP failed
-      throw Exception('Invitation was accepted locally, but failed to notify the owner: $e');
+      throw Exception(
+        'Invitation was accepted locally, but failed to notify the owner: $e',
+      );
     }
 
     // NOW sync relays from invitation and start scanning so invitee can receive shards
@@ -388,9 +415,13 @@ class InvitationService {
       await _relayScanService.syncRelaysFromUrls(invitation.relayUrls);
       await _relayScanService.ensureScanningStarted();
       Log.info(
-          'Synced ${invitation.relayUrls.length} relay(s) from invitation to RelayScanService (invitee side)');
+        'Synced ${invitation.relayUrls.length} relay(s) from invitation to RelayScanService (invitee side)',
+      );
     } catch (e) {
-      Log.error('Error syncing relays from invitation to RelayScanService (invitee side)', e);
+      Log.error(
+        'Error syncing relays from invitation to RelayScanService (invitee side)',
+        e,
+      );
       // Don't fail invitation redemption if relay sync fails
     }
 
@@ -413,7 +444,8 @@ class InvitationService {
     // Validate invite code format first
     if (!isValidInviteCodeFormat(inviteCode)) {
       throw ArgumentError(
-          'Invalid invitation code format. The code must be a valid Base64URL string.');
+        'Invalid invitation code format. The code must be a valid Base64URL string.',
+      );
     }
 
     // Load invitation
@@ -428,11 +460,16 @@ class InvitationService {
     }
 
     if (invitation.status == InvitationStatus.invalidated) {
-      throw InvitationInvalidatedException(inviteCode, 'Invitation has been invalidated');
+      throw InvitationInvalidatedException(
+        inviteCode,
+        'Invitation has been invalidated',
+      );
     }
 
     if (!invitation.status.canRedeem) {
-      throw ArgumentError('Invitation cannot be denied in current status: ${invitation.status}');
+      throw ArgumentError(
+        'Invitation cannot be denied in current status: ${invitation.status}',
+      );
     }
 
     // Update invitation status to denied
@@ -455,7 +492,9 @@ class InvitationService {
     // Notify listeners
     _notifyInvitationsChanged();
 
-    Log.info('Denied invitation $inviteCode${reason != null ? ", reason: $reason" : ""}');
+    Log.info(
+      'Denied invitation $inviteCode${reason != null ? ", reason: $reason" : ""}',
+    );
   }
 
   /// Invalidates an invitation (e.g., when invitee removed from backup config)
@@ -474,7 +513,9 @@ class InvitationService {
     }
 
     // Update invitation status to invalidated
-    final invalidatedInvitation = invitation.updateStatus(InvitationStatus.invalidated);
+    final invalidatedInvitation = invitation.updateStatus(
+      InvitationStatus.invalidated,
+    );
     await _saveInvitation(invalidatedInvitation);
 
     // If invitation was already redeemed, send invalid event to notify invitee
@@ -505,13 +546,12 @@ class InvitationService {
   /// Updates invitation status to redeemed.
   /// Adds invitee to backup config if not already present.
   /// Updates key holder status to "awaiting key".
-  Future<void> processRsvpEvent({
-    required Nip01Event event,
-  }) async {
+  Future<void> processRsvpEvent({required Nip01Event event}) async {
     // Validate event kind
     if (event.kind != NostrKind.invitationRsvp.value) {
       throw ArgumentError(
-          'Invalid event kind: expected ${NostrKind.invitationRsvp.value}, got ${event.kind}');
+        'Invalid event kind: expected ${NostrKind.invitationRsvp.value}, got ${event.kind}',
+      );
     }
 
     // Get current user's pubkey to verify we're the owner
@@ -529,7 +569,8 @@ class InvitationService {
     } catch (e) {
       Log.error('Error parsing RSVP event JSON', e);
       throw Exception(
-          'Failed to parse RSVP event content. The event may be corrupted or encrypted incorrectly: $e');
+        'Failed to parse RSVP event content. The event may be corrupted or encrypted incorrectly: $e',
+      );
     }
 
     // Extract invite code from payload
@@ -545,7 +586,9 @@ class InvitationService {
     }
 
     if (inviteePubkey != event.pubKey) {
-      throw ArgumentError('Invitee pubkey mismatch: event pubkey != payload pubkey');
+      throw ArgumentError(
+        'Invitee pubkey mismatch: event pubkey != payload pubkey',
+      );
     }
 
     // Load invitation
@@ -577,7 +620,9 @@ class InvitationService {
     // This handles the case where the key holder was added to the backup config
     // but the UI hasn't saved yet
     try {
-      final backupConfig = await repository.getBackupConfig(invitation.lockboxId);
+      final backupConfig = await repository.getBackupConfig(
+        invitation.lockboxId,
+      );
       if (backupConfig != null) {
         final keyHolderIndex = backupConfig.keyHolders.indexWhere(
           (holder) => holder.pubkey == inviteePubkey,
@@ -586,7 +631,9 @@ class InvitationService {
           final holder = backupConfig.keyHolders[keyHolderIndex];
           if (holder.status == KeyHolderStatus.invited) {
             // Update status to awaitingKey
-            final updatedKeyHolders = List<KeyHolder>.from(backupConfig.keyHolders);
+            final updatedKeyHolders = List<KeyHolder>.from(
+              backupConfig.keyHolders,
+            );
             updatedKeyHolders[keyHolderIndex] = copyKeyHolder(
               holder,
               status: KeyHolderStatus.awaitingKey,
@@ -596,8 +643,13 @@ class InvitationService {
               keyHolders: updatedKeyHolders,
               lastUpdated: DateTime.now(),
             );
-            await repository.updateBackupConfig(invitation.lockboxId, updatedConfig);
-            Log.info('Updated key holder $inviteePubkey status from invited to awaitingKey');
+            await repository.updateBackupConfig(
+              invitation.lockboxId,
+              updatedConfig,
+            );
+            Log.info(
+              'Updated key holder $inviteePubkey status from invited to awaitingKey',
+            );
           }
         }
       }
@@ -609,7 +661,9 @@ class InvitationService {
     // Notify listeners
     _notifyInvitationsChanged();
 
-    Log.info('Processed RSVP event for invitation $inviteCode from invitee $inviteePubkey');
+    Log.info(
+      'Processed RSVP event for invitation $inviteCode from invitee $inviteePubkey',
+    );
   }
 
   /// Processes denial event received from invitee
@@ -618,13 +672,12 @@ class InvitationService {
   /// Validates invite code.
   /// Updates invitation status to denied.
   /// Invalidates invitation code.
-  Future<void> processDenialEvent({
-    required Nip01Event event,
-  }) async {
+  Future<void> processDenialEvent({required Nip01Event event}) async {
     // Validate event kind
     if (event.kind != NostrKind.invitationDenial.value) {
       throw ArgumentError(
-          'Invalid event kind: expected ${NostrKind.invitationDenial.value}, got ${event.kind}');
+        'Invalid event kind: expected ${NostrKind.invitationDenial.value}, got ${event.kind}',
+      );
     }
 
     // Get current user's pubkey to verify we're the owner
@@ -642,7 +695,8 @@ class InvitationService {
     } catch (e) {
       Log.error('Error parsing denial event JSON', e);
       throw Exception(
-          'Failed to parse denial event content. The event may be corrupted or encrypted incorrectly: $e');
+        'Failed to parse denial event content. The event may be corrupted or encrypted incorrectly: $e',
+      );
     }
 
     // Extract invite code from payload
@@ -752,7 +806,9 @@ class InvitationService {
         relays: relayUrls, // Use relay URLs from invitation
       );
       await repository.updateBackupConfig(lockboxId, backupConfig);
-      Log.info('Created new backup config for lockbox $lockboxId with key holder $pubkey');
+      Log.info(
+        'Created new backup config for lockbox $lockboxId with key holder $pubkey',
+      );
 
       // Sync relays from backup config to RelayScanService
       await _syncRelaysFromBackupConfig(backupConfig);
@@ -761,7 +817,9 @@ class InvitationService {
       // This must be checked BEFORE checking for existing pubkey, otherwise we'll miss
       // updating invited key holders when RSVP comes in
       if (inviteCode != null) {
-        Log.debug('Looking for invited key holder with invite code: "$inviteCode"');
+        Log.debug(
+          'Looking for invited key holder with invite code: "$inviteCode"',
+        );
 
         final invitedHolderIndex = backupConfig.keyHolders.indexWhere(
           (holder) =>
@@ -772,7 +830,9 @@ class InvitationService {
 
         if (invitedHolderIndex != -1) {
           // Update the invited key holder with pubkey and change status to awaitingKey
-          final updatedKeyHolders = List<KeyHolder>.from(backupConfig.keyHolders);
+          final updatedKeyHolders = List<KeyHolder>.from(
+            backupConfig.keyHolders,
+          );
           updatedKeyHolders[invitedHolderIndex] = copyKeyHolder(
             updatedKeyHolders[invitedHolderIndex],
             pubkey: pubkey,
@@ -787,13 +847,16 @@ class InvitationService {
           );
           await repository.updateBackupConfig(lockboxId, updatedConfig);
           Log.info(
-              'Updated invited key holder with invite code "$inviteCode" - added pubkey $pubkey and changed status to awaitingKey');
+            'Updated invited key holder with invite code "$inviteCode" - added pubkey $pubkey and changed status to awaitingKey',
+          );
 
           // Sync relays from backup config to RelayScanService
           await _syncRelaysFromBackupConfig(updatedConfig);
           return;
         } else {
-          Log.debug('No invited key holder found with invite code "$inviteCode"');
+          Log.debug(
+            'No invited key holder found with invite code "$inviteCode"',
+          );
         }
       } else {
         Log.debug('No invite code provided, skipping invited key holder check');
@@ -810,7 +873,8 @@ class InvitationService {
             existingHolder.status == KeyHolderStatus.awaitingNewKey) {
           // Status is already appropriate or will be updated elsewhere
           Log.debug(
-              'Key holder $pubkey already exists in backup config with status ${existingHolder.status}');
+            'Key holder $pubkey already exists in backup config with status ${existingHolder.status}',
+          );
         } else {
           Log.debug('Key holder $pubkey already exists in backup config');
         }
@@ -827,7 +891,9 @@ class InvitationService {
         lastUpdated: DateTime.now(),
       );
       await repository.updateBackupConfig(lockboxId, updatedConfig);
-      Log.info('Added key holder $pubkey to backup config for lockbox $lockboxId');
+      Log.info(
+        'Added key holder $pubkey to backup config for lockbox $lockboxId',
+      );
 
       // Sync relays from backup config to RelayScanService
       await _syncRelaysFromBackupConfig(updatedConfig);
@@ -845,9 +911,13 @@ class InvitationService {
       await _relayScanService.syncRelaysFromUrls(backupConfig.relays);
       await _relayScanService.ensureScanningStarted();
       Log.info(
-          'Synced ${backupConfig.relays.length} relay(s) from backup config to RelayScanService');
+        'Synced ${backupConfig.relays.length} relay(s) from backup config to RelayScanService',
+      );
     } catch (e) {
-      Log.error('Error syncing relays from backup config to RelayScanService', e);
+      Log.error(
+        'Error syncing relays from backup config to RelayScanService',
+        e,
+      );
       // Don't fail the operation if relay sync fails
     }
   }
@@ -881,14 +951,18 @@ class InvitationService {
         relays: relayUrls,
       );
       await repository.updateBackupConfig(lockboxId, backupConfig);
-      Log.info('Created backup config with invited key holder for $inviteeName');
+      Log.info(
+        'Created backup config with invited key holder for $inviteeName',
+      );
     } else {
       // Check if this invite code already exists (avoid duplicates)
       final existingWithCode =
           backupConfig.keyHolders.where((holder) => holder.inviteCode == inviteCode).toList();
 
       if (existingWithCode.isNotEmpty) {
-        Log.info('Invited key holder with invite code $inviteCode already exists, skipping');
+        Log.info(
+          'Invited key holder with invite code $inviteCode already exists, skipping',
+        );
         return;
       }
 
@@ -902,7 +976,9 @@ class InvitationService {
         lastUpdated: DateTime.now(),
       );
       await repository.updateBackupConfig(lockboxId, updatedConfig);
-      Log.info('Added invited key holder for $inviteeName to existing backup config');
+      Log.info(
+        'Added invited key holder for $inviteeName to existing backup config',
+      );
 
       // Sync relays from updated backup config
       await _syncRelaysFromBackupConfig(updatedConfig);

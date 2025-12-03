@@ -19,10 +19,7 @@ class RowButtonConfig {
 class RowButtonStack extends StatelessWidget {
   final List<RowButtonConfig> buttons;
 
-  const RowButtonStack({
-    super.key,
-    required this.buttons,
-  });
+  const RowButtonStack({super.key, required this.buttons});
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +29,7 @@ class RowButtonStack extends StatelessWidget {
 
     // Generate gradient colors based on theme
     final colors = _generateGradientColors(buttons.length, context);
-    
+
     // Get theme colors for text - all buttons use onSurface for outlined style
     final theme = Theme.of(context);
     final buttonTextColor = theme.colorScheme.onSurface; // Use onSurface for all buttons
@@ -57,10 +54,10 @@ class RowButtonStack extends StatelessWidget {
   List<Color> _generateGradientColors(int count, BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    
+
     // Primary button color (black in light mode, white in dark mode)
     final primaryColor = theme.colorScheme.primary;
-    
+
     if (count == 1) {
       return [primaryColor];
     }
@@ -70,12 +67,14 @@ class RowButtonStack extends StatelessWidget {
     // For the new black/white theme, create a gradient using grays
     // Bottom button (primary) is the theme's button color
     // Buttons above get progressively lighter (in dark mode) or darker (in light mode)
-    
+
     if (isDark) {
       // Dark mode: primary button (#404040) at bottom, progressively lighter grays going up
       const lightestGray = Color(0xFF606060); // Lighter gray for top buttons
-      const lighterGray = Color(0xFF505050); // Slightly lighter than primary for buttons above
-      
+      const lighterGray = Color(
+        0xFF505050,
+      ); // Slightly lighter than primary for buttons above
+
       for (int i = 0; i < count; i++) {
         if (i == count - 1) {
           // Bottom button is always primary (#404040)
@@ -88,9 +87,13 @@ class RowButtonStack extends StatelessWidget {
       }
     } else {
       // Light mode: primary button (#808080) at bottom, progressively darker grays going up
-      const darkestGray = Color(0xFF606060); // Darker gray for buttons above primary
-      const lighterGray = Color(0xFF707070); // Slightly lighter than primary for top buttons
-      
+      const darkestGray = Color(
+        0xFF606060,
+      ); // Darker gray for buttons above primary
+      const lighterGray = Color(
+        0xFF707070,
+      ); // Slightly lighter than primary for top buttons
+
       for (int i = 0; i < count; i++) {
         if (i == count - 1) {
           // Bottom button is always primary (#808080)

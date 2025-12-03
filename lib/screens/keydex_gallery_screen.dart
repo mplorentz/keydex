@@ -30,10 +30,19 @@ class KeydexGallery extends StatelessWidget {
                 spacing: 12,
                 runSpacing: 12,
                 children: [
-                  ElevatedButton(onPressed: () {}, child: const Text('Primary')),
-                  OutlinedButton(onPressed: () {}, child: const Text('Secondary')),
+                  ElevatedButton(
+                    onPressed: () {},
+                    child: const Text('Primary'),
+                  ),
+                  OutlinedButton(
+                    onPressed: () {},
+                    child: const Text('Secondary'),
+                  ),
                   TextButton(onPressed: () {}, child: const Text('Tertiary')),
-                  IconButton(onPressed: () {}, icon: const Icon(Icons.more_horiz)),
+                  IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.more_horiz),
+                  ),
                 ],
               ),
               const SizedBox(height: 24),
@@ -41,7 +50,9 @@ class KeydexGallery extends StatelessWidget {
               const SizedBox(height: 8),
               const Text("Here is some explanatory body text for a field."),
               const SizedBox(height: 8),
-              const TextField(decoration: InputDecoration(labelText: 'Vault name')),
+              const TextField(
+                decoration: InputDecoration(labelText: 'Vault name'),
+              ),
               const SizedBox(height: 12),
               const Row(
                 children: [
@@ -92,9 +103,9 @@ class KeydexGallery extends StatelessWidget {
                 children: [
                   ElevatedButton(
                     onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Saved!')),
-                      );
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(const SnackBar(content: Text('Saved!')));
                     },
                     child: const Text('Show toast'),
                   ),

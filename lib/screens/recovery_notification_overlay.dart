@@ -41,7 +41,9 @@ class _RecoveryNotificationOverlayState extends ConsumerState<RecoveryNotificati
   }
 
   void _listenToNotifications() {
-    ref.read(recoveryServiceProvider).notificationStream.listen((notifications) {
+    ref.read(recoveryServiceProvider).notificationStream.listen((
+      notifications,
+    ) {
       if (mounted) {
         setState(() {
           _pendingNotifications = notifications;
@@ -58,9 +60,7 @@ class _RecoveryNotificationOverlayState extends ConsumerState<RecoveryNotificati
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => RecoveryRequestDetailScreen(
-              recoveryRequest: request,
-            ),
+            builder: (context) => RecoveryRequestDetailScreen(recoveryRequest: request),
           ),
         );
       }
@@ -182,7 +182,10 @@ class _RecoveryNotificationOverlayState extends ConsumerState<RecoveryNotificati
       ),
       data: (lockbox) {
         final vaultName = lockbox?.name ?? 'Unknown Vault';
-        final initiatorName = _getInitiatorName(lockbox, request.initiatorPubkey);
+        final initiatorName = _getInitiatorName(
+          lockbox,
+          request.initiatorPubkey,
+        );
 
         return Card(
           margin: const EdgeInsets.only(bottom: 8),
@@ -276,8 +279,9 @@ class _RecoveryNotificationOverlayState extends ConsumerState<RecoveryNotificati
     // Also check backupConfig
     if (lockbox.backupConfig != null) {
       try {
-        final keyHolder =
-            lockbox.backupConfig!.keyHolders.firstWhere((kh) => kh.pubkey == initiatorPubkey);
+        final keyHolder = lockbox.backupConfig!.keyHolders.firstWhere(
+          (kh) => kh.pubkey == initiatorPubkey,
+        );
         return keyHolder.displayName;
       } catch (e) {
         // Key holder not found in backupConfig

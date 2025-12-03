@@ -31,55 +31,25 @@ import 'package:ndk/shared/nips/nip01/key_pair.dart' as _i3;
 // ignore_for_file: camel_case_types
 // ignore_for_file: subtype_of_sealed_class
 
-class _FakeNdkBroadcastResponse_0 extends _i1.SmartFake
-    implements _i2.NdkBroadcastResponse {
-  _FakeNdkBroadcastResponse_0(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+class _FakeNdkBroadcastResponse_0 extends _i1.SmartFake implements _i2.NdkBroadcastResponse {
+  _FakeNdkBroadcastResponse_0(Object parent, Invocation parentInvocation)
+      : super(parent, parentInvocation);
 }
 
 class _FakeNdkResponse_1 extends _i1.SmartFake implements _i2.NdkResponse {
-  _FakeNdkResponse_1(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeNdkResponse_1(Object parent, Invocation parentInvocation) : super(parent, parentInvocation);
 }
 
 class _FakeNip01Event_2 extends _i1.SmartFake implements _i2.Nip01Event {
-  _FakeNip01Event_2(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeNip01Event_2(Object parent, Invocation parentInvocation) : super(parent, parentInvocation);
 }
 
 class _FakeKeyPair_3 extends _i1.SmartFake implements _i3.KeyPair {
-  _FakeKeyPair_3(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeKeyPair_3(Object parent, Invocation parentInvocation) : super(parent, parentInvocation);
 }
 
 class _FakeNdk_4 extends _i1.SmartFake implements _i2.Ndk {
-  _FakeNdk_4(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeNdk_4(Object parent, Invocation parentInvocation) : super(parent, parentInvocation);
 }
 
 /// A class which mocks [Broadcast].
@@ -99,30 +69,22 @@ class MockBroadcast extends _i1.Mock implements _i2.Broadcast {
     Duration? timeout,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #broadcast,
-          [],
-          {
+        Invocation.method(#broadcast, [], {
+          #nostrEvent: nostrEvent,
+          #specificRelays: specificRelays,
+          #customSigner: customSigner,
+          #considerDonePercent: considerDonePercent,
+          #timeout: timeout,
+        }),
+        returnValue: _FakeNdkBroadcastResponse_0(
+          this,
+          Invocation.method(#broadcast, [], {
             #nostrEvent: nostrEvent,
             #specificRelays: specificRelays,
             #customSigner: customSigner,
             #considerDonePercent: considerDonePercent,
             #timeout: timeout,
-          },
-        ),
-        returnValue: _FakeNdkBroadcastResponse_0(
-          this,
-          Invocation.method(
-            #broadcast,
-            [],
-            {
-              #nostrEvent: nostrEvent,
-              #specificRelays: specificRelays,
-              #customSigner: customSigner,
-              #considerDonePercent: considerDonePercent,
-              #timeout: timeout,
-            },
-          ),
+          }),
         ),
       ) as _i2.NdkBroadcastResponse);
 
@@ -133,26 +95,18 @@ class MockBroadcast extends _i1.Mock implements _i2.Broadcast {
     String? reaction = r'+',
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #broadcastReaction,
-          [],
-          {
+        Invocation.method(#broadcastReaction, [], {
+          #eventId: eventId,
+          #customRelays: customRelays,
+          #reaction: reaction,
+        }),
+        returnValue: _FakeNdkBroadcastResponse_0(
+          this,
+          Invocation.method(#broadcastReaction, [], {
             #eventId: eventId,
             #customRelays: customRelays,
             #reaction: reaction,
-          },
-        ),
-        returnValue: _FakeNdkBroadcastResponse_0(
-          this,
-          Invocation.method(
-            #broadcastReaction,
-            [],
-            {
-              #eventId: eventId,
-              #customRelays: customRelays,
-              #reaction: reaction,
-            },
-          ),
+          }),
         ),
       ) as _i2.NdkBroadcastResponse);
 
@@ -163,26 +117,18 @@ class MockBroadcast extends _i1.Mock implements _i2.Broadcast {
     _i2.EventSigner? customSigner,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #broadcastDeletion,
-          [],
-          {
+        Invocation.method(#broadcastDeletion, [], {
+          #eventId: eventId,
+          #customRelays: customRelays,
+          #customSigner: customSigner,
+        }),
+        returnValue: _FakeNdkBroadcastResponse_0(
+          this,
+          Invocation.method(#broadcastDeletion, [], {
             #eventId: eventId,
             #customRelays: customRelays,
             #customSigner: customSigner,
-          },
-        ),
-        returnValue: _FakeNdkBroadcastResponse_0(
-          this,
-          Invocation.method(
-            #broadcastDeletion,
-            [],
-            {
-              #eventId: eventId,
-              #customRelays: customRelays,
-              #customSigner: customSigner,
-            },
-          ),
+          }),
         ),
       ) as _i2.NdkBroadcastResponse);
 }
@@ -209,10 +155,21 @@ class MockRequests extends _i1.Mock implements _i2.Requests {
     int? desiredCoverage,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #query,
-          [],
-          {
+        Invocation.method(#query, [], {
+          #filters: filters,
+          #name: name,
+          #relaySet: relaySet,
+          #cacheRead: cacheRead,
+          #cacheWrite: cacheWrite,
+          #timeout: timeout,
+          #timeoutCallbackUserFacing: timeoutCallbackUserFacing,
+          #timeoutCallback: timeoutCallback,
+          #explicitRelays: explicitRelays,
+          #desiredCoverage: desiredCoverage,
+        }),
+        returnValue: _FakeNdkResponse_1(
+          this,
+          Invocation.method(#query, [], {
             #filters: filters,
             #name: name,
             #relaySet: relaySet,
@@ -223,26 +180,7 @@ class MockRequests extends _i1.Mock implements _i2.Requests {
             #timeoutCallback: timeoutCallback,
             #explicitRelays: explicitRelays,
             #desiredCoverage: desiredCoverage,
-          },
-        ),
-        returnValue: _FakeNdkResponse_1(
-          this,
-          Invocation.method(
-            #query,
-            [],
-            {
-              #filters: filters,
-              #name: name,
-              #relaySet: relaySet,
-              #cacheRead: cacheRead,
-              #cacheWrite: cacheWrite,
-              #timeout: timeout,
-              #timeoutCallbackUserFacing: timeoutCallbackUserFacing,
-              #timeoutCallback: timeoutCallback,
-              #explicitRelays: explicitRelays,
-              #desiredCoverage: desiredCoverage,
-            },
-          ),
+          }),
         ),
       ) as _i2.NdkResponse);
 
@@ -258,10 +196,19 @@ class MockRequests extends _i1.Mock implements _i2.Requests {
     int? desiredCoverage,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #subscription,
-          [],
-          {
+        Invocation.method(#subscription, [], {
+          #filters: filters,
+          #name: name,
+          #id: id,
+          #relaySet: relaySet,
+          #cacheRead: cacheRead,
+          #cacheWrite: cacheWrite,
+          #explicitRelays: explicitRelays,
+          #desiredCoverage: desiredCoverage,
+        }),
+        returnValue: _FakeNdkResponse_1(
+          this,
+          Invocation.method(#subscription, [], {
             #filters: filters,
             #name: name,
             #id: id,
@@ -270,24 +217,7 @@ class MockRequests extends _i1.Mock implements _i2.Requests {
             #cacheWrite: cacheWrite,
             #explicitRelays: explicitRelays,
             #desiredCoverage: desiredCoverage,
-          },
-        ),
-        returnValue: _FakeNdkResponse_1(
-          this,
-          Invocation.method(
-            #subscription,
-            [],
-            {
-              #filters: filters,
-              #name: name,
-              #id: id,
-              #relaySet: relaySet,
-              #cacheRead: cacheRead,
-              #cacheWrite: cacheWrite,
-              #explicitRelays: explicitRelays,
-              #desiredCoverage: desiredCoverage,
-            },
-          ),
+          }),
         ),
       ) as _i2.NdkResponse);
 
@@ -308,27 +238,17 @@ class MockRequests extends _i1.Mock implements _i2.Requests {
 
   @override
   _i4.Future<void> closeAllSubscription() => (super.noSuchMethod(
-        Invocation.method(
-          #closeAllSubscription,
-          [],
-        ),
+        Invocation.method(#closeAllSubscription, []),
         returnValue: _i4.Future<void>.value(),
         returnValueForMissingStub: _i4.Future<void>.value(),
       ) as _i4.Future<void>);
 
   @override
-  _i2.NdkResponse requestNostrEvent(_i2.NdkRequest? request) =>
-      (super.noSuchMethod(
-        Invocation.method(
-          #requestNostrEvent,
-          [request],
-        ),
+  _i2.NdkResponse requestNostrEvent(_i2.NdkRequest? request) => (super.noSuchMethod(
+        Invocation.method(#requestNostrEvent, [request]),
         returnValue: _FakeNdkResponse_1(
           this,
-          Invocation.method(
-            #requestNostrEvent,
-            [request],
-          ),
+          Invocation.method(#requestNostrEvent, [request]),
         ),
       ) as _i2.NdkResponse);
 }
@@ -352,10 +272,7 @@ class MockNdkResponse extends _i1.Mock implements _i2.NdkResponse {
 
   @override
   set requestId(String? _requestId) => super.noSuchMethod(
-        Invocation.setter(
-          #requestId,
-          _requestId,
-        ),
+        Invocation.setter(#requestId, _requestId),
         returnValueForMissingStub: null,
       );
 
@@ -368,7 +285,9 @@ class MockNdkResponse extends _i1.Mock implements _i2.NdkResponse {
   @override
   _i4.Future<List<_i2.Nip01Event>> get future => (super.noSuchMethod(
         Invocation.getter(#future),
-        returnValue: _i4.Future<List<_i2.Nip01Event>>.value(<_i2.Nip01Event>[]),
+        returnValue: _i4.Future<List<_i2.Nip01Event>>.value(
+          <_i2.Nip01Event>[],
+        ),
       ) as _i4.Future<List<_i2.Nip01Event>>);
 }
 
@@ -383,18 +302,12 @@ class MockNip01Event extends _i1.Mock implements _i2.Nip01Event {
   @override
   String get id => (super.noSuchMethod(
         Invocation.getter(#id),
-        returnValue: _i5.dummyValue<String>(
-          this,
-          Invocation.getter(#id),
-        ),
+        returnValue: _i5.dummyValue<String>(this, Invocation.getter(#id)),
       ) as String);
 
   @override
   set id(String? _id) => super.noSuchMethod(
-        Invocation.setter(
-          #id,
-          _id,
-        ),
+        Invocation.setter(#id, _id),
         returnValueForMissingStub: null,
       );
 
@@ -408,25 +321,16 @@ class MockNip01Event extends _i1.Mock implements _i2.Nip01Event {
       ) as String);
 
   @override
-  int get createdAt => (super.noSuchMethod(
-        Invocation.getter(#createdAt),
-        returnValue: 0,
-      ) as int);
+  int get createdAt => (super.noSuchMethod(Invocation.getter(#createdAt), returnValue: 0) as int);
 
   @override
   set createdAt(int? _createdAt) => super.noSuchMethod(
-        Invocation.setter(
-          #createdAt,
-          _createdAt,
-        ),
+        Invocation.setter(#createdAt, _createdAt),
         returnValueForMissingStub: null,
       );
 
   @override
-  int get kind => (super.noSuchMethod(
-        Invocation.getter(#kind),
-        returnValue: 0,
-      ) as int);
+  int get kind => (super.noSuchMethod(Invocation.getter(#kind), returnValue: 0) as int);
 
   @override
   List<List<String>> get tags => (super.noSuchMethod(
@@ -436,10 +340,7 @@ class MockNip01Event extends _i1.Mock implements _i2.Nip01Event {
 
   @override
   set tags(List<List<String>>? _tags) => super.noSuchMethod(
-        Invocation.setter(
-          #tags,
-          _tags,
-        ),
+        Invocation.setter(#tags, _tags),
         returnValueForMissingStub: null,
       );
 
@@ -454,72 +355,49 @@ class MockNip01Event extends _i1.Mock implements _i2.Nip01Event {
 
   @override
   set content(String? _content) => super.noSuchMethod(
-        Invocation.setter(
-          #content,
-          _content,
-        ),
+        Invocation.setter(#content, _content),
         returnValueForMissingStub: null,
       );
 
   @override
   String get sig => (super.noSuchMethod(
         Invocation.getter(#sig),
-        returnValue: _i5.dummyValue<String>(
-          this,
-          Invocation.getter(#sig),
-        ),
+        returnValue: _i5.dummyValue<String>(this, Invocation.getter(#sig)),
       ) as String);
 
   @override
   set sig(String? _sig) => super.noSuchMethod(
-        Invocation.setter(
-          #sig,
-          _sig,
-        ),
+        Invocation.setter(#sig, _sig),
         returnValueForMissingStub: null,
       );
 
   @override
   set validSig(bool? _validSig) => super.noSuchMethod(
-        Invocation.setter(
-          #validSig,
-          _validSig,
-        ),
+        Invocation.setter(#validSig, _validSig),
         returnValueForMissingStub: null,
       );
 
   @override
-  List<String> get sources => (super.noSuchMethod(
-        Invocation.getter(#sources),
-        returnValue: <String>[],
-      ) as List<String>);
+  List<String> get sources =>
+      (super.noSuchMethod(Invocation.getter(#sources), returnValue: <String>[]) as List<String>);
 
   @override
   set sources(List<String>? _sources) => super.noSuchMethod(
-        Invocation.setter(
-          #sources,
-          _sources,
-        ),
+        Invocation.setter(#sources, _sources),
         returnValueForMissingStub: null,
       );
 
   @override
-  bool get isIdValid => (super.noSuchMethod(
-        Invocation.getter(#isIdValid),
-        returnValue: false,
-      ) as bool);
+  bool get isIdValid =>
+      (super.noSuchMethod(Invocation.getter(#isIdValid), returnValue: false) as bool);
 
   @override
-  List<String> get tTags => (super.noSuchMethod(
-        Invocation.getter(#tTags),
-        returnValue: <String>[],
-      ) as List<String>);
+  List<String> get tTags =>
+      (super.noSuchMethod(Invocation.getter(#tTags), returnValue: <String>[]) as List<String>);
 
   @override
-  List<String> get pTags => (super.noSuchMethod(
-        Invocation.getter(#pTags),
-        returnValue: <String>[],
-      ) as List<String>);
+  List<String> get pTags =>
+      (super.noSuchMethod(Invocation.getter(#pTags), returnValue: <String>[]) as List<String>);
 
   @override
   List<String> get replyETags => (super.noSuchMethod(
@@ -529,51 +407,34 @@ class MockNip01Event extends _i1.Mock implements _i2.Nip01Event {
 
   @override
   Map<String, dynamic> toJson() => (super.noSuchMethod(
-        Invocation.method(
-          #toJson,
-          [],
-        ),
+        Invocation.method(#toJson, []),
         returnValue: <String, dynamic>{},
       ) as Map<String, dynamic>);
 
   @override
   String toBase64() => (super.noSuchMethod(
-        Invocation.method(
-          #toBase64,
-          [],
-        ),
+        Invocation.method(#toBase64, []),
         returnValue: _i5.dummyValue<String>(
           this,
-          Invocation.method(
-            #toBase64,
-            [],
-          ),
+          Invocation.method(#toBase64, []),
         ),
       ) as String);
 
   @override
   void sign(String? privateKey) => super.noSuchMethod(
-        Invocation.method(
-          #sign,
-          [privateKey],
-        ),
+        Invocation.method(#sign, [privateKey]),
         returnValueForMissingStub: null,
       );
 
   @override
   List<String> getTags(String? tag) => (super.noSuchMethod(
-        Invocation.method(
-          #getTags,
-          [tag],
-        ),
+        Invocation.method(#getTags, [tag]),
         returnValue: <String>[],
       ) as List<String>);
 
   @override
-  String? getFirstTag(String? name) => (super.noSuchMethod(Invocation.method(
-        #getFirstTag,
-        [name],
-      )) as String?);
+  String? getFirstTag(String? name) =>
+      (super.noSuchMethod(Invocation.method(#getFirstTag, [name])) as String?);
 
   @override
   _i2.Nip01Event copyWith({
@@ -586,10 +447,18 @@ class MockNip01Event extends _i1.Mock implements _i2.Nip01Event {
     List<String>? sources,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #copyWith,
-          [],
-          {
+        Invocation.method(#copyWith, [], {
+          #pubKey: pubKey,
+          #createdAt: createdAt,
+          #kind: kind,
+          #tags: tags,
+          #content: content,
+          #sig: sig,
+          #sources: sources,
+        }),
+        returnValue: _FakeNip01Event_2(
+          this,
+          Invocation.method(#copyWith, [], {
             #pubKey: pubKey,
             #createdAt: createdAt,
             #kind: kind,
@@ -597,23 +466,7 @@ class MockNip01Event extends _i1.Mock implements _i2.Nip01Event {
             #content: content,
             #sig: sig,
             #sources: sources,
-          },
-        ),
-        returnValue: _FakeNip01Event_2(
-          this,
-          Invocation.method(
-            #copyWith,
-            [],
-            {
-              #pubKey: pubKey,
-              #createdAt: createdAt,
-              #kind: kind,
-              #tags: tags,
-              #content: content,
-              #sig: sig,
-              #sources: sources,
-            },
-          ),
+          }),
         ),
       ) as _i2.Nip01Event);
 }
@@ -621,8 +474,7 @@ class MockNip01Event extends _i1.Mock implements _i2.Nip01Event {
 /// A class which mocks [NdkBroadcastResponse].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockNdkBroadcastResponse extends _i1.Mock
-    implements _i2.NdkBroadcastResponse {
+class MockNdkBroadcastResponse extends _i1.Mock implements _i2.NdkBroadcastResponse {
   MockNdkBroadcastResponse() {
     _i1.throwOnMissingStub(this);
   }
@@ -637,16 +489,15 @@ class MockNdkBroadcastResponse extends _i1.Mock
       ) as _i2.Nip01Event);
 
   @override
-  _i4.Future<List<_i6.RelayBroadcastResponse>> get broadcastDoneFuture =>
-      (super.noSuchMethod(
+  _i4.Future<List<_i6.RelayBroadcastResponse>> get broadcastDoneFuture => (super.noSuchMethod(
         Invocation.getter(#broadcastDoneFuture),
         returnValue: _i4.Future<List<_i6.RelayBroadcastResponse>>.value(
-            <_i6.RelayBroadcastResponse>[]),
+          <_i6.RelayBroadcastResponse>[],
+        ),
       ) as _i4.Future<List<_i6.RelayBroadcastResponse>>);
 
   @override
-  _i4.Stream<List<_i6.RelayBroadcastResponse>> get broadcastDone =>
-      (super.noSuchMethod(
+  _i4.Stream<List<_i6.RelayBroadcastResponse>> get broadcastDone => (super.noSuchMethod(
         Invocation.getter(#broadcastDone),
         returnValue: _i4.Stream<List<_i6.RelayBroadcastResponse>>.empty(),
       ) as _i4.Stream<List<_i6.RelayBroadcastResponse>>);
@@ -668,97 +519,61 @@ class MockLockboxRepository extends _i1.Mock implements _i7.LockboxRepository {
 
   @override
   _i4.Future<void> initialize() => (super.noSuchMethod(
-        Invocation.method(
-          #initialize,
-          [],
-        ),
+        Invocation.method(#initialize, []),
         returnValue: _i4.Future<void>.value(),
         returnValueForMissingStub: _i4.Future<void>.value(),
       ) as _i4.Future<void>);
 
   @override
   _i4.Future<List<_i8.Lockbox>> getAllLockboxes() => (super.noSuchMethod(
-        Invocation.method(
-          #getAllLockboxes,
-          [],
-        ),
+        Invocation.method(#getAllLockboxes, []),
         returnValue: _i4.Future<List<_i8.Lockbox>>.value(<_i8.Lockbox>[]),
       ) as _i4.Future<List<_i8.Lockbox>>);
 
   @override
   _i4.Future<_i8.Lockbox?> getLockbox(String? id) => (super.noSuchMethod(
-        Invocation.method(
-          #getLockbox,
-          [id],
-        ),
+        Invocation.method(#getLockbox, [id]),
         returnValue: _i4.Future<_i8.Lockbox?>.value(),
       ) as _i4.Future<_i8.Lockbox?>);
 
   @override
   _i4.Future<void> saveLockbox(_i8.Lockbox? lockbox) => (super.noSuchMethod(
-        Invocation.method(
-          #saveLockbox,
-          [lockbox],
-        ),
+        Invocation.method(#saveLockbox, [lockbox]),
         returnValue: _i4.Future<void>.value(),
         returnValueForMissingStub: _i4.Future<void>.value(),
       ) as _i4.Future<void>);
 
   @override
   _i4.Future<void> addLockbox(_i8.Lockbox? lockbox) => (super.noSuchMethod(
-        Invocation.method(
-          #addLockbox,
-          [lockbox],
-        ),
+        Invocation.method(#addLockbox, [lockbox]),
         returnValue: _i4.Future<void>.value(),
         returnValueForMissingStub: _i4.Future<void>.value(),
       ) as _i4.Future<void>);
 
   @override
-  _i4.Future<void> updateLockbox(
-    String? id,
-    String? name,
-    String? content,
-  ) =>
-      (super.noSuchMethod(
-        Invocation.method(
-          #updateLockbox,
-          [
-            id,
-            name,
-            content,
-          ],
-        ),
+  _i4.Future<void> updateLockbox(String? id, String? name, String? content) => (super.noSuchMethod(
+        Invocation.method(#updateLockbox, [id, name, content]),
         returnValue: _i4.Future<void>.value(),
         returnValueForMissingStub: _i4.Future<void>.value(),
       ) as _i4.Future<void>);
 
   @override
   _i4.Future<void> deleteLockbox(String? id) => (super.noSuchMethod(
-        Invocation.method(
-          #deleteLockbox,
-          [id],
-        ),
+        Invocation.method(#deleteLockbox, [id]),
         returnValue: _i4.Future<void>.value(),
         returnValueForMissingStub: _i4.Future<void>.value(),
       ) as _i4.Future<void>);
 
   @override
   _i4.Future<void> clearAll() => (super.noSuchMethod(
-        Invocation.method(
-          #clearAll,
-          [],
-        ),
+        Invocation.method(#clearAll, []),
         returnValue: _i4.Future<void>.value(),
         returnValueForMissingStub: _i4.Future<void>.value(),
       ) as _i4.Future<void>);
 
   @override
   _i4.Future<void> refresh() => (super.noSuchMethod(
-        Invocation.method(
-          #refresh,
-          [],
-        ),
+        Invocation.method(#refresh, []),
         returnValue: _i4.Future<void>.value(),
         returnValueForMissingStub: _i4.Future<void>.value(),
       ) as _i4.Future<void>);
@@ -783,7 +598,7 @@ class MockLockboxRepository extends _i1.Mock implements _i7.LockboxRepository {
             DateTime? lastSeen,
             String? name,
             String? pubkey,
-            _i9.KeyHolderStatus status
+            _i9.KeyHolderStatus status,
           })> keyHolders,
       DateTime? lastContentChange,
       DateTime? lastRedistribution,
@@ -793,17 +608,11 @@ class MockLockboxRepository extends _i1.Mock implements _i7.LockboxRepository {
       String specVersion,
       _i10.BackupStatus status,
       int threshold,
-      int totalKeys
+      int totalKeys,
     })? config,
   ) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #updateBackupConfig,
-          [
-            lockboxId,
-            config,
-          ],
-        ),
+        Invocation.method(#updateBackupConfig, [lockboxId, config]),
         returnValue: _i4.Future<void>.value(),
         returnValueForMissingStub: _i4.Future<void>.value(),
       ) as _i4.Future<void>);
@@ -827,7 +636,7 @@ class MockLockboxRepository extends _i1.Mock implements _i7.LockboxRepository {
               DateTime? lastSeen,
               String? name,
               String? pubkey,
-              _i9.KeyHolderStatus status
+              _i9.KeyHolderStatus status,
             })> keyHolders,
         DateTime? lastContentChange,
         DateTime? lastRedistribution,
@@ -837,12 +646,9 @@ class MockLockboxRepository extends _i1.Mock implements _i7.LockboxRepository {
         String specVersion,
         _i10.BackupStatus status,
         int threshold,
-        int totalKeys
+        int totalKeys,
       })?> getBackupConfig(String? lockboxId) => (super.noSuchMethod(
-        Invocation.method(
-          #getBackupConfig,
-          [lockboxId],
-        ),
+        Invocation.method(#getBackupConfig, [lockboxId]),
         returnValue: _i4.Future<
             ({
               String? contentHash,
@@ -861,7 +667,7 @@ class MockLockboxRepository extends _i1.Mock implements _i7.LockboxRepository {
                     DateTime? lastSeen,
                     String? name,
                     String? pubkey,
-                    _i9.KeyHolderStatus status
+                    _i9.KeyHolderStatus status,
                   })> keyHolders,
               DateTime? lastContentChange,
               DateTime? lastRedistribution,
@@ -871,7 +677,7 @@ class MockLockboxRepository extends _i1.Mock implements _i7.LockboxRepository {
               String specVersion,
               _i10.BackupStatus status,
               int threshold,
-              int totalKeys
+              int totalKeys,
             })?>.value(),
       ) as _i4.Future<
           ({
@@ -891,7 +697,7 @@ class MockLockboxRepository extends _i1.Mock implements _i7.LockboxRepository {
                   DateTime? lastSeen,
                   String? name,
                   String? pubkey,
-                  _i9.KeyHolderStatus status
+                  _i9.KeyHolderStatus status,
                 })> keyHolders,
             DateTime? lastContentChange,
             DateTime? lastRedistribution,
@@ -901,7 +707,7 @@ class MockLockboxRepository extends _i1.Mock implements _i7.LockboxRepository {
             String specVersion,
             _i10.BackupStatus status,
             int threshold,
-            int totalKeys
+            int totalKeys,
           })?>);
 
   @override
@@ -914,18 +720,14 @@ class MockLockboxRepository extends _i1.Mock implements _i7.LockboxRepository {
     int? acknowledgedDistributionVersion,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #updateKeyHolderStatus,
-          [],
-          {
-            #lockboxId: lockboxId,
-            #pubkey: pubkey,
-            #status: status,
-            #acknowledgedAt: acknowledgedAt,
-            #acknowledgmentEventId: acknowledgmentEventId,
-            #acknowledgedDistributionVersion: acknowledgedDistributionVersion,
-          },
-        ),
+        Invocation.method(#updateKeyHolderStatus, [], {
+          #lockboxId: lockboxId,
+          #pubkey: pubkey,
+          #status: status,
+          #acknowledgedAt: acknowledgedAt,
+          #acknowledgmentEventId: acknowledgmentEventId,
+          #acknowledgedDistributionVersion: acknowledgedDistributionVersion,
+        }),
         returnValue: _i4.Future<void>.value(),
         returnValueForMissingStub: _i4.Future<void>.value(),
       ) as _i4.Future<void>);
@@ -951,17 +753,11 @@ class MockLockboxRepository extends _i1.Mock implements _i7.LockboxRepository {
       String shard,
       int shardIndex,
       int threshold,
-      int totalShards
+      int totalShards,
     })? shard,
   ) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #addShardToLockbox,
-          [
-            lockboxId,
-            shard,
-          ],
-        ),
+        Invocation.method(#addShardToLockbox, [lockboxId, shard]),
         returnValue: _i4.Future<void>.value(),
         returnValueForMissingStub: _i4.Future<void>.value(),
       ) as _i4.Future<void>);
@@ -987,12 +783,9 @@ class MockLockboxRepository extends _i1.Mock implements _i7.LockboxRepository {
             String shard,
             int shardIndex,
             int threshold,
-            int totalShards
+            int totalShards,
           })>> getShardsForLockbox(String? lockboxId) => (super.noSuchMethod(
-        Invocation.method(
-          #getShardsForLockbox,
-          [lockboxId],
-        ),
+        Invocation.method(#getShardsForLockbox, [lockboxId]),
         returnValue: _i4.Future<
             List<
                 ({
@@ -1013,27 +806,29 @@ class MockLockboxRepository extends _i1.Mock implements _i7.LockboxRepository {
                   String shard,
                   int shardIndex,
                   int threshold,
-                  int totalShards
-                })>>.value(<({
-          int createdAt,
-          String creatorPubkey,
-          int? distributionVersion,
-          String? instructions,
-          bool? isReceived,
-          String? lockboxId,
-          String? lockboxName,
-          String? nostrEventId,
-          String? ownerName,
-          List<Map<String, String>>? peers,
-          String primeMod,
-          DateTime? receivedAt,
-          String? recipientPubkey,
-          List<String>? relayUrls,
-          String shard,
-          int shardIndex,
-          int threshold,
-          int totalShards
-        })>[]),
+                  int totalShards,
+                })>>.value(
+          <({
+            int createdAt,
+            String creatorPubkey,
+            int? distributionVersion,
+            String? instructions,
+            bool? isReceived,
+            String? lockboxId,
+            String? lockboxName,
+            String? nostrEventId,
+            String? ownerName,
+            List<Map<String, String>>? peers,
+            String primeMod,
+            DateTime? receivedAt,
+            String? recipientPubkey,
+            List<String>? relayUrls,
+            String shard,
+            int shardIndex,
+            int threshold,
+            int totalShards,
+          })>[],
+        ),
       ) as _i4.Future<
           List<
               ({
@@ -1054,27 +849,19 @@ class MockLockboxRepository extends _i1.Mock implements _i7.LockboxRepository {
                 String shard,
                 int shardIndex,
                 int threshold,
-                int totalShards
+                int totalShards,
               })>>);
 
   @override
-  _i4.Future<void> clearShardsForLockbox(String? lockboxId) =>
-      (super.noSuchMethod(
-        Invocation.method(
-          #clearShardsForLockbox,
-          [lockboxId],
-        ),
+  _i4.Future<void> clearShardsForLockbox(String? lockboxId) => (super.noSuchMethod(
+        Invocation.method(#clearShardsForLockbox, [lockboxId]),
         returnValue: _i4.Future<void>.value(),
         returnValueForMissingStub: _i4.Future<void>.value(),
       ) as _i4.Future<void>);
 
   @override
-  _i4.Future<bool> isKeyHolderForLockbox(String? lockboxId) =>
-      (super.noSuchMethod(
-        Invocation.method(
-          #isKeyHolderForLockbox,
-          [lockboxId],
-        ),
+  _i4.Future<bool> isKeyHolderForLockbox(String? lockboxId) => (super.noSuchMethod(
+        Invocation.method(#isKeyHolderForLockbox, [lockboxId]),
         returnValue: _i4.Future<bool>.value(false),
       ) as _i4.Future<bool>);
 
@@ -1084,13 +871,10 @@ class MockLockboxRepository extends _i1.Mock implements _i7.LockboxRepository {
     _i11.RecoveryRequest? request,
   ) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #addRecoveryRequestToLockbox,
-          [
-            lockboxId,
-            request,
-          ],
-        ),
+        Invocation.method(#addRecoveryRequestToLockbox, [
+          lockboxId,
+          request,
+        ]),
         returnValue: _i4.Future<void>.value(),
         returnValueForMissingStub: _i4.Future<void>.value(),
       ) as _i4.Future<void>);
@@ -1102,58 +886,46 @@ class MockLockboxRepository extends _i1.Mock implements _i7.LockboxRepository {
     _i11.RecoveryRequest? updatedRequest,
   ) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #updateRecoveryRequestInLockbox,
-          [
-            lockboxId,
-            requestId,
-            updatedRequest,
-          ],
-        ),
+        Invocation.method(#updateRecoveryRequestInLockbox, [
+          lockboxId,
+          requestId,
+          updatedRequest,
+        ]),
         returnValue: _i4.Future<void>.value(),
         returnValueForMissingStub: _i4.Future<void>.value(),
       ) as _i4.Future<void>);
 
   @override
   _i4.Future<List<_i11.RecoveryRequest>> getRecoveryRequestsForLockbox(
-          String? lockboxId) =>
+    String? lockboxId,
+  ) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #getRecoveryRequestsForLockbox,
-          [lockboxId],
-        ),
+        Invocation.method(#getRecoveryRequestsForLockbox, [lockboxId]),
         returnValue: _i4.Future<List<_i11.RecoveryRequest>>.value(
-            <_i11.RecoveryRequest>[]),
+          <_i11.RecoveryRequest>[],
+        ),
       ) as _i4.Future<List<_i11.RecoveryRequest>>);
 
   @override
   _i4.Future<_i11.RecoveryRequest?> getActiveRecoveryRequest(
-          String? lockboxId) =>
+    String? lockboxId,
+  ) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #getActiveRecoveryRequest,
-          [lockboxId],
-        ),
+        Invocation.method(#getActiveRecoveryRequest, [lockboxId]),
         returnValue: _i4.Future<_i11.RecoveryRequest?>.value(),
       ) as _i4.Future<_i11.RecoveryRequest?>);
 
   @override
-  _i4.Future<List<_i11.RecoveryRequest>> getAllRecoveryRequests() =>
-      (super.noSuchMethod(
-        Invocation.method(
-          #getAllRecoveryRequests,
-          [],
-        ),
+  _i4.Future<List<_i11.RecoveryRequest>> getAllRecoveryRequests() => (super.noSuchMethod(
+        Invocation.method(#getAllRecoveryRequests, []),
         returnValue: _i4.Future<List<_i11.RecoveryRequest>>.value(
-            <_i11.RecoveryRequest>[]),
+          <_i11.RecoveryRequest>[],
+        ),
       ) as _i4.Future<List<_i11.RecoveryRequest>>);
 
   @override
   void dispose() => super.noSuchMethod(
-        Invocation.method(
-          #dispose,
-          [],
-        ),
+        Invocation.method(#dispose, []),
         returnValueForMissingStub: null,
       );
 }
@@ -1168,115 +940,79 @@ class MockLoginService extends _i1.Mock implements _i12.LoginService {
 
   @override
   _i4.Future<_i3.KeyPair> generateAndStoreNostrKey() => (super.noSuchMethod(
-        Invocation.method(
-          #generateAndStoreNostrKey,
-          [],
-        ),
-        returnValue: _i4.Future<_i3.KeyPair>.value(_FakeKeyPair_3(
-          this,
-          Invocation.method(
-            #generateAndStoreNostrKey,
-            [],
+        Invocation.method(#generateAndStoreNostrKey, []),
+        returnValue: _i4.Future<_i3.KeyPair>.value(
+          _FakeKeyPair_3(
+            this,
+            Invocation.method(#generateAndStoreNostrKey, []),
           ),
-        )),
+        ),
       ) as _i4.Future<_i3.KeyPair>);
 
   @override
   _i4.Future<_i3.KeyPair?> getStoredNostrKey() => (super.noSuchMethod(
-        Invocation.method(
-          #getStoredNostrKey,
-          [],
-        ),
+        Invocation.method(#getStoredNostrKey, []),
         returnValue: _i4.Future<_i3.KeyPair?>.value(),
       ) as _i4.Future<_i3.KeyPair?>);
 
   @override
   _i4.Future<_i3.KeyPair> initializeKey() => (super.noSuchMethod(
-        Invocation.method(
-          #initializeKey,
-          [],
+        Invocation.method(#initializeKey, []),
+        returnValue: _i4.Future<_i3.KeyPair>.value(
+          _FakeKeyPair_3(this, Invocation.method(#initializeKey, [])),
         ),
-        returnValue: _i4.Future<_i3.KeyPair>.value(_FakeKeyPair_3(
-          this,
-          Invocation.method(
-            #initializeKey,
-            [],
-          ),
-        )),
       ) as _i4.Future<_i3.KeyPair>);
 
   @override
   _i4.Future<String?> getCurrentPublicKey() => (super.noSuchMethod(
-        Invocation.method(
-          #getCurrentPublicKey,
-          [],
-        ),
+        Invocation.method(#getCurrentPublicKey, []),
         returnValue: _i4.Future<String?>.value(),
       ) as _i4.Future<String?>);
 
   @override
   _i4.Future<String?> getCurrentPublicKeyBech32() => (super.noSuchMethod(
-        Invocation.method(
-          #getCurrentPublicKeyBech32,
-          [],
-        ),
+        Invocation.method(#getCurrentPublicKeyBech32, []),
         returnValue: _i4.Future<String?>.value(),
       ) as _i4.Future<String?>);
 
   @override
   _i4.Future<String> encryptText(String? plaintext) => (super.noSuchMethod(
-        Invocation.method(
-          #encryptText,
-          [plaintext],
-        ),
-        returnValue: _i4.Future<String>.value(_i5.dummyValue<String>(
-          this,
-          Invocation.method(
-            #encryptText,
-            [plaintext],
+        Invocation.method(#encryptText, [plaintext]),
+        returnValue: _i4.Future<String>.value(
+          _i5.dummyValue<String>(
+            this,
+            Invocation.method(#encryptText, [plaintext]),
           ),
-        )),
+        ),
       ) as _i4.Future<String>);
 
   @override
   _i4.Future<String> decryptText(String? encryptedText) => (super.noSuchMethod(
-        Invocation.method(
-          #decryptText,
-          [encryptedText],
-        ),
-        returnValue: _i4.Future<String>.value(_i5.dummyValue<String>(
-          this,
-          Invocation.method(
-            #decryptText,
-            [encryptedText],
+        Invocation.method(#decryptText, [encryptedText]),
+        returnValue: _i4.Future<String>.value(
+          _i5.dummyValue<String>(
+            this,
+            Invocation.method(#decryptText, [encryptedText]),
           ),
-        )),
+        ),
       ) as _i4.Future<String>);
 
   @override
   _i4.Future<void> clearStoredKeys() => (super.noSuchMethod(
-        Invocation.method(
-          #clearStoredKeys,
-          [],
-        ),
+        Invocation.method(#clearStoredKeys, []),
         returnValue: _i4.Future<void>.value(),
         returnValueForMissingStub: _i4.Future<void>.value(),
       ) as _i4.Future<void>);
 
   @override
   void resetCacheForTest() => super.noSuchMethod(
-        Invocation.method(
-          #resetCacheForTest,
-          [],
-        ),
+        Invocation.method(#resetCacheForTest, []),
         returnValueForMissingStub: null,
       );
 
   @override
-  String? npubToHex(String? npub) => (super.noSuchMethod(Invocation.method(
-        #npubToHex,
-        [npub],
-      )) as String?);
+  String? npubToHex(String? npub) =>
+      (super.noSuchMethod(Invocation.method(#npubToHex, [npub])) as String?);
 
   @override
   _i4.Future<String> encryptForRecipient({
@@ -1284,25 +1020,19 @@ class MockLoginService extends _i1.Mock implements _i12.LoginService {
     required String? recipientPubkey,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #encryptForRecipient,
-          [],
-          {
-            #plaintext: plaintext,
-            #recipientPubkey: recipientPubkey,
-          },
-        ),
-        returnValue: _i4.Future<String>.value(_i5.dummyValue<String>(
-          this,
-          Invocation.method(
-            #encryptForRecipient,
-            [],
-            {
+        Invocation.method(#encryptForRecipient, [], {
+          #plaintext: plaintext,
+          #recipientPubkey: recipientPubkey,
+        }),
+        returnValue: _i4.Future<String>.value(
+          _i5.dummyValue<String>(
+            this,
+            Invocation.method(#encryptForRecipient, [], {
               #plaintext: plaintext,
               #recipientPubkey: recipientPubkey,
-            },
+            }),
           ),
-        )),
+        ),
       ) as _i4.Future<String>);
 
   @override
@@ -1311,25 +1041,19 @@ class MockLoginService extends _i1.Mock implements _i12.LoginService {
     required String? senderPubkey,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #decryptFromSender,
-          [],
-          {
-            #encryptedText: encryptedText,
-            #senderPubkey: senderPubkey,
-          },
-        ),
-        returnValue: _i4.Future<String>.value(_i5.dummyValue<String>(
-          this,
-          Invocation.method(
-            #decryptFromSender,
-            [],
-            {
+        Invocation.method(#decryptFromSender, [], {
+          #encryptedText: encryptedText,
+          #senderPubkey: senderPubkey,
+        }),
+        returnValue: _i4.Future<String>.value(
+          _i5.dummyValue<String>(
+            this,
+            Invocation.method(#decryptFromSender, [], {
               #encryptedText: encryptedText,
               #senderPubkey: senderPubkey,
-            },
+            }),
           ),
-        )),
+        ),
       ) as _i4.Future<String>);
 }
 
@@ -1342,51 +1066,38 @@ class MockNdkService extends _i1.Mock implements _i13.NdkService {
   }
 
   @override
-  _i4.Stream<_i11.RecoveryRequest> get recoveryRequestStream =>
-      (super.noSuchMethod(
+  _i4.Stream<_i11.RecoveryRequest> get recoveryRequestStream => (super.noSuchMethod(
         Invocation.getter(#recoveryRequestStream),
         returnValue: _i4.Stream<_i11.RecoveryRequest>.empty(),
       ) as _i4.Stream<_i11.RecoveryRequest>);
 
   @override
-  _i4.Stream<_i13.RecoveryResponseEvent> get recoveryResponseStream =>
-      (super.noSuchMethod(
+  _i4.Stream<_i13.RecoveryResponseEvent> get recoveryResponseStream => (super.noSuchMethod(
         Invocation.getter(#recoveryResponseStream),
         returnValue: _i4.Stream<_i13.RecoveryResponseEvent>.empty(),
       ) as _i4.Stream<_i13.RecoveryResponseEvent>);
 
   @override
-  bool get isInitialized => (super.noSuchMethod(
-        Invocation.getter(#isInitialized),
-        returnValue: false,
-      ) as bool);
+  bool get isInitialized =>
+      (super.noSuchMethod(Invocation.getter(#isInitialized), returnValue: false) as bool);
 
   @override
   _i4.Future<void> initialize() => (super.noSuchMethod(
-        Invocation.method(
-          #initialize,
-          [],
-        ),
+        Invocation.method(#initialize, []),
         returnValue: _i4.Future<void>.value(),
         returnValueForMissingStub: _i4.Future<void>.value(),
       ) as _i4.Future<void>);
 
   @override
   _i4.Future<void> addRelay(String? relayUrl) => (super.noSuchMethod(
-        Invocation.method(
-          #addRelay,
-          [relayUrl],
-        ),
+        Invocation.method(#addRelay, [relayUrl]),
         returnValue: _i4.Future<void>.value(),
         returnValueForMissingStub: _i4.Future<void>.value(),
       ) as _i4.Future<void>);
 
   @override
   _i4.Future<void> removeRelay(String? relayUrl) => (super.noSuchMethod(
-        Invocation.method(
-          #removeRelay,
-          [relayUrl],
-        ),
+        Invocation.method(#removeRelay, [relayUrl]),
         returnValue: _i4.Future<void>.value(),
         returnValueForMissingStub: _i4.Future<void>.value(),
       ) as _i4.Future<void>);
@@ -1398,15 +1109,11 @@ class MockNdkService extends _i1.Mock implements _i13.NdkService {
     DateTime? expiresAt,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #publishRecoveryRequest,
-          [],
-          {
-            #lockboxId: lockboxId,
-            #keyHolderPubkeys: keyHolderPubkeys,
-            #expiresAt: expiresAt,
-          },
-        ),
+        Invocation.method(#publishRecoveryRequest, [], {
+          #lockboxId: lockboxId,
+          #keyHolderPubkeys: keyHolderPubkeys,
+          #expiresAt: expiresAt,
+        }),
         returnValue: _i4.Future<String?>.value(),
       ) as _i4.Future<String?>);
 
@@ -1418,44 +1125,31 @@ class MockNdkService extends _i1.Mock implements _i13.NdkService {
     String? shardDataJson,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #publishRecoveryResponse,
-          [],
-          {
-            #initiatorPubkey: initiatorPubkey,
-            #recoveryRequestId: recoveryRequestId,
-            #approved: approved,
-            #shardDataJson: shardDataJson,
-          },
-        ),
+        Invocation.method(#publishRecoveryResponse, [], {
+          #initiatorPubkey: initiatorPubkey,
+          #recoveryRequestId: recoveryRequestId,
+          #approved: approved,
+          #shardDataJson: shardDataJson,
+        }),
         returnValue: _i4.Future<String?>.value(),
       ) as _i4.Future<String?>);
 
   @override
   _i4.Future<void> stopListening() => (super.noSuchMethod(
-        Invocation.method(
-          #stopListening,
-          [],
-        ),
+        Invocation.method(#stopListening, []),
         returnValue: _i4.Future<void>.value(),
         returnValueForMissingStub: _i4.Future<void>.value(),
       ) as _i4.Future<void>);
 
   @override
   List<String> getActiveRelays() => (super.noSuchMethod(
-        Invocation.method(
-          #getActiveRelays,
-          [],
-        ),
+        Invocation.method(#getActiveRelays, []),
         returnValue: <String>[],
       ) as List<String>);
 
   @override
   _i4.Future<String?> getCurrentPubkey() => (super.noSuchMethod(
-        Invocation.method(
-          #getCurrentPubkey,
-          [],
-        ),
+        Invocation.method(#getCurrentPubkey, []),
         returnValue: _i4.Future<String?>.value(),
       ) as _i4.Future<String?>);
 
@@ -1469,18 +1163,14 @@ class MockNdkService extends _i1.Mock implements _i13.NdkService {
     String? customPubkey,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #publishEncryptedEvent,
-          [],
-          {
-            #content: content,
-            #kind: kind,
-            #recipientPubkey: recipientPubkey,
-            #relays: relays,
-            #tags: tags,
-            #customPubkey: customPubkey,
-          },
-        ),
+        Invocation.method(#publishEncryptedEvent, [], {
+          #content: content,
+          #kind: kind,
+          #recipientPubkey: recipientPubkey,
+          #relays: relays,
+          #tags: tags,
+          #customPubkey: customPubkey,
+        }),
         returnValue: _i4.Future<String?>.value(),
       ) as _i4.Future<String?>);
 
@@ -1494,51 +1184,34 @@ class MockNdkService extends _i1.Mock implements _i13.NdkService {
     String? customPubkey,
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #publishEncryptedEventToMultiple,
-          [],
-          {
-            #content: content,
-            #kind: kind,
-            #recipientPubkeys: recipientPubkeys,
-            #relays: relays,
-            #tags: tags,
-            #customPubkey: customPubkey,
-          },
-        ),
+        Invocation.method(#publishEncryptedEventToMultiple, [], {
+          #content: content,
+          #kind: kind,
+          #recipientPubkeys: recipientPubkeys,
+          #relays: relays,
+          #tags: tags,
+          #customPubkey: customPubkey,
+        }),
         returnValue: _i4.Future<List<String>>.value(<String>[]),
       ) as _i4.Future<List<String>>);
 
   @override
   _i4.Future<_i2.Ndk> getNdk() => (super.noSuchMethod(
-        Invocation.method(
-          #getNdk,
-          [],
+        Invocation.method(#getNdk, []),
+        returnValue: _i4.Future<_i2.Ndk>.value(
+          _FakeNdk_4(this, Invocation.method(#getNdk, [])),
         ),
-        returnValue: _i4.Future<_i2.Ndk>.value(_FakeNdk_4(
-          this,
-          Invocation.method(
-            #getNdk,
-            [],
-          ),
-        )),
       ) as _i4.Future<_i2.Ndk>);
 
   @override
   void setNdkForTesting(_i2.Ndk? ndk) => super.noSuchMethod(
-        Invocation.method(
-          #setNdkForTesting,
-          [ndk],
-        ),
+        Invocation.method(#setNdkForTesting, [ndk]),
         returnValueForMissingStub: null,
       );
 
   @override
   _i4.Future<void> dispose() => (super.noSuchMethod(
-        Invocation.method(
-          #dispose,
-          [],
-        ),
+        Invocation.method(#dispose, []),
         returnValue: _i4.Future<void>.value(),
         returnValueForMissingStub: _i4.Future<void>.value(),
       ) as _i4.Future<void>);

@@ -63,7 +63,9 @@ class LockboxCard extends ConsumerWidget {
         onTap: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => LockboxDetailScreen(lockboxId: lockbox.id)),
+            MaterialPageRoute(
+              builder: (context) => LockboxDetailScreen(lockboxId: lockbox.id),
+            ),
           );
         },
         child: Padding(
@@ -78,7 +80,11 @@ class LockboxCard extends ConsumerWidget {
                   color: theme.colorScheme.surfaceContainer,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(stateIcon, color: iconColor ?? theme.colorScheme.onSurface, size: 24),
+                child: Icon(
+                  stateIcon,
+                  color: iconColor ?? theme.colorScheme.onSurface,
+                  size: 24,
+                ),
               ),
               const SizedBox(width: 16),
               // Content
@@ -88,7 +94,9 @@ class LockboxCard extends ConsumerWidget {
                   children: [
                     Text(
                       lockbox.name,
-                      style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                      style: textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -107,7 +115,11 @@ class LockboxCard extends ConsumerWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Icon(Icons.arrow_forward_ios, size: 16, color: theme.colorScheme.secondary),
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    size: 16,
+                    color: theme.colorScheme.secondary,
+                  ),
                   const SizedBox(height: 8),
                 ],
               ),

@@ -31,7 +31,10 @@ class LockboxMetadataSection extends ConsumerWidget {
             children: [
               Row(
                 children: [
-                  Icon(Icons.info_outline, color: Theme.of(context).primaryColor),
+                  Icon(
+                    Icons.info_outline,
+                    color: Theme.of(context).primaryColor,
+                  ),
                   const SizedBox(width: 8),
                   Text(
                     'Lockbox Information',
@@ -79,7 +82,11 @@ class LockboxMetadataSection extends ConsumerWidget {
     );
   }
 
-  Widget _buildMetadataContent(BuildContext context, Lockbox lockbox, String? currentPubkey) {
+  Widget _buildMetadataContent(
+    BuildContext context,
+    Lockbox lockbox,
+    String? currentPubkey,
+  ) {
     final isOwner = currentPubkey == lockbox.ownerPubkey;
     final threshold = lockbox.shards.firstOrNull?.threshold;
 
@@ -93,7 +100,10 @@ class LockboxMetadataSection extends ConsumerWidget {
               // Owner state
               Row(
                 children: [
-                  Icon(Icons.person, color: Theme.of(context).textTheme.titleMedium?.color),
+                  Icon(
+                    Icons.person,
+                    color: Theme.of(context).textTheme.titleMedium?.color,
+                  ),
                   const SizedBox(width: 8),
                   Text(
                     'You own this vault',
@@ -105,7 +115,10 @@ class LockboxMetadataSection extends ConsumerWidget {
               // Key holder state
               Row(
                 children: [
-                  Icon(Icons.key, color: Theme.of(context).textTheme.titleMedium?.color),
+                  Icon(
+                    Icons.key,
+                    color: Theme.of(context).textTheme.titleMedium?.color,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -118,12 +131,17 @@ class LockboxMetadataSection extends ConsumerWidget {
                 ],
               ),
               const SizedBox(height: 8),
-              Text('Owner: ${Helpers.encodeBech32(lockbox.ownerPubkey, 'npub')}',
-                  style: Theme.of(context).textTheme.bodyMedium, overflow: TextOverflow.ellipsis),
+              Text(
+                'Owner: ${Helpers.encodeBech32(lockbox.ownerPubkey, 'npub')}',
+                style: Theme.of(context).textTheme.bodyMedium,
+                overflow: TextOverflow.ellipsis,
+              ),
               if (threshold != null) ...[
                 const SizedBox(height: 8),
-                Text('A minimum of $threshold keys are needed to recover and unlock the vault.',
-                    style: Theme.of(context).textTheme.bodyMedium),
+                Text(
+                  'A minimum of $threshold keys are needed to recover and unlock the vault.',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
               ],
             ],
           ],

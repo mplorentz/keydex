@@ -43,10 +43,7 @@ class _StatusData {
 class LockboxStatusBanner extends ConsumerWidget {
   final Lockbox lockbox;
 
-  const LockboxStatusBanner({
-    super.key,
-    required this.lockbox,
-  });
+  const LockboxStatusBanner({super.key, required this.lockbox});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -341,9 +338,7 @@ class LockboxStatusBanner extends ConsumerWidget {
 
     return Container(
       width: double.infinity,
-      decoration: BoxDecoration(
-        color: theme.scaffoldBackgroundColor,
-      ),
+      decoration: BoxDecoration(color: theme.scaffoldBackgroundColor),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -370,10 +365,7 @@ class LockboxStatusBanner extends ConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 // Headline
-                Text(
-                  statusData.headline,
-                  style: theme.textTheme.headlineSmall,
-                ),
+                Text(statusData.headline, style: theme.textTheme.headlineSmall),
                 // Optional role context (only show if not obvious from context)
                 if (isOwner || isSteward) ...[
                   const SizedBox(height: 4),
@@ -384,10 +376,7 @@ class LockboxStatusBanner extends ConsumerWidget {
                 ],
                 // Subtext
                 const SizedBox(height: 4),
-                Text(
-                  statusData.subtext,
-                  style: theme.textTheme.bodyMedium,
-                ),
+                Text(statusData.subtext, style: theme.textTheme.bodyMedium),
               ],
             ),
           ),

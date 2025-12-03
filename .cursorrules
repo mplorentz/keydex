@@ -124,6 +124,91 @@ final currentKeyProvider = FutureProvider<String?>((ref) async {
 });
 ```
 
+## Code Verification Requirements (MANDATORY)
+
+**CRITICAL**: AI assistants MUST verify code quality after EVERY change before responding to the user.
+
+### Verification Checklist (Execute After Every Change)
+
+After making ANY code changes, you MUST run the following verification steps IN ORDER:
+
+1. **Check Linter Errors**
+   ```bash
+   # Use ReadLints tool on all modified files
+   ReadLints(paths: ["lib/path/to/modified/file.dart"])
+   # Or check entire lib directory for comprehensive verification
+   ReadLints(paths: ["lib"])
+   ```
+   - MUST show "No linter errors found"
+   - Fix ALL errors and warnings before proceeding
+   - Re-run ReadLints after fixes to confirm
+
+2. **Verify Analyzer Passes** (when ReadLints is insufficient)
+   - ReadLints should catch most issues, but for build-breaking errors, analyzer may be needed
+   - Only if ReadLints shows clean but user reports analyzer errors
+   - Check specific error messages and fix root cause
+
+3. **Run Unit Tests** (for significant logic changes)
+   ```bash
+   # Run tests excluding golden tests
+   flutter test --exclude-tags=golden
+   ```
+   - MUST show all tests passing
+   - Fix failing tests before proceeding
+   - Update test expectations if behavior intentionally changed
+
+4. **Update Golden Tests** (for UI changes)
+   ```bash
+   # Only if you modified UI screens or widgets
+   flutter test test/screens --update-goldens --tags=golden
+   ```
+   - Note: Golden tests require macOS - inform user if you can't run them
+   - Commit updated golden PNG files with your changes
+
+### Enforcement Rules
+
+**DO NOT**:
+- ❌ Tell the user "the code is clean" without running ReadLints
+- ❌ Claim "no analyzer errors" without verification
+- ❌ Say "tests should pass" without running them
+- ❌ Mark a task complete with known linter/analyzer errors
+
+**ALWAYS**:
+- ✅ Run ReadLints on modified files after every change
+- ✅ Show verification results in your response
+- ✅ Fix all issues before claiming completion
+- ✅ Re-verify after fixes to ensure they worked
+- ✅ Inform user if verification fails and you need guidance
+
+### Example Verification Workflow
+
+```dart
+// 1. Make code changes
+StrReplace(...)
+
+// 2. IMMEDIATELY verify
+ReadLints(paths: ["lib/screens/my_screen.dart"])
+
+// 3. If issues found, fix them
+StrReplace(...) // fix the issues
+
+// 4. Re-verify
+ReadLints(paths: ["lib/screens/my_screen.dart"])
+
+// 5. Only NOW respond to user with "✅ Verified clean"
+```
+
+### When Verification Fails
+
+If verification reveals errors:
+1. **Do not hide them** - inform the user immediately
+2. **Attempt to fix** the errors automatically
+3. **Re-verify** after fixes
+4. **Report results** honestly (success or remaining issues)
+5. **Ask for help** if stuck, don't pretend the issue doesn't exist
+
+This verification requirement applies to ALL code changes, no exceptions.
+
 ## Nostr Key Format Conventions
 
 ### Hex Format (Internal)
@@ -229,3 +314,105 @@ The app uses the **keydex3 theme** defined in `lib/widgets/theme.dart`
 
 **Remember**: Check DESIGN_GUIDE.md for complete details before implementing any UI changes.
 - If you need to manually verify some behavior in the UI you can run the app for web and use Playwright MCP to interact with it. Use the task "Flutter: Build and Serve for Playwright" to start.
+
+## Pull Request Requirements
+
+### Pre-PR Checklist
+Before opening a pull request, you MUST verify ALL of the following requirements:
+
+#### 1. Tests Pass
+- **Run all tests**: `flutter test`
+- All tests must pass with 0 failures
+- No skipped tests unless explicitly documented why they're skipped
+- Test coverage should not decrease for modified code
+
+#### 2. Golden Tests Updated
+- If UI changes were made, regenerate golden test files
+- **Update goldens**: `flutter test --update-goldens`
+- Review the updated golden images to ensure they match expectations
+- Commit the updated golden files with your changes
+- Re-run tests after updating to ensure they pass: `flutter test`
+
+#### 3. No Analyzer Errors
+- **Run analyzer**: `flutter analyze`
+- Output must show: "No issues found!"
+- Zero errors, zero warnings, zero hints
+- Do not suppress analyzer warnings with `// ignore:` comments unless absolutely necessary and documented
+
+#### 4. Code Formatting
+- **Format code**: `dart format .`
+- All code must follow Dart formatting standards
+- No manual formatting that violates `dart format` rules
+
+#### 5. Linter Compliance
+- All linter rules in `analysis_options.yaml` must be followed
+- Fix any linter warnings or errors
+- Do not disable linter rules without team discussion
+
+### Running the Complete Pre-PR Check
+Run these commands in sequence to verify all requirements:
+
+```bash
+# 1. Format code
+dart format .
+
+# 2. Run analyzer
+flutter analyze
+
+# 3. Update golden tests (if UI changes were made)
+flutter test --update-goldens
+
+# 4. Run all tests
+flutter test
+
+# 5. Verify no issues
+flutter analyze
+```
+
+All commands must complete successfully before opening a PR.
+
+### AI Assistant PR Workflow
+When preparing code for a PR, AI assistants should:
+
+1. **After making changes**: Automatically run `flutter analyze` to check for issues
+2. **Fix any analyzer errors** before declaring the task complete
+3. **Run tests** to verify changes don't break existing functionality
+4. **Update golden tests** if UI components were modified
+5. **Format code** using `dart format .`
+6. **Inform the user** if any tests fail or analyzer errors remain
+7. **Do not open/push PRs** with known failing tests or analyzer errors
+
+### Common Pre-PR Issues
+
+#### Golden Test Failures
+If golden tests fail after changes:
+```bash
+# Review the failures
+flutter test
+
+# If changes are intentional, update goldens
+flutter test --update-goldens
+
+# Verify tests now pass
+flutter test
+```
+
+#### Analyzer Errors After Refactoring
+- Unused imports: Remove them
+- Missing `const` constructors: Add `const` where appropriate
+- Type errors: Ensure types are correct throughout the call chain
+- Null safety issues: Handle nullability properly
+
+#### Test Failures
+- Review test output carefully
+- Update test expectations if behavior intentionally changed
+- Fix bugs if tests reveal issues in the implementation
+- Do not skip failing tests to make CI pass
+
+### PR Description Guidelines
+When opening a PR, include:
+- **What**: Brief description of changes
+- **Why**: Reason for the changes
+- **Testing**: How the changes were tested
+- **Screenshots**: For UI changes (before/after if applicable)
+- **Breaking Changes**: Document any breaking API changes

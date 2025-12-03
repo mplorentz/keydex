@@ -97,11 +97,13 @@ class NdkService {
       }
 
       // Initialize NDK with default config
-      _ndk = Ndk(NdkConfig(
-        cache: MemCacheManager(),
-        eventVerifier: Bip340EventVerifier(),
-        engine: NdkEngine.JIT,
-      ));
+      _ndk = Ndk(
+        NdkConfig(
+          cache: MemCacheManager(),
+          eventVerifier: Bip340EventVerifier(),
+          engine: NdkEngine.JIT,
+        ),
+      );
 
       // Login with user's private key
       _ndk!.accounts.loginPrivateKey(
@@ -110,7 +112,9 @@ class NdkService {
       );
 
       _isInitialized = true;
-      Log.info('NDK initialized successfully with pubkey: ${keyPair.publicKey}');
+      Log.info(
+        'NDK initialized successfully with pubkey: ${keyPair.publicKey}',
+      );
 
       // Start listening for events if we have relays
       if (_activeRelays.isNotEmpty) {
@@ -135,7 +139,9 @@ class NdkService {
 
     try {
       _activeRelays.add(relayUrl);
-      Log.info('Added relay: $relayUrl (total active: ${_activeRelays.length})');
+      Log.info(
+        'Added relay: $relayUrl (total active: ${_activeRelays.length})',
+      );
 
       // Restart subscriptions to include new relay
       await _setupSubscriptions();
@@ -148,7 +154,9 @@ class NdkService {
   /// Remove a relay from active listening
   Future<void> removeRelay(String relayUrl) async {
     _activeRelays.remove(relayUrl);
-    Log.info('Removed relay: $relayUrl (remaining active: ${_activeRelays.length})');
+    Log.info(
+      'Removed relay: $relayUrl (remaining active: ${_activeRelays.length})',
+    );
 
     // Restart subscriptions without this relay
     if (_activeRelays.isNotEmpty) {
@@ -198,7 +206,9 @@ class NdkService {
       onError: (error) => Log.error('Error in gift wrap stream', error),
     );
 
-    Log.info('NDK subscriptions active for gift wrapped events (kind ${NostrKind.giftWrap.value})');
+    Log.info(
+      'NDK subscriptions active for gift wrapped events (kind ${NostrKind.giftWrap.value})',
+    );
   }
 
   /// Handle incoming gift wrap event (kind 1059)
@@ -210,7 +220,9 @@ class NdkService {
       // Unwrap the gift wrap event using NDK
       final unwrappedEvent = await _ndk!.giftWrap.fromGiftWrap(giftWrap: event);
 
-      Log.info('Unwrapped event: kind=${unwrappedEvent.kind}, id=${unwrappedEvent.id}');
+      Log.info(
+        'Unwrapped event: kind=${unwrappedEvent.kind}, id=${unwrappedEvent.id}',
+      );
       Log.debug('Gift wrap event tags: ${event.tags}');
       Log.debug('Unwrapped event tags: ${unwrappedEvent.tags}');
 
@@ -251,7 +263,9 @@ class NdkService {
       // This handles the complete invitation flow
       final lockboxId = shardData.lockboxId;
       if (lockboxId == null || lockboxId.isEmpty) {
-        Log.error('Cannot process shard data event ${event.id}: missing lockboxId in shard data');
+        Log.error(
+          'Cannot process shard data event ${event.id}: missing lockboxId in shard data',
+        );
         return;
       }
 
@@ -305,7 +319,8 @@ class NdkService {
       final approved = responseData['approved'] as bool;
 
       Log.info(
-          'Received recovery response from $senderPubkey for lockbox $lockboxId: approved=$approved');
+        'Received recovery response from $senderPubkey for lockbox $lockboxId: approved=$approved',
+      );
 
       ShardData? shardData;
 
@@ -316,10 +331,14 @@ class NdkService {
 
         // Store as a recovery shard (not a key holder shard)
         final lockboxShareService = _ref.read(lockboxShareServiceProvider);
-        await lockboxShareService.addRecoveryShard(recoveryRequestId, shardData);
+        await lockboxShareService.addRecoveryShard(
+          recoveryRequestId,
+          shardData,
+        );
 
         Log.info(
-            'Stored recovery shard from $senderPubkey for recovery request $recoveryRequestId');
+          'Stored recovery shard from $senderPubkey for recovery request $recoveryRequestId',
+        );
       }
 
       // Emit recovery response to stream (RecoveryService will listen)
@@ -333,7 +352,9 @@ class NdkService {
       );
       _recoveryResponseController.add(responseEvent);
 
-      Log.info('Emitted recovery response to stream: $recoveryRequestId from $senderPubkey');
+      Log.info(
+        'Emitted recovery response to stream: $recoveryRequestId from $senderPubkey',
+      );
     } catch (e) {
       Log.error('Error handling recovery response data', e);
     }
@@ -344,7 +365,8 @@ class NdkService {
     try {
       Log.info('Processing invitation RSVP event: ${event.id}');
       Log.debug(
-          'RSVP event before processing: kind=${event.kind}, content length=${event.content.length}, content preview=${event.content.length > 100 ? event.content.substring(0, 100) : event.content}');
+        'RSVP event before processing: kind=${event.kind}, content length=${event.content.length}, content preview=${event.content.length > 100 ? event.content.substring(0, 100) : event.content}',
+      );
       final invitationService = _getInvitationService();
       await invitationService.processRsvpEvent(event: event);
       Log.info('Successfully processed RSVP event: ${event.id}');
@@ -370,8 +392,12 @@ class NdkService {
     try {
       Log.info('Processing shard confirmation event: ${event.id}');
       Log.debug('Shard confirmation event tags: ${event.tags}');
-      final shardDistributionService = _ref.read(shardDistributionServiceProvider);
-      await shardDistributionService.processShardConfirmationEvent(event: event);
+      final shardDistributionService = _ref.read(
+        shardDistributionServiceProvider,
+      );
+      await shardDistributionService.processShardConfirmationEvent(
+        event: event,
+      );
       Log.info('Successfully processed shard confirmation event: ${event.id}');
     } catch (e) {
       Log.error('Error handling shard confirmation event ${event.id}', e);
@@ -446,7 +472,9 @@ class NdkService {
         );
 
         publishedEventIds.add(dmEvent.id);
-        Log.info('Published recovery request to $keyHolderPubkey: ${dmEvent.id}');
+        Log.info(
+          'Published recovery request to $keyHolderPubkey: ${dmEvent.id}',
+        );
       }
 
       return publishedEventIds.isNotEmpty ? publishedEventIds.first : null;
@@ -581,7 +609,9 @@ class NdkService {
 
       // Prepare tags with expiration tag prepended (only if not already present)
       final tagsList = tags ?? [];
-      final hasExpirationTag = tagsList.any((tag) => tag.isNotEmpty && tag[0] == 'expiration');
+      final hasExpirationTag = tagsList.any(
+        (tag) => tag.isNotEmpty && tag[0] == 'expiration',
+      );
 
       final tagsWithExpiration = <List<String>>[
         if (!hasExpirationTag) ['expiration', expirationTimestamp.toString()],
@@ -597,7 +627,8 @@ class NdkService {
       );
 
       Log.debug(
-          'Created rumor event: kind=$kind, content length=${content.length}, content preview=${content.length > 100 ? content.substring(0, 100) : content}');
+        'Created rumor event: kind=$kind, content length=${content.length}, content preview=${content.length > 100 ? content.substring(0, 100) : content}',
+      );
 
       // Wrap the rumor in a gift wrap for the recipient
       final giftWrap = await _ndk!.giftWrap.toGiftWrap(
@@ -612,7 +643,8 @@ class NdkService {
       );
 
       Log.info(
-          'Publishing encrypted event (kind $kind) addressed to ${recipientPubkey.substring(0, 8)}... to relays ${relays.join(', ')} (event: ${giftWrap.id.substring(0, 8)}...)');
+        'Publishing encrypted event (kind $kind) addressed to ${recipientPubkey.substring(0, 8)}... to relays ${relays.join(', ')} (event: ${giftWrap.id.substring(0, 8)}...)',
+      );
 
       // Await broadcast results and log any errors
       try {
@@ -622,10 +654,12 @@ class NdkService {
 
         if (failed.isNotEmpty) {
           Log.warning(
-              'Broadcast completed with ${failed.length} failed relay(s) out of ${results.length} total');
+            'Broadcast completed with ${failed.length} failed relay(s) out of ${results.length} total',
+          );
           for (final failure in failed) {
             Log.warning(
-                'Relay ${failure.relayUrl} failed: ${failure.msg.isNotEmpty ? failure.msg : "No response"}');
+              'Relay ${failure.relayUrl} failed: ${failure.msg.isNotEmpty ? failure.msg : "No response"}',
+            );
           }
         } else {
           Log.info('Broadcast successful to all ${results.length} relay(s)');
@@ -686,7 +720,10 @@ class NdkService {
           eventIds.add(eventId);
         }
       } catch (e) {
-        Log.error('Error publishing encrypted event to ${recipientPubkey.substring(0, 8)}...', e);
+        Log.error(
+          'Error publishing encrypted event to ${recipientPubkey.substring(0, 8)}...',
+          e,
+        );
       }
     }
 

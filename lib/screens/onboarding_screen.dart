@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../utils/app_initialization.dart';
 import '../widgets/row_button.dart';
+import 'account_choice_screen.dart';
 
 /// Onboarding screen shown when user is not logged in
 class OnboardingScreen extends ConsumerWidget {
@@ -46,7 +46,9 @@ class OnboardingScreen extends ConsumerWidget {
                             children: [
                               // Body text explaining Keydex - left aligned
                               Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16.0,
+                                ),
                                 child: Text(
                                   'Horcrux is a tool for backing up sensitive data like digital wills, passwords, and cryptographic keys. Rather than backing the data up to the cloud, Horcrux sends the sensitive data in pieces to your friends and family\'s devices. Recovery is accomplished by getting consent from these friends and family to reassemble your data.',
                                   style: Theme.of(context).textTheme.bodyMedium,
@@ -87,9 +89,11 @@ class OnboardingScreen extends ConsumerWidget {
             ),
             // Get Started button at bottom
             RowButton(
-              onPressed: () async {
-                // Initialize key and services, then invalidate providers to show main screen
-                await initializeAppServices(ref, initializeKeyIfNeeded: true);
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AccountChoiceScreen()),
+                );
               },
               icon: Icons.arrow_forward,
               text: 'Get Started',

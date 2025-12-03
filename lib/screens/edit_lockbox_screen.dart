@@ -66,7 +66,10 @@ class _EditLockboxScreenState extends ConsumerState<EditLockboxScreen>
         actions: [
           TextButton(
             onPressed: () => _saveLockbox(),
-            child: const Text('Save', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text(
+              'Save',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -86,16 +89,16 @@ class _EditLockboxScreenState extends ConsumerState<EditLockboxScreen>
       name: _nameController.text,
       content: _contentController.text,
       lockboxId: widget.lockboxId,
-      ownerName: _ownerNameController.text.trim().isEmpty
-          ? null
-          : _ownerNameController.text.trim(),
+      ownerName: _ownerNameController.text.trim().isEmpty ? null : _ownerNameController.text.trim(),
     );
 
     if (savedId != null && mounted) {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Vault "${_nameController.text.trim()}" updated successfully!'),
+          content: Text(
+            'Vault "${_nameController.text.trim()}" updated successfully!',
+          ),
           backgroundColor: Colors.green,
         ),
       );
