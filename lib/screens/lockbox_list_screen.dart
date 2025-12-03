@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/lockbox_provider.dart';
 import '../widgets/row_button.dart';
-import '../widgets/debug_info_sheet.dart';
-import 'relay_management_screen.dart';
 import 'recovery_notification_overlay.dart';
 import 'vault_explainer_screen.dart';
 import '../widgets/lockbox_card.dart';
@@ -12,44 +10,13 @@ import '../widgets/lockbox_card.dart';
 class LockboxListScreen extends ConsumerWidget {
   const LockboxListScreen({super.key});
 
-  void _showDebugInfo(BuildContext context, WidgetRef ref) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => const DebugInfoSheet(),
-    );
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Watch the lockbox stream provider
     final lockboxesAsync = ref.watch(lockboxListProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Horcrux'),
-        centerTitle: false,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.wifi),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const RelayManagementScreen(),
-                ),
-              );
-            },
-            tooltip: 'Scan for Keys',
-          ),
-          IconButton(
-            icon: const Icon(Icons.bug_report),
-            onPressed: () => _showDebugInfo(context, ref),
-            tooltip: 'Debug Info',
-          ),
-        ],
-      ),
+      appBar: AppBar(title: const Text('Horcrux'), centerTitle: false),
       body: Column(
         children: [
           Expanded(
@@ -131,7 +98,8 @@ class LockboxListScreen extends ConsumerWidget {
                         vertical: 12,
                       ),
                       itemCount: lockboxes.length,
-                      separatorBuilder: (context, index) => const Divider(height: 1),
+                      separatorBuilder: (context, index) =>
+                          const Divider(height: 1),
                       itemBuilder: (context, index) {
                         final lockbox = lockboxes[index];
                         return LockboxCard(

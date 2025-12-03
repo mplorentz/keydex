@@ -5,6 +5,7 @@ import '../providers/lockbox_provider.dart';
 import '../widgets/key_holder_list.dart';
 import '../widgets/lockbox_detail_button_stack.dart';
 import '../widgets/lockbox_status_banner.dart';
+import 'lockbox_settings_screen.dart';
 
 /// Detail/view screen for displaying a lockbox
 class LockboxDetailScreen extends ConsumerWidget {
@@ -65,6 +66,18 @@ class LockboxDetailScreen extends ConsumerWidget {
         title: Text(lockbox.name),
         centerTitle: false,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const LockboxSettingsScreen(),
+                ),
+              );
+            },
+            tooltip: 'Settings',
+          ),
           PopupMenuButton(
             itemBuilder: (context) => [
               const PopupMenuItem(
