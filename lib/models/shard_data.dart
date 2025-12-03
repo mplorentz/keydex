@@ -1,12 +1,12 @@
-import 'lockbox.dart';
+import 'vault.dart';
 import '../services/logger.dart';
 
 /// Represents the decrypted shard data contained within a ShardEvent
 ///
 /// This model contains the actual Shamir share data that is encrypted
-/// and stored in the ShardEvent for distribution to key holders.
+/// and stored in the ShardEvent for distribution to stewards.
 ///
-/// Extended with optional recovery metadata for lockbox recovery feature.
+/// Extended with optional recovery metadata for vault recovery feature.
 typedef ShardData = ({
   String shard,
   int threshold,
@@ -16,11 +16,11 @@ typedef ShardData = ({
   String creatorPubkey,
   int createdAt,
   // Recovery metadata (optional fields)
-  String? lockboxId,
-  String? lockboxName,
+  String? vaultId,
+  String? vaultName,
   List<
       Map<String,
-          String>>? peers, // List of maps with 'name' and 'pubkey' for OTHER key holders (excludes creatorPubkey)
+          String>>? peers, // List of maps with 'name' and 'pubkey' for OTHER stewards (excludes creatorPubkey)
   String? ownerName, // Name of the vault owner (creator)
   String? instructions, // Instructions for stewards
   String? recipientPubkey,
@@ -39,8 +39,8 @@ ShardData createShardData({
   required int totalShards,
   required String primeMod,
   required String creatorPubkey,
-  String? lockboxId,
-  String? lockboxName,
+  String? vaultId,
+  String? vaultName,
   List<Map<String, String>>? peers,
   String? ownerName,
   String? instructions,
@@ -54,9 +54,9 @@ ShardData createShardData({
   if (shard.isEmpty) {
     throw ArgumentError('Shard cannot be empty');
   }
-  if (threshold < LockboxBackupConstraints.minThreshold || threshold > totalShards) {
+  if (threshold < VaultBackupConstraints.minThreshold || threshold > totalShards) {
     throw ArgumentError(
-      'Threshold must be >= ${LockboxBackupConstraints.minThreshold} and <= totalShards',
+      'Threshold must be >= ${VaultBackupConstraints.minThreshold} and <= totalShards',
     );
   }
   if (shardIndex < 0 || shardIndex >= totalShards) {
@@ -105,8 +105,8 @@ ShardData createShardData({
     primeMod: primeMod,
     creatorPubkey: creatorPubkey,
     createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000, // Unix timestamp
-    lockboxId: lockboxId,
-    lockboxName: lockboxName,
+    vaultId: vaultId,
+    vaultName: vaultName,
     peers: peers,
     ownerName: ownerName,
     instructions: instructions,
@@ -134,8 +134,8 @@ ShardData copyShardData(
   String? primeMod,
   String? creatorPubkey,
   int? createdAt,
-  String? lockboxId,
-  String? lockboxName,
+  String? vaultId,
+  String? vaultName,
   List<Map<String, String>>? peers,
   String? ownerName,
   String? instructions,
@@ -154,8 +154,8 @@ ShardData copyShardData(
     primeMod: primeMod ?? shardData.primeMod,
     creatorPubkey: creatorPubkey ?? shardData.creatorPubkey,
     createdAt: createdAt ?? shardData.createdAt,
-    lockboxId: lockboxId ?? shardData.lockboxId,
-    lockboxName: lockboxName ?? shardData.lockboxName,
+    vaultId: vaultId ?? shardData.vaultId,
+    vaultName: vaultName ?? shardData.vaultName,
     peers: peers ?? shardData.peers,
     ownerName: ownerName ?? shardData.ownerName,
     instructions: instructions ?? shardData.instructions,
@@ -178,10 +178,10 @@ extension ShardDataExtension on ShardData {
         return false;
       }
 
-      if (threshold < LockboxBackupConstraints.minThreshold) {
+      if (threshold < VaultBackupConstraints.minThreshold) {
         Log.error(
           'ShardData validation failed: threshold ($threshold) is below minimum '
-          '(${LockboxBackupConstraints.minThreshold})',
+          '(${VaultBackupConstraints.minThreshold})',
         );
         return false;
       }
@@ -258,8 +258,8 @@ Map<String, dynamic> shardDataToJson(ShardData shardData) {
     'primeMod': shardData.primeMod,
     'creatorPubkey': shardData.creatorPubkey,
     'createdAt': shardData.createdAt,
-    if (shardData.lockboxId != null) 'lockboxId': shardData.lockboxId,
-    if (shardData.lockboxName != null) 'lockboxName': shardData.lockboxName,
+    if (shardData.vaultId != null) 'vaultId': shardData.vaultId,
+    if (shardData.vaultName != null) 'vaultName': shardData.vaultName,
     if (shardData.peers != null) 'peers': shardData.peers,
     if (shardData.ownerName != null) 'ownerName': shardData.ownerName,
     if (shardData.instructions != null) 'instructions': shardData.instructions,
@@ -282,8 +282,8 @@ ShardData shardDataFromJson(Map<String, dynamic> json) {
     primeMod: json['primeMod'] as String,
     creatorPubkey: json['creatorPubkey'] as String,
     createdAt: json['createdAt'] as int,
-    lockboxId: json['lockboxId'] as String?,
-    lockboxName: json['lockboxName'] as String?,
+    vaultId: json['vaultId'] as String?,
+    vaultName: json['vaultName'] as String?,
     peers: json['peers'] != null
         ? (json['peers'] as List).map((e) => Map<String, String>.from(e as Map)).toList()
         : null,

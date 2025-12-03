@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-/// Keydex app theme using bundled Archivo and OpenSans fonts
+/// Horcrux app theme using bundled Archivo and OpenSans fonts
 /// Fonts are bundled in fonts/ directory and declared in pubspec.yaml
-final keydexTheme = ThemeData(
+final horcruxTheme = ThemeData(
   primaryColor: const Color(0xFFdc714e),
   scaffoldBackgroundColor: const Color(0xFFc1c4b1),
   colorScheme: ColorScheme.fromSeed(
@@ -81,8 +81,8 @@ final keydexTheme = ThemeData(
   visualDensity: VisualDensity.adaptivePlatformDensity,
 );
 
-/// Keydex v2 theme (terminal-adjacent, ledger vibes, flat, confident type)
-final ThemeData keydex2 = ThemeData(
+/// Horcrux v2 theme (terminal-adjacent, ledger vibes, flat, confident type)
+final ThemeData horcrux2 = ThemeData(
   // Background slightly lighter / less green than 0xFFC1C4B1
   scaffoldBackgroundColor: const Color(0xFFc1c4b1),
   primaryColor: const Color(0xFFDC714E), // Accent for RowButton, etc.
@@ -99,13 +99,13 @@ final ThemeData keydex2 = ThemeData(
     // Calm, ledger-like olive/sage neutrals
     surface: const Color(0xFFc1c4b1),
     onSurface: const Color(0xFF21271C),
-    // Match old keydexTheme chip background for icon container in lists
+    // Match old horcruxTheme chip background for icon container in lists
     surfaceContainer: const Color(0xFF464D41),
     // Used around borders and low-contrast elements
     outline: const Color(0xFF7F8571),
     // Used by components that reference surface containers
     surfaceContainerHighest: const Color(0xFF8A917E),
-    // Errors: use Material's standard error color (matches keydexTheme)
+    // Errors: use Material's standard error color (matches horcruxTheme)
     error: const Color(0xFFBA1A1A),
     onError: const Color(0xFFFDFFF0),
   ),
@@ -137,9 +137,9 @@ final ThemeData keydex2 = ThemeData(
   inputDecorationTheme: InputDecorationTheme(
     filled: true,
     fillColor: const Color(0xFFc1c4b1), // Match scaffold background
-    // No explicit label styles - use theme defaults like keydexTheme
+    // No explicit label styles - use theme defaults like horcruxTheme
     border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(4), // match lockbox_create_screen
+      borderRadius: BorderRadius.circular(4), // match vault_create_screen
       borderSide: const BorderSide(color: Color(0xFF7F8571), width: 1),
     ),
     enabledBorder: OutlineInputBorder(
@@ -156,7 +156,7 @@ final ThemeData keydex2 = ThemeData(
     ),
     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
     hintStyle: const TextStyle(
-      color: Color.fromRGBO(103, 111, 98, 0.6), // Match keydexTheme hint style
+      color: Color.fromRGBO(103, 111, 98, 0.6), // Match horcruxTheme hint style
       fontFamily: 'Archivo',
     ),
     errorStyle: const TextStyle(fontFamily: 'OpenSans', fontSize: 12),
@@ -204,11 +204,11 @@ final ThemeData keydex2 = ThemeData(
       fontFamily: 'OpenSans',
     ),
   ),
-  // List tiles to align with LockboxCard spacing/shape and icon emphasis
+  // List tiles to align with VaultCard spacing/shape and icon emphasis
   listTileTheme: ListTileThemeData(
     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-    // Match older keydexTheme chevron/icon tone for lists
+    // Match older horcruxTheme chevron/icon tone for lists
     iconColor: const Color(0xFF21271C),
     textColor: const Color(0xFF21271C),
     titleTextStyle: const TextStyle(
@@ -326,9 +326,9 @@ final ThemeData keydex2 = ThemeData(
   visualDensity: VisualDensity.adaptivePlatformDensity,
 );
 
-/// Keydex v3 theme - Stark black and white with subtle shadows
+/// Horcrux v3 theme - Stark black and white with subtle shadows
 /// Light and dark variants that match system theme
-ThemeData keydex3(Brightness brightness) {
+ThemeData horcrux3(Brightness brightness) {
   final isDark = brightness == Brightness.dark;
 
   // Color definitions
@@ -595,8 +595,8 @@ ThemeData keydex3(Brightness brightness) {
   );
 }
 
-/// Keydex v3 light theme
-final ThemeData keydex3Light = keydex3(Brightness.light);
+/// Horcrux v3 light theme
+final ThemeData horcrux3Light = horcrux3(Brightness.light);
 
-/// Keydex v3 dark theme
-final ThemeData keydex3Dark = keydex3(Brightness.dark);
+/// Horcrux v3 dark theme
+final ThemeData horcrux3Dark = horcrux3(Brightness.dark);

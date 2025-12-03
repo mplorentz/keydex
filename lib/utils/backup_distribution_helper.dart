@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/backup_config.dart';
-import '../models/key_holder_status.dart';
+import '../models/steward_status.dart';
 
 /// Helper functions for backup distribution logic
 class BackupDistributionHelper {
@@ -9,7 +9,7 @@ class BackupDistributionHelper {
   /// Returns:
   /// - `true` if user confirmed and should auto-distribute
   /// - `false` if user cancelled or widget is not mounted
-  /// - `null` if alert should not be shown (key holders still invited)
+  /// - `null` if alert should not be shown (stewards still invited)
   ///
   /// Parameters:
   /// - [context] - BuildContext for showing dialog
@@ -25,14 +25,14 @@ class BackupDistributionHelper {
     // Don't show alert if no backup config exists
     if (backupConfig == null) return null;
 
-    // Check if all key holders have accepted invitations (no one is still invited)
-    final allKeyHoldersHaveAccepted = backupConfig.keyHolders.every(
-      (h) => h.status != KeyHolderStatus.invited,
+    // Check if all stewards have accepted invitations (no one is still invited)
+    final allStewardsHaveAccepted = backupConfig.stewards.every(
+      (h) => h.status != StewardStatus.invited,
     );
 
-    // Only show alert if changes will be made AND all key holders have accepted invitations
-    // (Skip alert if any key holders are still invited - waiting for them to accept)
-    if (!willChange || !allKeyHoldersHaveAccepted) {
+    // Only show alert if changes will be made AND all stewards have accepted invitations
+    // (Skip alert if any stewards are still invited - waiting for them to accept)
+    if (!willChange || !allStewardsHaveAccepted) {
       return null;
     }
 
@@ -65,7 +65,7 @@ class BackupDistributionHelper {
       return false;
     }
 
-    // User confirmed - auto-distribute since all key holders have accepted invitations
+    // User confirmed - auto-distribute since all stewards have accepted invitations
     return true;
   }
 }

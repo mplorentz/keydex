@@ -10,9 +10,9 @@ This NIP defines a protocol for backup and recovery of sensitive data with peers
 
 The system consists of several phases:
 
-1. **Invitation Phase** (optional): Vault owner invites key holders via unique invitation codes
-2. **Distribution Phase**: Vault owner splits the secret into shares and distributes them to key holders via encrypted events
-4. **Recovery Phase**: Any key holder can initiate recovery, requesting shares from other key holders. Once enough shares are assembled the key can be decrypted.
+1. **Invitation Phase** (optional): Vault owner invites stewards via unique invitation codes
+2. **Distribution Phase**: Vault owner splits the secret into shares and distributes them to stewards via encrypted events
+4. **Recovery Phase**: Any steward can initiate recovery, requesting shares from other stewards. Once enough shares are assembled the key can be decrypted.
 
 *TODO: Say something about the p2p assumptions made here. One share == one device atm*
 

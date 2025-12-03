@@ -1,4 +1,4 @@
-/// Common validation utilities for Keydex
+/// Common validation utilities for Horcrux
 ///
 /// Provides reusable validation functions for hex strings, Base64 encoding,
 /// relay URLs, and other common data formats used throughout the application.
@@ -104,12 +104,12 @@ bool isValidBase64Url(String base64Url) {
   return base64UrlRegex.hasMatch(base64Url);
 }
 
-/// Validates that a lockbox ID is in the correct format
+/// Validates that a vault ID is in the correct format
 ///
-/// Lockbox IDs are UUIDs (can be validated more strictly if needed)
+/// Vault IDs are UUIDs (can be validated more strictly if needed)
 /// For now, we just check it's not empty
-bool isValidLockboxId(String lockboxId) {
-  return lockboxId.trim().isNotEmpty;
+bool isValidVaultId(String vaultId) {
+  return vaultId.trim().isNotEmpty;
 }
 
 /// Validates that a name string is valid (not empty after trimming)

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:keydex/models/shard_data.dart';
+import 'package:horcrux/models/shard_data.dart';
 
 void main() {
   group('ShardData JSON Serialization', () {
@@ -23,8 +23,8 @@ void main() {
       // Extended fixture with recovery metadata
       validJsonWithRecoveryMetadata = {
         ...validJsonFixture,
-        'lockboxId': 'lockbox-abc-456',
-        'lockboxName': 'Shared Lockbox Test',
+        'vaultId': 'vault-abc-456',
+        'vaultName': 'Shared Vault Test',
         'peers': [
           {
             'name': 'Alice',
@@ -57,8 +57,8 @@ void main() {
       expect(shardData.primeMod, validJsonFixture['primeMod']);
       expect(shardData.creatorPubkey, validJsonFixture['creatorPubkey']);
       expect(shardData.createdAt, validJsonFixture['createdAt']);
-      expect(shardData.lockboxId, isNull);
-      expect(shardData.lockboxName, isNull);
+      expect(shardData.vaultId, isNull);
+      expect(shardData.vaultName, isNull);
       expect(shardData.peers, isNull);
       expect(shardData.recipientPubkey, isNull);
       expect(shardData.isReceived, isNull);
@@ -87,10 +87,10 @@ void main() {
           validJsonWithRecoveryMetadata['creatorPubkey'],
         );
         expect(shardData.createdAt, validJsonWithRecoveryMetadata['createdAt']);
-        expect(shardData.lockboxId, validJsonWithRecoveryMetadata['lockboxId']);
+        expect(shardData.vaultId, validJsonWithRecoveryMetadata['vaultId']);
         expect(
-          shardData.lockboxName,
-          validJsonWithRecoveryMetadata['lockboxName'],
+          shardData.vaultName,
+          validJsonWithRecoveryMetadata['vaultName'],
         );
         expect(shardData.peers, isNotNull);
         expect(shardData.peers!.length, 3);
@@ -130,8 +130,8 @@ void main() {
       expect(json['primeMod'], validJsonFixture['primeMod']);
       expect(json['creatorPubkey'], validJsonFixture['creatorPubkey']);
       expect(json['createdAt'], validJsonFixture['createdAt']);
-      expect(json.containsKey('lockboxId'), isFalse);
-      expect(json.containsKey('lockboxName'), isFalse);
+      expect(json.containsKey('vaultId'), isFalse);
+      expect(json.containsKey('vaultName'), isFalse);
       expect(json.containsKey('peers'), isFalse);
       expect(json.containsKey('recipientPubkey'), isFalse);
       expect(json.containsKey('isReceived'), isFalse);
@@ -158,10 +158,10 @@ void main() {
           validJsonWithRecoveryMetadata['creatorPubkey'],
         );
         expect(json['createdAt'], validJsonWithRecoveryMetadata['createdAt']);
-        expect(json['lockboxId'], validJsonWithRecoveryMetadata['lockboxId']);
+        expect(json['vaultId'], validJsonWithRecoveryMetadata['vaultId']);
         expect(
-          json['lockboxName'],
-          validJsonWithRecoveryMetadata['lockboxName'],
+          json['vaultName'],
+          validJsonWithRecoveryMetadata['vaultName'],
         );
         expect(json['peers'], isNotNull);
         expect(json['peers'], isA<List>());
@@ -193,8 +193,8 @@ void main() {
       expect(decodedShardData.primeMod, originalShardData.primeMod);
       expect(decodedShardData.creatorPubkey, originalShardData.creatorPubkey);
       expect(decodedShardData.createdAt, originalShardData.createdAt);
-      expect(decodedShardData.lockboxId, originalShardData.lockboxId);
-      expect(decodedShardData.lockboxName, originalShardData.lockboxName);
+      expect(decodedShardData.vaultId, originalShardData.vaultId);
+      expect(decodedShardData.vaultName, originalShardData.vaultName);
       expect(decodedShardData.peers, isNotNull);
       expect(decodedShardData.peers!.length, originalShardData.peers!.length);
       expect(decodedShardData.ownerName, originalShardData.ownerName);
@@ -214,8 +214,8 @@ void main() {
       final shardData = shardDataFromJson(jsonWithoutReceivedAt);
 
       expect(shardData.receivedAt, isNull);
-      expect(shardData.lockboxId, isNotNull);
-      expect(shardData.lockboxName, isNotNull);
+      expect(shardData.vaultId, isNotNull);
+      expect(shardData.vaultName, isNotNull);
     });
 
     test('shardDataFromJson throws on missing required fields', () {
@@ -232,8 +232,8 @@ void main() {
       final minimalShardData = shardDataFromJson(validJsonFixture);
       final json = shardDataToJson(minimalShardData);
 
-      expect(json.containsKey('lockboxId'), isFalse);
-      expect(json.containsKey('lockboxName'), isFalse);
+      expect(json.containsKey('vaultId'), isFalse);
+      expect(json.containsKey('vaultName'), isFalse);
       expect(json.containsKey('recipientPubkey'), isFalse);
       expect(json.containsKey('isReceived'), isFalse);
       expect(json.containsKey('receivedAt'), isFalse);
@@ -465,8 +465,8 @@ void main() {
         primeMod: 'xyz',
         creatorPubkey: 'a11ac73f57e93ef42ef8bce513de552bcda3b6169c8f9ab96c6143f0c9b73437',
         createdAt: pastTimestamp,
-        lockboxId: null,
-        lockboxName: null,
+        vaultId: null,
+        vaultName: null,
         peers: null,
         ownerName: null,
         instructions: null,
@@ -492,8 +492,8 @@ void main() {
         primeMod: 'xyz',
         creatorPubkey: 'a11ac73f57e93ef42ef8bce513de552bcda3b6169c8f9ab96c6143f0c9b73437',
         createdAt: pastTimestamp,
-        lockboxId: null,
-        lockboxName: null,
+        vaultId: null,
+        vaultName: null,
         peers: null,
         ownerName: null,
         instructions: null,
@@ -519,8 +519,8 @@ void main() {
         primeMod: 'xyz',
         creatorPubkey: 'a11ac73f57e93ef42ef8bce513de552bcda3b6169c8f9ab96c6143f0c9b73437',
         createdAt: recentTimestamp,
-        lockboxId: null,
-        lockboxName: null,
+        vaultId: null,
+        vaultName: null,
         peers: null,
         ownerName: null,
         instructions: null,
@@ -546,8 +546,8 @@ void main() {
         primeMod: 'xyz',
         creatorPubkey: 'a11ac73f57e93ef42ef8bce513de552bcda3b6169c8f9ab96c6143f0c9b73437',
         createdAt: oldTimestamp,
-        lockboxId: null,
-        lockboxName: null,
+        vaultId: null,
+        vaultName: null,
         peers: null,
         ownerName: null,
         instructions: null,

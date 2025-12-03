@@ -1,4 +1,4 @@
-# Keydex Cursor Rules
+# Horcrux Cursor Rules
 
 ## Service and Repository Architecture
 
@@ -11,22 +11,22 @@ Create a **Repository** class when data access meets ANY of these criteria:
 - Might swap storage implementations (SharedPreferences → SQLite)
 - Would be 100+ lines of data access code
 
-**Example: LockboxRepository**
+**Example: VaultRepository**
 ```dart
-final lockboxRepositoryProvider = Provider<LockboxRepository>((ref) {
-  final repository = LockboxRepository();
+final vaultRepositoryProvider = Provider<VaultRepository>((ref) {
+  final repository = VaultRepository();
   ref.onDispose(() => repository.dispose());
   return repository;
 });
 
-class LockboxRepository {
-  final StreamController<List<Lockbox>> _controller = StreamController.broadcast();
-  List<Lockbox>? _cache;
+class VaultRepository {
+  final StreamController<List<Vault>> _controller = StreamController.broadcast();
+  List<Vault>? _cache;
   
-  Stream<List<Lockbox>> get stream => _controller.stream;
-  Future<List<Lockbox>> getAll() async { /* load + cache */ }
-  Future<Lockbox?> getById(String id) async { /* query cache */ }
-  Future<void> save(Lockbox lockbox) async { /* persist + notify */ }
+  Stream<List<Vault>> get stream => _controller.stream;
+  Future<List<Vault>> getAll() async { /* load + cache */ }
+  Future<Vault?> getById(String id) async { /* query cache */ }
+  Future<void> save(Vault vault) async { /* persist + notify */ }
 }
 ```
 
@@ -218,7 +218,7 @@ This verification requirement applies to ALL code changes, no exceptions.
   - Database storage
   - API payloads
   - Cryptographic operations
-  - Model fields (e.g., `KeyHolder.pubkey`, `ShardEvent.recipientPubkey`)
+  - Model fields (e.g., `Steward.pubkey`, `ShardEvent.recipientPubkey`)
 
 ### Bech32 Format (UI/Display)
 - **Use bech32 format (npub1..., nsec1...) for:**
@@ -241,15 +241,15 @@ This verification requirement applies to ALL code changes, no exceptions.
 // ✅ Good: Use snake_case in Nostr event payloads
 final confirmationData = {
   'type': 'shard_confirmation',
-  'lockbox_id': lockboxId,
+  'vault_id': vaultId,
   'shard_index': shardIndex,
-  'key_holder_pubkey': currentPubkey,
+  'steward_pubkey': currentPubkey,
   'confirmed_at': DateTime.now().toIso8601String(),
 };
 
 // ❌ Bad: Don't use camelCase in Nostr event payloads
 final confirmationData = {
-  'lockboxId': lockboxId,  // Wrong - NDK expects snake_case
+  'vaultId': vaultId,  // Wrong - NDK expects snake_case
   'shardIndex': shardIndex,
 };
 ```
@@ -257,7 +257,7 @@ final confirmationData = {
 ## Nostr Event Expiration
 
 ### NIP-40 Expiration Tags
-- **All Nostr events published by Keydex MUST include NIP-40 expiration tags**
+- **All Nostr events published by Horcrux MUST include NIP-40 expiration tags**
 - Expiration is set to 7 days from publication time
 - Expiration tags are automatically added by `publishEncryptedEvent` and `publishEncryptedEventToMultiple`
 - Format: `['expiration', '<unix_timestamp_in_seconds>']` per NIP-40 specification
@@ -288,7 +288,7 @@ Read the design guide when:
 - Making any visual design decisions
 
 ### The Monochrome Rule (Most Important!)
-**Keydex3 uses ONLY grayscale colors** - no accent colors beyond error red
+**Horcrux3 uses ONLY grayscale colors** - no accent colors beyond error red
 - All UI elements use shades of gray
 - Buttons use medium grays (light: `#808080`, dark: `#404040`)
 - RowButtonStack creates monotonic gray gradients (no visual "dips")
@@ -296,7 +296,7 @@ Read the design guide when:
 - Never add colorful UI elements - stay monochrome
 
 ### Active Theme
-The app uses the **keydex3 theme** defined in `lib/widgets/theme.dart`
+The app uses the **horcrux3 theme** defined in `lib/widgets/theme.dart`
 - Stark black and white monochrome palette
 - System theme support (light and dark modes)
 - Minimal rounding (4pt for fields, 12pt for buttons)

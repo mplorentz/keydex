@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_toolkit/golden_toolkit.dart';
-import 'package:keydex/models/recovery_request.dart';
-import 'package:keydex/models/lockbox.dart';
-import 'package:keydex/models/backup_config.dart';
-import 'package:keydex/models/key_holder.dart';
-import 'package:keydex/providers/recovery_provider.dart';
-import 'package:keydex/providers/lockbox_provider.dart';
-import 'package:keydex/widgets/recovery_key_holders_widget.dart';
+import 'package:horcrux/models/recovery_request.dart';
+import 'package:horcrux/models/vault.dart';
+import 'package:horcrux/models/backup_config.dart';
+import 'package:horcrux/models/steward.dart';
+import 'package:horcrux/providers/recovery_provider.dart';
+import 'package:horcrux/providers/vault_provider.dart';
+import 'package:horcrux/widgets/recovery_stewards_widget.dart';
 import '../helpers/golden_test_helpers.dart';
 
 void main() {
@@ -24,12 +24,12 @@ void main() {
   }) {
     return RecoveryRequest(
       id: id,
-      lockboxId: 'test-lockbox',
+      vaultId: 'test-vault',
       initiatorPubkey: testPubkey1,
       requestedAt: DateTime.now().subtract(const Duration(hours: 1)),
       status: RecoveryRequestStatus.inProgress,
       threshold: 2,
-      keyHolderResponses: responses,
+      stewardResponses: responses,
     );
   }
 
@@ -46,28 +46,28 @@ void main() {
     );
   }
 
-  // Helper to create lockbox
-  Lockbox createTestLockbox({
+  // Helper to create vault
+  Vault createTestVault({
     required String id,
-    required List<String> keyHolderPubkeys,
+    required List<String> stewardPubkeys,
   }) {
-    return Lockbox(
+    return Vault(
       id: id,
-      name: 'Test Lockbox',
+      name: 'Test Vault',
       content: 'test content',
       createdAt: DateTime.now().subtract(const Duration(days: 1)),
       ownerPubkey: testPubkey1,
       backupConfig: createBackupConfig(
-        lockboxId: id,
+        vaultId: id,
         threshold: 2,
-        totalKeys: keyHolderPubkeys.length,
-        keyHolders: keyHolderPubkeys.map((pubkey) => createKeyHolder(pubkey: pubkey)).toList(),
+        totalKeys: stewardPubkeys.length,
+        stewards: stewardPubkeys.map((pubkey) => createSteward(pubkey: pubkey)).toList(),
         relays: ['wss://relay.example.com'],
       ),
     );
   }
 
-  group('RecoveryKeyHoldersWidget Golden Tests', () {
+  group('RecoveryStewardsWidget Golden Tests', () {
     testGoldens('loading state', (tester) async {
       final container = ProviderContainer(
         overrides: [
@@ -79,16 +79,16 @@ void main() {
 
       await pumpGoldenWidget(
         tester,
-        const RecoveryKeyHoldersWidget(recoveryRequestId: 'test-request'),
+        const RecoveryStewardsWidget(recoveryRequestId: 'test-request'),
         container: container,
         surfaceSize: const Size(375, 200),
         useScaffold: true,
         waitForSettle: false,
       );
 
-      await screenMatchesGoldenWithoutSettle<RecoveryKeyHoldersWidget>(
+      await screenMatchesGoldenWithoutSettle<RecoveryStewardsWidget>(
         tester,
-        'recovery_key_holders_widget_loading',
+        'recovery_stewards_widget_loading',
       );
 
       container.dispose();
@@ -108,13 +108,13 @@ void main() {
 
       await pumpGoldenWidget(
         tester,
-        const RecoveryKeyHoldersWidget(recoveryRequestId: 'test-request'),
+        const RecoveryStewardsWidget(recoveryRequestId: 'test-request'),
         container: container,
         surfaceSize: const Size(375, 200),
         useScaffold: true,
       );
 
-      await screenMatchesGolden(tester, 'recovery_key_holders_widget_error');
+      await screenMatchesGolden(tester, 'recovery_stewards_widget_error');
 
       container.dispose();
     });
@@ -125,9 +125,9 @@ void main() {
         responses: {}, // Empty responses - all should show as pending
       );
 
-      final lockbox = createTestLockbox(
-        id: 'test-lockbox',
-        keyHolderPubkeys: [testPubkey2, testPubkey3],
+      final vault = createTestVault(
+        id: 'test-vault',
+        stewardPubkeys: [testPubkey2, testPubkey3],
       );
 
       final container = ProviderContainer(
@@ -135,15 +135,15 @@ void main() {
           recoveryRequestByIdProvider(
             'test-request',
           ).overrideWith((ref) => AsyncValue.data(request)),
-          lockboxProvider(
-            'test-lockbox',
-          ).overrideWith((ref) => Stream.value(lockbox)),
+          vaultProvider(
+            'test-vault',
+          ).overrideWith((ref) => Stream.value(vault)),
         ],
       );
 
       await pumpGoldenWidget(
         tester,
-        const RecoveryKeyHoldersWidget(recoveryRequestId: 'test-request'),
+        const RecoveryStewardsWidget(recoveryRequestId: 'test-request'),
         container: container,
         surfaceSize: const Size(375, 300),
         useScaffold: true,
@@ -151,7 +151,7 @@ void main() {
 
       await screenMatchesGolden(
         tester,
-        'recovery_key_holders_widget_all_pending',
+        'recovery_stewards_widget_all_pending',
       );
 
       container.dispose();
@@ -174,9 +174,9 @@ void main() {
         },
       );
 
-      final lockbox = createTestLockbox(
-        id: 'test-lockbox',
-        keyHolderPubkeys: [testPubkey2, testPubkey3],
+      final vault = createTestVault(
+        id: 'test-vault',
+        stewardPubkeys: [testPubkey2, testPubkey3],
       );
 
       final container = ProviderContainer(
@@ -184,15 +184,15 @@ void main() {
           recoveryRequestByIdProvider(
             'test-request',
           ).overrideWith((ref) => AsyncValue.data(request)),
-          lockboxProvider(
-            'test-lockbox',
-          ).overrideWith((ref) => Stream.value(lockbox)),
+          vaultProvider(
+            'test-vault',
+          ).overrideWith((ref) => Stream.value(vault)),
         ],
       );
 
       await pumpGoldenWidget(
         tester,
-        const RecoveryKeyHoldersWidget(recoveryRequestId: 'test-request'),
+        const RecoveryStewardsWidget(recoveryRequestId: 'test-request'),
         container: container,
         surfaceSize: const Size(375, 300),
         useScaffold: true,
@@ -200,7 +200,7 @@ void main() {
 
       await screenMatchesGolden(
         tester,
-        'recovery_key_holders_widget_mixed_responses',
+        'recovery_stewards_widget_mixed_responses',
       );
 
       container.dispose();
@@ -223,9 +223,9 @@ void main() {
         },
       );
 
-      final lockbox = createTestLockbox(
-        id: 'test-lockbox',
-        keyHolderPubkeys: [testPubkey2, testPubkey3],
+      final vault = createTestVault(
+        id: 'test-vault',
+        stewardPubkeys: [testPubkey2, testPubkey3],
       );
 
       final container = ProviderContainer(
@@ -233,15 +233,15 @@ void main() {
           recoveryRequestByIdProvider(
             'test-request',
           ).overrideWith((ref) => AsyncValue.data(request)),
-          lockboxProvider(
-            'test-lockbox',
-          ).overrideWith((ref) => Stream.value(lockbox)),
+          vaultProvider(
+            'test-vault',
+          ).overrideWith((ref) => Stream.value(vault)),
         ],
       );
 
       await pumpGoldenWidget(
         tester,
-        const RecoveryKeyHoldersWidget(recoveryRequestId: 'test-request'),
+        const RecoveryStewardsWidget(recoveryRequestId: 'test-request'),
         container: container,
         surfaceSize: const Size(375, 300),
         useScaffold: true,
@@ -249,7 +249,7 @@ void main() {
 
       await screenMatchesGolden(
         tester,
-        'recovery_key_holders_widget_all_approved',
+        'recovery_stewards_widget_all_approved',
       );
 
       container.dispose();

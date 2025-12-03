@@ -3,12 +3,12 @@ import '../models/invitation_link.dart';
 import '../services/invitation_service.dart';
 import '../services/logger.dart';
 
-/// Provider for pending invitations by lockbox
+/// Provider for pending invitations by vault
 ///
-/// Returns list of pending invitation links for a given lockbox.
+/// Returns list of pending invitation links for a given vault.
 /// Automatically refreshes when invitations change via stream.
 final pendingInvitationsProvider =
-    StreamProvider.family<List<InvitationLink>, String>((ref, lockboxId) {
+    StreamProvider.family<List<InvitationLink>, String>((ref, vaultId) {
   final service = ref.watch(invitationServiceProvider);
 
   // Return a stream that:
@@ -18,12 +18,12 @@ final pendingInvitationsProvider =
     // First, load and emit initial invitations
     try {
       final initialInvitations = await service.getPendingInvitations(
-        lockboxId,
+        vaultId,
       );
       controller.add(initialInvitations);
     } catch (e) {
       Log.error(
-        'Error loading initial invitations for lockbox $lockboxId',
+        'Error loading initial invitations for vault $vaultId',
         e,
       );
       controller.addError(e);
@@ -34,12 +34,12 @@ final pendingInvitationsProvider =
       (_) async {
         try {
           final invitations = await service.getPendingInvitations(
-            lockboxId,
+            vaultId,
           );
           controller.add(invitations);
         } catch (e) {
           Log.error(
-            'Error reloading invitations for lockbox $lockboxId',
+            'Error reloading invitations for vault $vaultId',
             e,
           );
           controller.addError(e);
@@ -47,7 +47,7 @@ final pendingInvitationsProvider =
       },
       onError: (error) {
         Log.error(
-          'Error in invitationsChangedStream for lockbox $lockboxId',
+          'Error in invitationsChangedStream for vault $vaultId',
           error,
         );
         controller.addError(error);

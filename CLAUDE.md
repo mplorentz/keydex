@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Keydex (branded as "Horcrux" in UI) is a Flutter app for backup and recovery of sensitive data using Shamir's Secret Sharing. Instead of cloud backups, data is distributed in encrypted shards to friends and family via the Nostr protocol. Recovery requires consent from multiple keyholders to reassemble the data.
+Horcrux is a Flutter app for backup and recovery of sensitive data using Shamir's Secret Sharing. Instead of cloud backups, data is distributed in encrypted shards to friends and family via the Nostr protocol. Recovery requires consent from multiple stewards to reassemble the data.
 
 **Key Technologies:**
 - Flutter 3.35.0 with Dart SDK ^3.5.3
@@ -125,13 +125,13 @@ class MyService {
 
 **NdkService** (`lib/services/ndk_service.dart`): Core Nostr protocol integration. Manages NDK connections, subscriptions, and gift-wrapped event handling. Provides streams for recovery requests and responses.
 
-**LockboxRepository** (`lib/providers/lockbox_provider.dart`): Repository pattern for lockbox CRUD. Manages in-memory cache and SharedPreferences persistence. Emits streams for reactive UI updates.
+**VaultRepository** (`lib/providers/vault_provider.dart`): Repository pattern for vault CRUD. Manages in-memory cache and SharedPreferences persistence. Emits streams for reactive UI updates.
 
-**BackupService** (`lib/services/backup_service.dart`): Orchestrates the backup process: secret sharing, encryption, and distribution to keyholders via Nostr.
+**BackupService** (`lib/services/backup_service.dart`): Orchestrates the backup process: secret sharing, encryption, and distribution to stewards via Nostr.
 
-**RecoveryService** (`lib/services/recovery_service.dart`): Handles recovery workflow: sending requests to keyholders, collecting shard responses, and reassembling secrets.
+**RecoveryService** (`lib/services/recovery_service.dart`): Handles recovery workflow: sending requests to stewards, collecting shard responses, and reassembling secrets.
 
-**InvitationService** (`lib/services/invitation_service.dart`): Manages invitation links and acceptance flow for adding keyholders to lockboxes.
+**InvitationService** (`lib/services/invitation_service.dart`): Manages invitation links and acceptance flow for adding stewards to vaultes.
 
 **RelayScanService** (`lib/services/relay_scan_service.dart`): Background service that continuously scans Nostr relays for incoming events (gift-wrapped messages, shard confirmations, recovery responses).
 
@@ -161,25 +161,25 @@ class MyService {
 
 ### UI Architecture
 
-**Theme System**: Uses `keydex3` theme (`lib/widgets/theme.dart`) with muted, professional palette.
+**Theme System**: Uses `horcrux3` theme (`lib/widgets/theme.dart`) with muted, professional palette.
 
 **CRITICAL DESIGN RULE**: Orange (#DC714E) appears ONLY on `RowButton` components (primary actions at bottom of screen). All other UI uses Navy-Ink or Umber.
 
 **Key Widgets:**
 - `RowButton` - Single primary action (orange, full-width, bottom)
 - `RowButtonStack` - Multiple actions with gradient (orange at bottom)
-- `LockboxCard` - List item for lockboxes
-- `KeyHolderList` - Display key holders with status
+- `VaultCard` - List item for vaultes
+- `KeyHolderList` - Display stewards with status
 
 **Always reference `DESIGN_GUIDE.md` before making UI changes.** It contains the complete color palette, typography system, and component patterns.
 
 ### Data Models
 
-**Lockbox** (`lib/models/lockbox.dart`): Core data model. Contains encrypted content, metadata, shards, recovery requests, and backup config. Has `LockboxState` enum (recovery/owned/keyHolder/awaitingKey) based on current user's relationship.
+**Vault** (`lib/models/vault.dart`): Core data model. Contains encrypted content, metadata, shards, recovery requests, and backup config. Has `VaultState` enum (recovery/owned/keyHolder/awaitingKey) based on current user's relationship.
 
-**ShardData**: Represents a single shard of the secret. Includes shard index, encrypted data, and keyholder pubkey.
+**ShardData**: Represents a single shard of the secret. Includes shard index, encrypted data, and steward pubkey.
 
-**BackupConfig**: Shamir parameters (threshold, totalKeys) and keyholder list with statuses.
+**BackupConfig**: Shamir parameters (threshold, totalKeys) and steward list with statuses.
 
 **RecoveryRequest**: Tracks active recovery attempts with request ID, status, and collected shards.
 
@@ -227,9 +227,9 @@ final Provider<ServiceB> serviceBProvider = Provider<ServiceB>((ref) {
 
 **Encryption**: Uses NIP-44 gift-wrapping for peer-to-peer Nostr events. All shard distribution and recovery messages are encrypted.
 
-**Shamir Constraints**: Min threshold 1, max total keys 10 (see `LockboxBackupConstraints`).
+**Shamir Constraints**: Min threshold 1, max total keys 10 (see `VaultBackupConstraints`).
 
-**Deep Links**: Invitation links use format `keydex://join/{inviteCode}`. Handle via `DeepLinkService` with validation.
+**Deep Links**: Invitation links use format `horcrux://join/{inviteCode}`. Handle via `DeepLinkService` with validation.
 
 ## Important Cursor Rules (from .cursorrules)
 
