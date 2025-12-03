@@ -270,7 +270,7 @@ class BackupService {
   }
 
   /// Update steward status
-  Future<void> updateKeyHolderStatus({
+  Future<void> updateStewardStatus({
     required String vaultId,
     required String pubkey, // Hex format
     required StewardStatus status,

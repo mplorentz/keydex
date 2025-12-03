@@ -266,13 +266,13 @@ Map<String, dynamic> backupConfigToJson(BackupConfig config) {
 /// Create from JSON
 BackupConfig backupConfigFromJson(Map<String, dynamic> json) {
   return (
-    vaultId: json['vaultId'] as String? ?? json['vaultId'] as String, // Backward compatibility
+    vaultId: json['vaultId'] as String,
     specVersion: json['specVersion'] as String,
     threshold: json['threshold'] as int,
     totalKeys: json['totalKeys'] as int,
-    stewards: ((json['stewards'] as List?) ?? (json['keyHolders'] as List?))
-        ?.map((h) => stewardFromJson(h as Map<String, dynamic>))
-        .toList() ?? [],
+    stewards: (json['stewards'] as List)
+        .map((h) => stewardFromJson(h as Map<String, dynamic>))
+        .toList(),
     relays: (json['relays'] as List).cast<String>(),
     instructions: json['instructions'] as String?,
     createdAt: DateTime.parse(json['createdAt'] as String),

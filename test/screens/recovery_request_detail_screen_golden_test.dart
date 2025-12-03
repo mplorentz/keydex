@@ -56,12 +56,12 @@ void main() {
     required String ownerPubkey,
     String? ownerName,
     String? instructions,
-    List<KeyHolder>? keyHolders,
+    List<Steward>? stewards,
   }) {
-    final defaultKeyHolders = [
-      createKeyHolder(pubkey: initiatorPubkey, name: 'Alice'),
-      createKeyHolder(pubkey: testPubkey, name: 'Bob'),
-      createKeyHolder(pubkey: otherStewardPubkey, name: 'Charlie'),
+    final defaultStewards = [
+      createSteward(pubkey: initiatorPubkey, name: 'Alice'),
+      createSteward(pubkey: testPubkey, name: 'Bob'),
+      createSteward(pubkey: otherStewardPubkey, name: 'Charlie'),
     ];
 
     return Vault(
@@ -74,8 +74,8 @@ void main() {
       backupConfig: createBackupConfig(
         vaultId: id,
         threshold: 2,
-        totalKeys: (keyHolders ?? defaultKeyHolders).length,
-        keyHolders: keyHolders ?? defaultKeyHolders,
+        totalKeys: (stewards ?? defaultStewards).length,
+        stewards: stewards ?? defaultStewards,
         relays: ['wss://relay.example.com'],
         instructions: instructions,
       ),
@@ -168,10 +168,10 @@ void main() {
         ownerName: 'Alice',
         instructions:
             'Please verify the requester\'s identity before approving. Contact me at alice@example.com if you have any questions.',
-        keyHolders: [
-          createKeyHolder(pubkey: initiatorPubkey, name: 'Alice'),
-          createKeyHolder(pubkey: testPubkey, name: 'Bob'),
-          createKeyHolder(pubkey: otherStewardPubkey, name: 'Charlie'),
+        stewards: [
+          createSteward(pubkey: initiatorPubkey, name: 'Alice'),
+          createSteward(pubkey: testPubkey, name: 'Bob'),
+          createSteward(pubkey: otherStewardPubkey, name: 'Charlie'),
         ],
       );
 
@@ -212,10 +212,10 @@ void main() {
         ownerPubkey: ownerPubkey,
         ownerName: 'Alice',
         instructions: null, // No instructions
-        keyHolders: [
-          createKeyHolder(pubkey: initiatorPubkey, name: 'Alice'),
-          createKeyHolder(pubkey: testPubkey, name: 'Bob'),
-          createKeyHolder(pubkey: otherStewardPubkey, name: 'Charlie'),
+        stewards: [
+          createSteward(pubkey: initiatorPubkey, name: 'Alice'),
+          createSteward(pubkey: testPubkey, name: 'Bob'),
+          createSteward(pubkey: otherStewardPubkey, name: 'Charlie'),
         ],
       );
 
@@ -256,9 +256,9 @@ void main() {
         ownerPubkey: ownerPubkey,
         ownerName: 'Alice',
         instructions: 'Please verify identity before approving.',
-        keyHolders: [
-          createKeyHolder(pubkey: testPubkey, name: 'Bob'),
-          createKeyHolder(pubkey: otherStewardPubkey, name: 'Charlie'),
+        stewards: [
+          createSteward(pubkey: testPubkey, name: 'Bob'),
+          createSteward(pubkey: otherStewardPubkey, name: 'Charlie'),
         ],
       );
 

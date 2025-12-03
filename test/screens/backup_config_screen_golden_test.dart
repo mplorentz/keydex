@@ -55,37 +55,37 @@ void main() {
   });
 
   // Sample test data
-  final keyHolder1Pubkey = 'b' * 64;
-  final keyHolder2Pubkey = 'c' * 64;
+  final steward1Pubkey = 'b' * 64;
+  final steward2Pubkey = 'c' * 64;
 
   // Helper to create stewards
-  KeyHolder createTestKeyHolder({
+  Steward createTestSteward({
     required String pubkey,
     String? name,
-    KeyHolderStatus status = KeyHolderStatus.awaitingKey,
+    StewardStatus status = StewardStatus.awaitingKey,
   }) {
-    return createKeyHolder(pubkey: pubkey, name: name);
+    return createSteward(pubkey: pubkey, name: name);
   }
 
-  KeyHolder createTestInvitedKeyHolder({
+  Steward createTestInvitedSteward({
     required String name,
     required String inviteCode,
   }) {
-    return createInvitedKeyHolder(name: name, inviteCode: inviteCode);
+    return createInvitedSteward(name: name, inviteCode: inviteCode);
   }
 
   // Helper to create backup config
   BackupConfig createTestBackupConfig({
     required String vaultId,
     required int threshold,
-    required List<KeyHolder> keyHolders,
+    required List<Steward> stewards,
     required List<String> relays,
   }) {
     return createBackupConfig(
       vaultId: vaultId,
       threshold: threshold,
-      totalKeys: keyHolders.length,
-      keyHolders: keyHolders,
+      totalKeys: stewards.length,
+      stewards: stewards,
       relays: relays,
     );
   }
@@ -144,23 +144,23 @@ void main() {
     });
 
     testGoldens('with existing config - manual stewards', (tester) async {
-      final keyHolders = [
-        createTestKeyHolder(
-          pubkey: keyHolder1Pubkey,
+      final stewards = [
+        createTestSteward(
+          pubkey: steward1Pubkey,
           name: 'Alice',
-          status: KeyHolderStatus.awaitingKey,
+          status: StewardStatus.awaitingKey,
         ),
-        createTestKeyHolder(
-          pubkey: keyHolder2Pubkey,
+        createTestSteward(
+          pubkey: steward2Pubkey,
           name: 'Bob',
-          status: KeyHolderStatus.awaitingKey,
+          status: StewardStatus.awaitingKey,
         ),
       ];
 
       final backupConfig = createTestBackupConfig(
         vaultId: 'test-vault',
         threshold: 2,
-        keyHolders: keyHolders,
+        stewards: stewards,
         relays: ['wss://relay1.example.com', 'wss://relay2.example.com'],
       );
 
@@ -188,12 +188,12 @@ void main() {
     });
 
     testGoldens('with existing config - invited stewards', (tester) async {
-      final keyHolders = [
-        createTestInvitedKeyHolder(
+      final stewards = [
+        createTestInvitedSteward(
           name: 'Charlie',
           inviteCode: 'invite-code-123',
         ),
-        createTestInvitedKeyHolder(
+        createTestInvitedSteward(
           name: 'Diana',
           inviteCode: 'invite-code-456',
         ),
@@ -202,7 +202,7 @@ void main() {
       final backupConfig = createTestBackupConfig(
         vaultId: 'test-vault',
         threshold: 2,
-        keyHolders: keyHolders,
+        stewards: stewards,
         relays: ['wss://relay.example.com'],
       );
 
@@ -230,13 +230,13 @@ void main() {
     });
 
     testGoldens('with existing config - mixed stewards', (tester) async {
-      final keyHolders = [
-        createTestKeyHolder(
-          pubkey: keyHolder1Pubkey,
+      final stewards = [
+        createTestSteward(
+          pubkey: steward1Pubkey,
           name: 'Eve',
-          status: KeyHolderStatus.holdingKey,
+          status: StewardStatus.holdingKey,
         ),
-        createTestInvitedKeyHolder(
+        createTestInvitedSteward(
           name: 'Frank',
           inviteCode: 'invite-code-789',
         ),
@@ -245,7 +245,7 @@ void main() {
       final backupConfig = createTestBackupConfig(
         vaultId: 'test-vault',
         threshold: 2,
-        keyHolders: keyHolders,
+        stewards: stewards,
         relays: [
           'wss://relay1.example.com',
           'wss://relay2.example.com',
@@ -277,14 +277,14 @@ void main() {
     });
 
     testGoldens('with existing config - multiple relays', (tester) async {
-      final keyHolders = [
-        createTestKeyHolder(pubkey: keyHolder1Pubkey, name: 'Grace'),
+      final stewards = [
+        createTestSteward(pubkey: steward1Pubkey, name: 'Grace'),
       ];
 
       final backupConfig = createTestBackupConfig(
         vaultId: 'test-vault',
         threshold: 1,
-        keyHolders: keyHolders,
+        stewards: stewards,
         relays: [
           'wss://relay1.example.com',
           'wss://relay2.example.com',
@@ -313,15 +313,15 @@ void main() {
     });
 
     testGoldens('multiple device sizes', (tester) async {
-      final keyHolders = [
-        createTestKeyHolder(pubkey: keyHolder1Pubkey, name: 'Henry'),
-        createTestKeyHolder(pubkey: keyHolder2Pubkey, name: 'Iris'),
+      final stewards = [
+        createTestSteward(pubkey: steward1Pubkey, name: 'Henry'),
+        createTestSteward(pubkey: steward2Pubkey, name: 'Iris'),
       ];
 
       final backupConfig = createTestBackupConfig(
         vaultId: 'test-vault',
         threshold: 2,
-        keyHolders: keyHolders,
+        stewards: stewards,
         relays: ['wss://relay.example.com'],
       );
 

@@ -24,7 +24,7 @@ class RecoveryStatus {
 
   /// Validate the recovery status
   bool get isValid {
-    // TotalKeyHolders must be positive
+    // TotalStewards must be positive
     if (totalStewards <= 0) return false;
 
     // RespondedCount must be <= totalStewards

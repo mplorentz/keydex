@@ -84,9 +84,9 @@ void main() {
         vaultId: TestBackupConfigs.simple2of2VaultId,
         threshold: TestBackupConfigs.simple2of2Threshold,
         totalKeys: TestBackupConfigs.simple2of2TotalKeys,
-        keyHolders: [
-          createKeyHolder(pubkey: alicePubHex, name: 'Alice'),
-          createKeyHolder(pubkey: bobPubHex, name: 'Bob'),
+        stewards: [
+          createSteward(pubkey: alicePubHex, name: 'Alice'),
+          createSteward(pubkey: bobPubHex, name: 'Bob'),
         ],
         relays: TestBackupConfigs.simple2of2Relays,
       );
@@ -205,9 +205,9 @@ void main() {
         vaultId: 'test-vault-empty',
         threshold: 2,
         totalKeys: 2,
-        keyHolders: [
-          createKeyHolder(pubkey: TestHexPubkeys.alice, name: 'Alice'),
-          createKeyHolder(pubkey: TestHexPubkeys.bob, name: 'Bob'),
+        stewards: [
+          createSteward(pubkey: TestHexPubkeys.alice, name: 'Alice'),
+          createSteward(pubkey: TestHexPubkeys.bob, name: 'Bob'),
         ],
         relays: TestBackupConfigs.simple2of2Relays,
       );
@@ -235,9 +235,9 @@ void main() {
         vaultId: 'test-vault-formats',
         threshold: 2, // Minimum valid threshold
         totalKeys: 2,
-        keyHolders: [
-          createKeyHolder(pubkey: alicePubHex, name: 'Alice'),
-          createKeyHolder(pubkey: charliePubHex, name: 'Charlie'),
+        stewards: [
+          createSteward(pubkey: alicePubHex, name: 'Alice'),
+          createSteward(pubkey: charliePubHex, name: 'Charlie'),
         ],
         relays: TestBackupConfigs.simple2of2Relays,
       );
