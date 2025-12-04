@@ -27,11 +27,13 @@ class HorcruxApp extends ConsumerStatefulWidget {
 class _HorcruxAppState extends ConsumerState<HorcruxApp> {
   bool _isInitializing = true;
   String? _initError;
+  ProviderSubscription<AsyncValue<bool>>? _loginStateSubscription;
 
   @override
   void initState() {
     super.initState();
     _initializeApp();
+    _setupLoginStateListener();
   }
 
   Future<void> _initializeApp() async {
@@ -60,6 +62,31 @@ class _HorcruxAppState extends ConsumerState<HorcruxApp> {
         });
       }
     }
+  }
+
+  void _setupLoginStateListener() {
+    // This feels like a smell, I think the MaterialApp in build() should be reacting to the change
+    // in isLoggedInProvider on its own but it isn't and I don't have time to fix it atm.
+    _loginStateSubscription = ref.listenManual<AsyncValue<bool>>(
+      isLoggedInProvider,
+      (previous, next) {
+        final wasLoggedIn = previous?.valueOrNull ?? false;
+        final isLoggedIn = next.valueOrNull ?? wasLoggedIn;
+
+        if (wasLoggedIn && !isLoggedIn) {
+          navigatorKey.currentState?.pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const OnboardingScreen()),
+            (route) => false,
+          );
+        }
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _loginStateSubscription?.close();
+    super.dispose();
   }
 
   @override
