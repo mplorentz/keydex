@@ -41,7 +41,7 @@ class _FakeNdk_1 extends _i1.SmartFake implements _i2.Ndk {
 
 class _FakeVaultRepository_2 extends _i1.SmartFake implements _i3.VaultRepository {
   _FakeVaultRepository_2(Object parent, Invocation parentInvocation)
-    : super(parent, parentInvocation);
+      : super(parent, parentInvocation);
 }
 
 /// A class which mocks [BackupService].
@@ -54,324 +54,6 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
 
   @override
   _i5.Future<
-    ({
-      String? contentHash,
-      DateTime createdAt,
-      int distributionVersion,
-      String? instructions,
-      DateTime? lastContentChange,
-      DateTime? lastRedistribution,
-      DateTime lastUpdated,
-      List<String> relays,
-      String specVersion,
-      _i6.BackupStatus status,
-      List<
-        ({
-          DateTime? acknowledgedAt,
-          int? acknowledgedDistributionVersion,
-          String? acknowledgmentEventId,
-          String? giftWrapEventId,
-          String id,
-          String? inviteCode,
-          String? keyShare,
-          DateTime? lastSeen,
-          String? name,
-          String? pubkey,
-          _i7.StewardStatus status,
-        })
-      >
-      stewards,
-      int threshold,
-      int totalKeys,
-      String vaultId,
-    })
-  >
-  createBackupConfiguration({
-    required String? vaultId,
-    required int? threshold,
-    required int? totalKeys,
-    required List<
-      ({
-        DateTime? acknowledgedAt,
-        int? acknowledgedDistributionVersion,
-        String? acknowledgmentEventId,
-        String? giftWrapEventId,
-        String id,
-        String? inviteCode,
-        String? keyShare,
-        DateTime? lastSeen,
-        String? name,
-        String? pubkey,
-        _i7.StewardStatus status,
-      })
-    >?
-    stewards,
-    required List<String>? relays,
-    String? instructions,
-    String? contentHash,
-  }) =>
-      (super.noSuchMethod(
-            Invocation.method(#createBackupConfiguration, [], {
-              #vaultId: vaultId,
-              #threshold: threshold,
-              #totalKeys: totalKeys,
-              #stewards: stewards,
-              #relays: relays,
-              #instructions: instructions,
-              #contentHash: contentHash,
-            }),
-            returnValue:
-                _i5.Future<
-                  ({
-                    String? contentHash,
-                    DateTime createdAt,
-                    int distributionVersion,
-                    String? instructions,
-                    DateTime? lastContentChange,
-                    DateTime? lastRedistribution,
-                    DateTime lastUpdated,
-                    List<String> relays,
-                    String specVersion,
-                    _i6.BackupStatus status,
-                    List<
-                      ({
-                        DateTime? acknowledgedAt,
-                        int? acknowledgedDistributionVersion,
-                        String? acknowledgmentEventId,
-                        String? giftWrapEventId,
-                        String id,
-                        String? inviteCode,
-                        String? keyShare,
-                        DateTime? lastSeen,
-                        String? name,
-                        String? pubkey,
-                        _i7.StewardStatus status,
-                      })
-                    >
-                    stewards,
-                    int threshold,
-                    int totalKeys,
-                    String vaultId,
-                  })
-                >.value((
-                  contentHash: null,
-                  createdAt: _FakeDateTime_0(
-                    this,
-                    Invocation.method(#createBackupConfiguration, [], {
-                      #vaultId: vaultId,
-                      #threshold: threshold,
-                      #totalKeys: totalKeys,
-                      #stewards: stewards,
-                      #relays: relays,
-                      #instructions: instructions,
-                      #contentHash: contentHash,
-                    }),
-                  ),
-                  distributionVersion: 0,
-                  instructions: null,
-                  lastContentChange: null,
-                  lastRedistribution: null,
-                  lastUpdated: _FakeDateTime_0(
-                    this,
-                    Invocation.method(#createBackupConfiguration, [], {
-                      #vaultId: vaultId,
-                      #threshold: threshold,
-                      #totalKeys: totalKeys,
-                      #stewards: stewards,
-                      #relays: relays,
-                      #instructions: instructions,
-                      #contentHash: contentHash,
-                    }),
-                  ),
-                  relays: <String>[],
-                  specVersion: _i8.dummyValue<String>(
-                    this,
-                    Invocation.method(#createBackupConfiguration, [], {
-                      #vaultId: vaultId,
-                      #threshold: threshold,
-                      #totalKeys: totalKeys,
-                      #stewards: stewards,
-                      #relays: relays,
-                      #instructions: instructions,
-                      #contentHash: contentHash,
-                    }),
-                  ),
-                  status: _i6.BackupStatus.pending,
-                  stewards:
-                      <
-                        ({
-                          DateTime? acknowledgedAt,
-                          int? acknowledgedDistributionVersion,
-                          String? acknowledgmentEventId,
-                          String? giftWrapEventId,
-                          String id,
-                          String? inviteCode,
-                          String? keyShare,
-                          DateTime? lastSeen,
-                          String? name,
-                          String? pubkey,
-                          _i7.StewardStatus status,
-                        })
-                      >[],
-                  threshold: 0,
-                  totalKeys: 0,
-                  vaultId: _i8.dummyValue<String>(
-                    this,
-                    Invocation.method(#createBackupConfiguration, [], {
-                      #vaultId: vaultId,
-                      #threshold: threshold,
-                      #totalKeys: totalKeys,
-                      #stewards: stewards,
-                      #relays: relays,
-                      #instructions: instructions,
-                      #contentHash: contentHash,
-                    }),
-                  ),
-                )),
-          )
-          as _i5.Future<
-            ({
-              String? contentHash,
-              DateTime createdAt,
-              int distributionVersion,
-              String? instructions,
-              DateTime? lastContentChange,
-              DateTime? lastRedistribution,
-              DateTime lastUpdated,
-              List<String> relays,
-              String specVersion,
-              _i6.BackupStatus status,
-              List<
-                ({
-                  DateTime? acknowledgedAt,
-                  int? acknowledgedDistributionVersion,
-                  String? acknowledgmentEventId,
-                  String? giftWrapEventId,
-                  String id,
-                  String? inviteCode,
-                  String? keyShare,
-                  DateTime? lastSeen,
-                  String? name,
-                  String? pubkey,
-                  _i7.StewardStatus status,
-                })
-              >
-              stewards,
-              int threshold,
-              int totalKeys,
-              String vaultId,
-            })
-          >);
-
-  @override
-  _i5.Future<
-    ({
-      String? contentHash,
-      DateTime createdAt,
-      int distributionVersion,
-      String? instructions,
-      DateTime? lastContentChange,
-      DateTime? lastRedistribution,
-      DateTime lastUpdated,
-      List<String> relays,
-      String specVersion,
-      _i6.BackupStatus status,
-      List<
-        ({
-          DateTime? acknowledgedAt,
-          int? acknowledgedDistributionVersion,
-          String? acknowledgmentEventId,
-          String? giftWrapEventId,
-          String id,
-          String? inviteCode,
-          String? keyShare,
-          DateTime? lastSeen,
-          String? name,
-          String? pubkey,
-          _i7.StewardStatus status,
-        })
-      >
-      stewards,
-      int threshold,
-      int totalKeys,
-      String vaultId,
-    })?
-  >
-  getBackupConfig(String? vaultId) =>
-      (super.noSuchMethod(
-            Invocation.method(#getBackupConfig, [vaultId]),
-            returnValue:
-                _i5.Future<
-                  ({
-                    String? contentHash,
-                    DateTime createdAt,
-                    int distributionVersion,
-                    String? instructions,
-                    DateTime? lastContentChange,
-                    DateTime? lastRedistribution,
-                    DateTime lastUpdated,
-                    List<String> relays,
-                    String specVersion,
-                    _i6.BackupStatus status,
-                    List<
-                      ({
-                        DateTime? acknowledgedAt,
-                        int? acknowledgedDistributionVersion,
-                        String? acknowledgmentEventId,
-                        String? giftWrapEventId,
-                        String id,
-                        String? inviteCode,
-                        String? keyShare,
-                        DateTime? lastSeen,
-                        String? name,
-                        String? pubkey,
-                        _i7.StewardStatus status,
-                      })
-                    >
-                    stewards,
-                    int threshold,
-                    int totalKeys,
-                    String vaultId,
-                  })?
-                >.value(),
-          )
-          as _i5.Future<
-            ({
-              String? contentHash,
-              DateTime createdAt,
-              int distributionVersion,
-              String? instructions,
-              DateTime? lastContentChange,
-              DateTime? lastRedistribution,
-              DateTime lastUpdated,
-              List<String> relays,
-              String specVersion,
-              _i6.BackupStatus status,
-              List<
-                ({
-                  DateTime? acknowledgedAt,
-                  int? acknowledgedDistributionVersion,
-                  String? acknowledgmentEventId,
-                  String? giftWrapEventId,
-                  String id,
-                  String? inviteCode,
-                  String? keyShare,
-                  DateTime? lastSeen,
-                  String? name,
-                  String? pubkey,
-                  _i7.StewardStatus status,
-                })
-              >
-              stewards,
-              int threshold,
-              int totalKeys,
-              String vaultId,
-            })?
-          >);
-
-  @override
-  _i5.Future<
-    List<
       ({
         String? contentHash,
         DateTime createdAt,
@@ -384,115 +66,68 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
         String specVersion,
         _i6.BackupStatus status,
         List<
-          ({
-            DateTime? acknowledgedAt,
-            int? acknowledgedDistributionVersion,
-            String? acknowledgmentEventId,
-            String? giftWrapEventId,
-            String id,
-            String? inviteCode,
-            String? keyShare,
-            DateTime? lastSeen,
-            String? name,
-            String? pubkey,
-            _i7.StewardStatus status,
-          })
-        >
-        stewards,
+            ({
+              DateTime? acknowledgedAt,
+              int? acknowledgedDistributionVersion,
+              String? acknowledgmentEventId,
+              String? giftWrapEventId,
+              String id,
+              String? inviteCode,
+              String? keyShare,
+              DateTime? lastSeen,
+              String? name,
+              String? pubkey,
+              _i7.StewardStatus status,
+            })> stewards,
         int threshold,
         int totalKeys,
         String vaultId,
-      })
-    >
-  >
-  getAllBackupConfigs() =>
+      })> createBackupConfiguration({
+    required String? vaultId,
+    required int? threshold,
+    required int? totalKeys,
+    required List<
+            ({
+              DateTime? acknowledgedAt,
+              int? acknowledgedDistributionVersion,
+              String? acknowledgmentEventId,
+              String? giftWrapEventId,
+              String id,
+              String? inviteCode,
+              String? keyShare,
+              DateTime? lastSeen,
+              String? name,
+              String? pubkey,
+              _i7.StewardStatus status,
+            })>?
+        stewards,
+    required List<String>? relays,
+    String? instructions,
+    String? contentHash,
+  }) =>
       (super.noSuchMethod(
-            Invocation.method(#getAllBackupConfigs, []),
-            returnValue:
-                _i5.Future<
-                  List<
-                    ({
-                      String? contentHash,
-                      DateTime createdAt,
-                      int distributionVersion,
-                      String? instructions,
-                      DateTime? lastContentChange,
-                      DateTime? lastRedistribution,
-                      DateTime lastUpdated,
-                      List<String> relays,
-                      String specVersion,
-                      _i6.BackupStatus status,
-                      List<
-                        ({
-                          DateTime? acknowledgedAt,
-                          int? acknowledgedDistributionVersion,
-                          String? acknowledgmentEventId,
-                          String? giftWrapEventId,
-                          String id,
-                          String? inviteCode,
-                          String? keyShare,
-                          DateTime? lastSeen,
-                          String? name,
-                          String? pubkey,
-                          _i7.StewardStatus status,
-                        })
-                      >
-                      stewards,
-                      int threshold,
-                      int totalKeys,
-                      String vaultId,
-                    })
-                  >
-                >.value(
-                  <
-                    ({
-                      String? contentHash,
-                      DateTime createdAt,
-                      int distributionVersion,
-                      String? instructions,
-                      DateTime? lastContentChange,
-                      DateTime? lastRedistribution,
-                      DateTime lastUpdated,
-                      List<String> relays,
-                      String specVersion,
-                      _i6.BackupStatus status,
-                      List<
-                        ({
-                          DateTime? acknowledgedAt,
-                          int? acknowledgedDistributionVersion,
-                          String? acknowledgmentEventId,
-                          String? giftWrapEventId,
-                          String id,
-                          String? inviteCode,
-                          String? keyShare,
-                          DateTime? lastSeen,
-                          String? name,
-                          String? pubkey,
-                          _i7.StewardStatus status,
-                        })
-                      >
-                      stewards,
-                      int threshold,
-                      int totalKeys,
-                      String vaultId,
-                    })
-                  >[],
-                ),
-          )
-          as _i5.Future<
-            List<
-              ({
-                String? contentHash,
-                DateTime createdAt,
-                int distributionVersion,
-                String? instructions,
-                DateTime? lastContentChange,
-                DateTime? lastRedistribution,
-                DateTime lastUpdated,
-                List<String> relays,
-                String specVersion,
-                _i6.BackupStatus status,
-                List<
+        Invocation.method(#createBackupConfiguration, [], {
+          #vaultId: vaultId,
+          #threshold: threshold,
+          #totalKeys: totalKeys,
+          #stewards: stewards,
+          #relays: relays,
+          #instructions: instructions,
+          #contentHash: contentHash,
+        }),
+        returnValue: _i5.Future<
+            ({
+              String? contentHash,
+              DateTime createdAt,
+              int distributionVersion,
+              String? instructions,
+              DateTime? lastContentChange,
+              DateTime? lastRedistribution,
+              DateTime lastUpdated,
+              List<String> relays,
+              String specVersion,
+              _i6.BackupStatus status,
+              List<
                   ({
                     DateTime? acknowledgedAt,
                     int? acknowledgedDistributionVersion,
@@ -505,15 +140,331 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
                     String? name,
                     String? pubkey,
                     _i7.StewardStatus status,
-                  })
-                >
-                stewards,
+                  })> stewards,
+              int threshold,
+              int totalKeys,
+              String vaultId,
+            })>.value((
+          contentHash: null,
+          createdAt: _FakeDateTime_0(
+            this,
+            Invocation.method(#createBackupConfiguration, [], {
+              #vaultId: vaultId,
+              #threshold: threshold,
+              #totalKeys: totalKeys,
+              #stewards: stewards,
+              #relays: relays,
+              #instructions: instructions,
+              #contentHash: contentHash,
+            }),
+          ),
+          distributionVersion: 0,
+          instructions: null,
+          lastContentChange: null,
+          lastRedistribution: null,
+          lastUpdated: _FakeDateTime_0(
+            this,
+            Invocation.method(#createBackupConfiguration, [], {
+              #vaultId: vaultId,
+              #threshold: threshold,
+              #totalKeys: totalKeys,
+              #stewards: stewards,
+              #relays: relays,
+              #instructions: instructions,
+              #contentHash: contentHash,
+            }),
+          ),
+          relays: <String>[],
+          specVersion: _i8.dummyValue<String>(
+            this,
+            Invocation.method(#createBackupConfiguration, [], {
+              #vaultId: vaultId,
+              #threshold: threshold,
+              #totalKeys: totalKeys,
+              #stewards: stewards,
+              #relays: relays,
+              #instructions: instructions,
+              #contentHash: contentHash,
+            }),
+          ),
+          status: _i6.BackupStatus.pending,
+          stewards: <({
+            DateTime? acknowledgedAt,
+            int? acknowledgedDistributionVersion,
+            String? acknowledgmentEventId,
+            String? giftWrapEventId,
+            String id,
+            String? inviteCode,
+            String? keyShare,
+            DateTime? lastSeen,
+            String? name,
+            String? pubkey,
+            _i7.StewardStatus status,
+          })>[],
+          threshold: 0,
+          totalKeys: 0,
+          vaultId: _i8.dummyValue<String>(
+            this,
+            Invocation.method(#createBackupConfiguration, [], {
+              #vaultId: vaultId,
+              #threshold: threshold,
+              #totalKeys: totalKeys,
+              #stewards: stewards,
+              #relays: relays,
+              #instructions: instructions,
+              #contentHash: contentHash,
+            }),
+          ),
+        )),
+      ) as _i5.Future<
+          ({
+            String? contentHash,
+            DateTime createdAt,
+            int distributionVersion,
+            String? instructions,
+            DateTime? lastContentChange,
+            DateTime? lastRedistribution,
+            DateTime lastUpdated,
+            List<String> relays,
+            String specVersion,
+            _i6.BackupStatus status,
+            List<
+                ({
+                  DateTime? acknowledgedAt,
+                  int? acknowledgedDistributionVersion,
+                  String? acknowledgmentEventId,
+                  String? giftWrapEventId,
+                  String id,
+                  String? inviteCode,
+                  String? keyShare,
+                  DateTime? lastSeen,
+                  String? name,
+                  String? pubkey,
+                  _i7.StewardStatus status,
+                })> stewards,
+            int threshold,
+            int totalKeys,
+            String vaultId,
+          })>);
+
+  @override
+  _i5.Future<
+      ({
+        String? contentHash,
+        DateTime createdAt,
+        int distributionVersion,
+        String? instructions,
+        DateTime? lastContentChange,
+        DateTime? lastRedistribution,
+        DateTime lastUpdated,
+        List<String> relays,
+        String specVersion,
+        _i6.BackupStatus status,
+        List<
+            ({
+              DateTime? acknowledgedAt,
+              int? acknowledgedDistributionVersion,
+              String? acknowledgmentEventId,
+              String? giftWrapEventId,
+              String id,
+              String? inviteCode,
+              String? keyShare,
+              DateTime? lastSeen,
+              String? name,
+              String? pubkey,
+              _i7.StewardStatus status,
+            })> stewards,
+        int threshold,
+        int totalKeys,
+        String vaultId,
+      })?> getBackupConfig(String? vaultId) => (super.noSuchMethod(
+        Invocation.method(#getBackupConfig, [vaultId]),
+        returnValue: _i5.Future<
+            ({
+              String? contentHash,
+              DateTime createdAt,
+              int distributionVersion,
+              String? instructions,
+              DateTime? lastContentChange,
+              DateTime? lastRedistribution,
+              DateTime lastUpdated,
+              List<String> relays,
+              String specVersion,
+              _i6.BackupStatus status,
+              List<
+                  ({
+                    DateTime? acknowledgedAt,
+                    int? acknowledgedDistributionVersion,
+                    String? acknowledgmentEventId,
+                    String? giftWrapEventId,
+                    String id,
+                    String? inviteCode,
+                    String? keyShare,
+                    DateTime? lastSeen,
+                    String? name,
+                    String? pubkey,
+                    _i7.StewardStatus status,
+                  })> stewards,
+              int threshold,
+              int totalKeys,
+              String vaultId,
+            })?>.value(),
+      ) as _i5.Future<
+          ({
+            String? contentHash,
+            DateTime createdAt,
+            int distributionVersion,
+            String? instructions,
+            DateTime? lastContentChange,
+            DateTime? lastRedistribution,
+            DateTime lastUpdated,
+            List<String> relays,
+            String specVersion,
+            _i6.BackupStatus status,
+            List<
+                ({
+                  DateTime? acknowledgedAt,
+                  int? acknowledgedDistributionVersion,
+                  String? acknowledgmentEventId,
+                  String? giftWrapEventId,
+                  String id,
+                  String? inviteCode,
+                  String? keyShare,
+                  DateTime? lastSeen,
+                  String? name,
+                  String? pubkey,
+                  _i7.StewardStatus status,
+                })> stewards,
+            int threshold,
+            int totalKeys,
+            String vaultId,
+          })?>);
+
+  @override
+  _i5.Future<
+      List<
+          ({
+            String? contentHash,
+            DateTime createdAt,
+            int distributionVersion,
+            String? instructions,
+            DateTime? lastContentChange,
+            DateTime? lastRedistribution,
+            DateTime lastUpdated,
+            List<String> relays,
+            String specVersion,
+            _i6.BackupStatus status,
+            List<
+                ({
+                  DateTime? acknowledgedAt,
+                  int? acknowledgedDistributionVersion,
+                  String? acknowledgmentEventId,
+                  String? giftWrapEventId,
+                  String id,
+                  String? inviteCode,
+                  String? keyShare,
+                  DateTime? lastSeen,
+                  String? name,
+                  String? pubkey,
+                  _i7.StewardStatus status,
+                })> stewards,
+            int threshold,
+            int totalKeys,
+            String vaultId,
+          })>> getAllBackupConfigs() => (super.noSuchMethod(
+        Invocation.method(#getAllBackupConfigs, []),
+        returnValue: _i5.Future<
+            List<
+                ({
+                  String? contentHash,
+                  DateTime createdAt,
+                  int distributionVersion,
+                  String? instructions,
+                  DateTime? lastContentChange,
+                  DateTime? lastRedistribution,
+                  DateTime lastUpdated,
+                  List<String> relays,
+                  String specVersion,
+                  _i6.BackupStatus status,
+                  List<
+                      ({
+                        DateTime? acknowledgedAt,
+                        int? acknowledgedDistributionVersion,
+                        String? acknowledgmentEventId,
+                        String? giftWrapEventId,
+                        String id,
+                        String? inviteCode,
+                        String? keyShare,
+                        DateTime? lastSeen,
+                        String? name,
+                        String? pubkey,
+                        _i7.StewardStatus status,
+                      })> stewards,
+                  int threshold,
+                  int totalKeys,
+                  String vaultId,
+                })>>.value(
+          <({
+            String? contentHash,
+            DateTime createdAt,
+            int distributionVersion,
+            String? instructions,
+            DateTime? lastContentChange,
+            DateTime? lastRedistribution,
+            DateTime lastUpdated,
+            List<String> relays,
+            String specVersion,
+            _i6.BackupStatus status,
+            List<
+                ({
+                  DateTime? acknowledgedAt,
+                  int? acknowledgedDistributionVersion,
+                  String? acknowledgmentEventId,
+                  String? giftWrapEventId,
+                  String id,
+                  String? inviteCode,
+                  String? keyShare,
+                  DateTime? lastSeen,
+                  String? name,
+                  String? pubkey,
+                  _i7.StewardStatus status,
+                })> stewards,
+            int threshold,
+            int totalKeys,
+            String vaultId,
+          })>[],
+        ),
+      ) as _i5.Future<
+          List<
+              ({
+                String? contentHash,
+                DateTime createdAt,
+                int distributionVersion,
+                String? instructions,
+                DateTime? lastContentChange,
+                DateTime? lastRedistribution,
+                DateTime lastUpdated,
+                List<String> relays,
+                String specVersion,
+                _i6.BackupStatus status,
+                List<
+                    ({
+                      DateTime? acknowledgedAt,
+                      int? acknowledgedDistributionVersion,
+                      String? acknowledgmentEventId,
+                      String? giftWrapEventId,
+                      String id,
+                      String? inviteCode,
+                      String? keyShare,
+                      DateTime? lastSeen,
+                      String? name,
+                      String? pubkey,
+                      _i7.StewardStatus status,
+                    })> stewards,
                 int threshold,
                 int totalKeys,
                 String vaultId,
-              })
-            >
-          >);
+              })>>);
 
   @override
   _i5.Future<void> updateBackupConfig(
@@ -529,69 +480,60 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
       String specVersion,
       _i6.BackupStatus status,
       List<
-        ({
-          DateTime? acknowledgedAt,
-          int? acknowledgedDistributionVersion,
-          String? acknowledgmentEventId,
-          String? giftWrapEventId,
-          String id,
-          String? inviteCode,
-          String? keyShare,
-          DateTime? lastSeen,
-          String? name,
-          String? pubkey,
-          _i7.StewardStatus status,
-        })
-      >
-      stewards,
+          ({
+            DateTime? acknowledgedAt,
+            int? acknowledgedDistributionVersion,
+            String? acknowledgmentEventId,
+            String? giftWrapEventId,
+            String id,
+            String? inviteCode,
+            String? keyShare,
+            DateTime? lastSeen,
+            String? name,
+            String? pubkey,
+            _i7.StewardStatus status,
+          })> stewards,
       int threshold,
       int totalKeys,
       String vaultId,
-    })?
-    config,
+    })? config,
   ) =>
       (super.noSuchMethod(
-            Invocation.method(#updateBackupConfig, [config]),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+        Invocation.method(#updateBackupConfig, [config]),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  _i5.Future<void> deleteBackupConfig(String? vaultId) =>
-      (super.noSuchMethod(
-            Invocation.method(#deleteBackupConfig, [vaultId]),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+  _i5.Future<void> deleteBackupConfig(String? vaultId) => (super.noSuchMethod(
+        Invocation.method(#deleteBackupConfig, [vaultId]),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
   _i5.Future<
-    List<
-      ({
-        int createdAt,
-        String creatorPubkey,
-        int? distributionVersion,
-        String? instructions,
-        bool? isReceived,
-        String? nostrEventId,
-        String? ownerName,
-        List<Map<String, String>>? peers,
-        String primeMod,
-        DateTime? receivedAt,
-        String? recipientPubkey,
-        List<String>? relayUrls,
-        String shard,
-        int shardIndex,
-        int threshold,
-        int totalShards,
-        String? vaultId,
-        String? vaultName,
-      })
-    >
-  >
-  generateShamirShares({
+      List<
+          ({
+            int createdAt,
+            String creatorPubkey,
+            int? distributionVersion,
+            String? instructions,
+            bool? isReceived,
+            String? nostrEventId,
+            String? ownerName,
+            List<Map<String, String>>? peers,
+            String primeMod,
+            DateTime? receivedAt,
+            String? recipientPubkey,
+            List<String>? relayUrls,
+            String shard,
+            int shardIndex,
+            int threshold,
+            int totalShards,
+            String? vaultId,
+            String? vaultName,
+          })>> generateShamirShares({
     required String? content,
     required int? threshold,
     required int? totalShards,
@@ -603,68 +545,62 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
     String? instructions,
   }) =>
       (super.noSuchMethod(
-            Invocation.method(#generateShamirShares, [], {
-              #content: content,
-              #threshold: threshold,
-              #totalShards: totalShards,
-              #creatorPubkey: creatorPubkey,
-              #vaultId: vaultId,
-              #vaultName: vaultName,
-              #peers: peers,
-              #ownerName: ownerName,
-              #instructions: instructions,
-            }),
-            returnValue:
-                _i5.Future<
-                  List<
-                    ({
-                      int createdAt,
-                      String creatorPubkey,
-                      int? distributionVersion,
-                      String? instructions,
-                      bool? isReceived,
-                      String? nostrEventId,
-                      String? ownerName,
-                      List<Map<String, String>>? peers,
-                      String primeMod,
-                      DateTime? receivedAt,
-                      String? recipientPubkey,
-                      List<String>? relayUrls,
-                      String shard,
-                      int shardIndex,
-                      int threshold,
-                      int totalShards,
-                      String? vaultId,
-                      String? vaultName,
-                    })
-                  >
-                >.value(
-                  <
-                    ({
-                      int createdAt,
-                      String creatorPubkey,
-                      int? distributionVersion,
-                      String? instructions,
-                      bool? isReceived,
-                      String? nostrEventId,
-                      String? ownerName,
-                      List<Map<String, String>>? peers,
-                      String primeMod,
-                      DateTime? receivedAt,
-                      String? recipientPubkey,
-                      List<String>? relayUrls,
-                      String shard,
-                      int shardIndex,
-                      int threshold,
-                      int totalShards,
-                      String? vaultId,
-                      String? vaultName,
-                    })
-                  >[],
-                ),
-          )
-          as _i5.Future<
+        Invocation.method(#generateShamirShares, [], {
+          #content: content,
+          #threshold: threshold,
+          #totalShards: totalShards,
+          #creatorPubkey: creatorPubkey,
+          #vaultId: vaultId,
+          #vaultName: vaultName,
+          #peers: peers,
+          #ownerName: ownerName,
+          #instructions: instructions,
+        }),
+        returnValue: _i5.Future<
             List<
+                ({
+                  int createdAt,
+                  String creatorPubkey,
+                  int? distributionVersion,
+                  String? instructions,
+                  bool? isReceived,
+                  String? nostrEventId,
+                  String? ownerName,
+                  List<Map<String, String>>? peers,
+                  String primeMod,
+                  DateTime? receivedAt,
+                  String? recipientPubkey,
+                  List<String>? relayUrls,
+                  String shard,
+                  int shardIndex,
+                  int threshold,
+                  int totalShards,
+                  String? vaultId,
+                  String? vaultName,
+                })>>.value(
+          <({
+            int createdAt,
+            String creatorPubkey,
+            int? distributionVersion,
+            String? instructions,
+            bool? isReceived,
+            String? nostrEventId,
+            String? ownerName,
+            List<Map<String, String>>? peers,
+            String primeMod,
+            DateTime? receivedAt,
+            String? recipientPubkey,
+            List<String>? relayUrls,
+            String shard,
+            int shardIndex,
+            int threshold,
+            int totalShards,
+            String? vaultId,
+            String? vaultName,
+          })>[],
+        ),
+      ) as _i5.Future<
+          List<
               ({
                 int createdAt,
                 String creatorPubkey,
@@ -684,55 +620,50 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
                 int totalShards,
                 String? vaultId,
                 String? vaultName,
-              })
-            >
-          >);
+              })>>);
 
   @override
   _i5.Future<String> reconstructFromShares({
     required List<
-      ({
-        int createdAt,
-        String creatorPubkey,
-        int? distributionVersion,
-        String? instructions,
-        bool? isReceived,
-        String? nostrEventId,
-        String? ownerName,
-        List<Map<String, String>>? peers,
-        String primeMod,
-        DateTime? receivedAt,
-        String? recipientPubkey,
-        List<String>? relayUrls,
-        String shard,
-        int shardIndex,
-        int threshold,
-        int totalShards,
-        String? vaultId,
-        String? vaultName,
-      })
-    >?
-    shares,
+            ({
+              int createdAt,
+              String creatorPubkey,
+              int? distributionVersion,
+              String? instructions,
+              bool? isReceived,
+              String? nostrEventId,
+              String? ownerName,
+              List<Map<String, String>>? peers,
+              String primeMod,
+              DateTime? receivedAt,
+              String? recipientPubkey,
+              List<String>? relayUrls,
+              String shard,
+              int shardIndex,
+              int threshold,
+              int totalShards,
+              String? vaultId,
+              String? vaultName,
+            })>?
+        shares,
   }) =>
       (super.noSuchMethod(
+        Invocation.method(#reconstructFromShares, [], {#shares: shares}),
+        returnValue: _i5.Future<String>.value(
+          _i8.dummyValue<String>(
+            this,
             Invocation.method(#reconstructFromShares, [], {#shares: shares}),
-            returnValue: _i5.Future<String>.value(
-              _i8.dummyValue<String>(
-                this,
-                Invocation.method(#reconstructFromShares, [], {#shares: shares}),
-              ),
-            ),
-          )
-          as _i5.Future<String>);
+          ),
+        ),
+      ) as _i5.Future<String>);
 
   @override
   _i5.Future<void> updateBackupStatus(String? vaultId, _i6.BackupStatus? status) =>
       (super.noSuchMethod(
-            Invocation.method(#updateBackupStatus, [vaultId, status]),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+        Invocation.method(#updateBackupStatus, [vaultId, status]),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
   _i5.Future<void> updateStewardStatus({
@@ -743,192 +674,83 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
     String? acknowledgmentEventId,
   }) =>
       (super.noSuchMethod(
-            Invocation.method(#updateStewardStatus, [], {
-              #vaultId: vaultId,
-              #pubkey: pubkey,
-              #status: status,
-              #acknowledgedAt: acknowledgedAt,
-              #acknowledgmentEventId: acknowledgmentEventId,
-            }),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+        Invocation.method(#updateStewardStatus, [], {
+          #vaultId: vaultId,
+          #pubkey: pubkey,
+          #status: status,
+          #acknowledgedAt: acknowledgedAt,
+          #acknowledgmentEventId: acknowledgmentEventId,
+        }),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  _i5.Future<bool> isBackupReady(String? vaultId) =>
-      (super.noSuchMethod(
-            Invocation.method(#isBackupReady, [vaultId]),
-            returnValue: _i5.Future<bool>.value(false),
-          )
-          as _i5.Future<bool>);
+  _i5.Future<bool> isBackupReady(String? vaultId) => (super.noSuchMethod(
+        Invocation.method(#isBackupReady, [vaultId]),
+        returnValue: _i5.Future<bool>.value(false),
+      ) as _i5.Future<bool>);
 
   @override
   _i5.Future<
-    ({
-      String? contentHash,
-      DateTime createdAt,
-      int distributionVersion,
-      String? instructions,
-      DateTime? lastContentChange,
-      DateTime? lastRedistribution,
-      DateTime lastUpdated,
-      List<String> relays,
-      String specVersion,
-      _i6.BackupStatus status,
-      List<
-        ({
-          DateTime? acknowledgedAt,
-          int? acknowledgedDistributionVersion,
-          String? acknowledgmentEventId,
-          String? giftWrapEventId,
-          String id,
-          String? inviteCode,
-          String? keyShare,
-          DateTime? lastSeen,
-          String? name,
-          String? pubkey,
-          _i7.StewardStatus status,
-        })
-      >
-      stewards,
-      int threshold,
-      int totalKeys,
-      String vaultId,
-    })
-  >
-  mergeBackupConfig({
+      ({
+        String? contentHash,
+        DateTime createdAt,
+        int distributionVersion,
+        String? instructions,
+        DateTime? lastContentChange,
+        DateTime? lastRedistribution,
+        DateTime lastUpdated,
+        List<String> relays,
+        String specVersion,
+        _i6.BackupStatus status,
+        List<
+            ({
+              DateTime? acknowledgedAt,
+              int? acknowledgedDistributionVersion,
+              String? acknowledgmentEventId,
+              String? giftWrapEventId,
+              String id,
+              String? inviteCode,
+              String? keyShare,
+              DateTime? lastSeen,
+              String? name,
+              String? pubkey,
+              _i7.StewardStatus status,
+            })> stewards,
+        int threshold,
+        int totalKeys,
+        String vaultId,
+      })> mergeBackupConfig({
     required String? vaultId,
     int? threshold,
     List<
-      ({
-        DateTime? acknowledgedAt,
-        int? acknowledgedDistributionVersion,
-        String? acknowledgmentEventId,
-        String? giftWrapEventId,
-        String id,
-        String? inviteCode,
-        String? keyShare,
-        DateTime? lastSeen,
-        String? name,
-        String? pubkey,
-        _i7.StewardStatus status,
-      })
-    >?
-    stewards,
+            ({
+              DateTime? acknowledgedAt,
+              int? acknowledgedDistributionVersion,
+              String? acknowledgmentEventId,
+              String? giftWrapEventId,
+              String id,
+              String? inviteCode,
+              String? keyShare,
+              DateTime? lastSeen,
+              String? name,
+              String? pubkey,
+              _i7.StewardStatus status,
+            })>?
+        stewards,
     List<String>? relays,
     String? instructions,
   }) =>
       (super.noSuchMethod(
-            Invocation.method(#mergeBackupConfig, [], {
-              #vaultId: vaultId,
-              #threshold: threshold,
-              #stewards: stewards,
-              #relays: relays,
-              #instructions: instructions,
-            }),
-            returnValue:
-                _i5.Future<
-                  ({
-                    String? contentHash,
-                    DateTime createdAt,
-                    int distributionVersion,
-                    String? instructions,
-                    DateTime? lastContentChange,
-                    DateTime? lastRedistribution,
-                    DateTime lastUpdated,
-                    List<String> relays,
-                    String specVersion,
-                    _i6.BackupStatus status,
-                    List<
-                      ({
-                        DateTime? acknowledgedAt,
-                        int? acknowledgedDistributionVersion,
-                        String? acknowledgmentEventId,
-                        String? giftWrapEventId,
-                        String id,
-                        String? inviteCode,
-                        String? keyShare,
-                        DateTime? lastSeen,
-                        String? name,
-                        String? pubkey,
-                        _i7.StewardStatus status,
-                      })
-                    >
-                    stewards,
-                    int threshold,
-                    int totalKeys,
-                    String vaultId,
-                  })
-                >.value((
-                  contentHash: null,
-                  createdAt: _FakeDateTime_0(
-                    this,
-                    Invocation.method(#mergeBackupConfig, [], {
-                      #vaultId: vaultId,
-                      #threshold: threshold,
-                      #stewards: stewards,
-                      #relays: relays,
-                      #instructions: instructions,
-                    }),
-                  ),
-                  distributionVersion: 0,
-                  instructions: null,
-                  lastContentChange: null,
-                  lastRedistribution: null,
-                  lastUpdated: _FakeDateTime_0(
-                    this,
-                    Invocation.method(#mergeBackupConfig, [], {
-                      #vaultId: vaultId,
-                      #threshold: threshold,
-                      #stewards: stewards,
-                      #relays: relays,
-                      #instructions: instructions,
-                    }),
-                  ),
-                  relays: <String>[],
-                  specVersion: _i8.dummyValue<String>(
-                    this,
-                    Invocation.method(#mergeBackupConfig, [], {
-                      #vaultId: vaultId,
-                      #threshold: threshold,
-                      #stewards: stewards,
-                      #relays: relays,
-                      #instructions: instructions,
-                    }),
-                  ),
-                  status: _i6.BackupStatus.pending,
-                  stewards:
-                      <
-                        ({
-                          DateTime? acknowledgedAt,
-                          int? acknowledgedDistributionVersion,
-                          String? acknowledgmentEventId,
-                          String? giftWrapEventId,
-                          String id,
-                          String? inviteCode,
-                          String? keyShare,
-                          DateTime? lastSeen,
-                          String? name,
-                          String? pubkey,
-                          _i7.StewardStatus status,
-                        })
-                      >[],
-                  threshold: 0,
-                  totalKeys: 0,
-                  vaultId: _i8.dummyValue<String>(
-                    this,
-                    Invocation.method(#mergeBackupConfig, [], {
-                      #vaultId: vaultId,
-                      #threshold: threshold,
-                      #stewards: stewards,
-                      #relays: relays,
-                      #instructions: instructions,
-                    }),
-                  ),
-                )),
-          )
-          as _i5.Future<
+        Invocation.method(#mergeBackupConfig, [], {
+          #vaultId: vaultId,
+          #threshold: threshold,
+          #stewards: stewards,
+          #relays: relays,
+          #instructions: instructions,
+        }),
+        returnValue: _i5.Future<
             ({
               String? contentHash,
               DateTime createdAt,
@@ -941,6 +763,99 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
               String specVersion,
               _i6.BackupStatus status,
               List<
+                  ({
+                    DateTime? acknowledgedAt,
+                    int? acknowledgedDistributionVersion,
+                    String? acknowledgmentEventId,
+                    String? giftWrapEventId,
+                    String id,
+                    String? inviteCode,
+                    String? keyShare,
+                    DateTime? lastSeen,
+                    String? name,
+                    String? pubkey,
+                    _i7.StewardStatus status,
+                  })> stewards,
+              int threshold,
+              int totalKeys,
+              String vaultId,
+            })>.value((
+          contentHash: null,
+          createdAt: _FakeDateTime_0(
+            this,
+            Invocation.method(#mergeBackupConfig, [], {
+              #vaultId: vaultId,
+              #threshold: threshold,
+              #stewards: stewards,
+              #relays: relays,
+              #instructions: instructions,
+            }),
+          ),
+          distributionVersion: 0,
+          instructions: null,
+          lastContentChange: null,
+          lastRedistribution: null,
+          lastUpdated: _FakeDateTime_0(
+            this,
+            Invocation.method(#mergeBackupConfig, [], {
+              #vaultId: vaultId,
+              #threshold: threshold,
+              #stewards: stewards,
+              #relays: relays,
+              #instructions: instructions,
+            }),
+          ),
+          relays: <String>[],
+          specVersion: _i8.dummyValue<String>(
+            this,
+            Invocation.method(#mergeBackupConfig, [], {
+              #vaultId: vaultId,
+              #threshold: threshold,
+              #stewards: stewards,
+              #relays: relays,
+              #instructions: instructions,
+            }),
+          ),
+          status: _i6.BackupStatus.pending,
+          stewards: <({
+            DateTime? acknowledgedAt,
+            int? acknowledgedDistributionVersion,
+            String? acknowledgmentEventId,
+            String? giftWrapEventId,
+            String id,
+            String? inviteCode,
+            String? keyShare,
+            DateTime? lastSeen,
+            String? name,
+            String? pubkey,
+            _i7.StewardStatus status,
+          })>[],
+          threshold: 0,
+          totalKeys: 0,
+          vaultId: _i8.dummyValue<String>(
+            this,
+            Invocation.method(#mergeBackupConfig, [], {
+              #vaultId: vaultId,
+              #threshold: threshold,
+              #stewards: stewards,
+              #relays: relays,
+              #instructions: instructions,
+            }),
+          ),
+        )),
+      ) as _i5.Future<
+          ({
+            String? contentHash,
+            DateTime createdAt,
+            int distributionVersion,
+            String? instructions,
+            DateTime? lastContentChange,
+            DateTime? lastRedistribution,
+            DateTime lastUpdated,
+            List<String> relays,
+            String specVersion,
+            _i6.BackupStatus status,
+            List<
                 ({
                   DateTime? acknowledgedAt,
                   int? acknowledgedDistributionVersion,
@@ -953,82 +868,113 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
                   String? name,
                   String? pubkey,
                   _i7.StewardStatus status,
-                })
-              >
-              stewards,
-              int threshold,
-              int totalKeys,
-              String vaultId,
-            })
-          >);
+                })> stewards,
+            int threshold,
+            int totalKeys,
+            String vaultId,
+          })>);
 
   @override
-  _i5.Future<void> handleContentChange(String? vaultId) =>
-      (super.noSuchMethod(
-            Invocation.method(#handleContentChange, [vaultId]),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+  _i5.Future<void> handleContentChange(String? vaultId) => (super.noSuchMethod(
+        Invocation.method(#handleContentChange, [vaultId]),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
   _i5.Future<
-    ({
-      String? contentHash,
-      DateTime createdAt,
-      int distributionVersion,
-      String? instructions,
-      DateTime? lastContentChange,
-      DateTime? lastRedistribution,
-      DateTime lastUpdated,
-      List<String> relays,
-      String specVersion,
-      _i6.BackupStatus status,
-      List<
-        ({
-          DateTime? acknowledgedAt,
-          int? acknowledgedDistributionVersion,
-          String? acknowledgmentEventId,
-          String? giftWrapEventId,
-          String id,
-          String? inviteCode,
-          String? keyShare,
-          DateTime? lastSeen,
-          String? name,
-          String? pubkey,
-          _i7.StewardStatus status,
-        })
-      >
-      stewards,
-      int threshold,
-      int totalKeys,
-      String vaultId,
-    })
-  >
-  saveBackupConfig({
+      ({
+        String? contentHash,
+        DateTime createdAt,
+        int distributionVersion,
+        String? instructions,
+        DateTime? lastContentChange,
+        DateTime? lastRedistribution,
+        DateTime lastUpdated,
+        List<String> relays,
+        String specVersion,
+        _i6.BackupStatus status,
+        List<
+            ({
+              DateTime? acknowledgedAt,
+              int? acknowledgedDistributionVersion,
+              String? acknowledgmentEventId,
+              String? giftWrapEventId,
+              String id,
+              String? inviteCode,
+              String? keyShare,
+              DateTime? lastSeen,
+              String? name,
+              String? pubkey,
+              _i7.StewardStatus status,
+            })> stewards,
+        int threshold,
+        int totalKeys,
+        String vaultId,
+      })> saveBackupConfig({
     required String? vaultId,
     required int? threshold,
     required int? totalKeys,
     required List<
-      ({
-        DateTime? acknowledgedAt,
-        int? acknowledgedDistributionVersion,
-        String? acknowledgmentEventId,
-        String? giftWrapEventId,
-        String id,
-        String? inviteCode,
-        String? keyShare,
-        DateTime? lastSeen,
-        String? name,
-        String? pubkey,
-        _i7.StewardStatus status,
-      })
-    >?
-    stewards,
+            ({
+              DateTime? acknowledgedAt,
+              int? acknowledgedDistributionVersion,
+              String? acknowledgmentEventId,
+              String? giftWrapEventId,
+              String id,
+              String? inviteCode,
+              String? keyShare,
+              DateTime? lastSeen,
+              String? name,
+              String? pubkey,
+              _i7.StewardStatus status,
+            })>?
+        stewards,
     required List<String>? relays,
     String? instructions,
   }) =>
       (super.noSuchMethod(
+        Invocation.method(#saveBackupConfig, [], {
+          #vaultId: vaultId,
+          #threshold: threshold,
+          #totalKeys: totalKeys,
+          #stewards: stewards,
+          #relays: relays,
+          #instructions: instructions,
+        }),
+        returnValue: _i5.Future<
+            ({
+              String? contentHash,
+              DateTime createdAt,
+              int distributionVersion,
+              String? instructions,
+              DateTime? lastContentChange,
+              DateTime? lastRedistribution,
+              DateTime lastUpdated,
+              List<String> relays,
+              String specVersion,
+              _i6.BackupStatus status,
+              List<
+                  ({
+                    DateTime? acknowledgedAt,
+                    int? acknowledgedDistributionVersion,
+                    String? acknowledgmentEventId,
+                    String? giftWrapEventId,
+                    String id,
+                    String? inviteCode,
+                    String? keyShare,
+                    DateTime? lastSeen,
+                    String? name,
+                    String? pubkey,
+                    _i7.StewardStatus status,
+                  })> stewards,
+              int threshold,
+              int totalKeys,
+              String vaultId,
+            })>.value((
+          contentHash: null,
+          createdAt: _FakeDateTime_0(
+            this,
             Invocation.method(#saveBackupConfig, [], {
               #vaultId: vaultId,
               #threshold: threshold,
@@ -1037,124 +983,75 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
               #relays: relays,
               #instructions: instructions,
             }),
-            returnValue:
-                _i5.Future<
-                  ({
-                    String? contentHash,
-                    DateTime createdAt,
-                    int distributionVersion,
-                    String? instructions,
-                    DateTime? lastContentChange,
-                    DateTime? lastRedistribution,
-                    DateTime lastUpdated,
-                    List<String> relays,
-                    String specVersion,
-                    _i6.BackupStatus status,
-                    List<
-                      ({
-                        DateTime? acknowledgedAt,
-                        int? acknowledgedDistributionVersion,
-                        String? acknowledgmentEventId,
-                        String? giftWrapEventId,
-                        String id,
-                        String? inviteCode,
-                        String? keyShare,
-                        DateTime? lastSeen,
-                        String? name,
-                        String? pubkey,
-                        _i7.StewardStatus status,
-                      })
-                    >
-                    stewards,
-                    int threshold,
-                    int totalKeys,
-                    String vaultId,
-                  })
-                >.value((
-                  contentHash: null,
-                  createdAt: _FakeDateTime_0(
-                    this,
-                    Invocation.method(#saveBackupConfig, [], {
-                      #vaultId: vaultId,
-                      #threshold: threshold,
-                      #totalKeys: totalKeys,
-                      #stewards: stewards,
-                      #relays: relays,
-                      #instructions: instructions,
-                    }),
-                  ),
-                  distributionVersion: 0,
-                  instructions: null,
-                  lastContentChange: null,
-                  lastRedistribution: null,
-                  lastUpdated: _FakeDateTime_0(
-                    this,
-                    Invocation.method(#saveBackupConfig, [], {
-                      #vaultId: vaultId,
-                      #threshold: threshold,
-                      #totalKeys: totalKeys,
-                      #stewards: stewards,
-                      #relays: relays,
-                      #instructions: instructions,
-                    }),
-                  ),
-                  relays: <String>[],
-                  specVersion: _i8.dummyValue<String>(
-                    this,
-                    Invocation.method(#saveBackupConfig, [], {
-                      #vaultId: vaultId,
-                      #threshold: threshold,
-                      #totalKeys: totalKeys,
-                      #stewards: stewards,
-                      #relays: relays,
-                      #instructions: instructions,
-                    }),
-                  ),
-                  status: _i6.BackupStatus.pending,
-                  stewards:
-                      <
-                        ({
-                          DateTime? acknowledgedAt,
-                          int? acknowledgedDistributionVersion,
-                          String? acknowledgmentEventId,
-                          String? giftWrapEventId,
-                          String id,
-                          String? inviteCode,
-                          String? keyShare,
-                          DateTime? lastSeen,
-                          String? name,
-                          String? pubkey,
-                          _i7.StewardStatus status,
-                        })
-                      >[],
-                  threshold: 0,
-                  totalKeys: 0,
-                  vaultId: _i8.dummyValue<String>(
-                    this,
-                    Invocation.method(#saveBackupConfig, [], {
-                      #vaultId: vaultId,
-                      #threshold: threshold,
-                      #totalKeys: totalKeys,
-                      #stewards: stewards,
-                      #relays: relays,
-                      #instructions: instructions,
-                    }),
-                  ),
-                )),
-          )
-          as _i5.Future<
-            ({
-              String? contentHash,
-              DateTime createdAt,
-              int distributionVersion,
-              String? instructions,
-              DateTime? lastContentChange,
-              DateTime? lastRedistribution,
-              DateTime lastUpdated,
-              List<String> relays,
-              String specVersion,
-              _i6.BackupStatus status,
-              List<
+          ),
+          distributionVersion: 0,
+          instructions: null,
+          lastContentChange: null,
+          lastRedistribution: null,
+          lastUpdated: _FakeDateTime_0(
+            this,
+            Invocation.method(#saveBackupConfig, [], {
+              #vaultId: vaultId,
+              #threshold: threshold,
+              #totalKeys: totalKeys,
+              #stewards: stewards,
+              #relays: relays,
+              #instructions: instructions,
+            }),
+          ),
+          relays: <String>[],
+          specVersion: _i8.dummyValue<String>(
+            this,
+            Invocation.method(#saveBackupConfig, [], {
+              #vaultId: vaultId,
+              #threshold: threshold,
+              #totalKeys: totalKeys,
+              #stewards: stewards,
+              #relays: relays,
+              #instructions: instructions,
+            }),
+          ),
+          status: _i6.BackupStatus.pending,
+          stewards: <({
+            DateTime? acknowledgedAt,
+            int? acknowledgedDistributionVersion,
+            String? acknowledgmentEventId,
+            String? giftWrapEventId,
+            String id,
+            String? inviteCode,
+            String? keyShare,
+            DateTime? lastSeen,
+            String? name,
+            String? pubkey,
+            _i7.StewardStatus status,
+          })>[],
+          threshold: 0,
+          totalKeys: 0,
+          vaultId: _i8.dummyValue<String>(
+            this,
+            Invocation.method(#saveBackupConfig, [], {
+              #vaultId: vaultId,
+              #threshold: threshold,
+              #totalKeys: totalKeys,
+              #stewards: stewards,
+              #relays: relays,
+              #instructions: instructions,
+            }),
+          ),
+        )),
+      ) as _i5.Future<
+          ({
+            String? contentHash,
+            DateTime createdAt,
+            int distributionVersion,
+            String? instructions,
+            DateTime? lastContentChange,
+            DateTime? lastRedistribution,
+            DateTime lastUpdated,
+            List<String> relays,
+            String specVersion,
+            _i6.BackupStatus status,
+            List<
                 ({
                   DateTime? acknowledgedAt,
                   int? acknowledgedDistributionVersion,
@@ -1167,130 +1064,45 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
                   String? name,
                   String? pubkey,
                   _i7.StewardStatus status,
-                })
-              >
-              stewards,
-              int threshold,
-              int totalKeys,
-              String vaultId,
-            })
-          >);
+                })> stewards,
+            int threshold,
+            int totalKeys,
+            String vaultId,
+          })>);
 
   @override
   _i5.Future<
-    ({
-      String? contentHash,
-      DateTime createdAt,
-      int distributionVersion,
-      String? instructions,
-      DateTime? lastContentChange,
-      DateTime? lastRedistribution,
-      DateTime lastUpdated,
-      List<String> relays,
-      String specVersion,
-      _i6.BackupStatus status,
-      List<
-        ({
-          DateTime? acknowledgedAt,
-          int? acknowledgedDistributionVersion,
-          String? acknowledgmentEventId,
-          String? giftWrapEventId,
-          String id,
-          String? inviteCode,
-          String? keyShare,
-          DateTime? lastSeen,
-          String? name,
-          String? pubkey,
-          _i7.StewardStatus status,
-        })
-      >
-      stewards,
-      int threshold,
-      int totalKeys,
-      String vaultId,
-    })
-  >
-  createAndDistributeBackup({required String? vaultId}) =>
-      (super.noSuchMethod(
-            Invocation.method(#createAndDistributeBackup, [], {#vaultId: vaultId}),
-            returnValue:
-                _i5.Future<
-                  ({
-                    String? contentHash,
-                    DateTime createdAt,
-                    int distributionVersion,
-                    String? instructions,
-                    DateTime? lastContentChange,
-                    DateTime? lastRedistribution,
-                    DateTime lastUpdated,
-                    List<String> relays,
-                    String specVersion,
-                    _i6.BackupStatus status,
-                    List<
-                      ({
-                        DateTime? acknowledgedAt,
-                        int? acknowledgedDistributionVersion,
-                        String? acknowledgmentEventId,
-                        String? giftWrapEventId,
-                        String id,
-                        String? inviteCode,
-                        String? keyShare,
-                        DateTime? lastSeen,
-                        String? name,
-                        String? pubkey,
-                        _i7.StewardStatus status,
-                      })
-                    >
-                    stewards,
-                    int threshold,
-                    int totalKeys,
-                    String vaultId,
-                  })
-                >.value((
-                  contentHash: null,
-                  createdAt: _FakeDateTime_0(
-                    this,
-                    Invocation.method(#createAndDistributeBackup, [], {#vaultId: vaultId}),
-                  ),
-                  distributionVersion: 0,
-                  instructions: null,
-                  lastContentChange: null,
-                  lastRedistribution: null,
-                  lastUpdated: _FakeDateTime_0(
-                    this,
-                    Invocation.method(#createAndDistributeBackup, [], {#vaultId: vaultId}),
-                  ),
-                  relays: <String>[],
-                  specVersion: _i8.dummyValue<String>(
-                    this,
-                    Invocation.method(#createAndDistributeBackup, [], {#vaultId: vaultId}),
-                  ),
-                  status: _i6.BackupStatus.pending,
-                  stewards:
-                      <
-                        ({
-                          DateTime? acknowledgedAt,
-                          int? acknowledgedDistributionVersion,
-                          String? acknowledgmentEventId,
-                          String? giftWrapEventId,
-                          String id,
-                          String? inviteCode,
-                          String? keyShare,
-                          DateTime? lastSeen,
-                          String? name,
-                          String? pubkey,
-                          _i7.StewardStatus status,
-                        })
-                      >[],
-                  threshold: 0,
-                  totalKeys: 0,
-                  vaultId: _i8.dummyValue<String>(
-                    this,
-                    Invocation.method(#createAndDistributeBackup, [], {#vaultId: vaultId}),
-                  ),
-                )),
-          )
-          as _i5.Future<
+      ({
+        String? contentHash,
+        DateTime createdAt,
+        int distributionVersion,
+        String? instructions,
+        DateTime? lastContentChange,
+        DateTime? lastRedistribution,
+        DateTime lastUpdated,
+        List<String> relays,
+        String specVersion,
+        _i6.BackupStatus status,
+        List<
+            ({
+              DateTime? acknowledgedAt,
+              int? acknowledgedDistributionVersion,
+              String? acknowledgmentEventId,
+              String? giftWrapEventId,
+              String id,
+              String? inviteCode,
+              String? keyShare,
+              DateTime? lastSeen,
+              String? name,
+              String? pubkey,
+              _i7.StewardStatus status,
+            })> stewards,
+        int threshold,
+        int totalKeys,
+        String vaultId,
+      })> createAndDistributeBackup({required String? vaultId}) => (super.noSuchMethod(
+        Invocation.method(#createAndDistributeBackup, [], {#vaultId: vaultId}),
+        returnValue: _i5.Future<
             ({
               String? contentHash,
               DateTime createdAt,
@@ -1303,6 +1115,75 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
               String specVersion,
               _i6.BackupStatus status,
               List<
+                  ({
+                    DateTime? acknowledgedAt,
+                    int? acknowledgedDistributionVersion,
+                    String? acknowledgmentEventId,
+                    String? giftWrapEventId,
+                    String id,
+                    String? inviteCode,
+                    String? keyShare,
+                    DateTime? lastSeen,
+                    String? name,
+                    String? pubkey,
+                    _i7.StewardStatus status,
+                  })> stewards,
+              int threshold,
+              int totalKeys,
+              String vaultId,
+            })>.value((
+          contentHash: null,
+          createdAt: _FakeDateTime_0(
+            this,
+            Invocation.method(#createAndDistributeBackup, [], {#vaultId: vaultId}),
+          ),
+          distributionVersion: 0,
+          instructions: null,
+          lastContentChange: null,
+          lastRedistribution: null,
+          lastUpdated: _FakeDateTime_0(
+            this,
+            Invocation.method(#createAndDistributeBackup, [], {#vaultId: vaultId}),
+          ),
+          relays: <String>[],
+          specVersion: _i8.dummyValue<String>(
+            this,
+            Invocation.method(#createAndDistributeBackup, [], {#vaultId: vaultId}),
+          ),
+          status: _i6.BackupStatus.pending,
+          stewards: <({
+            DateTime? acknowledgedAt,
+            int? acknowledgedDistributionVersion,
+            String? acknowledgmentEventId,
+            String? giftWrapEventId,
+            String id,
+            String? inviteCode,
+            String? keyShare,
+            DateTime? lastSeen,
+            String? name,
+            String? pubkey,
+            _i7.StewardStatus status,
+          })>[],
+          threshold: 0,
+          totalKeys: 0,
+          vaultId: _i8.dummyValue<String>(
+            this,
+            Invocation.method(#createAndDistributeBackup, [], {#vaultId: vaultId}),
+          ),
+        )),
+      ) as _i5.Future<
+          ({
+            String? contentHash,
+            DateTime createdAt,
+            int distributionVersion,
+            String? instructions,
+            DateTime? lastContentChange,
+            DateTime? lastRedistribution,
+            DateTime lastUpdated,
+            List<String> relays,
+            String specVersion,
+            _i6.BackupStatus status,
+            List<
                 ({
                   DateTime? acknowledgedAt,
                   int? acknowledgedDistributionVersion,
@@ -1315,14 +1196,11 @@ class MockBackupService extends _i1.Mock implements _i4.BackupService {
                   String? name,
                   String? pubkey,
                   _i7.StewardStatus status,
-                })
-              >
-              stewards,
-              int threshold,
-              int totalKeys,
-              String vaultId,
-            })
-          >);
+                })> stewards,
+            int threshold,
+            int totalKeys,
+            String vaultId,
+          })>);
 }
 
 /// A class which mocks [ShardDistributionService].
@@ -1335,20 +1213,17 @@ class MockShardDistributionService extends _i1.Mock implements _i9.ShardDistribu
 
   @override
   _i5.Future<
-    List<
-      ({
-        String backupConfigId,
-        DateTime createdAt,
-        String encryptedContent,
-        String eventId,
-        DateTime? publishedAt,
-        String recipientPubkey,
-        int shardIndex,
-        _i10.EventStatus status,
-      })
-    >
-  >
-  distributeShards({
+      List<
+          ({
+            String backupConfigId,
+            DateTime createdAt,
+            String encryptedContent,
+            String eventId,
+            DateTime? publishedAt,
+            String recipientPubkey,
+            int shardIndex,
+            _i10.EventStatus status,
+          })>> distributeShards({
     required String? ownerPubkey,
     required ({
       String? contentHash,
@@ -1362,87 +1237,77 @@ class MockShardDistributionService extends _i1.Mock implements _i9.ShardDistribu
       String specVersion,
       _i6.BackupStatus status,
       List<
-        ({
-          DateTime? acknowledgedAt,
-          int? acknowledgedDistributionVersion,
-          String? acknowledgmentEventId,
-          String? giftWrapEventId,
-          String id,
-          String? inviteCode,
-          String? keyShare,
-          DateTime? lastSeen,
-          String? name,
-          String? pubkey,
-          _i7.StewardStatus status,
-        })
-      >
-      stewards,
+          ({
+            DateTime? acknowledgedAt,
+            int? acknowledgedDistributionVersion,
+            String? acknowledgmentEventId,
+            String? giftWrapEventId,
+            String id,
+            String? inviteCode,
+            String? keyShare,
+            DateTime? lastSeen,
+            String? name,
+            String? pubkey,
+            _i7.StewardStatus status,
+          })> stewards,
       int threshold,
       int totalKeys,
       String vaultId,
-    })?
-    config,
+    })? config,
     required List<
-      ({
-        int createdAt,
-        String creatorPubkey,
-        int? distributionVersion,
-        String? instructions,
-        bool? isReceived,
-        String? nostrEventId,
-        String? ownerName,
-        List<Map<String, String>>? peers,
-        String primeMod,
-        DateTime? receivedAt,
-        String? recipientPubkey,
-        List<String>? relayUrls,
-        String shard,
-        int shardIndex,
-        int threshold,
-        int totalShards,
-        String? vaultId,
-        String? vaultName,
-      })
-    >?
-    shards,
+            ({
+              int createdAt,
+              String creatorPubkey,
+              int? distributionVersion,
+              String? instructions,
+              bool? isReceived,
+              String? nostrEventId,
+              String? ownerName,
+              List<Map<String, String>>? peers,
+              String primeMod,
+              DateTime? receivedAt,
+              String? recipientPubkey,
+              List<String>? relayUrls,
+              String shard,
+              int shardIndex,
+              int threshold,
+              int totalShards,
+              String? vaultId,
+              String? vaultName,
+            })>?
+        shards,
   }) =>
       (super.noSuchMethod(
-            Invocation.method(#distributeShards, [], {
-              #ownerPubkey: ownerPubkey,
-              #config: config,
-              #shards: shards,
-            }),
-            returnValue:
-                _i5.Future<
-                  List<
-                    ({
-                      String backupConfigId,
-                      DateTime createdAt,
-                      String encryptedContent,
-                      String eventId,
-                      DateTime? publishedAt,
-                      String recipientPubkey,
-                      int shardIndex,
-                      _i10.EventStatus status,
-                    })
-                  >
-                >.value(
-                  <
-                    ({
-                      String backupConfigId,
-                      DateTime createdAt,
-                      String encryptedContent,
-                      String eventId,
-                      DateTime? publishedAt,
-                      String recipientPubkey,
-                      int shardIndex,
-                      _i10.EventStatus status,
-                    })
-                  >[],
-                ),
-          )
-          as _i5.Future<
+        Invocation.method(#distributeShards, [], {
+          #ownerPubkey: ownerPubkey,
+          #config: config,
+          #shards: shards,
+        }),
+        returnValue: _i5.Future<
             List<
+                ({
+                  String backupConfigId,
+                  DateTime createdAt,
+                  String encryptedContent,
+                  String eventId,
+                  DateTime? publishedAt,
+                  String recipientPubkey,
+                  int shardIndex,
+                  _i10.EventStatus status,
+                })>>.value(
+          <({
+            String backupConfigId,
+            DateTime createdAt,
+            String encryptedContent,
+            String eventId,
+            DateTime? publishedAt,
+            String recipientPubkey,
+            int shardIndex,
+            _i10.EventStatus status,
+          })>[],
+        ),
+      ) as _i5.Future<
+          List<
               ({
                 String backupConfigId,
                 DateTime createdAt,
@@ -1452,54 +1317,47 @@ class MockShardDistributionService extends _i1.Mock implements _i9.ShardDistribu
                 String recipientPubkey,
                 int shardIndex,
                 _i10.EventStatus status,
-              })
-            >
-          >);
+              })>>);
 
   @override
   _i5.Future<void> updateDistributionStatus({
     required String? vaultId,
     required List<
-      ({
-        String backupConfigId,
-        DateTime createdAt,
-        String encryptedContent,
-        String eventId,
-        DateTime? publishedAt,
-        String recipientPubkey,
-        int shardIndex,
-        _i10.EventStatus status,
-      })
-    >?
-    shardEvents,
+            ({
+              String backupConfigId,
+              DateTime createdAt,
+              String encryptedContent,
+              String eventId,
+              DateTime? publishedAt,
+              String recipientPubkey,
+              int shardIndex,
+              _i10.EventStatus status,
+            })>?
+        shardEvents,
   }) =>
       (super.noSuchMethod(
-            Invocation.method(#updateDistributionStatus, [], {
-              #vaultId: vaultId,
-              #shardEvents: shardEvents,
-            }),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+        Invocation.method(#updateDistributionStatus, [], {
+          #vaultId: vaultId,
+          #shardEvents: shardEvents,
+        }),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
   _i5.Future<void> processShardConfirmationEvent({required _i2.Nip01Event? event}) =>
       (super.noSuchMethod(
-            Invocation.method(#processShardConfirmationEvent, [], {#event: event}),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+        Invocation.method(#processShardConfirmationEvent, [], {#event: event}),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  _i5.Future<void> processShardErrorEvent({required _i2.Nip01Event? event}) =>
-      (super.noSuchMethod(
-            Invocation.method(#processShardErrorEvent, [], {#event: event}),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+  _i5.Future<void> processShardErrorEvent({required _i2.Nip01Event? event}) => (super.noSuchMethod(
+        Invocation.method(#processShardErrorEvent, [], {#event: event}),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 }
 
 /// A class which mocks [NdkService].
@@ -1511,51 +1369,41 @@ class MockNdkService extends _i1.Mock implements _i11.NdkService {
   }
 
   @override
-  _i5.Stream<_i12.RecoveryRequest> get recoveryRequestStream =>
-      (super.noSuchMethod(
-            Invocation.getter(#recoveryRequestStream),
-            returnValue: _i5.Stream<_i12.RecoveryRequest>.empty(),
-          )
-          as _i5.Stream<_i12.RecoveryRequest>);
+  _i5.Stream<_i12.RecoveryRequest> get recoveryRequestStream => (super.noSuchMethod(
+        Invocation.getter(#recoveryRequestStream),
+        returnValue: _i5.Stream<_i12.RecoveryRequest>.empty(),
+      ) as _i5.Stream<_i12.RecoveryRequest>);
 
   @override
-  _i5.Stream<_i11.RecoveryResponseEvent> get recoveryResponseStream =>
-      (super.noSuchMethod(
-            Invocation.getter(#recoveryResponseStream),
-            returnValue: _i5.Stream<_i11.RecoveryResponseEvent>.empty(),
-          )
-          as _i5.Stream<_i11.RecoveryResponseEvent>);
+  _i5.Stream<_i11.RecoveryResponseEvent> get recoveryResponseStream => (super.noSuchMethod(
+        Invocation.getter(#recoveryResponseStream),
+        returnValue: _i5.Stream<_i11.RecoveryResponseEvent>.empty(),
+      ) as _i5.Stream<_i11.RecoveryResponseEvent>);
 
   @override
   bool get isInitialized =>
       (super.noSuchMethod(Invocation.getter(#isInitialized), returnValue: false) as bool);
 
   @override
-  _i5.Future<void> initialize() =>
-      (super.noSuchMethod(
-            Invocation.method(#initialize, []),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+  _i5.Future<void> initialize() => (super.noSuchMethod(
+        Invocation.method(#initialize, []),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  _i5.Future<void> addRelay(String? relayUrl) =>
-      (super.noSuchMethod(
-            Invocation.method(#addRelay, [relayUrl]),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+  _i5.Future<void> addRelay(String? relayUrl) => (super.noSuchMethod(
+        Invocation.method(#addRelay, [relayUrl]),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  _i5.Future<void> removeRelay(String? relayUrl) =>
-      (super.noSuchMethod(
-            Invocation.method(#removeRelay, [relayUrl]),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+  _i5.Future<void> removeRelay(String? relayUrl) => (super.noSuchMethod(
+        Invocation.method(#removeRelay, [relayUrl]),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
   _i5.Future<String?> publishRecoveryRequest({
@@ -1564,14 +1412,13 @@ class MockNdkService extends _i1.Mock implements _i11.NdkService {
     DateTime? expiresAt,
   }) =>
       (super.noSuchMethod(
-            Invocation.method(#publishRecoveryRequest, [], {
-              #vaultId: vaultId,
-              #stewardPubkeys: stewardPubkeys,
-              #expiresAt: expiresAt,
-            }),
-            returnValue: _i5.Future<String?>.value(),
-          )
-          as _i5.Future<String?>);
+        Invocation.method(#publishRecoveryRequest, [], {
+          #vaultId: vaultId,
+          #stewardPubkeys: stewardPubkeys,
+          #expiresAt: expiresAt,
+        }),
+        returnValue: _i5.Future<String?>.value(),
+      ) as _i5.Future<String?>);
 
   @override
   _i5.Future<String?> publishRecoveryResponse({
@@ -1581,24 +1428,21 @@ class MockNdkService extends _i1.Mock implements _i11.NdkService {
     String? shardDataJson,
   }) =>
       (super.noSuchMethod(
-            Invocation.method(#publishRecoveryResponse, [], {
-              #initiatorPubkey: initiatorPubkey,
-              #recoveryRequestId: recoveryRequestId,
-              #approved: approved,
-              #shardDataJson: shardDataJson,
-            }),
-            returnValue: _i5.Future<String?>.value(),
-          )
-          as _i5.Future<String?>);
+        Invocation.method(#publishRecoveryResponse, [], {
+          #initiatorPubkey: initiatorPubkey,
+          #recoveryRequestId: recoveryRequestId,
+          #approved: approved,
+          #shardDataJson: shardDataJson,
+        }),
+        returnValue: _i5.Future<String?>.value(),
+      ) as _i5.Future<String?>);
 
   @override
-  _i5.Future<void> stopListening() =>
-      (super.noSuchMethod(
-            Invocation.method(#stopListening, []),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+  _i5.Future<void> stopListening() => (super.noSuchMethod(
+        Invocation.method(#stopListening, []),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
   List<String> getActiveRelays() =>
@@ -1606,12 +1450,10 @@ class MockNdkService extends _i1.Mock implements _i11.NdkService {
           as List<String>);
 
   @override
-  _i5.Future<String?> getCurrentPubkey() =>
-      (super.noSuchMethod(
-            Invocation.method(#getCurrentPubkey, []),
-            returnValue: _i5.Future<String?>.value(),
-          )
-          as _i5.Future<String?>);
+  _i5.Future<String?> getCurrentPubkey() => (super.noSuchMethod(
+        Invocation.method(#getCurrentPubkey, []),
+        returnValue: _i5.Future<String?>.value(),
+      ) as _i5.Future<String?>);
 
   @override
   _i5.Future<String?> publishEncryptedEvent({
@@ -1623,17 +1465,16 @@ class MockNdkService extends _i1.Mock implements _i11.NdkService {
     String? customPubkey,
   }) =>
       (super.noSuchMethod(
-            Invocation.method(#publishEncryptedEvent, [], {
-              #content: content,
-              #kind: kind,
-              #recipientPubkey: recipientPubkey,
-              #relays: relays,
-              #tags: tags,
-              #customPubkey: customPubkey,
-            }),
-            returnValue: _i5.Future<String?>.value(),
-          )
-          as _i5.Future<String?>);
+        Invocation.method(#publishEncryptedEvent, [], {
+          #content: content,
+          #kind: kind,
+          #recipientPubkey: recipientPubkey,
+          #relays: relays,
+          #tags: tags,
+          #customPubkey: customPubkey,
+        }),
+        returnValue: _i5.Future<String?>.value(),
+      ) as _i5.Future<String?>);
 
   @override
   _i5.Future<List<String>> publishEncryptedEventToMultiple({
@@ -1645,42 +1486,37 @@ class MockNdkService extends _i1.Mock implements _i11.NdkService {
     String? customPubkey,
   }) =>
       (super.noSuchMethod(
-            Invocation.method(#publishEncryptedEventToMultiple, [], {
-              #content: content,
-              #kind: kind,
-              #recipientPubkeys: recipientPubkeys,
-              #relays: relays,
-              #tags: tags,
-              #customPubkey: customPubkey,
-            }),
-            returnValue: _i5.Future<List<String>>.value(<String>[]),
-          )
-          as _i5.Future<List<String>>);
+        Invocation.method(#publishEncryptedEventToMultiple, [], {
+          #content: content,
+          #kind: kind,
+          #recipientPubkeys: recipientPubkeys,
+          #relays: relays,
+          #tags: tags,
+          #customPubkey: customPubkey,
+        }),
+        returnValue: _i5.Future<List<String>>.value(<String>[]),
+      ) as _i5.Future<List<String>>);
 
   @override
-  _i5.Future<_i2.Ndk> getNdk() =>
-      (super.noSuchMethod(
-            Invocation.method(#getNdk, []),
-            returnValue: _i5.Future<_i2.Ndk>.value(
-              _FakeNdk_1(this, Invocation.method(#getNdk, [])),
-            ),
-          )
-          as _i5.Future<_i2.Ndk>);
+  _i5.Future<_i2.Ndk> getNdk() => (super.noSuchMethod(
+        Invocation.method(#getNdk, []),
+        returnValue: _i5.Future<_i2.Ndk>.value(
+          _FakeNdk_1(this, Invocation.method(#getNdk, [])),
+        ),
+      ) as _i5.Future<_i2.Ndk>);
 
   @override
   void setNdkForTesting(_i2.Ndk? ndk) => super.noSuchMethod(
-    Invocation.method(#setNdkForTesting, [ndk]),
-    returnValueForMissingStub: null,
-  );
+        Invocation.method(#setNdkForTesting, [ndk]),
+        returnValueForMissingStub: null,
+      );
 
   @override
-  _i5.Future<void> dispose() =>
-      (super.noSuchMethod(
-            Invocation.method(#dispose, []),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+  _i5.Future<void> dispose() => (super.noSuchMethod(
+        Invocation.method(#dispose, []),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 }
 
 /// A class which mocks [VaultShareService].
@@ -1692,101 +1528,87 @@ class MockVaultShareService extends _i1.Mock implements _i13.VaultShareService {
   }
 
   @override
-  _i3.VaultRepository get repository =>
-      (super.noSuchMethod(
-            Invocation.getter(#repository),
-            returnValue: _FakeVaultRepository_2(this, Invocation.getter(#repository)),
-          )
-          as _i3.VaultRepository);
+  _i3.VaultRepository get repository => (super.noSuchMethod(
+        Invocation.getter(#repository),
+        returnValue: _FakeVaultRepository_2(this, Invocation.getter(#repository)),
+      ) as _i3.VaultRepository);
 
   @override
-  _i5.Future<void> initialize() =>
-      (super.noSuchMethod(
-            Invocation.method(#initialize, []),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+  _i5.Future<void> initialize() => (super.noSuchMethod(
+        Invocation.method(#initialize, []),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
   _i5.Future<
-    List<
-      ({
-        int createdAt,
-        String creatorPubkey,
-        int? distributionVersion,
-        String? instructions,
-        bool? isReceived,
-        String? nostrEventId,
-        String? ownerName,
-        List<Map<String, String>>? peers,
-        String primeMod,
-        DateTime? receivedAt,
-        String? recipientPubkey,
-        List<String>? relayUrls,
-        String shard,
-        int shardIndex,
-        int threshold,
-        int totalShards,
-        String? vaultId,
-        String? vaultName,
-      })
-    >
-  >
-  getVaultShares(String? vaultId) =>
-      (super.noSuchMethod(
-            Invocation.method(#getVaultShares, [vaultId]),
-            returnValue:
-                _i5.Future<
-                  List<
-                    ({
-                      int createdAt,
-                      String creatorPubkey,
-                      int? distributionVersion,
-                      String? instructions,
-                      bool? isReceived,
-                      String? nostrEventId,
-                      String? ownerName,
-                      List<Map<String, String>>? peers,
-                      String primeMod,
-                      DateTime? receivedAt,
-                      String? recipientPubkey,
-                      List<String>? relayUrls,
-                      String shard,
-                      int shardIndex,
-                      int threshold,
-                      int totalShards,
-                      String? vaultId,
-                      String? vaultName,
-                    })
-                  >
-                >.value(
-                  <
-                    ({
-                      int createdAt,
-                      String creatorPubkey,
-                      int? distributionVersion,
-                      String? instructions,
-                      bool? isReceived,
-                      String? nostrEventId,
-                      String? ownerName,
-                      List<Map<String, String>>? peers,
-                      String primeMod,
-                      DateTime? receivedAt,
-                      String? recipientPubkey,
-                      List<String>? relayUrls,
-                      String shard,
-                      int shardIndex,
-                      int threshold,
-                      int totalShards,
-                      String? vaultId,
-                      String? vaultName,
-                    })
-                  >[],
-                ),
-          )
-          as _i5.Future<
+      List<
+          ({
+            int createdAt,
+            String creatorPubkey,
+            int? distributionVersion,
+            String? instructions,
+            bool? isReceived,
+            String? nostrEventId,
+            String? ownerName,
+            List<Map<String, String>>? peers,
+            String primeMod,
+            DateTime? receivedAt,
+            String? recipientPubkey,
+            List<String>? relayUrls,
+            String shard,
+            int shardIndex,
+            int threshold,
+            int totalShards,
+            String? vaultId,
+            String? vaultName,
+          })>> getVaultShares(String? vaultId) => (super.noSuchMethod(
+        Invocation.method(#getVaultShares, [vaultId]),
+        returnValue: _i5.Future<
             List<
+                ({
+                  int createdAt,
+                  String creatorPubkey,
+                  int? distributionVersion,
+                  String? instructions,
+                  bool? isReceived,
+                  String? nostrEventId,
+                  String? ownerName,
+                  List<Map<String, String>>? peers,
+                  String primeMod,
+                  DateTime? receivedAt,
+                  String? recipientPubkey,
+                  List<String>? relayUrls,
+                  String shard,
+                  int shardIndex,
+                  int threshold,
+                  int totalShards,
+                  String? vaultId,
+                  String? vaultName,
+                })>>.value(
+          <({
+            int createdAt,
+            String creatorPubkey,
+            int? distributionVersion,
+            String? instructions,
+            bool? isReceived,
+            String? nostrEventId,
+            String? ownerName,
+            List<Map<String, String>>? peers,
+            String primeMod,
+            DateTime? receivedAt,
+            String? recipientPubkey,
+            List<String>? relayUrls,
+            String shard,
+            int shardIndex,
+            int threshold,
+            int totalShards,
+            String? vaultId,
+            String? vaultName,
+          })>[],
+        ),
+      ) as _i5.Future<
+          List<
               ({
                 int createdAt,
                 String creatorPubkey,
@@ -1806,61 +1628,32 @@ class MockVaultShareService extends _i1.Mock implements _i13.VaultShareService {
                 int totalShards,
                 String? vaultId,
                 String? vaultName,
-              })
-            >
-          >);
+              })>>);
 
   @override
   _i5.Future<
-    ({
-      int createdAt,
-      String creatorPubkey,
-      int? distributionVersion,
-      String? instructions,
-      bool? isReceived,
-      String? nostrEventId,
-      String? ownerName,
-      List<Map<String, String>>? peers,
-      String primeMod,
-      DateTime? receivedAt,
-      String? recipientPubkey,
-      List<String>? relayUrls,
-      String shard,
-      int shardIndex,
-      int threshold,
-      int totalShards,
-      String? vaultId,
-      String? vaultName,
-    })?
-  >
-  getVaultShare(String? vaultId) =>
-      (super.noSuchMethod(
-            Invocation.method(#getVaultShare, [vaultId]),
-            returnValue:
-                _i5.Future<
-                  ({
-                    int createdAt,
-                    String creatorPubkey,
-                    int? distributionVersion,
-                    String? instructions,
-                    bool? isReceived,
-                    String? nostrEventId,
-                    String? ownerName,
-                    List<Map<String, String>>? peers,
-                    String primeMod,
-                    DateTime? receivedAt,
-                    String? recipientPubkey,
-                    List<String>? relayUrls,
-                    String shard,
-                    int shardIndex,
-                    int threshold,
-                    int totalShards,
-                    String? vaultId,
-                    String? vaultName,
-                  })?
-                >.value(),
-          )
-          as _i5.Future<
+      ({
+        int createdAt,
+        String creatorPubkey,
+        int? distributionVersion,
+        String? instructions,
+        bool? isReceived,
+        String? nostrEventId,
+        String? ownerName,
+        List<Map<String, String>>? peers,
+        String primeMod,
+        DateTime? receivedAt,
+        String? recipientPubkey,
+        List<String>? relayUrls,
+        String shard,
+        int shardIndex,
+        int threshold,
+        int totalShards,
+        String? vaultId,
+        String? vaultName,
+      })?> getVaultShare(String? vaultId) => (super.noSuchMethod(
+        Invocation.method(#getVaultShare, [vaultId]),
+        returnValue: _i5.Future<
             ({
               int createdAt,
               String creatorPubkey,
@@ -1880,60 +1673,53 @@ class MockVaultShareService extends _i1.Mock implements _i13.VaultShareService {
               int totalShards,
               String? vaultId,
               String? vaultName,
-            })?
-          >);
+            })?>.value(),
+      ) as _i5.Future<
+          ({
+            int createdAt,
+            String creatorPubkey,
+            int? distributionVersion,
+            String? instructions,
+            bool? isReceived,
+            String? nostrEventId,
+            String? ownerName,
+            List<Map<String, String>>? peers,
+            String primeMod,
+            DateTime? receivedAt,
+            String? recipientPubkey,
+            List<String>? relayUrls,
+            String shard,
+            int shardIndex,
+            int threshold,
+            int totalShards,
+            String? vaultId,
+            String? vaultName,
+          })?>);
 
   @override
   _i5.Future<
-    ({
-      int createdAt,
-      String creatorPubkey,
-      int? distributionVersion,
-      String? instructions,
-      bool? isReceived,
-      String? nostrEventId,
-      String? ownerName,
-      List<Map<String, String>>? peers,
-      String primeMod,
-      DateTime? receivedAt,
-      String? recipientPubkey,
-      List<String>? relayUrls,
-      String shard,
-      int shardIndex,
-      int threshold,
-      int totalShards,
-      String? vaultId,
-      String? vaultName,
-    })?
-  >
-  getShareByEventId(String? nostrEventId) =>
-      (super.noSuchMethod(
-            Invocation.method(#getShareByEventId, [nostrEventId]),
-            returnValue:
-                _i5.Future<
-                  ({
-                    int createdAt,
-                    String creatorPubkey,
-                    int? distributionVersion,
-                    String? instructions,
-                    bool? isReceived,
-                    String? nostrEventId,
-                    String? ownerName,
-                    List<Map<String, String>>? peers,
-                    String primeMod,
-                    DateTime? receivedAt,
-                    String? recipientPubkey,
-                    List<String>? relayUrls,
-                    String shard,
-                    int shardIndex,
-                    int threshold,
-                    int totalShards,
-                    String? vaultId,
-                    String? vaultName,
-                  })?
-                >.value(),
-          )
-          as _i5.Future<
+      ({
+        int createdAt,
+        String creatorPubkey,
+        int? distributionVersion,
+        String? instructions,
+        bool? isReceived,
+        String? nostrEventId,
+        String? ownerName,
+        List<Map<String, String>>? peers,
+        String primeMod,
+        DateTime? receivedAt,
+        String? recipientPubkey,
+        List<String>? relayUrls,
+        String shard,
+        int shardIndex,
+        int threshold,
+        int totalShards,
+        String? vaultId,
+        String? vaultName,
+      })?> getShareByEventId(String? nostrEventId) => (super.noSuchMethod(
+        Invocation.method(#getShareByEventId, [nostrEventId]),
+        returnValue: _i5.Future<
             ({
               int createdAt,
               String creatorPubkey,
@@ -1953,8 +1739,28 @@ class MockVaultShareService extends _i1.Mock implements _i13.VaultShareService {
               int totalShards,
               String? vaultId,
               String? vaultName,
-            })?
-          >);
+            })?>.value(),
+      ) as _i5.Future<
+          ({
+            int createdAt,
+            String creatorPubkey,
+            int? distributionVersion,
+            String? instructions,
+            bool? isReceived,
+            String? nostrEventId,
+            String? ownerName,
+            List<Map<String, String>>? peers,
+            String primeMod,
+            DateTime? receivedAt,
+            String? recipientPubkey,
+            List<String>? relayUrls,
+            String shard,
+            int shardIndex,
+            int threshold,
+            int totalShards,
+            String? vaultId,
+            String? vaultName,
+          })?>);
 
   @override
   _i5.Future<void> addVaultShare(
@@ -1978,15 +1784,13 @@ class MockVaultShareService extends _i1.Mock implements _i13.VaultShareService {
       int totalShards,
       String? vaultId,
       String? vaultName,
-    })?
-    shardData,
+    })? shardData,
   ) =>
       (super.noSuchMethod(
-            Invocation.method(#addVaultShare, [vaultId, shardData]),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+        Invocation.method(#addVaultShare, [vaultId, shardData]),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
   _i5.Future<void> processVaultShare(
@@ -2010,15 +1814,13 @@ class MockVaultShareService extends _i1.Mock implements _i13.VaultShareService {
       int totalShards,
       String? vaultId,
       String? vaultName,
-    })?
-    shardData,
+    })? shardData,
   ) =>
       (super.noSuchMethod(
-            Invocation.method(#processVaultShare, [vaultId, shardData]),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+        Invocation.method(#processVaultShare, [vaultId, shardData]),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
   _i5.Future<String?> sendShardConfirmationEvent({
@@ -2028,129 +1830,110 @@ class MockVaultShareService extends _i1.Mock implements _i13.VaultShareService {
     required List<String>? relayUrls,
   }) =>
       (super.noSuchMethod(
-            Invocation.method(#sendShardConfirmationEvent, [], {
-              #vaultId: vaultId,
-              #shardIndex: shardIndex,
-              #ownerPubkey: ownerPubkey,
-              #relayUrls: relayUrls,
-            }),
-            returnValue: _i5.Future<String?>.value(),
-          )
-          as _i5.Future<String?>);
+        Invocation.method(#sendShardConfirmationEvent, [], {
+          #vaultId: vaultId,
+          #shardIndex: shardIndex,
+          #ownerPubkey: ownerPubkey,
+          #relayUrls: relayUrls,
+        }),
+        returnValue: _i5.Future<String?>.value(),
+      ) as _i5.Future<String?>);
 
   @override
-  _i5.Future<void> markShareAsReceived(String? vaultId) =>
-      (super.noSuchMethod(
-            Invocation.method(#markShareAsReceived, [vaultId]),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+  _i5.Future<void> markShareAsReceived(String? vaultId) => (super.noSuchMethod(
+        Invocation.method(#markShareAsReceived, [vaultId]),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  _i5.Future<void> markShareAsReceivedByEventId(String? nostrEventId) =>
-      (super.noSuchMethod(
-            Invocation.method(#markShareAsReceivedByEventId, [nostrEventId]),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+  _i5.Future<void> markShareAsReceivedByEventId(String? nostrEventId) => (super.noSuchMethod(
+        Invocation.method(#markShareAsReceivedByEventId, [nostrEventId]),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  _i5.Future<String?> reassembleVaultContent(String? vaultId) =>
-      (super.noSuchMethod(
-            Invocation.method(#reassembleVaultContent, [vaultId]),
-            returnValue: _i5.Future<String?>.value(),
-          )
-          as _i5.Future<String?>);
+  _i5.Future<String?> reassembleVaultContent(String? vaultId) => (super.noSuchMethod(
+        Invocation.method(#reassembleVaultContent, [vaultId]),
+        returnValue: _i5.Future<String?>.value(),
+      ) as _i5.Future<String?>);
 
   @override
-  _i5.Future<bool> hasShard(String? vaultId) =>
-      (super.noSuchMethod(
-            Invocation.method(#hasShard, [vaultId]),
-            returnValue: _i5.Future<bool>.value(false),
-          )
-          as _i5.Future<bool>);
+  _i5.Future<bool> hasShard(String? vaultId) => (super.noSuchMethod(
+        Invocation.method(#hasShard, [vaultId]),
+        returnValue: _i5.Future<bool>.value(false),
+      ) as _i5.Future<bool>);
 
   @override
   _i5.Future<
-    List<
-      ({
-        int createdAt,
-        String creatorPubkey,
-        int? distributionVersion,
-        String? instructions,
-        bool? isReceived,
-        String? nostrEventId,
-        String? ownerName,
-        List<Map<String, String>>? peers,
-        String primeMod,
-        DateTime? receivedAt,
-        String? recipientPubkey,
-        List<String>? relayUrls,
-        String shard,
-        int shardIndex,
-        int threshold,
-        int totalShards,
-        String? vaultId,
-        String? vaultName,
-      })
-    >
-  >
-  getAllCollectedShards() =>
-      (super.noSuchMethod(
-            Invocation.method(#getAllCollectedShards, []),
-            returnValue:
-                _i5.Future<
-                  List<
-                    ({
-                      int createdAt,
-                      String creatorPubkey,
-                      int? distributionVersion,
-                      String? instructions,
-                      bool? isReceived,
-                      String? nostrEventId,
-                      String? ownerName,
-                      List<Map<String, String>>? peers,
-                      String primeMod,
-                      DateTime? receivedAt,
-                      String? recipientPubkey,
-                      List<String>? relayUrls,
-                      String shard,
-                      int shardIndex,
-                      int threshold,
-                      int totalShards,
-                      String? vaultId,
-                      String? vaultName,
-                    })
-                  >
-                >.value(
-                  <
-                    ({
-                      int createdAt,
-                      String creatorPubkey,
-                      int? distributionVersion,
-                      String? instructions,
-                      bool? isReceived,
-                      String? nostrEventId,
-                      String? ownerName,
-                      List<Map<String, String>>? peers,
-                      String primeMod,
-                      DateTime? receivedAt,
-                      String? recipientPubkey,
-                      List<String>? relayUrls,
-                      String shard,
-                      int shardIndex,
-                      int threshold,
-                      int totalShards,
-                      String? vaultId,
-                      String? vaultName,
-                    })
-                  >[],
-                ),
-          )
-          as _i5.Future<
+      List<
+          ({
+            int createdAt,
+            String creatorPubkey,
+            int? distributionVersion,
+            String? instructions,
+            bool? isReceived,
+            String? nostrEventId,
+            String? ownerName,
+            List<Map<String, String>>? peers,
+            String primeMod,
+            DateTime? receivedAt,
+            String? recipientPubkey,
+            List<String>? relayUrls,
+            String shard,
+            int shardIndex,
+            int threshold,
+            int totalShards,
+            String? vaultId,
+            String? vaultName,
+          })>> getAllCollectedShards() => (super.noSuchMethod(
+        Invocation.method(#getAllCollectedShards, []),
+        returnValue: _i5.Future<
             List<
+                ({
+                  int createdAt,
+                  String creatorPubkey,
+                  int? distributionVersion,
+                  String? instructions,
+                  bool? isReceived,
+                  String? nostrEventId,
+                  String? ownerName,
+                  List<Map<String, String>>? peers,
+                  String primeMod,
+                  DateTime? receivedAt,
+                  String? recipientPubkey,
+                  List<String>? relayUrls,
+                  String shard,
+                  int shardIndex,
+                  int threshold,
+                  int totalShards,
+                  String? vaultId,
+                  String? vaultName,
+                })>>.value(
+          <({
+            int createdAt,
+            String creatorPubkey,
+            int? distributionVersion,
+            String? instructions,
+            bool? isReceived,
+            String? nostrEventId,
+            String? ownerName,
+            List<Map<String, String>>? peers,
+            String primeMod,
+            DateTime? receivedAt,
+            String? recipientPubkey,
+            List<String>? relayUrls,
+            String shard,
+            int shardIndex,
+            int threshold,
+            int totalShards,
+            String? vaultId,
+            String? vaultName,
+          })>[],
+        ),
+      ) as _i5.Future<
+          List<
               ({
                 int createdAt,
                 String creatorPubkey,
@@ -2170,59 +1953,45 @@ class MockVaultShareService extends _i1.Mock implements _i13.VaultShareService {
                 int totalShards,
                 String? vaultId,
                 String? vaultName,
-              })
-            >
-          >);
+              })>>);
 
   @override
-  _i5.Future<List<String>> getVaultsWithShares() =>
-      (super.noSuchMethod(
-            Invocation.method(#getVaultsWithShares, []),
-            returnValue: _i5.Future<List<String>>.value(<String>[]),
-          )
-          as _i5.Future<List<String>>);
+  _i5.Future<List<String>> getVaultsWithShares() => (super.noSuchMethod(
+        Invocation.method(#getVaultsWithShares, []),
+        returnValue: _i5.Future<List<String>>.value(<String>[]),
+      ) as _i5.Future<List<String>>);
 
   @override
-  _i5.Future<bool> isKeyHolderForVault(String? vaultId) =>
-      (super.noSuchMethod(
-            Invocation.method(#isKeyHolderForVault, [vaultId]),
-            returnValue: _i5.Future<bool>.value(false),
-          )
-          as _i5.Future<bool>);
+  _i5.Future<bool> isKeyHolderForVault(String? vaultId) => (super.noSuchMethod(
+        Invocation.method(#isKeyHolderForVault, [vaultId]),
+        returnValue: _i5.Future<bool>.value(false),
+      ) as _i5.Future<bool>);
 
   @override
-  _i5.Future<int> getShardCount(String? vaultId) =>
-      (super.noSuchMethod(
-            Invocation.method(#getShardCount, [vaultId]),
-            returnValue: _i5.Future<int>.value(0),
-          )
-          as _i5.Future<int>);
+  _i5.Future<int> getShardCount(String? vaultId) => (super.noSuchMethod(
+        Invocation.method(#getShardCount, [vaultId]),
+        returnValue: _i5.Future<int>.value(0),
+      ) as _i5.Future<int>);
 
   @override
-  _i5.Future<void> removeVaultShare(String? vaultId) =>
-      (super.noSuchMethod(
-            Invocation.method(#removeVaultShare, [vaultId]),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+  _i5.Future<void> removeVaultShare(String? vaultId) => (super.noSuchMethod(
+        Invocation.method(#removeVaultShare, [vaultId]),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  _i5.Future<void> removeShareByEventId(String? nostrEventId) =>
-      (super.noSuchMethod(
-            Invocation.method(#removeShareByEventId, [nostrEventId]),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+  _i5.Future<void> removeShareByEventId(String? nostrEventId) => (super.noSuchMethod(
+        Invocation.method(#removeShareByEventId, [nostrEventId]),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  _i5.Future<int> getTotalShardCount() =>
-      (super.noSuchMethod(
-            Invocation.method(#getTotalShardCount, []),
-            returnValue: _i5.Future<int>.value(0),
-          )
-          as _i5.Future<int>);
+  _i5.Future<int> getTotalShardCount() => (super.noSuchMethod(
+        Invocation.method(#getTotalShardCount, []),
+        returnValue: _i5.Future<int>.value(0),
+      ) as _i5.Future<int>);
 
   @override
   _i5.Future<void> addRecoveryShard(
@@ -2246,95 +2015,83 @@ class MockVaultShareService extends _i1.Mock implements _i13.VaultShareService {
       int totalShards,
       String? vaultId,
       String? vaultName,
-    })?
-    shardData,
+    })? shardData,
   ) =>
       (super.noSuchMethod(
-            Invocation.method(#addRecoveryShard, [recoveryRequestId, shardData]),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+        Invocation.method(#addRecoveryShard, [recoveryRequestId, shardData]),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
   _i5.Future<
-    List<
-      ({
-        int createdAt,
-        String creatorPubkey,
-        int? distributionVersion,
-        String? instructions,
-        bool? isReceived,
-        String? nostrEventId,
-        String? ownerName,
-        List<Map<String, String>>? peers,
-        String primeMod,
-        DateTime? receivedAt,
-        String? recipientPubkey,
-        List<String>? relayUrls,
-        String shard,
-        int shardIndex,
-        int threshold,
-        int totalShards,
-        String? vaultId,
-        String? vaultName,
-      })
-    >
-  >
-  getRecoveryShards(String? recoveryRequestId) =>
-      (super.noSuchMethod(
-            Invocation.method(#getRecoveryShards, [recoveryRequestId]),
-            returnValue:
-                _i5.Future<
-                  List<
-                    ({
-                      int createdAt,
-                      String creatorPubkey,
-                      int? distributionVersion,
-                      String? instructions,
-                      bool? isReceived,
-                      String? nostrEventId,
-                      String? ownerName,
-                      List<Map<String, String>>? peers,
-                      String primeMod,
-                      DateTime? receivedAt,
-                      String? recipientPubkey,
-                      List<String>? relayUrls,
-                      String shard,
-                      int shardIndex,
-                      int threshold,
-                      int totalShards,
-                      String? vaultId,
-                      String? vaultName,
-                    })
-                  >
-                >.value(
-                  <
-                    ({
-                      int createdAt,
-                      String creatorPubkey,
-                      int? distributionVersion,
-                      String? instructions,
-                      bool? isReceived,
-                      String? nostrEventId,
-                      String? ownerName,
-                      List<Map<String, String>>? peers,
-                      String primeMod,
-                      DateTime? receivedAt,
-                      String? recipientPubkey,
-                      List<String>? relayUrls,
-                      String shard,
-                      int shardIndex,
-                      int threshold,
-                      int totalShards,
-                      String? vaultId,
-                      String? vaultName,
-                    })
-                  >[],
-                ),
-          )
-          as _i5.Future<
+      List<
+          ({
+            int createdAt,
+            String creatorPubkey,
+            int? distributionVersion,
+            String? instructions,
+            bool? isReceived,
+            String? nostrEventId,
+            String? ownerName,
+            List<Map<String, String>>? peers,
+            String primeMod,
+            DateTime? receivedAt,
+            String? recipientPubkey,
+            List<String>? relayUrls,
+            String shard,
+            int shardIndex,
+            int threshold,
+            int totalShards,
+            String? vaultId,
+            String? vaultName,
+          })>> getRecoveryShards(String? recoveryRequestId) => (super.noSuchMethod(
+        Invocation.method(#getRecoveryShards, [recoveryRequestId]),
+        returnValue: _i5.Future<
             List<
+                ({
+                  int createdAt,
+                  String creatorPubkey,
+                  int? distributionVersion,
+                  String? instructions,
+                  bool? isReceived,
+                  String? nostrEventId,
+                  String? ownerName,
+                  List<Map<String, String>>? peers,
+                  String primeMod,
+                  DateTime? receivedAt,
+                  String? recipientPubkey,
+                  List<String>? relayUrls,
+                  String shard,
+                  int shardIndex,
+                  int threshold,
+                  int totalShards,
+                  String? vaultId,
+                  String? vaultName,
+                })>>.value(
+          <({
+            int createdAt,
+            String creatorPubkey,
+            int? distributionVersion,
+            String? instructions,
+            bool? isReceived,
+            String? nostrEventId,
+            String? ownerName,
+            List<Map<String, String>>? peers,
+            String primeMod,
+            DateTime? receivedAt,
+            String? recipientPubkey,
+            List<String>? relayUrls,
+            String shard,
+            int shardIndex,
+            int threshold,
+            int totalShards,
+            String? vaultId,
+            String? vaultName,
+          })>[],
+        ),
+      ) as _i5.Future<
+          List<
               ({
                 int createdAt,
                 String creatorPubkey,
@@ -2354,59 +2111,46 @@ class MockVaultShareService extends _i1.Mock implements _i13.VaultShareService {
                 int totalShards,
                 String? vaultId,
                 String? vaultName,
-              })
-            >
-          >);
+              })>>);
 
   @override
-  _i5.Future<int> getRecoveryShardCount(String? recoveryRequestId) =>
-      (super.noSuchMethod(
-            Invocation.method(#getRecoveryShardCount, [recoveryRequestId]),
-            returnValue: _i5.Future<int>.value(0),
-          )
-          as _i5.Future<int>);
+  _i5.Future<int> getRecoveryShardCount(String? recoveryRequestId) => (super.noSuchMethod(
+        Invocation.method(#getRecoveryShardCount, [recoveryRequestId]),
+        returnValue: _i5.Future<int>.value(0),
+      ) as _i5.Future<int>);
 
   @override
   _i5.Future<bool> hasSufficientRecoveryShards(String? recoveryRequestId, int? threshold) =>
       (super.noSuchMethod(
-            Invocation.method(#hasSufficientRecoveryShards, [recoveryRequestId, threshold]),
-            returnValue: _i5.Future<bool>.value(false),
-          )
-          as _i5.Future<bool>);
+        Invocation.method(#hasSufficientRecoveryShards, [recoveryRequestId, threshold]),
+        returnValue: _i5.Future<bool>.value(false),
+      ) as _i5.Future<bool>);
 
   @override
-  _i5.Future<void> removeRecoveryShards(String? recoveryRequestId) =>
-      (super.noSuchMethod(
-            Invocation.method(#removeRecoveryShards, [recoveryRequestId]),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+  _i5.Future<void> removeRecoveryShards(String? recoveryRequestId) => (super.noSuchMethod(
+        Invocation.method(#removeRecoveryShards, [recoveryRequestId]),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  _i5.Future<void> clearAll() =>
-      (super.noSuchMethod(
-            Invocation.method(#clearAll, []),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+  _i5.Future<void> clearAll() => (super.noSuchMethod(
+        Invocation.method(#clearAll, []),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  _i5.Future<void> refresh() =>
-      (super.noSuchMethod(
-            Invocation.method(#refresh, []),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+  _i5.Future<void> refresh() => (super.noSuchMethod(
+        Invocation.method(#refresh, []),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  _i5.Future<void> processKeyHolderRemoval({required _i2.Nip01Event? event}) =>
-      (super.noSuchMethod(
-            Invocation.method(#processKeyHolderRemoval, [], {#event: event}),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+  _i5.Future<void> processKeyHolderRemoval({required _i2.Nip01Event? event}) => (super.noSuchMethod(
+        Invocation.method(#processKeyHolderRemoval, [], {#event: event}),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 }

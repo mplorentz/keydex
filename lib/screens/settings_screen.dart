@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../widgets/debug_info_sheet.dart';
 import 'relay_management_screen.dart';
+import 'account_management_screen.dart';
 
 /// Settings screen with debug and relay management options
 class SettingsScreen extends ConsumerWidget {
@@ -31,7 +32,35 @@ class SettingsScreen extends ConsumerWidget {
                 color: theme.colorScheme.surfaceContainer,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(Icons.wifi, color: theme.colorScheme.onSurface),
+              child: Icon(
+                Icons.person,
+                color: theme.colorScheme.onSurface,
+              ),
+            ),
+            title: const Text('Account Management'),
+            subtitle: const Text('View your Nostr ID and manage your account'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AccountManagementScreen(),
+                ),
+              );
+            },
+          ),
+          const Divider(height: 1),
+          ListTile(
+            leading: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surfaceContainer,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                Icons.wifi,
+                color: theme.colorScheme.onSurface,
+              ),
             ),
             title: const Text('Relay Management'),
             subtitle: const Text('Configure and manage Nostr relays'),

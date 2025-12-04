@@ -2,99 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/key_provider.dart';
-import '../providers/vault_provider.dart';
-import '../services/vault_share_service.dart';
-import '../services/recovery_service.dart';
-import '../services/relay_scan_service.dart';
-import '../services/logger.dart';
 import '../screens/horcrux_gallery_screen.dart';
 
 /// Debug information sheet widget
 class DebugInfoSheet extends ConsumerWidget {
   const DebugInfoSheet({super.key});
-
-  Future<void> _clearAllData(BuildContext context, WidgetRef ref) async {
-    // Show confirmation dialog
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Clear All Data?'),
-        content: const Text(
-          'This will permanently delete:\n'
-          '• All vaults\n'
-          '• All vault keys\n'
-          '• All recovery requests\n'
-          '• All relay configurations\n'
-          '• Your Nostr keys\n\n'
-          'This action cannot be undone!',
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('DELETE ALL'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed != true || !context.mounted) return;
-
-    try {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Clearing all data...'), duration: Duration(seconds: 2)),
-      );
-
-      // Clear all services using providers
-      await ref.read(vaultRepositoryProvider).clearAll();
-      await ref.read(vaultShareServiceProvider).clearAll();
-      await ref.read(recoveryServiceProvider).clearAll();
-      await ref.read(relayScanServiceProvider).clearAll();
-      await ref.read(loginServiceProvider).clearStoredKeys();
-
-      // Invalidate the cached key providers so they'll re-fetch
-      ref.invalidate(currentPublicKeyProvider);
-      ref.invalidate(currentPublicKeyBech32Provider);
-      ref.invalidate(isLoggedInProvider);
-
-      Log.info('All app data cleared successfully');
-
-      if (!context.mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('All data cleared! Returning to onboarding...'),
-          duration: Duration(seconds: 2),
-          backgroundColor: Colors.green,
-        ),
-      );
-
-      // Refresh providers to pick up the cleared state
-      ref.invalidate(vaultListProvider);
-      ref.invalidate(currentPublicKeyProvider);
-      ref.invalidate(currentPublicKeyBech32Provider);
-      ref.invalidate(isLoggedInProvider);
-
-      // Close the debug sheet
-      Navigator.of(context).pop();
-
-      // Wait a moment for snackbar to show, then navigate to root
-      // This will trigger the main app to rebuild and show onboarding
-      await Future.delayed(const Duration(milliseconds: 500));
-      if (!context.mounted) return;
-
-      // Pop all routes to get back to the root, which will show onboarding
-      Navigator.of(context).popUntil((route) => route.isFirst);
-    } catch (e) {
-      Log.error('Error clearing all data', e);
-      if (!context.mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error clearing data: $e'), backgroundColor: Colors.red),
-      );
-    }
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -184,21 +96,6 @@ class DebugInfoSheet extends ConsumerWidget {
               style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
               icon: const Icon(Icons.palette),
               label: const Text('View Design Gallery'),
-            ),
-          ),
-          const SizedBox(height: 12),
-          // Clear all data button
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () => _clearAllData(context, ref),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
-              icon: const Icon(Icons.delete_forever),
-              label: const Text('Clear All Data'),
             ),
           ),
         ],

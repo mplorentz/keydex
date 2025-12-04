@@ -34,7 +34,7 @@ class VaultShareService {
 
   // Shards collected during recovery (multiple per recovery request)
   static Map<String, List<ShardData>>?
-  _cachedRecoveryShards; // recoveryRequestId -> List<ShardData>
+      _cachedRecoveryShards; // recoveryRequestId -> List<ShardData>
 
   static bool _isInitialized = false;
 
