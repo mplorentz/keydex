@@ -4,17 +4,19 @@ import '../widgets/row_button.dart';
 import '../widgets/vault_content_form.dart';
 import '../widgets/vault_content_save_mixin.dart';
 import 'backup_config_screen.dart';
-import 'vault_detail_screen.dart';
+import 'vault_list_screen.dart';
 
 /// Enhanced vault creation screen with integrated backup configuration
 class VaultCreateScreen extends ConsumerStatefulWidget {
   final String? initialContent;
   final String? initialName;
+  final bool isOnboarding;
 
   const VaultCreateScreen({
     super.key,
     this.initialContent,
     this.initialName,
+    this.isOnboarding = false,
   });
 
   @override
@@ -94,22 +96,36 @@ class _VaultCreateScreenState extends ConsumerState<VaultCreateScreen> with Vaul
   Future<void> _navigateToBackupConfig(String vaultId) async {
     if (!mounted) return;
 
-    await Navigator.push(
+    final result = await Navigator.push<String>(
       context,
       MaterialPageRoute(
-        builder: (context) => BackupConfigScreen(vaultId: vaultId),
+        builder: (context) => BackupConfigScreen(
+          vaultId: vaultId,
+          isOnboarding: widget.isOnboarding,
+        ),
+        fullscreenDialog: !widget.isOnboarding,
       ),
     );
 
-    // After backup configuration is complete, navigate to vault detail screen
-    if (mounted) {
-      Navigator.pushAndRemoveUntil(
-        context,
+    if (!mounted || result == null) return;
+
+    if (widget.isOnboarding) {
+      // After onboarding flow completes, take the user to the vault list
+      Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(
-          builder: (context) => VaultDetailScreen(vaultId: vaultId),
+          builder: (context) => const VaultListScreen(),
         ),
-        (route) => false, // Clear all previous routes (onboarding, etc.)
+        (route) => false,
       );
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Vault created and recovery plan saved!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } else {
+      // Dismiss the modal and pass the vaultId back up the chain
+      Navigator.pop(context, result);
     }
   }
 }

@@ -6,11 +6,13 @@ import 'vault_create_screen.dart';
 class VaultExplainerScreen extends StatelessWidget {
   final String? initialContent;
   final String? initialName;
+  final bool isOnboarding;
 
   const VaultExplainerScreen({
     super.key,
     this.initialContent,
     this.initialName,
+    this.isOnboarding = false,
   });
 
   @override
@@ -86,16 +88,25 @@ class VaultExplainerScreen extends StatelessWidget {
             ),
           ),
           RowButton(
-            onPressed: () {
-              Navigator.push(
+            onPressed: () async {
+              // Navigate to vault creation
+              final result = await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => VaultCreateScreen(
                     initialContent: initialContent,
                     initialName: initialName,
+                    isOnboarding: isOnboarding,
                   ),
+                  fullscreenDialog: !isOnboarding, // Only modal in normal mode
                 ),
               );
+
+              // If in normal mode and vault was created, pop with the vaultId
+              // so VaultListScreen can navigate to VaultDetailScreen
+              if (!isOnboarding && result != null && context.mounted) {
+                Navigator.pop(context, result);
+              }
             },
             icon: Icons.arrow_forward,
             text: 'Get Started',
