@@ -57,9 +57,7 @@ void main() {
 
       final testContainer = ProviderContainer(
         parent: container,
-        overrides: [
-          relayScanServiceProvider.overrideWith((ref) => mockService),
-        ],
+        overrides: [relayScanServiceProvider.overrideWith((ref) => mockService)],
       );
 
       await pumpGoldenWidget(
@@ -95,16 +93,10 @@ void main() {
 
       final testContainer = ProviderContainer(
         parent: container,
-        overrides: [
-          relayScanServiceProvider.overrideWith((ref) => mockService),
-        ],
+        overrides: [relayScanServiceProvider.overrideWith((ref) => mockService)],
       );
 
-      await pumpGoldenWidget(
-        tester,
-        const RelayManagementScreen(),
-        container: testContainer,
-      );
+      await pumpGoldenWidget(tester, const RelayManagementScreen(), container: testContainer);
 
       await screenMatchesGolden(tester, 'relay_management_screen_empty');
 
@@ -130,21 +122,12 @@ void main() {
 
       final testContainer = ProviderContainer(
         parent: container,
-        overrides: [
-          relayScanServiceProvider.overrideWith((ref) => mockService),
-        ],
+        overrides: [relayScanServiceProvider.overrideWith((ref) => mockService)],
       );
 
-      await pumpGoldenWidget(
-        tester,
-        const RelayManagementScreen(),
-        container: testContainer,
-      );
+      await pumpGoldenWidget(tester, const RelayManagementScreen(), container: testContainer);
 
-      await screenMatchesGolden(
-        tester,
-        'relay_management_screen_single_relay',
-      );
+      await screenMatchesGolden(tester, 'relay_management_screen_single_relay');
 
       testContainer.dispose();
       container.dispose();
@@ -168,9 +151,7 @@ void main() {
 
       final testContainer = ProviderContainer(
         parent: container,
-        overrides: [
-          relayScanServiceProvider.overrideWith((ref) => mockService),
-        ],
+        overrides: [relayScanServiceProvider.overrideWith((ref) => mockService)],
       );
 
       await pumpGoldenWidget(
@@ -180,10 +161,7 @@ void main() {
         surfaceSize: const Size(375, 1000), // Taller to show all relays
       );
 
-      await screenMatchesGolden(
-        tester,
-        'relay_management_screen_multiple_relays',
-      );
+      await screenMatchesGolden(tester, 'relay_management_screen_multiple_relays');
 
       testContainer.dispose();
       container.dispose();
@@ -207,21 +185,12 @@ void main() {
 
       final testContainer = ProviderContainer(
         parent: container,
-        overrides: [
-          relayScanServiceProvider.overrideWith((ref) => mockService),
-        ],
+        overrides: [relayScanServiceProvider.overrideWith((ref) => mockService)],
       );
 
-      await pumpGoldenWidget(
-        tester,
-        const RelayManagementScreen(),
-        container: testContainer,
-      );
+      await pumpGoldenWidget(tester, const RelayManagementScreen(), container: testContainer);
 
-      await screenMatchesGolden(
-        tester,
-        'relay_management_screen_scanning_stopped',
-      );
+      await screenMatchesGolden(tester, 'relay_management_screen_scanning_stopped');
 
       testContainer.dispose();
       container.dispose();
@@ -246,21 +215,12 @@ void main() {
 
       final testContainer = ProviderContainer(
         parent: container,
-        overrides: [
-          relayScanServiceProvider.overrideWith((ref) => mockService),
-        ],
+        overrides: [relayScanServiceProvider.overrideWith((ref) => mockService)],
       );
 
-      await pumpGoldenWidget(
-        tester,
-        const RelayManagementScreen(),
-        container: testContainer,
-      );
+      await pumpGoldenWidget(tester, const RelayManagementScreen(), container: testContainer);
 
-      await screenMatchesGolden(
-        tester,
-        'relay_management_screen_with_error',
-      );
+      await screenMatchesGolden(tester, 'relay_management_screen_with_error');
 
       testContainer.dispose();
       container.dispose();
@@ -284,32 +244,22 @@ void main() {
 
       final testContainer = ProviderContainer(
         parent: container,
-        overrides: [
-          relayScanServiceProvider.overrideWith((ref) => mockService),
-        ],
+        overrides: [relayScanServiceProvider.overrideWith((ref) => mockService)],
       );
 
       final builder = DeviceBuilder()
         ..overrideDevicesForAllScenarios(
           devices: [Device.phone, Device.iphone11, Device.tabletPortrait],
         )
-        ..addScenario(
-          widget: const RelayManagementScreen(),
-          name: 'multiple_relays',
-        );
+        ..addScenario(widget: const RelayManagementScreen(), name: 'multiple_relays');
 
       await tester.pumpDeviceBuilder(
         builder,
-        wrapper: (child) => goldenMaterialAppWrapperWithProviders(
-          child: child,
-          container: testContainer,
-        ),
+        wrapper: (child) =>
+            goldenMaterialAppWrapperWithProviders(child: child, container: testContainer),
       );
 
-      await screenMatchesGolden(
-        tester,
-        'relay_management_screen_multiple_devices',
-      );
+      await screenMatchesGolden(tester, 'relay_management_screen_multiple_devices');
 
       testContainer.dispose();
       container.dispose();
@@ -330,16 +280,14 @@ class _MockRelayScanService extends RelayScanService {
     required bool? isScanning,
     bool neverCompletes = false,
     required ProviderContainer container,
-  })  : _relays = relays,
-        _scanningStatus = scanningStatus,
-        _isScanning = isScanning,
-        _neverCompletes = neverCompletes,
-        super(ndkService: _MockNdkService(container));
+  }) : _relays = relays,
+       _scanningStatus = scanningStatus,
+       _isScanning = isScanning,
+       _neverCompletes = neverCompletes,
+       super(ndkService: _MockNdkService(container));
 
   @override
-  Future<List<RelayConfiguration>> getRelayConfigurations({
-    bool? enabledOnly,
-  }) async {
+  Future<List<RelayConfiguration>> getRelayConfigurations({bool? enabledOnly}) async {
     if (_neverCompletes) {
       // Use a Completer that never completes to simulate loading state
       final completer = Completer<List<RelayConfiguration>>();
@@ -438,8 +386,7 @@ class _MockRef implements Ref {
     void Function(T? previous, T next) listener, {
     void Function(Object error, StackTrace stackTrace)? onError,
     bool fireImmediately = false,
-  }) =>
-      _container.listen(provider, listener, onError: onError, fireImmediately: fireImmediately);
+  }) => _container.listen(provider, listener, onError: onError, fireImmediately: fireImmediately);
 
   @override
   void listenSelf(
@@ -503,11 +450,11 @@ class _NoOpKeepAliveLink implements KeepAliveLink {
 /// Mock NdkService for testing
 class _MockNdkService extends NdkService {
   _MockNdkService(ProviderContainer container)
-      : super(
-          ref: _MockRef(container),
-          loginService: _MockLoginService(),
-          getInvitationService: () => throw UnimplementedError(),
-        );
+    : super(
+        ref: _MockRef(container),
+        loginService: _MockLoginService(),
+        getInvitationService: () => throw UnimplementedError(),
+      );
 
   @override
   Future<void> initialize() async {
