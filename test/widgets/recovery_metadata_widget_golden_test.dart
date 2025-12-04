@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_toolkit/golden_toolkit.dart';
-import 'package:keydex/models/recovery_request.dart';
-import 'package:keydex/providers/recovery_provider.dart';
-import 'package:keydex/widgets/recovery_metadata_widget.dart';
+import 'package:horcrux/models/recovery_request.dart';
+import 'package:horcrux/providers/recovery_provider.dart';
+import 'package:horcrux/widgets/recovery_metadata_widget.dart';
 import '../helpers/golden_test_helpers.dart';
 
 void main() {
@@ -21,7 +21,7 @@ void main() {
   }) {
     return RecoveryRequest(
       id: id,
-      lockboxId: 'test-lockbox',
+      vaultId: 'test-vault',
       initiatorPubkey: testPubkey,
       requestedAt: requestedAt ?? DateTime.now().subtract(const Duration(hours: 1)),
       status: status,

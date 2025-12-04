@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:keydex/services/login_service.dart';
+import 'package:horcrux/services/login_service.dart';
 import '../helpers/secure_storage_mock.dart';
 
 void main() {

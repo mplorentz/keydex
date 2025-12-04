@@ -1,4 +1,4 @@
-# Research: Encrypted Text Lockbox
+# Research: Encrypted Text Vault
 
 ## NIP-44 Encryption Implementation
 
@@ -19,7 +19,7 @@
 
 **Decision**: Use shared_preferences for encrypted data storage  
 **Rationale**:
-- Simple key-value storage suitable for lockbox metadata
+- Simple key-value storage suitable for vault metadata
 - Cross-platform compatibility across all 5 target platforms
 - Encrypted data stored as base64-encoded strings
 - No external database dependencies

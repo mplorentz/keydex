@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/lockbox.dart';
+import '../models/vault.dart';
 
 /// Widget for configuring recovery rules (threshold) for a recovery plan
 class RecoveryRulesWidget extends StatelessWidget {
@@ -44,13 +44,13 @@ class RecoveryRulesWidget extends StatelessWidget {
               ),
               Slider(
                 value: threshold.toDouble().clamp(
-                      LockboxBackupConstraints.minThreshold.toDouble(),
+                      VaultBackupConstraints.minThreshold.toDouble(),
                       stewardCount.toDouble(),
                     ),
-                min: LockboxBackupConstraints.minThreshold.toDouble(),
+                min: VaultBackupConstraints.minThreshold.toDouble(),
                 max: stewardCount.toDouble(),
-                divisions: stewardCount - LockboxBackupConstraints.minThreshold > 0
-                    ? stewardCount - LockboxBackupConstraints.minThreshold
+                divisions: stewardCount - VaultBackupConstraints.minThreshold > 0
+                    ? stewardCount - VaultBackupConstraints.minThreshold
                     : null,
                 onChanged: (value) {
                   onThresholdChanged(value.round());

@@ -1,11 +1,11 @@
-# Service Interfaces: Invitation Links for Key Holders
+# Service Interfaces: Invitation Links for Stewards
 
 **Feature**: 004-invitation-links  
 **Date**: 2025-01-27
 
 ## Overview
 
-This document defines the service interfaces for the invitation links feature. Services follow the existing Keydex pattern of abstracting business logic behind providers and using repositories for data persistence.
+This document defines the service interfaces for the invitation links feature. Services follow the existing Horcrux pattern of abstracting business logic behind providers and using repositories for data persistence.
 
 ## InvitationService
 
@@ -15,7 +15,7 @@ Primary service for managing invitation links and processing invitation-related 
 `lib/services/invitation_service.dart`
 
 ### Dependencies
-- `LockboxRepository` - For accessing lockbox and backup config data
+- `VaultRepository` - For accessing vault and backup config data
 - `SharedPreferences` - For storing invitation codes and tracking
 - `InvitationSendingService` - For publishing outgoing Nostr events
 - `KeyService` - For encryption/decryption operations (for incoming events)
@@ -28,11 +28,11 @@ Generates a new invitation link for a given invitee.
 
 ```dart
 Future<InvitationLink> generateInvitationLink({
-  required String lockboxId,
+  required String vaultId,
   required String inviteeName,
   required List<String> relayUrls,
 }) async {
-  // Validates lockbox exists and user is owner
+  // Validates vault exists and user is owner
   // Generates cryptographically secure invite code
   // Creates InvitationLink and InvitationCode records
   // Stores in SharedPreferences
@@ -41,8 +41,8 @@ Future<InvitationLink> generateInvitationLink({
 ```
 
 **Preconditions**:
-- Lockbox must exist
-- Current user must be lockbox owner
+- Vault must exist
+- Current user must be vault owner
 - `inviteeName` must not be empty
 - `relayUrls` must be valid WebSocket URLs (1-3)
 
@@ -52,16 +52,16 @@ Future<InvitationLink> generateInvitationLink({
 - Returns InvitationLink with generated URL
 
 **Error Cases**:
-- `LockboxNotFoundException` - Lockbox doesn't exist
-- `UnauthorizedException` - User is not lockbox owner
+- `VaultNotFoundException` - Vault doesn't exist
+- `UnauthorizedException` - User is not vault owner
 - `InvalidArgumentException` - Invalid invitee name or relay URLs
 
 #### getPendingInvitations
 
-Retrieves all pending invitations for a lockbox.
+Retrieves all pending invitations for a vault.
 
 ```dart
-Future<List<InvitationLink>> getPendingInvitations(String lockboxId) async {
+Future<List<InvitationLink>> getPendingInvitations(String vaultId) async {
   // Loads invitations from SharedPreferences
   // Filters to pending status
   // Returns sorted by creation date
@@ -95,7 +95,7 @@ Future<void> redeemInvitation({
   // Validates invite code exists and is pending
   // Checks if already redeemed
   // Updates invitation status to redeemed
-  // Adds invitee to backup config as key holder
+  // Adds invitee to backup config as steward
   // Sends RSVP event via InvitationSendingService
   // Updates invitation tracking
 }
@@ -108,7 +108,7 @@ Future<void> redeemInvitation({
 
 **Postconditions**:
 - Invitation status updated to redeemed
-- Invitee added to backup config key holders
+- Invitee added to backup config stewards
 - RSVP event sent via InvitationSendingService
 - Key holder status set to "awaiting key"
 
@@ -179,14 +179,14 @@ Future<void> processRsvpEvent({
   // Validates invite code and invitee pubkey
   // Updates invitation status to redeemed
   // Adds invitee to backup config if not already present
-  // Updates key holder status to "awaiting key"
+  // Updates steward status to "awaiting key"
 }
 ```
 
 **Preconditions**:
 - Event must be kind 1340 (invitationRsvp)
 - Event must be properly encrypted
-- Current user must be lockbox owner
+- Current user must be vault owner
 
 **Postconditions**:
 - Invitation marked as redeemed
@@ -211,7 +211,7 @@ Future<void> processDenialEvent({
 **Preconditions**:
 - Event must be kind 1341 (invitationDenial)
 - Event must be properly encrypted
-- Current user must be lockbox owner
+- Current user must be vault owner
 
 **Postconditions**:
 - Invitation marked as denied
@@ -219,7 +219,7 @@ Future<void> processDenialEvent({
 
 ## ShardDistributionService
 
-Service for distributing shards to key holders and processing shard-related events.
+Service for distributing shards to stewards and processing shard-related events.
 
 **Note**: This service handles the shard distribution lifecycle, which begins after invitation acceptance. Methods `processShardConfirmationEvent` and `processShardErrorEvent` were moved here from `InvitationService` in Phase 3.6.1 to better separate invitation and shard distribution concerns.
 
@@ -227,8 +227,8 @@ Service for distributing shards to key holders and processing shard-related even
 `lib/services/shard_distribution_service.dart`
 
 ### Dependencies
-- `LockboxRepository` - Injected via constructor for accessing lockbox and backup config data
-- `BackupService` - For updating key holder status (static utility class)
+- `VaultRepository` - Injected via constructor for accessing vault and backup config data
+- `BackupService` - For updating steward status (static utility class)
 - `KeyService` - For encryption/decryption operations
 - `Ndk` - For Nostr event handling
 
@@ -236,7 +236,7 @@ Service for distributing shards to key holders and processing shard-related even
 ```dart
 final shardDistributionServiceProvider = Provider<ShardDistributionService>((ref) {
   return ShardDistributionService(
-    ref.read(lockboxRepositoryProvider),
+    ref.read(vaultRepositoryProvider),
   );
 });
 ```
@@ -245,15 +245,15 @@ final shardDistributionServiceProvider = Provider<ShardDistributionService>((ref
 
 #### processShardConfirmationEvent
 
-Processes shard confirmation event received from key holder.
+Processes shard confirmation event received from steward.
 
 ```dart
 Future<void> processShardConfirmationEvent({
   required Nip01Event event,
 }) async {
   // Decrypts event content using NIP-44
-  // Validates lockbox ID and shard index
-  // Updates key holder status to "holding key"
+  // Validates vault ID and shard index
+  // Updates steward status to "holding key"
   // Updates last acknowledgment timestamp
 }
 ```
@@ -261,7 +261,7 @@ Future<void> processShardConfirmationEvent({
 **Preconditions**:
 - Event must be kind 1342 (shardConfirmation)
 - Event must be properly encrypted
-- Current user must be lockbox owner
+- Current user must be vault owner
 
 **Postconditions**:
 - Key holder status updated to "holding key"
@@ -269,15 +269,15 @@ Future<void> processShardConfirmationEvent({
 
 #### processShardErrorEvent
 
-Processes shard error event received from key holder.
+Processes shard error event received from steward.
 
 ```dart
 Future<void> processShardErrorEvent({
   required Nip01Event event,
 }) async {
   // Decrypts event content using NIP-44
-  // Validates lockbox ID and shard index
-  // Updates key holder status to "error"
+  // Validates vault ID and shard index
+  // Updates steward status to "error"
   // Logs error details
 }
 ```
@@ -285,13 +285,13 @@ Future<void> processShardErrorEvent({
 **Preconditions**:
 - Event must be kind 1343 (shardError)
 - Event must be properly encrypted
-- Current user must be lockbox owner
+- Current user must be vault owner
 
 **Postconditions**:
 - Key holder status updated to "error"
 - Error details logged
 
-**Note**: This service is now an instance class with dependency injection via Riverpod for better testability. The `LockboxRepository` is injected via constructor, allowing for easy mocking in tests.
+**Note**: This service is now an instance class with dependency injection via Riverpod for better testability. The `VaultRepository` is injected via constructor, allowing for easy mocking in tests.
 
 ## DeepLinkService
 
@@ -308,7 +308,7 @@ Service for handling deep links, Universal Links, and custom URL schemes.
 
 #### initializeDeepLinking
 
-Initializes deep link handling when app starts. Handles both Universal Links (`https://keydex.app/...`) and custom URL scheme (`keydex://...`).
+Initializes deep link handling when app starts. Handles both Universal Links (`https://horcrux.app/...`) and custom URL scheme (`horcrux://...`).
 
 ```dart
 Future<void> initializeDeepLinking() async {
@@ -322,7 +322,7 @@ Future<void> initializeDeepLinking() async {
 **Postconditions**:
 - Deep link listeners active
 - Ready to handle incoming links (both Universal Links and custom scheme)
-- Listens for: `https://keydex.app/...` and `keydex://...`
+- Listens for: `https://horcrux.app/...` and `horcrux://...`
 
 #### handleInitialLink
 
@@ -353,13 +353,13 @@ void handleIncomingLink(AppLink link) {
 
 #### parseInvitationLink
 
-Parses invitation link URL and extracts parameters. Handles both Universal Links (`https://keydex.app/invite/{code}`) and custom URL scheme (`keydex://keydex.app/invite/{code}`) formats.
+Parses invitation link URL and extracts parameters. Handles both Universal Links (`https://horcrux.app/invite/{code}`) and custom URL scheme (`horcrux://horcrux.app/invite/{code}`) formats.
 
 ```dart
 InvitationLinkData? parseInvitationLink(Uri uri) {
   // Validates URL format:
-  //   - Universal Link: https://keydex.app/invite/{code}?owner={pubkey}&relays={urls}
-  //   - Custom scheme: keydex://keydex.app/invite/{code}?owner={pubkey}&relays={urls}
+  //   - Universal Link: https://horcrux.app/invite/{code}?owner={pubkey}&relays={urls}
+  //   - Custom scheme: horcrux://horcrux.app/invite/{code}?owner={pubkey}&relays={urls}
   // Extracts invite code from path (same path structure for both)
   // Extracts owner pubkey and relay URLs from query params
   // Returns parsed data or null if invalid
@@ -370,7 +370,7 @@ InvitationLinkData? parseInvitationLink(Uri uri) {
 
 **Supported Schemes**:
 - `https://` (Universal Links - production)
-- `keydex://` (Custom scheme - development/testing)
+- `horcrux://` (Custom scheme - development/testing)
 
 **Error Cases**:
 - Returns null if URL format invalid
@@ -444,7 +444,7 @@ Creates and publishes shard confirmation event.
 
 ```dart
 Future<String?> sendShardConfirmationEvent({
-  required String lockboxId,
+  required String vaultId,
   required int shardIndex,
   required String ownerPubkey, // Hex format
   required List<String> relayUrls,
@@ -452,7 +452,7 @@ Future<String?> sendShardConfirmationEvent({
   // Creates confirmation event payload
   // Encrypts using NIP-44
   // Creates Nostr event (kind 1342)
-  // Signs with key holder's private key
+  // Signs with steward's private key
   // Publishes to relays
   // Returns event ID
 }
@@ -466,7 +466,7 @@ Creates and publishes shard error event.
 
 ```dart
 Future<String?> sendShardErrorEvent({
-  required String lockboxId,
+  required String vaultId,
   required int shardIndex,
   required String ownerPubkey, // Hex format
   required List<String> relayUrls,
@@ -475,7 +475,7 @@ Future<String?> sendShardErrorEvent({
   // Creates error event payload
   // Encrypts using NIP-44
   // Creates Nostr event (kind 1343)
-  // Signs with key holder's private key
+  // Signs with steward's private key
   // Publishes to relays
   // Returns event ID
 }
@@ -497,7 +497,7 @@ Future<String?> sendInvitationInvalidEvent({
   // Creates invalid event payload
   // Encrypts using NIP-44
   // Creates Nostr event (kind 1344)
-  // Signs with lockbox owner's private key
+  // Signs with vault owner's private key
   // Publishes to relays
   // Returns event ID
 }
@@ -512,7 +512,7 @@ Future<String?> sendInvitationInvalidEvent({
 ```dart
 final invitationServiceProvider = Provider<InvitationService>((ref) {
   return InvitationService(
-    ref.read(lockboxRepositoryProvider),
+    ref.read(vaultRepositoryProvider),
     ref.read(invitationSendingServiceProvider),
     ref.read(keyServiceProvider),
   );
@@ -544,9 +544,9 @@ final invitationSendingServiceProvider = Provider<InvitationSendingService>((ref
 
 ```dart
 final pendingInvitationsProvider = FutureProvider.family<List<InvitationLink>, String>(
-  (ref, lockboxId) async {
+  (ref, vaultId) async {
     final service = ref.read(invitationServiceProvider);
-    return await service.getPendingInvitations(lockboxId);
+    return await service.getPendingInvitations(vaultId);
   },
 );
 ```
@@ -633,13 +633,13 @@ class InvalidInvitationLinkException implements Exception {
 
 - Test invitation link generation UI
 - Test invitation acceptance screen
-- Test key holder status display
+- Test steward status display
 - Test error message display
 
 ### Golden Tests
 
 - Test invitation link generation screen
 - Test invitation acceptance screen
-- Test key holder list with invitation statuses
+- Test steward list with invitation statuses
 - Test error states
 

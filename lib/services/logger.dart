@@ -93,7 +93,7 @@ class InlineTimePrinter extends LogPrinter {
   }
 }
 
-/// Centralized logging service for the Keydex application.
+/// Centralized logging service for the Horcrux application.
 ///
 /// This service provides a consistent logging interface throughout the app
 /// with configurable log levels and formatting.

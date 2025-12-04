@@ -18,8 +18,8 @@ final deepLinkServiceProvider = Provider<DeepLinkService>((ref) {
 /// Data structure for parsed invitation link information
 typedef InvitationLinkData = ({
   String inviteCode,
-  String lockboxId,
-  String? lockboxName,
+  String vaultId,
+  String? vaultName,
   String ownerPubkey, // Hex format
   List<String> relayUrls,
 });
@@ -128,17 +128,17 @@ class DeepLinkService {
       }
 
       Log.info(
-        'Parsed invitation link: inviteCode=${linkData.inviteCode}, lockboxId=${linkData.lockboxId}, lockboxName=${linkData.lockboxName}',
+        'Parsed invitation link: inviteCode=${linkData.inviteCode}, vaultId=${linkData.vaultId}, vaultName=${linkData.vaultName}',
       );
 
       // Create/update invitation record on receiving side
       // This allows the invitation acceptance screen to load the invitation
       await invitationService.createReceivedInvitation(
         inviteCode: linkData.inviteCode,
-        lockboxId: linkData.lockboxId,
+        vaultId: linkData.vaultId,
         ownerPubkey: linkData.ownerPubkey,
         relayUrls: linkData.relayUrls,
-        lockboxName: linkData.lockboxName,
+        vaultName: linkData.vaultName,
       );
 
       // Navigate to invitation acceptance screen
@@ -180,28 +180,28 @@ class DeepLinkService {
 
   /// Parses invitation link URL and extracts parameters
   ///
-  /// Handles both Universal Links (`https://keydex.app/invite/{code}`)
-  /// and custom URL scheme (`keydex://keydex.app/invite/{code}`) formats.
+  /// Handles both Universal Links (`https://horcrux.app/invite/{code}`)
+  /// and custom URL scheme (`horcrux://horcrux.app/invite/{code}`) formats.
   /// Extracts invite code from path (same path structure for both).
   /// Extracts owner pubkey and relay URLs from query params.
   /// Returns parsed data or throws InvalidInvitationLinkException if invalid.
   InvitationLinkData? parseInvitationLink(Uri uri) {
     try {
-      // Validate scheme: https or keydex
-      if (uri.scheme != 'https' && uri.scheme != 'keydex' && uri.scheme != 'http') {
+      // Validate scheme: https or horcrux
+      if (uri.scheme != 'https' && uri.scheme != 'horcrux' && uri.scheme != 'http') {
         throw InvalidInvitationLinkException(
           uri.toString(),
-          'Unsupported URL scheme: ${uri.scheme}. Expected https:// or keydex://',
+          'Unsupported URL scheme: ${uri.scheme}. Expected https:// or horcrux://',
         );
       }
 
-      // Validate host: keydex.app (for Universal Links) or keydex.app (for custom scheme)
+      // Validate host: horcrux.app (for Universal Links) or horcrux.app (for custom scheme)
       // Allow localhost for testing on web
-      final allowedHosts = ['keydex.app', 'localhost'];
+      final allowedHosts = ['horcrux.app', 'localhost'];
       if (!allowedHosts.contains(uri.host)) {
         throw InvalidInvitationLinkException(
           uri.toString(),
-          'Invalid host: ${uri.host}. Expected keydex.app',
+          'Invalid host: ${uri.host}. Expected horcrux.app',
         );
       }
 
@@ -238,18 +238,18 @@ class DeepLinkService {
         );
       }
 
-      // Extract lockboxId from query params
-      final lockboxId = uri.queryParameters['lockbox'];
-      if (lockboxId == null || lockboxId.isEmpty) {
+      // Extract vaultId from query params
+      final vaultId = uri.queryParameters['vault'];
+      if (vaultId == null || vaultId.isEmpty) {
         throw InvalidInvitationLinkException(
           uri.toString(),
-          'Missing required parameter: lockbox (lockbox ID)',
+          'Missing required parameter: vault (vault ID)',
         );
       }
 
-      // Extract lockbox name from query params (optional)
-      final lockboxName = uri.queryParameters['name'];
-      // Decode if present, otherwise use null (will fallback to "Shared Lockbox" in createInvitationLink)
+      // Extract vault name from query params (optional)
+      final vaultName = uri.queryParameters['name'];
+      // Decode if present, otherwise use null (will fallback to "Shared Vault" in createInvitationLink)
 
       // Extract relay URLs from query params (comma-separated)
       final relayUrlsParam = uri.queryParameters['relays'];
@@ -286,14 +286,14 @@ class DeepLinkService {
       }
 
       Log.info(
-        'Successfully parsed invitation link: inviteCode=$inviteCode, lockboxId=$lockboxId, lockboxName=$lockboxName, owner=$ownerPubkey, relays=${relayUrls.length}',
+        'Successfully parsed invitation link: inviteCode=$inviteCode, vaultId=$vaultId, vaultName=$vaultName, owner=$ownerPubkey, relays=${relayUrls.length}',
       );
 
       return (
         inviteCode: inviteCode,
-        lockboxId: lockboxId,
-        lockboxName:
-            lockboxName != null && lockboxName.isNotEmpty ? Uri.decodeComponent(lockboxName) : null,
+        vaultId: vaultId,
+        vaultName:
+            vaultName != null && vaultName.isNotEmpty ? Uri.decodeComponent(vaultName) : null,
         ownerPubkey: ownerPubkey,
         relayUrls: relayUrls,
       );

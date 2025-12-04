@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_toolkit/golden_toolkit.dart';
-import 'package:keydex/widgets/theme.dart';
+import 'package:horcrux/widgets/theme.dart';
 
 /// Matches a golden file without calling `pumpAndSettle()`.
 ///
@@ -66,10 +66,10 @@ Future<void> screenMatchesGoldenWithoutSettleWithFinder(
   await expectLater(finder, matchesGoldenFile('goldens/$goldenName.png'));
 }
 
-/// Creates a MaterialApp wrapper with keydex3Dark theme for golden tests.
+/// Creates a MaterialApp wrapper with horcrux3Dark theme for golden tests.
 ///
 /// This is the standard wrapper for golden tests that don't need Riverpod providers.
-/// It wraps the child widget in a MaterialApp with the keydex3Dark theme applied.
+/// It wraps the child widget in a MaterialApp with the horcrux3Dark theme applied.
 ///
 /// Usage:
 /// ```dart
@@ -79,9 +79,9 @@ Future<void> screenMatchesGoldenWithoutSettleWithFinder(
 /// );
 /// ```
 Widget Function(Widget) get goldenMaterialAppWrapper =>
-    (Widget child) => MaterialApp(theme: keydex3Dark, home: child);
+    (Widget child) => MaterialApp(theme: horcrux3Dark, home: child);
 
-/// Creates a MaterialApp wrapper with keydex3Dark theme and ProviderContainer for golden tests.
+/// Creates a MaterialApp wrapper with horcrux3Dark theme and ProviderContainer for golden tests.
 ///
 /// This wrapper includes Riverpod provider support via UncontrolledProviderScope.
 /// Use this when your widget needs access to Riverpod providers.
@@ -108,11 +108,11 @@ Widget goldenMaterialAppWrapperWithProviders({
 }) {
   return UncontrolledProviderScope(
     container: container,
-    child: MaterialApp(theme: keydex3Dark, home: child),
+    child: MaterialApp(theme: horcrux3Dark, home: child),
   );
 }
 
-/// Creates a MaterialApp wrapper with keydex3Dark theme, ProviderContainer, and Scaffold for golden tests.
+/// Creates a MaterialApp wrapper with horcrux3Dark theme, ProviderContainer, and Scaffold for golden tests.
 ///
 /// This wrapper includes Riverpod provider support and wraps the child in a Scaffold.
 /// Use this when your widget needs providers and should be displayed in a Scaffold context.
@@ -140,7 +140,7 @@ Widget goldenMaterialAppWrapperWithProvidersAndScaffold({
   return UncontrolledProviderScope(
     container: container,
     child: MaterialApp(
-      theme: keydex3Dark,
+      theme: horcrux3Dark,
       home: Scaffold(body: child),
     ),
   );
@@ -149,7 +149,7 @@ Widget goldenMaterialAppWrapperWithProvidersAndScaffold({
 /// Pumps a widget for golden testing with automatic MaterialApp and theme setup.
 ///
 /// This is a high-level helper that wraps `pumpWidgetBuilder` and automatically
-/// handles MaterialApp wrapping with the keydex3Dark theme. It simplifies common
+/// handles MaterialApp wrapping with the horcrux3Dark theme. It simplifies common
 /// golden test setup by abstracting away the wrapper creation.
 ///
 /// Usage without providers:

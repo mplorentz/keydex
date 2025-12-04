@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/key_provider.dart';
-import '../providers/lockbox_provider.dart';
-import '../services/lockbox_share_service.dart';
+import '../providers/vault_provider.dart';
+import '../services/vault_share_service.dart';
 import '../services/recovery_service.dart';
 import '../services/relay_scan_service.dart';
 import '../services/logger.dart';
-import '../screens/keydex_gallery_screen.dart';
+import '../screens/horcrux_gallery_screen.dart';
 
 /// Debug information sheet widget
 class DebugInfoSheet extends ConsumerWidget {
@@ -21,7 +21,7 @@ class DebugInfoSheet extends ConsumerWidget {
         title: const Text('Clear All Data?'),
         content: const Text(
           'This will permanently delete:\n'
-          '• All lockboxes\n'
+          '• All vaultes\n'
           '• All vault keys\n'
           '• All recovery requests\n'
           '• All relay configurations\n'
@@ -53,8 +53,8 @@ class DebugInfoSheet extends ConsumerWidget {
       );
 
       // Clear all services using providers
-      await ref.read(lockboxRepositoryProvider).clearAll();
-      await ref.read(lockboxShareServiceProvider).clearAll();
+      await ref.read(vaultRepositoryProvider).clearAll();
+      await ref.read(vaultShareServiceProvider).clearAll();
       await ref.read(recoveryServiceProvider).clearAll();
       await ref.read(relayScanServiceProvider).clearAll();
       await ref.read(loginServiceProvider).clearStoredKeys();
@@ -77,7 +77,7 @@ class DebugInfoSheet extends ConsumerWidget {
       );
 
       // Refresh providers to pick up the cleared state
-      ref.invalidate(lockboxListProvider);
+      ref.invalidate(vaultListProvider);
       ref.invalidate(currentPublicKeyProvider);
       ref.invalidate(currentPublicKeyBech32Provider);
       ref.invalidate(isLoggedInProvider);
@@ -198,7 +198,7 @@ class DebugInfoSheet extends ConsumerWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const KeydexGallery(),
+                    builder: (context) => const HorcruxGallery(),
                   ),
                 );
               },

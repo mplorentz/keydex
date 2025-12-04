@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'providers/key_provider.dart';
 import 'services/logger.dart';
-import 'screens/lockbox_list_screen.dart';
+import 'screens/vault_list_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'utils/app_initialization.dart';
 import 'widgets/theme.dart';
@@ -13,18 +13,18 @@ final navigatorKey = GlobalKey<NavigatorState>();
 void main() {
   runApp(
     // Wrap the entire app with ProviderScope to enable Riverpod
-    const ProviderScope(child: KeydexApp()),
+    const ProviderScope(child: HorcruxApp()),
   );
 }
 
-class KeydexApp extends ConsumerStatefulWidget {
-  const KeydexApp({super.key});
+class HorcruxApp extends ConsumerStatefulWidget {
+  const HorcruxApp({super.key});
 
   @override
-  ConsumerState<KeydexApp> createState() => _KeydexAppState();
+  ConsumerState<HorcruxApp> createState() => _HorcruxAppState();
 }
 
-class _KeydexAppState extends ConsumerState<KeydexApp> {
+class _HorcruxAppState extends ConsumerState<HorcruxApp> {
   bool _isInitializing = true;
   String? _initError;
 
@@ -70,8 +70,8 @@ class _KeydexAppState extends ConsumerState<KeydexApp> {
     return MaterialApp(
       navigatorKey: navigatorKey,
       title: 'Horcrux',
-      theme: keydex3Light,
-      darkTheme: keydex3Dark,
+      theme: horcrux3Light,
+      darkTheme: horcrux3Dark,
       themeMode: ThemeMode.system,
       debugShowCheckedModeBanner: false,
       home: _isInitializing
@@ -80,9 +80,9 @@ class _KeydexAppState extends ConsumerState<KeydexApp> {
               ? _ErrorScreen(error: _initError!)
               : isLoggedInAsync.when(
                   data: (isLoggedIn) =>
-                      isLoggedIn ? const LockboxListScreen() : const OnboardingScreen(),
+                      isLoggedIn ? const VaultListScreen() : const OnboardingScreen(),
                   loading: () => const _InitializingScreen(),
-                  error: (_, __) => const LockboxListScreen(), // Fallback to main screen on error
+                  error: (_, __) => const VaultListScreen(), // Fallback to main screen on error
                 ),
     );
   }

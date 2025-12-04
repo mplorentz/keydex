@@ -44,7 +44,7 @@ class OnboardingScreen extends ConsumerWidget {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Body text explaining Keydex - left aligned
+                              // Body text explaining Horcrux - left aligned
                               Padding(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 16.0,

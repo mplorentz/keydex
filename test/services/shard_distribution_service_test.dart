@@ -5,14 +5,14 @@ import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 
-import 'package:keydex/models/backup_config.dart';
-import 'package:keydex/models/shard_data.dart';
-import 'package:keydex/models/key_holder.dart';
-import 'package:keydex/models/event_status.dart';
-import 'package:keydex/services/shard_distribution_service.dart';
-import 'package:keydex/providers/lockbox_provider.dart';
-import 'package:keydex/services/login_service.dart';
-import 'package:keydex/services/ndk_service.dart';
+import 'package:horcrux/models/backup_config.dart';
+import 'package:horcrux/models/shard_data.dart';
+import 'package:horcrux/models/steward.dart';
+import 'package:horcrux/models/event_status.dart';
+import 'package:horcrux/services/shard_distribution_service.dart';
+import 'package:horcrux/providers/vault_provider.dart';
+import 'package:horcrux/services/login_service.dart';
+import 'package:horcrux/services/ndk_service.dart';
 import '../fixtures/test_keys.dart';
 
 import 'shard_distribution_service_test.mocks.dart';
@@ -24,7 +24,7 @@ import 'shard_distribution_service_test.mocks.dart';
   NdkResponse,
   Nip01Event,
   NdkBroadcastResponse,
-  LockboxRepository,
+  VaultRepository,
   LoginService,
   NdkService,
 ])
@@ -35,14 +35,14 @@ void main() {
     late String testOwnerPubkey; // Alice will be the owner
     late String alicePubHex; // Derived from test keys
     late String bobPubHex; // Derived from test keys
-    late MockLockboxRepository mockRepository;
+    late MockVaultRepository mockRepository;
     late MockLoginService mockLoginService;
     late MockNdkService mockNdkService;
     late ShardDistributionService shardDistributionService;
 
     setUp(() {
       // Initialize mock repository
-      mockRepository = MockLockboxRepository();
+      mockRepository = MockVaultRepository();
       mockLoginService = MockLoginService();
       mockNdkService = MockNdkService();
 
@@ -78,15 +78,15 @@ void main() {
       final bobPrivHex = Helpers.decodeBech32(TestNsecKeys.bob)[0];
       bobPubHex = Bip340.getPublicKey(bobPrivHex);
 
-      testOwnerPubkey = alicePubHex; // Alice is the lockbox owner
+      testOwnerPubkey = alicePubHex; // Alice is the vault owner
 
       testConfig = createBackupConfig(
-        lockboxId: TestBackupConfigs.simple2of2LockboxId,
+        vaultId: TestBackupConfigs.simple2of2VaultId,
         threshold: TestBackupConfigs.simple2of2Threshold,
         totalKeys: TestBackupConfigs.simple2of2TotalKeys,
-        keyHolders: [
-          createKeyHolder(pubkey: alicePubHex, name: 'Alice'),
-          createKeyHolder(pubkey: bobPubHex, name: 'Bob'),
+        stewards: [
+          createSteward(pubkey: alicePubHex, name: 'Alice'),
+          createSteward(pubkey: bobPubHex, name: 'Bob'),
         ],
         relays: TestBackupConfigs.simple2of2Relays,
       );
@@ -172,7 +172,7 @@ void main() {
           expect(firstShardEvent.recipientPubkey, TestHexPubkeys.alice);
           expect(
             firstShardEvent.backupConfigId,
-            TestBackupConfigs.simple2of2LockboxId,
+            TestBackupConfigs.simple2of2VaultId,
           );
           expect(firstShardEvent.shardIndex, 0);
           expect(firstShardEvent.createdAt, isA<DateTime>());
@@ -185,7 +185,7 @@ void main() {
           expect(secondShardEvent.recipientPubkey, TestHexPubkeys.bob);
           expect(
             secondShardEvent.backupConfigId,
-            TestBackupConfigs.simple2of2LockboxId,
+            TestBackupConfigs.simple2of2VaultId,
           );
           expect(secondShardEvent.shardIndex, 1);
           expect(secondShardEvent.createdAt, isA<DateTime>());
@@ -202,12 +202,12 @@ void main() {
       // Note: We can't create a valid config with 0 totalKeys due to threshold validation
       // So we'll test with a valid config but empty shards
       final emptyConfig = createBackupConfig(
-        lockboxId: 'test-lockbox-empty',
+        vaultId: 'test-vault-empty',
         threshold: 2,
         totalKeys: 2,
-        keyHolders: [
-          createKeyHolder(pubkey: TestHexPubkeys.alice, name: 'Alice'),
-          createKeyHolder(pubkey: TestHexPubkeys.bob, name: 'Bob'),
+        stewards: [
+          createSteward(pubkey: TestHexPubkeys.alice, name: 'Alice'),
+          createSteward(pubkey: TestHexPubkeys.bob, name: 'Bob'),
         ],
         relays: TestBackupConfigs.simple2of2Relays,
       );
@@ -223,7 +223,7 @@ void main() {
       );
     });
 
-    test('distributeShards handles different key holder pubkey formats', () {
+    test('distributeShards handles different steward pubkey formats', () {
       // This test verifies that the service can handle different pubkey formats
       // Derive real public keys
       final alicePrivHex = Helpers.decodeBech32(TestNsecKeys.alice)[0];
@@ -232,12 +232,12 @@ void main() {
       final charliePubHex = Bip340.getPublicKey(charliePrivHex);
 
       final configWithDifferentPubkeys = createBackupConfig(
-        lockboxId: 'test-lockbox-formats',
+        vaultId: 'test-vault-formats',
         threshold: 2, // Minimum valid threshold
         totalKeys: 2,
-        keyHolders: [
-          createKeyHolder(pubkey: alicePubHex, name: 'Alice'),
-          createKeyHolder(pubkey: charliePubHex, name: 'Charlie'),
+        stewards: [
+          createSteward(pubkey: alicePubHex, name: 'Alice'),
+          createSteward(pubkey: charliePubHex, name: 'Charlie'),
         ],
         relays: TestBackupConfigs.simple2of2Relays,
       );
@@ -281,7 +281,7 @@ void main() {
 
       // Act - Use the mocked service which will return mock event IDs
       final result = await shardDistributionService.distributeShards(
-        ownerPubkey: alicePubHex, // Alice is the lockbox owner
+        ownerPubkey: alicePubHex, // Alice is the vault owner
         config: testConfig,
         shards: testShards,
       );
@@ -293,14 +293,14 @@ void main() {
       final firstShardEvent = result[0];
       expect(firstShardEvent.eventId, isA<String>());
       expect(firstShardEvent.eventId.length, equals(64)); // Valid hex event ID
-      // Note: recipientPubkey should match the first key holder in testConfig
+      // Note: recipientPubkey should match the first steward in testConfig
       expect(
         firstShardEvent.recipientPubkey,
         alicePubHex,
       ); // Use the derived pubkey from setUp
       expect(
         firstShardEvent.backupConfigId,
-        TestBackupConfigs.simple2of2LockboxId,
+        TestBackupConfigs.simple2of2VaultId,
       );
       expect(firstShardEvent.shardIndex, 0);
       expect(firstShardEvent.createdAt, isA<DateTime>());
@@ -310,14 +310,14 @@ void main() {
       final secondShardEvent = result[1];
       expect(secondShardEvent.eventId, isA<String>());
       expect(secondShardEvent.eventId.length, equals(64)); // Valid hex event ID
-      // Note: recipientPubkey should match the second key holder in testConfig
+      // Note: recipientPubkey should match the second steward in testConfig
       expect(
         secondShardEvent.recipientPubkey,
         bobPubHex,
       ); // Use the derived pubkey
       expect(
         secondShardEvent.backupConfigId,
-        TestBackupConfigs.simple2of2LockboxId,
+        TestBackupConfigs.simple2of2VaultId,
       );
       expect(secondShardEvent.shardIndex, 1);
       expect(secondShardEvent.createdAt, isA<DateTime>());

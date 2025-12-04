@@ -5,10 +5,10 @@ import '../models/backup_config.dart';
 import '../models/nostr_kinds.dart';
 import '../models/shard_event.dart';
 import '../models/shard_data.dart';
-import '../models/key_holder.dart';
-import '../models/key_holder_status.dart';
+import '../models/steward.dart';
+import '../models/steward_status.dart';
 import '../models/event_status.dart';
-import '../providers/lockbox_provider.dart';
+import '../providers/vault_provider.dart';
 import '../providers/key_provider.dart';
 import 'login_service.dart';
 import 'ndk_service.dart';
@@ -18,15 +18,15 @@ import 'logger.dart';
 final Provider<ShardDistributionService> shardDistributionServiceProvider =
     Provider<ShardDistributionService>((ref) {
   return ShardDistributionService(
-    ref.read(lockboxRepositoryProvider),
+    ref.read(vaultRepositoryProvider),
     ref.read(loginServiceProvider),
     ref.read(ndkServiceProvider),
   );
 });
 
-/// Service for distributing shards to key holders via Nostr
+/// Service for distributing shards to stewards via Nostr
 class ShardDistributionService {
-  final LockboxRepository _repository;
+  final VaultRepository _repository;
   final LoginService _loginService;
   final NdkService _ndkService;
 
@@ -36,9 +36,9 @@ class ShardDistributionService {
     this._ndkService,
   );
 
-  /// Distribute shards to all key holders
+  /// Distribute shards to all stewards
   Future<List<ShardEvent>> distributeShards({
-    required String ownerPubkey, // Hex format - lockbox owner's pubkey for signing
+    required String ownerPubkey, // Hex format - vault owner's pubkey for signing
     required BackupConfig config,
     required List<ShardData> shards,
   }) async {
@@ -51,12 +51,12 @@ class ShardDistributionService {
 
       for (int i = 0; i < shards.length; i++) {
         final shard = shards[i];
-        final keyHolder = config.keyHolders[i];
+        final keyHolder = config.stewards[i];
 
-        // Skip key holders without pubkeys (invited but not yet accepted)
+        // Skip stewards without pubkeys (invited but not yet accepted)
         if (keyHolder.pubkey == null) {
           Log.info(
-            'Skipping shard distribution to key holder ${keyHolder.name ?? keyHolder.id} - no pubkey yet (invited)',
+            'Skipping shard distribution to steward ${keyHolder.name ?? keyHolder.id} - no pubkey yet (invited)',
           );
           continue;
         }
@@ -82,11 +82,11 @@ class ShardDistributionService {
             recipientPubkey: keyHolder.pubkey!, // Hex format - safe because we checked null above
             relays: config.relays,
             tags: [
-              ['d', 'shard_${config.lockboxId}_$i'], // Distinguisher tag
-              ['backup_config_id', config.lockboxId],
+              ['d', 'shard_${config.vaultId}_$i'], // Distinguisher tag
+              ['backup_config_id', config.vaultId],
               ['shard_index', i.toString()],
             ],
-            customPubkey: ownerPubkey, // Lockbox owner signs the rumor
+            customPubkey: ownerPubkey, // Vault owner signs the rumor
           );
 
           if (eventId == null) {
@@ -98,7 +98,7 @@ class ShardDistributionService {
             eventId: eventId,
             recipientPubkey: keyHolder.pubkey!, // Hex format - safe because we checked null above
             encryptedContent: shardString, // Store original content for reference
-            backupConfigId: config.lockboxId,
+            backupConfigId: config.vaultId,
             shardIndex: i,
           );
 
@@ -129,9 +129,9 @@ class ShardDistributionService {
     }
   }
 
-  /// Check distribution status and update key holder statuses
+  /// Check distribution status and update steward statuses
   Future<void> updateDistributionStatus({
-    required String lockboxId,
+    required String vaultId,
     required List<ShardEvent> shardEvents,
   }) async {
     try {
@@ -168,20 +168,20 @@ class ShardDistributionService {
           }
 
           if (isAcknowledged) {
-            // Update key holder status to holdingKey (confirmed receipt)
-            await _repository.updateKeyHolderStatus(
-              lockboxId: lockboxId,
+            // Update steward status to holdingKey (confirmed receipt)
+            await _repository.updateStewardStatus(
+              vaultId: vaultId,
               pubkey: shardEvent.recipientPubkey, // Hex format
-              status: KeyHolderStatus.holdingKey,
+              status: StewardStatus.holdingKey,
               acknowledgedAt: DateTime.now(),
               acknowledgmentEventId: acknowledgmentEventId,
             );
           } else {
-            // Update key holder status to awaitingKey (published but not acknowledged)
-            await _repository.updateKeyHolderStatus(
-              lockboxId: lockboxId,
+            // Update steward status to awaitingKey (published but not acknowledged)
+            await _repository.updateStewardStatus(
+              vaultId: vaultId,
               pubkey: shardEvent.recipientPubkey, // Hex format
-              status: KeyHolderStatus.awaitingKey,
+              status: StewardStatus.awaitingKey,
             );
           }
         } catch (e) {
@@ -198,11 +198,11 @@ class ShardDistributionService {
     }
   }
 
-  /// Processes shard confirmation event received from key holder
+  /// Processes shard confirmation event received from steward
   ///
   /// Decrypts event content using NIP-44.
-  /// Validates lockbox ID and shard index.
-  /// Updates key holder status to "holding key".
+  /// Validates vault ID and shard index.
+  /// Updates steward status to "holding key".
   /// Updates last acknowledgment timestamp.
   Future<void> processShardConfirmationEvent({
     required Nip01Event event,
@@ -222,17 +222,17 @@ class ShardDistributionService {
       );
     }
 
-    // Extract lockbox ID, shard index, and distribution version from tags
+    // Extract vault ID, shard index, and distribution version from tags
     // All confirmation data is stored in tags (no content)
-    final lockboxId = _extractTagValue(event.tags, 'lockbox_id');
+    final vaultId = _extractTagValue(event.tags, 'vault_id');
     final shardIndexStr = _extractTagValue(event.tags, 'shard_index');
     final distributionVersionStr = _extractTagValue(
       event.tags,
       'distribution_version',
     );
 
-    if (lockboxId == null) {
-      throw ArgumentError('Missing lockbox_id tag in shard confirmation event');
+    if (vaultId == null) {
+      throw ArgumentError('Missing vault_id tag in shard confirmation event');
     }
 
     if (shardIndexStr == null) {
@@ -251,27 +251,27 @@ class ShardDistributionService {
     final distributionVersion =
         distributionVersionStr != null ? int.tryParse(distributionVersionStr) : null;
 
-    // Update key holder status
+    // Update steward status
     final keyHolderPubkey = event.pubKey;
-    await _repository.updateKeyHolderStatus(
-      lockboxId: lockboxId,
+    await _repository.updateStewardStatus(
+      vaultId: vaultId,
       pubkey: keyHolderPubkey,
-      status: KeyHolderStatus.holdingKey,
+      status: StewardStatus.holdingKey,
       acknowledgedAt: DateTime.now(),
       acknowledgmentEventId: event.id,
       acknowledgedDistributionVersion: distributionVersion,
     );
 
     Log.info(
-      'Processed shard confirmation event for lockbox $lockboxId, shard $shardIndex from key holder $keyHolderPubkey',
+      'Processed shard confirmation event for vault $vaultId, shard $shardIndex from steward $keyHolderPubkey',
     );
   }
 
-  /// Processes shard error event received from key holder
+  /// Processes shard error event received from steward
   ///
   /// Decrypts event content using NIP-44.
-  /// Validates lockbox ID and shard index.
-  /// Updates key holder status to "error".
+  /// Validates vault ID and shard index.
+  /// Updates steward status to "error".
   /// Logs error details.
   Future<void> processShardErrorEvent({required Nip01Event event}) async {
     // Validate event kind
@@ -289,12 +289,12 @@ class ShardDistributionService {
       );
     }
 
-    // Extract lockbox ID and shard index from tags
-    final lockboxId = _extractTagValue(event.tags, 'lockbox');
+    // Extract vault ID and shard index from tags
+    final vaultId = _extractTagValue(event.tags, 'vault');
     final shardIndexStr = _extractTagValue(event.tags, 'shard');
 
-    if (lockboxId == null) {
-      throw ArgumentError('Missing lockbox tag in shard error event');
+    if (vaultId == null) {
+      throw ArgumentError('Missing vault tag in shard error event');
     }
 
     if (shardIndexStr == null) {
@@ -336,28 +336,28 @@ class ShardDistributionService {
     }
 
     // Validate payload
-    final payloadLockboxId = payload['lockboxId'] as String?;
+    final payloadVaultId = payload['vaultId'] as String?;
     final payloadShardIndex = payload['shardIndex'] as int?;
     final error = payload['error'] as String? ?? 'Unknown error';
 
-    if (payloadLockboxId != lockboxId) {
-      throw ArgumentError('Lockbox ID mismatch in shard error event payload');
+    if (payloadVaultId != vaultId) {
+      throw ArgumentError('Vault ID mismatch in shard error event payload');
     }
 
     if (payloadShardIndex != shardIndex) {
       throw ArgumentError('Shard index mismatch in shard error event payload');
     }
 
-    // Update key holder status to error
+    // Update steward status to error
     final keyHolderPubkey = event.pubKey;
-    await _repository.updateKeyHolderStatus(
-      lockboxId: lockboxId,
+    await _repository.updateStewardStatus(
+      vaultId: vaultId,
       pubkey: keyHolderPubkey,
-      status: KeyHolderStatus.error,
+      status: StewardStatus.error,
     );
 
     Log.error(
-      'Processed shard error event for lockbox $lockboxId, shard $shardIndex from key holder $keyHolderPubkey: $error',
+      'Processed shard error event for vault $vaultId, shard $shardIndex from steward $keyHolderPubkey: $error',
     );
   }
 

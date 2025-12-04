@@ -1,4 +1,4 @@
-# Data Model: Invitation Links for Key Holders
+# Data Model: Invitation Links for Stewards
 
 **Feature**: 004-invitation-links  
 **Date**: 2025-01-27
@@ -16,10 +16,10 @@ Represents a generated invitation link that can be shared with an invitee.
 ```dart
 typedef InvitationLink = ({
   String inviteCode,          // Base64URL encoded 32-byte random string
-  String lockboxId,           // ID of the lockbox being shared
-  String ownerPubkey,        // Hex format (64 chars) - lockbox owner's public key
+  String vaultId,           // ID of the vault being shared
+  String ownerPubkey,        // Hex format (64 chars) - vault owner's public key
   List<String> relayUrls,    // Up to 3 relay URLs for communication
-  String inviteeName,         // Name entered by lockbox owner
+  String inviteeName,         // Name entered by vault owner
   DateTime createdAt,         // When invitation was generated
   InvitationStatus status,    // Current status of invitation
   String? redeemedBy,         // Hex pubkey of redeemer (null if not redeemed)
@@ -29,7 +29,7 @@ typedef InvitationLink = ({
 
 **Validation Rules**:
 - `inviteCode`: Must be 43 characters (Base64URL encoded 32 bytes)
-- `lockboxId`: Must match existing lockbox
+- `vaultId`: Must match existing vault
 - `ownerPubkey`: Must be valid hex format (64 characters)
 - `relayUrls`: Must have 1-3 URLs, all valid WebSocket URLs
 - `inviteeName`: Must not be empty
@@ -38,14 +38,14 @@ typedef InvitationLink = ({
 - `created` → `pending` (after generation)
 - `pending` → `redeemed` (when invitee accepts)
 - `pending` → `denied` (when invitee denies)
-- `pending` → `invalidated` (when lockbox owner removes invitee from config)
+- `pending` → `invalidated` (when vault owner removes invitee from config)
 - `pending` → `error` (when invalid code redemption attempted)
 
 ### InvitationCode
 
 **DEPRECATED**: This model is redundant. Use `InvitationLink` directly and look it up by invite code.
 
-The invite code is globally unique, so we can store `InvitationLink` directly indexed by invite code. For listing all invitations for a lockbox, we maintain a separate index mapping lockboxId → list of invite codes.
+The invite code is globally unique, so we can store `InvitationLink` directly indexed by invite code. For listing all invitations for a vault, we maintain a separate index mapping vaultId → list of invite codes.
 
 ### InvitationStatus
 
@@ -57,7 +57,7 @@ enum InvitationStatus {
   pending,       // Invitation sent, awaiting response
   redeemed,      // Invitation accepted by invitee
   denied,        // Invitation denied by invitee
-  invalidated,   // Invitation invalidated by lockbox owner
+  invalidated,   // Invitation invalidated by vault owner
   error,         // Error occurred during redemption
 }
 ```
@@ -71,8 +71,8 @@ typedef InvitationRsvpEvent = ({
   String eventId,            // Nostr event ID (hex, 64 chars)
   String inviteCode,          // Invitation code being redeemed
   String inviteePubkey,       // Hex format - invitee's public key
-  String lockboxId,           // ID of lockbox
-  String ownerPubkey,         // Hex format - lockbox owner's public key
+  String vaultId,           // ID of vault
+  String ownerPubkey,         // Hex format - vault owner's public key
   DateTime createdAt,         // When RSVP was sent
   String encryptedContent,     // NIP-44 encrypted content
 });
@@ -88,7 +88,7 @@ typedef InvitationRsvpEvent = ({
 ```
 
 **Event Tags**:
-- `['p', ownerPubkey]` - Recipient (lockbox owner)
+- `['p', ownerPubkey]` - Recipient (vault owner)
 - `['invite', inviteCode]` - Invitation reference
 
 ### InvitationDenialEvent
@@ -99,7 +99,7 @@ Encrypted Nostr event (kind 1341) sent by invitee to deny invitation.
 typedef InvitationDenialEvent = ({
   String eventId,            // Nostr event ID
   String inviteCode,          // Invitation code being denied
-  String ownerPubkey,         // Hex format - lockbox owner's public key
+  String ownerPubkey,         // Hex format - vault owner's public key
   DateTime createdAt,         // When denial was sent
   String? reason,             // Optional reason for denial
   String encryptedContent,     // NIP-44 encrypted content
@@ -116,20 +116,20 @@ typedef InvitationDenialEvent = ({
 ```
 
 **Event Tags**:
-- `['p', ownerPubkey]` - Recipient (lockbox owner)
+- `['p', ownerPubkey]` - Recipient (vault owner)
 - `['invite', inviteCode]` - Invitation reference
 
 ### ShardConfirmationEvent
 
-Encrypted Nostr event (kind 1342) sent by key holder after successfully processing shard.
+Encrypted Nostr event (kind 1342) sent by steward after successfully processing shard.
 
 ```dart
 typedef ShardConfirmationEvent = ({
   String eventId,            // Nostr event ID
-  String lockboxId,           // ID of lockbox
+  String vaultId,           // ID of vault
   int shardIndex,             // Index of shard being confirmed
-  String ownerPubkey,         // Hex format - lockbox owner's public key
-  String keyHolderPubkey,      // Hex format - key holder's public key
+  String ownerPubkey,         // Hex format - vault owner's public key
+  String keyHolderPubkey,      // Hex format - steward's public key
   DateTime createdAt,         // When confirmation was sent
   String encryptedContent,     // NIP-44 encrypted content
 });
@@ -138,28 +138,28 @@ typedef ShardConfirmationEvent = ({
 **Encrypted Content** (JSON):
 ```json
 {
-  "lockboxId": "abc123...",
+  "vaultId": "abc123...",
   "shardIndex": 0,
   "timestamp": "2025-01-27T10:00:00Z"
 }
 ```
 
 **Event Tags**:
-- `['p', ownerPubkey]` - Recipient (lockbox owner)
-- `['lockbox', lockboxId]` - Lockbox reference
+- `['p', ownerPubkey]` - Recipient (vault owner)
+- `['vault', vaultId]` - Vault reference
 - `['shard', shardIndex.toString()]` - Shard index
 
 ### ShardErrorEvent
 
-Encrypted Nostr event (kind 1343) sent by key holder when shard processing fails.
+Encrypted Nostr event (kind 1343) sent by steward when shard processing fails.
 
 ```dart
 typedef ShardErrorEvent = ({
   String eventId,            // Nostr event ID
-  String lockboxId,           // ID of lockbox
+  String vaultId,           // ID of vault
   int shardIndex,             // Index of shard that failed
-  String ownerPubkey,         // Hex format - lockbox owner's public key
-  String keyHolderPubkey,      // Hex format - key holder's public key
+  String ownerPubkey,         // Hex format - vault owner's public key
+  String keyHolderPubkey,      // Hex format - steward's public key
   String error,                // Error message
   DateTime createdAt,         // When error was sent
   String encryptedContent,     // NIP-44 encrypted content
@@ -169,7 +169,7 @@ typedef ShardErrorEvent = ({
 **Encrypted Content** (JSON):
 ```json
 {
-  "lockboxId": "abc123...",
+  "vaultId": "abc123...",
   "shardIndex": 0,
   "error": "Failed to decrypt shard",
   "timestamp": "2025-01-27T10:00:00Z"
@@ -177,13 +177,13 @@ typedef ShardErrorEvent = ({
 ```
 
 **Event Tags**:
-- `['p', ownerPubkey]` - Recipient (lockbox owner)
-- `['lockbox', lockboxId]` - Lockbox reference
+- `['p', ownerPubkey]` - Recipient (vault owner)
+- `['vault', vaultId]` - Vault reference
 - `['shard', shardIndex.toString()]` - Shard index
 
 ### InvitationInvalidEvent
 
-Encrypted Nostr event (kind 1344) sent by lockbox owner to notify invitee of invalid code.
+Encrypted Nostr event (kind 1344) sent by vault owner to notify invitee of invalid code.
 
 ```dart
 typedef InvitationInvalidEvent = ({
@@ -235,18 +235,18 @@ Value: JSON InvitationLink data
 - Invite codes are globally unique, so this is the primary storage
 - Used for quick lookup when someone redeems an invitation
 
-**Lockbox Invitations Index** (for listing all invitations per lockbox):
+**Vault Invitations Index** (for listing all invitations per vault):
 ```
-lockbox_invitations_{lockboxId}
+vault_invitations_{vaultId}
 ```
 Value: List of invite codes (strings)
-- Used to quickly get all invitation codes for a lockbox
+- Used to quickly get all invitation codes for a vault
 - To get full invitation details, look up each code using `invitation_{inviteCode}`
 
 ### Data Relationships
 
 ```
-Lockbox
+Vault
   └── BackupConfig
       └── KeyHolder[]
           └── InvitationLink? (if invited via link)
@@ -265,7 +265,7 @@ Lockbox
 // Create new invitation link
 InvitationLink createInvitationLink({
   required String inviteCode,
-  required String lockboxId,
+  required String vaultId,
   required String ownerPubkey,
   required List<String> relayUrls,
   required String inviteeName,
@@ -299,7 +299,7 @@ String invitationLinkToUrl(InvitationLink link);
 - Must be cryptographically random (use `Random.secure()`)
 
 ### Invitation Link URL
-- Format: `https://keydex.app/invite/{inviteCode}?owner={ownerPubkey}&relays={relayUrls}`
+- Format: `https://horcrux.app/invite/{inviteCode}?owner={ownerPubkey}&relays={relayUrls}`
 - `ownerPubkey`: Hex format, URL-encoded
 - `relayUrls`: Comma-separated, URL-encoded
 
@@ -315,14 +315,14 @@ String invitationLinkToUrl(InvitationLink link);
 ```dart
 // Provider for invitation service
 final invitationServiceProvider = Provider<InvitationService>((ref) {
-  return InvitationService(ref.read(lockboxRepositoryProvider));
+  return InvitationService(ref.read(vaultRepositoryProvider));
 });
 
-// Provider for pending invitations by lockbox
+// Provider for pending invitations by vault
 final pendingInvitationsProvider = FutureProvider.family<List<InvitationLink>, String>(
-  (ref, lockboxId) async {
+  (ref, vaultId) async {
     final service = ref.read(invitationServiceProvider);
-    return await service.getPendingInvitations(lockboxId);
+    return await service.getPendingInvitations(vaultId);
   },
 );
 
@@ -340,7 +340,7 @@ final invitationByCodeProvider = FutureProvider.family<InvitationLink?, String>(
 ### Invalid Invitation Code
 - Code not found in storage
 - Code already redeemed
-- Code invalidated by lockbox owner
+- Code invalidated by vault owner
 - Code format invalid
 
 ### Invalid Invitation Link
