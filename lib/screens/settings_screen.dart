@@ -16,10 +16,7 @@ class SettingsScreen extends ConsumerWidget {
     final publicKeyAsync = ref.watch(currentPublicKeyBech32Provider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-        centerTitle: false,
-      ),
+      appBar: AppBar(title: const Text('Settings'), centerTitle: false),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -29,9 +26,7 @@ class SettingsScreen extends ConsumerWidget {
               padding: const EdgeInsets.only(top: 8, bottom: 8),
               child: Text(
                 'Account',
-                style: textTheme.titleMedium?.copyWith(
-                  color: colorScheme.onSurface,
-                ),
+                style: textTheme.titleMedium?.copyWith(color: colorScheme.onSurface),
               ),
             ),
             Card(
@@ -64,9 +59,7 @@ class SettingsScreen extends ConsumerWidget {
               padding: const EdgeInsets.only(top: 8, bottom: 8),
               child: Text(
                 'App Settings',
-                style: textTheme.titleMedium?.copyWith(
-                  color: colorScheme.onSurface,
-                ),
+                style: textTheme.titleMedium?.copyWith(color: colorScheme.onSurface),
               ),
             ),
             Card(
@@ -80,9 +73,7 @@ class SettingsScreen extends ConsumerWidget {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => const RelayManagementScreen(),
-                        ),
+                        MaterialPageRoute(builder: (context) => const RelayManagementScreen()),
                       );
                     },
                   ),

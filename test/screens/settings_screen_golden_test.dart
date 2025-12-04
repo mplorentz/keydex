@@ -11,7 +11,8 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   // Sample test data
-  final testPubkey = 'npub1test1234567890abcdefghijklmnopqrstuvwxyz1234567890abcdefghijklmnopqrstuvwxyz';
+  final testPubkey =
+      'npub1test1234567890abcdefghijklmnopqrstuvwxyz1234567890abcdefghijklmnopqrstuvwxyz';
 
   group('SettingsScreen Golden Tests', () {
     testGoldens('loading state - public key loading', (tester) async {
@@ -31,28 +32,17 @@ void main() {
         waitForSettle: false, // Loading state
       );
 
-      await screenMatchesGoldenWithoutSettle<SettingsScreen>(
-        tester,
-        'settings_screen_loading',
-      );
+      await screenMatchesGoldenWithoutSettle<SettingsScreen>(tester, 'settings_screen_loading');
 
       container.dispose();
     });
 
     testGoldens('with public key', (tester) async {
       final container = ProviderContainer(
-        overrides: [
-          currentPublicKeyBech32Provider.overrideWith(
-            (ref) => Future.value(testPubkey),
-          ),
-        ],
+        overrides: [currentPublicKeyBech32Provider.overrideWith((ref) => Future.value(testPubkey))],
       );
 
-      await pumpGoldenWidget(
-        tester,
-        const SettingsScreen(),
-        container: container,
-      );
+      await pumpGoldenWidget(tester, const SettingsScreen(), container: container);
 
       await screenMatchesGolden(tester, 'settings_screen_with_key');
 
@@ -62,17 +52,11 @@ void main() {
     testGoldens('without public key', (tester) async {
       final container = ProviderContainer(
         overrides: [
-          currentPublicKeyBech32Provider.overrideWith(
-            (ref) => Future<String?>.value(null),
-          ),
+          currentPublicKeyBech32Provider.overrideWith((ref) => Future<String?>.value(null)),
         ],
       );
 
-      await pumpGoldenWidget(
-        tester,
-        const SettingsScreen(),
-        container: container,
-      );
+      await pumpGoldenWidget(tester, const SettingsScreen(), container: container);
 
       await screenMatchesGolden(tester, 'settings_screen_no_key');
 
@@ -88,11 +72,7 @@ void main() {
         ],
       );
 
-      await pumpGoldenWidget(
-        tester,
-        const SettingsScreen(),
-        container: container,
-      );
+      await pumpGoldenWidget(tester, const SettingsScreen(), container: container);
 
       await screenMatchesGolden(tester, 'settings_screen_error');
 
@@ -101,11 +81,7 @@ void main() {
 
     testGoldens('multiple device sizes', (tester) async {
       final container = ProviderContainer(
-        overrides: [
-          currentPublicKeyBech32Provider.overrideWith(
-            (ref) => Future.value(testPubkey),
-          ),
-        ],
+        overrides: [currentPublicKeyBech32Provider.overrideWith((ref) => Future.value(testPubkey))],
       );
 
       final builder = DeviceBuilder()
