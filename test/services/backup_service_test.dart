@@ -1,16 +1,16 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
-import 'package:keydex/services/backup_service.dart';
-import 'package:keydex/providers/lockbox_provider.dart';
-import 'package:keydex/services/shard_distribution_service.dart';
-import 'package:keydex/services/login_service.dart';
-import 'package:keydex/services/relay_scan_service.dart';
-import 'package:keydex/models/shard_data.dart';
+import 'package:horcrux/services/backup_service.dart';
+import 'package:horcrux/providers/vault_provider.dart';
+import 'package:horcrux/services/shard_distribution_service.dart';
+import 'package:horcrux/services/login_service.dart';
+import 'package:horcrux/services/relay_scan_service.dart';
+import 'package:horcrux/models/shard_data.dart';
 
 import 'backup_service_test.mocks.dart';
 
 @GenerateMocks([
-  LockboxRepository,
+  VaultRepository,
   ShardDistributionService,
   LoginService,
   RelayScanService,
@@ -18,13 +18,13 @@ import 'backup_service_test.mocks.dart';
 void main() {
   group('BackupService - Shamir Secret Sharing', () {
     late BackupService backupService;
-    late MockLockboxRepository mockRepository;
+    late MockVaultRepository mockRepository;
     late MockShardDistributionService mockShardDistributionService;
     late MockLoginService mockLoginService;
     late MockRelayScanService mockRelayScanService;
 
     setUp(() {
-      mockRepository = MockLockboxRepository();
+      mockRepository = MockVaultRepository();
       mockShardDistributionService = MockShardDistributionService();
       mockLoginService = MockLoginService();
       mockRelayScanService = MockRelayScanService();
@@ -38,8 +38,8 @@ void main() {
 
     const testSecret = 'This is a test secret that we want to protect with Shamir Secret Sharing!';
     const testCreatorPubkey = '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
-    const testLockboxId = 'test-lockbox-123';
-    const testLockboxName = 'Test Lockbox';
+    const testVaultId = 'test-vault-123';
+    const testVaultName = 'Test Vault';
     // Note: peers list excludes the creator
     const testPeers = [
       {
@@ -63,8 +63,8 @@ void main() {
         threshold: threshold,
         totalShards: totalShards,
         creatorPubkey: testCreatorPubkey,
-        lockboxId: testLockboxId,
-        lockboxName: testLockboxName,
+        vaultId: testVaultId,
+        vaultName: testVaultName,
         peers: testPeers,
       );
 
@@ -93,8 +93,8 @@ void main() {
         threshold: threshold,
         totalShards: totalShards,
         creatorPubkey: testCreatorPubkey,
-        lockboxId: testLockboxId,
-        lockboxName: testLockboxName,
+        vaultId: testVaultId,
+        vaultName: testVaultName,
         peers: testPeers,
       );
 
@@ -114,8 +114,8 @@ void main() {
           threshold: threshold,
           totalShards: totalShards,
           creatorPubkey: testCreatorPubkey,
-          lockboxId: testLockboxId,
-          lockboxName: testLockboxName,
+          vaultId: testVaultId,
+          vaultName: testVaultName,
           peers: testPeers,
         );
 
@@ -140,8 +140,8 @@ void main() {
           threshold: threshold,
           totalShards: totalShards,
           creatorPubkey: testCreatorPubkey,
-          lockboxId: testLockboxId,
-          lockboxName: testLockboxName,
+          vaultId: testVaultId,
+          vaultName: testVaultName,
           peers: testPeers,
         );
 
@@ -166,8 +166,8 @@ void main() {
           threshold: threshold,
           totalShards: totalShards,
           creatorPubkey: testCreatorPubkey,
-          lockboxId: testLockboxId,
-          lockboxName: testLockboxName,
+          vaultId: testVaultId,
+          vaultName: testVaultName,
           peers: testPeers,
         );
 
@@ -198,8 +198,8 @@ void main() {
         threshold: threshold,
         totalShards: totalShards,
         creatorPubkey: testCreatorPubkey,
-        lockboxId: testLockboxId,
-        lockboxName: testLockboxName,
+        vaultId: testVaultId,
+        vaultName: testVaultName,
         peers: testPeers,
       );
 
@@ -219,8 +219,8 @@ void main() {
         threshold: 2,
         totalShards: 3,
         creatorPubkey: testCreatorPubkey,
-        lockboxId: testLockboxId,
-        lockboxName: testLockboxName,
+        vaultId: testVaultId,
+        vaultName: testVaultName,
         peers: testPeers,
       );
       final shares2 = await backupService.generateShamirShares(
@@ -228,8 +228,8 @@ void main() {
         threshold: 2,
         totalShards: 3,
         creatorPubkey: 'abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdef1234',
-        lockboxId: 'different-lockbox',
-        lockboxName: 'Different Lockbox',
+        vaultId: 'different-vault',
+        vaultName: 'Different Vault',
         peers: [
           {
             'name': 'Peer A',
@@ -275,8 +275,8 @@ void main() {
         threshold: threshold,
         totalShards: totalShards,
         creatorPubkey: testCreatorPubkey,
-        lockboxId: testLockboxId,
-        lockboxName: testLockboxName,
+        vaultId: testVaultId,
+        vaultName: testVaultName,
         peers: testPeers,
       );
 
@@ -300,8 +300,8 @@ void main() {
         threshold: threshold,
         totalShards: totalShards,
         creatorPubkey: testCreatorPubkey,
-        lockboxId: testLockboxId,
-        lockboxName: testLockboxName,
+        vaultId: testVaultId,
+        vaultName: testVaultName,
         peers: testPeers,
       );
 
@@ -324,8 +324,8 @@ void main() {
         threshold: threshold,
         totalShards: totalShards,
         creatorPubkey: testCreatorPubkey,
-        lockboxId: testLockboxId,
-        lockboxName: testLockboxName,
+        vaultId: testVaultId,
+        vaultName: testVaultName,
         peers: testPeers,
       );
 

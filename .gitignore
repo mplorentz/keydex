@@ -12,6 +12,7 @@
 .swiftpm/
 migrate_working_dir/
 todo.txt
+.claude/settings.local.json
 
 # IntelliJ related
 *.iml

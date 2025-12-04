@@ -4,7 +4,7 @@ import '../providers/key_provider.dart';
 import '../utils/app_initialization.dart';
 import '../screens/account_created_screen.dart';
 import '../screens/login_screen.dart';
-import '../screens/lockbox_list_screen.dart';
+import '../screens/vault_list_screen.dart';
 
 /// Screen allowing users to choose how to set up their account
 class AccountChoiceScreen extends ConsumerStatefulWidget {
@@ -118,7 +118,7 @@ class _AccountChoiceScreenState extends ConsumerState<AccountChoiceScreen> {
 
                   // Navigate to main app, clear onboarding stack
                   navigator.pushAndRemoveUntil(
-                    MaterialPageRoute(builder: (context) => const LockboxListScreen()),
+                    MaterialPageRoute(builder: (context) => const VaultListScreen()),
                     (route) => false,
                   );
                 },

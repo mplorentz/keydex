@@ -1,6 +1,6 @@
-# Tasks: Encrypted Text Lockbox (UI-First Approach)
+# Tasks: Encrypted Text Vault (UI-First Approach)
 
-**Input**: Design documents from `/specs/001-store-text-in-lockbox/`
+**Input**: Design documents from `/specs/001-store-text-in-vault/`
 **Approach**: Start with working UI, expand incrementally, refactor as needed
 
 ## Development Philosophy
@@ -11,11 +11,11 @@
 - ❌ **No premature abstraction** - Don't create interfaces until you need them
 
 ## Phase 1: Single-File Prototype 🚀
-**Goal**: Get a working lockbox app in one file with fake data
+**Goal**: Get a working vault app in one file with fake data
 
-- [x] T001 Create `lib/lockbox_app.dart` - Complete working app in single file
+- [x] T001 Create `lib/vault_app.dart` - Complete working app in single file
   - Basic Flutter MaterialApp with navigation
-  - Hard-coded list of 3-4 fake lockboxes 
+  - Hard-coded list of 3-4 fake vaultes 
   - Simple screens: list, create, edit, view
   - No encryption, no auth, no persistence yet
   - Focus: Get the UI flow working end-to-end
@@ -23,7 +23,7 @@
 - [x] T002 Test the prototype manually
   - Run `flutter run` and verify all screens work
   - Can navigate between screens
-  - Can create/edit/delete lockboxes (in memory only)
+  - Can create/edit/delete vaultes (in memory only)
   - UI looks reasonable on phone
 
 ## Phase 2: Add Real Data 💾
@@ -31,9 +31,9 @@
 
 - [x] T003.1 Generate a Nostr key for the user on app launch and store it in the keychain.
 
-- [x] T003.2 Add SharedPreferences for persistence in `lib/lockbox_app.dart`
+- [x] T003.2 Add SharedPreferences for persistence in `lib/vault_app.dart`
   - Replace hard-coded data with SharedPreferences
-  - Encrypt lockbox data with nostr key before storing it in user preferences
+  - Encrypt vault data with nostr key before storing it in user preferences
   - Data survives app restarts
 
 - [ ] T004 Add input validation and limits
@@ -45,18 +45,18 @@
 **Goal**: Split single file into logical components as it grows
 
 - [ ] T005 Extract data models to `lib/models/`
-  - `lockbox.dart` - Simple class with toJson/fromJson
+  - `vault.dart` - Simple class with toJson/fromJson
   - Keep it simple - just id, name, content, createdAt
 
 - [ ] T006 Extract screens to `lib/screens/`
-  - `lockbox_list_screen.dart`
-  - `lockbox_detail_screen.dart` 
-  - `create_lockbox_screen.dart`
+  - `vault_list_screen.dart`
+  - `vault_detail_screen.dart` 
+  - `create_vault_screen.dart`
   - Move screen widgets out of main file
 
 - [ ] T007 Extract storage logic to `lib/services/storage_service.dart`
   - Simple class that wraps SharedPreferences
-  - Methods: saveLockbox, getLockboxes, deleteLockbox
+  - Methods: saveVault, getVaultes, deleteVault
   - No interfaces yet - just a concrete class
 
 ## Phase 4: Add Security 🔒
@@ -131,32 +131,32 @@
 # Launch T004-T009 together (Contract and Integration Tests):
 Task: "Contract test AuthService in test/contract/test_auth_service.dart"
 Task: "Contract test EncryptionService in test/contract/test_encryption_service.dart"
-Task: "Contract test LockboxService in test/contract/test_lockbox_service.dart"
-Task: "Integration test lockbox creation flow in integration_test/test_lockbox_creation.dart"
+Task: "Contract test VaultService in test/contract/test_vault_service.dart"
+Task: "Integration test vault creation flow in integration_test/test_vault_creation.dart"
 Task: "Integration test authentication flow in integration_test/test_authentication.dart"
 Task: "Integration test encryption/decryption flow in integration_test/test_encryption.dart"
 
 # Launch T010-T018 together (Models and Services):
-Task: "Lockbox model in lib/models/lockbox.dart"
+Task: "Vault model in lib/models/vault.dart"
 Task: "TextContent model in lib/models/text_content.dart"
 Task: "EncryptionKey model in lib/models/encryption_key.dart"
 Task: "NostrKeyPair model in lib/models/nostr_key_pair.dart"
 Task: "AuthService implementation in lib/services/auth_service.dart"
 Task: "EncryptionService implementation in lib/services/encryption_service.dart"
-Task: "LockboxService implementation in lib/services/lockbox_service.dart"
+Task: "VaultService implementation in lib/services/vault_service.dart"
 Task: "StorageService implementation in lib/services/storage_service.dart"
 Task: "KeyService implementation in lib/services/key_service.dart"
 
 # Launch T019-T028 together (UI Components):
 Task: "Main app widget in lib/main.dart"
-Task: "Lockbox list screen in lib/screens/lockbox_list_screen.dart"
-Task: "Lockbox detail screen in lib/screens/lockbox_detail_screen.dart"
-Task: "Create lockbox screen in lib/screens/create_lockbox_screen.dart"
-Task: "Edit lockbox screen in lib/screens/edit_lockbox_screen.dart"
+Task: "Vault list screen in lib/screens/vault_list_screen.dart"
+Task: "Vault detail screen in lib/screens/vault_detail_screen.dart"
+Task: "Create vault screen in lib/screens/create_vault_screen.dart"
+Task: "Edit vault screen in lib/screens/edit_vault_screen.dart"
 Task: "Authentication screen in lib/screens/authentication_screen.dart"
 Task: "Settings screen in lib/screens/settings_screen.dart"
-Task: "Lockbox list widget in lib/widgets/lockbox_list_widget.dart"
-Task: "Lockbox card widget in lib/widgets/lockbox_card_widget.dart"
+Task: "Vault list widget in lib/widgets/vault_list_widget.dart"
+Task: "Vault card widget in lib/widgets/vault_card_widget.dart"
 Task: "Authentication widget in lib/widgets/authentication_widget.dart"
 ```
 

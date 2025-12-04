@@ -5,14 +5,14 @@ import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
 import 'package:ndk/ndk.dart';
 
-import 'package:keydex/services/invitation_sending_service.dart';
-import 'package:keydex/services/invitation_service.dart';
-import 'package:keydex/services/login_service.dart';
-import 'package:keydex/services/ndk_service.dart';
-import 'package:keydex/services/relay_scan_service.dart';
-import 'package:keydex/providers/lockbox_provider.dart';
-import 'package:keydex/models/lockbox.dart';
-import 'package:keydex/models/nostr_kinds.dart';
+import 'package:horcrux/services/invitation_sending_service.dart';
+import 'package:horcrux/services/invitation_service.dart';
+import 'package:horcrux/services/login_service.dart';
+import 'package:horcrux/services/ndk_service.dart';
+import 'package:horcrux/services/relay_scan_service.dart';
+import 'package:horcrux/providers/vault_provider.dart';
+import 'package:horcrux/models/vault.dart';
+import 'package:horcrux/models/nostr_kinds.dart';
 import '../fixtures/test_keys.dart';
 
 import 'invitation_rsvp_format_test.mocks.dart';
@@ -20,7 +20,7 @@ import 'invitation_rsvp_format_test.mocks.dart';
 @GenerateMocks([
   NdkService,
   LoginService,
-  LockboxRepository,
+  VaultRepository,
   InvitationSendingService,
   RelayScanService,
 ])
@@ -68,7 +68,7 @@ void main() {
   group('RSVP Event Format Compatibility Tests', () {
     late MockNdkService mockNdkService;
     late MockLoginService mockLoginService;
-    late LockboxRepository realRepository;
+    late VaultRepository realRepository;
     late MockInvitationSendingService mockInvitationSendingService;
     late InvitationSendingService invitationSendingService;
     late InvitationService invitationService;
@@ -76,7 +76,7 @@ void main() {
     setUp(() async {
       mockNdkService = MockNdkService();
       mockLoginService = MockLoginService();
-      realRepository = LockboxRepository(mockLoginService);
+      realRepository = VaultRepository(mockLoginService);
       mockInvitationSendingService = MockInvitationSendingService();
 
       invitationSendingService = InvitationSendingService(mockNdkService);
@@ -153,12 +153,12 @@ void main() {
           mockLoginService.getCurrentPublicKey(),
         ).thenAnswer((_) async => ownerPubkey);
 
-        // Mock encryptText for lockbox storage
+        // Mock encryptText for vault storage
         when(mockLoginService.encryptText(any)).thenAnswer(
           (invocation) async => invocation.positionalArguments[0] as String,
         );
 
-        // Mock decryptText for lockbox retrieval
+        // Mock decryptText for vault retrieval
         when(mockLoginService.decryptText(any)).thenAnswer(
           (invocation) async => invocation.positionalArguments[0] as String,
         );
@@ -166,21 +166,21 @@ void main() {
         // Create and save the invitation using InvitationService
         await invitationService.createReceivedInvitation(
           inviteCode: inviteCode,
-          lockboxId: 'test-lockbox-id',
+          vaultId: 'test-vault-id',
           ownerPubkey: ownerPubkey,
           relayUrls: relayUrls,
-          lockboxName: 'Test Lockbox',
+          vaultName: 'Test Vault',
         );
 
-        // Create a lockbox so backup config can be created
-        final testLockbox = Lockbox(
-          id: 'test-lockbox-id',
-          name: 'Test Lockbox',
+        // Create a vault so backup config can be created
+        final testVault = Vault(
+          id: 'test-vault-id',
+          name: 'Test Vault',
           content: 'test content',
           createdAt: DateTime.now(),
           ownerPubkey: ownerPubkey,
         );
-        await realRepository.addLockbox(testLockbox);
+        await realRepository.addVault(testVault);
 
         // Act: Call processRsvpEvent with the JSON created by sendRsvpEvent
         await invitationService.processRsvpEvent(event: mockEvent);

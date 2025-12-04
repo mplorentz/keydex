@@ -6,11 +6,11 @@ import 'package:ndk/domain_layer/entities/broadcast_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:keydex/services/ndk_service.dart';
-import 'package:keydex/services/login_service.dart';
-import 'package:keydex/services/invitation_service.dart';
-import 'package:keydex/models/nostr_kinds.dart';
-import 'package:keydex/providers/key_provider.dart';
+import 'package:horcrux/services/ndk_service.dart';
+import 'package:horcrux/services/login_service.dart';
+import 'package:horcrux/services/invitation_service.dart';
+import 'package:horcrux/models/nostr_kinds.dart';
+import 'package:horcrux/providers/key_provider.dart';
 import '../fixtures/test_keys.dart';
 import '../helpers/secure_storage_mock.dart';
 

@@ -2,20 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_toolkit/golden_toolkit.dart';
 import '../helpers/golden_test_helpers.dart';
-import 'package:keydex/screens/keydex_gallery_screen.dart';
+import 'package:horcrux/screens/horcrux_gallery_screen.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('KeydexGallery Golden Test', () {
-    testGoldens('gallery screen - keydex3 theme', (tester) async {
+  group('HorcruxGallery Golden Test', () {
+    testGoldens('gallery screen - horcrux3 theme', (tester) async {
       await pumpGoldenWidget(
         tester,
-        const KeydexGallery(),
+        const HorcruxGallery(),
         surfaceSize: const Size(375, 812), // iPhone X size
       );
 
-      await screenMatchesGolden(tester, 'keydex_gallery_screen');
+      await screenMatchesGolden(tester, 'horcrux_gallery_screen');
     });
   });
 }

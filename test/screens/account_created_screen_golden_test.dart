@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_toolkit/golden_toolkit.dart';
-import 'package:keydex/screens/account_created_screen.dart';
+import 'package:horcrux/screens/account_created_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../helpers/golden_test_helpers.dart';
 import '../helpers/secure_storage_mock.dart';

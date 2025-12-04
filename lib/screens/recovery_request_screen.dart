@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-/// Screen for initiating recovery of a lockbox
+/// Screen for initiating recovery of a vault
 ///
-/// This screen allows key holders to initiate recovery of a lockbox
+/// This screen allows stewards to initiate recovery of a vault
 /// they have a key share for.
 class RecoveryRequestScreen extends StatefulWidget {
-  final String lockboxId;
+  final String vaultId;
 
-  const RecoveryRequestScreen({super.key, required this.lockboxId});
+  const RecoveryRequestScreen({super.key, required this.vaultId});
 
   @override
   State<RecoveryRequestScreen> createState() => _RecoveryRequestScreenState();
@@ -29,7 +29,7 @@ class _RecoveryRequestScreenState extends State<RecoveryRequestScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Lockbox information card
+            // Vault information card
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),

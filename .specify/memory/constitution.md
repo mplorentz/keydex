@@ -18,7 +18,7 @@ Follow-up TODOs:
   - Update task template with service implementation patterns
 -->
 
-# Keydex Constitution
+# Horcrux Constitution
 
 ## Core Principles
 

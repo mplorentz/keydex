@@ -2,12 +2,12 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ntcdcrypto/ntcdcrypto.dart';
 import '../models/backup_config.dart';
-import '../models/key_holder.dart';
+import '../models/steward.dart';
 import '../models/shard_data.dart';
 import '../models/backup_status.dart';
-import '../models/key_holder_status.dart';
-import '../models/lockbox.dart';
-import '../providers/lockbox_provider.dart';
+import '../models/steward_status.dart';
+import '../models/vault.dart';
+import '../providers/vault_provider.dart';
 import '../providers/key_provider.dart';
 import 'login_service.dart';
 import 'shard_distribution_service.dart';
@@ -19,7 +19,7 @@ final Provider<BackupService> backupServiceProvider = Provider<BackupService>((
   ref,
 ) {
   return BackupService(
-    ref.read(lockboxRepositoryProvider),
+    ref.read(vaultRepositoryProvider),
     ref.read(shardDistributionServiceProvider),
     ref.read(loginServiceProvider),
     ref.read(relayScanServiceProvider),
@@ -28,7 +28,7 @@ final Provider<BackupService> backupServiceProvider = Provider<BackupService>((
 
 /// Service for managing distributed backup using Shamir's Secret Sharing
 class BackupService {
-  final LockboxRepository _repository;
+  final VaultRepository _repository;
   final ShardDistributionService _shardDistributionService;
   final LoginService _loginService;
   final RelayScanService _relayScanService;
@@ -42,27 +42,27 @@ class BackupService {
 
   /// Create a new backup configuration
   Future<BackupConfig> createBackupConfiguration({
-    required String lockboxId,
+    required String vaultId,
     required int threshold,
     required int totalKeys,
-    required List<KeyHolder> keyHolders,
+    required List<Steward> stewards,
     required List<String> relays,
     String? instructions,
     String? contentHash,
   }) async {
     // Validate inputs
-    if (threshold < LockboxBackupConstraints.minThreshold || threshold > totalKeys) {
+    if (threshold < VaultBackupConstraints.minThreshold || threshold > totalKeys) {
       throw ArgumentError(
-        'Threshold must be >= ${LockboxBackupConstraints.minThreshold} and <= totalKeys',
+        'Threshold must be >= ${VaultBackupConstraints.minThreshold} and <= totalKeys',
       );
     }
-    if (totalKeys < threshold || totalKeys > LockboxBackupConstraints.maxTotalKeys) {
+    if (totalKeys < threshold || totalKeys > VaultBackupConstraints.maxTotalKeys) {
       throw ArgumentError(
-        'TotalKeys must be >= threshold and <= ${LockboxBackupConstraints.maxTotalKeys}',
+        'TotalKeys must be >= threshold and <= ${VaultBackupConstraints.maxTotalKeys}',
       );
     }
-    if (keyHolders.length != totalKeys) {
-      throw ArgumentError('KeyHolders length must equal totalKeys');
+    if (stewards.length != totalKeys) {
+      throw ArgumentError('Stewards length must equal totalKeys');
     }
     if (relays.isEmpty) {
       throw ArgumentError('At least one relay must be provided');
@@ -70,69 +70,69 @@ class BackupService {
 
     // Create backup configuration
     final config = createBackupConfig(
-      lockboxId: lockboxId,
+      vaultId: vaultId,
       threshold: threshold,
       totalKeys: totalKeys,
-      keyHolders: keyHolders,
+      stewards: stewards,
       relays: relays,
       instructions: instructions,
       contentHash: contentHash,
     );
 
-    // Store the configuration in the lockbox via repository
-    await _repository.updateBackupConfig(lockboxId, config);
+    // Store the configuration in the vault via repository
+    await _repository.updateBackupConfig(vaultId, config);
 
-    Log.info('Created backup configuration for lockbox $lockboxId');
+    Log.info('Created backup configuration for vault $vaultId');
     return config;
   }
 
-  /// Get backup configuration for a lockbox
-  Future<BackupConfig?> getBackupConfig(String lockboxId) async {
-    return await _repository.getBackupConfig(lockboxId);
+  /// Get backup configuration for a vault
+  Future<BackupConfig?> getBackupConfig(String vaultId) async {
+    return await _repository.getBackupConfig(vaultId);
   }
 
   /// Get all backup configurations
   Future<List<BackupConfig>> getAllBackupConfigs() async {
-    final lockboxes = await _repository.getAllLockboxes();
-    return lockboxes
-        .where((lockbox) => lockbox.backupConfig != null)
-        .map((lockbox) => lockbox.backupConfig!)
+    final vaultes = await _repository.getAllVaultes();
+    return vaultes
+        .where((vault) => vault.backupConfig != null)
+        .map((vault) => vault.backupConfig!)
         .toList();
   }
 
   /// Update backup configuration
   Future<void> updateBackupConfig(BackupConfig config) async {
-    await _repository.updateBackupConfig(config.lockboxId, config);
-    Log.info('Updated backup configuration for lockbox ${config.lockboxId}');
+    await _repository.updateBackupConfig(config.vaultId, config);
+    Log.info('Updated backup configuration for vault ${config.vaultId}');
   }
 
   /// Delete backup configuration
-  Future<void> deleteBackupConfig(String lockboxId) async {
-    // Set backup config to null in the lockbox
-    final lockbox = await _repository.getLockbox(lockboxId);
-    if (lockbox != null) {
-      await _repository.saveLockbox(lockbox.copyWith(backupConfig: null));
+  Future<void> deleteBackupConfig(String vaultId) async {
+    // Set backup config to null in the vault
+    final vault = await _repository.getVault(vaultId);
+    if (vault != null) {
+      await _repository.saveVault(vault.copyWith(backupConfig: null));
     }
-    Log.info('Deleted backup configuration for lockbox $lockboxId');
+    Log.info('Deleted backup configuration for vault $vaultId');
   }
 
-  /// Generate Shamir shares for lockbox content
+  /// Generate Shamir shares for vault content
   Future<List<ShardData>> generateShamirShares({
     required String content,
     required int threshold,
     required int totalShards,
     required String creatorPubkey,
-    required String lockboxId,
-    required String lockboxName,
+    required String vaultId,
+    required String vaultName,
     required List<Map<String, String>> peers,
     String? ownerName,
     String? instructions,
   }) async {
     try {
       // Validate inputs
-      if (threshold < LockboxBackupConstraints.minThreshold) {
+      if (threshold < VaultBackupConstraints.minThreshold) {
         throw ArgumentError(
-          'Threshold must be at least ${LockboxBackupConstraints.minThreshold}',
+          'Threshold must be at least ${VaultBackupConstraints.minThreshold}',
         );
       }
       if (threshold > totalShards) {
@@ -165,8 +165,8 @@ class BackupService {
           totalShards: totalShards,
           primeMod: primeMod,
           creatorPubkey: creatorPubkey,
-          lockboxId: lockboxId,
-          lockboxName: lockboxName,
+          vaultId: vaultId,
+          vaultName: vaultName,
           peers: peers,
           ownerName: ownerName,
           instructions: instructions,
@@ -251,11 +251,11 @@ class BackupService {
   }
 
   /// Update backup status
-  Future<void> updateBackupStatus(String lockboxId, BackupStatus status) async {
-    final config = await _repository.getBackupConfig(lockboxId);
+  Future<void> updateBackupStatus(String vaultId, BackupStatus status) async {
+    final config = await _repository.getBackupConfig(vaultId);
     if (config == null) {
       throw ArgumentError(
-        'Backup configuration not found for lockbox $lockboxId',
+        'Backup configuration not found for vault $vaultId',
       );
     }
 
@@ -264,56 +264,56 @@ class BackupService {
       status: status,
       lastUpdated: DateTime.now(),
     );
-    await _repository.updateBackupConfig(lockboxId, updatedConfig);
+    await _repository.updateBackupConfig(vaultId, updatedConfig);
 
-    Log.info('Updated backup status for lockbox $lockboxId to $status');
+    Log.info('Updated backup status for vault $vaultId to $status');
   }
 
-  /// Update key holder status
-  Future<void> updateKeyHolderStatus({
-    required String lockboxId,
+  /// Update steward status
+  Future<void> updateStewardStatus({
+    required String vaultId,
     required String pubkey, // Hex format
-    required KeyHolderStatus status,
+    required StewardStatus status,
     DateTime? acknowledgedAt,
     String? acknowledgmentEventId,
   }) async {
-    final config = await _repository.getBackupConfig(lockboxId);
+    final config = await _repository.getBackupConfig(vaultId);
     if (config == null) {
       throw ArgumentError(
-        'Backup configuration not found for lockbox $lockboxId',
+        'Backup configuration not found for vault $vaultId',
       );
     }
 
-    // Find and update the key holder
-    final updatedKeyHolders = config.keyHolders.map((holder) {
-      if (holder.pubkey != null && holder.pubkey == pubkey) {
-        return copyKeyHolder(
-          holder,
+    // Find and update the steward
+    final updatedStewards = config.stewards.map((steward) {
+      if (steward.pubkey != null && steward.pubkey == pubkey) {
+        return copySteward(
+          steward,
           status: status,
           acknowledgedAt: acknowledgedAt,
           acknowledgmentEventId: acknowledgmentEventId,
         );
       }
-      return holder;
+      return steward;
     }).toList();
 
     final updatedConfig = copyBackupConfig(
       config,
-      keyHolders: updatedKeyHolders,
+      stewards: updatedStewards,
       lastUpdated: DateTime.now(),
     );
 
-    await _repository.updateBackupConfig(lockboxId, updatedConfig);
+    await _repository.updateBackupConfig(vaultId, updatedConfig);
 
-    Log.info('Updated key holder $pubkey status to $status');
+    Log.info('Updated steward $pubkey status to $status');
   }
 
-  /// Check if backup is ready (all required key holders have acknowledged)
-  Future<bool> isBackupReady(String lockboxId) async {
-    final config = await _repository.getBackupConfig(lockboxId);
+  /// Check if backup is ready (all required stewards have acknowledged)
+  Future<bool> isBackupReady(String vaultId) async {
+    final config = await _repository.getBackupConfig(vaultId);
     if (config == null) return false;
 
-    return config.acknowledgedKeyHoldersCount >= config.threshold;
+    return config.acknowledgedStewardsCount >= config.threshold;
   }
 
   /// Merge backup configuration changes with existing config
@@ -324,18 +324,18 @@ class BackupService {
   /// - Increments distributionVersion if config params changed
   /// - Preserves lastRedistribution timestamp
   Future<BackupConfig> mergeBackupConfig({
-    required String lockboxId,
+    required String vaultId,
     int? threshold,
-    List<KeyHolder>? keyHolders,
+    List<Steward>? stewards,
     List<String>? relays,
     String? instructions,
   }) async {
     // Load existing config
-    final existingConfig = await _repository.getBackupConfig(lockboxId);
+    final existingConfig = await _repository.getBackupConfig(vaultId);
 
     if (existingConfig == null) {
       throw ArgumentError(
-        'No existing backup configuration found for lockbox $lockboxId',
+        'No existing backup configuration found for vault $vaultId',
       );
     }
 
@@ -360,41 +360,41 @@ class BackupService {
       configParamsChanged = true;
     }
 
-    // Merge key holders (more complex)
-    List<KeyHolder> mergedKeyHolders;
-    if (keyHolders != null) {
-      mergedKeyHolders = _mergeKeyHolders(
-        existingConfig.keyHolders,
-        keyHolders,
+    // Merge stewards (more complex)
+    List<Steward> mergedStewards;
+    if (stewards != null) {
+      mergedStewards = _mergeStewards(
+        existingConfig.stewards,
+        stewards,
       );
-      // If key holder list changed, it requires redistribution
-      if (mergedKeyHolders.length != existingConfig.keyHolders.length) {
+      // If steward list changed, it requires redistribution
+      if (mergedStewards.length != existingConfig.stewards.length) {
         configParamsChanged = true;
       }
     } else {
-      mergedKeyHolders = existingConfig.keyHolders;
+      mergedStewards = existingConfig.stewards;
     }
 
-    // Calculate new total keys based on merged key holders
-    final newTotalKeys = mergedKeyHolders.length;
+    // Calculate new total keys based on merged stewards
+    final newTotalKeys = mergedStewards.length;
 
     // Increment distribution version if config changed
     final newDistributionVersion = configParamsChanged
         ? existingConfig.distributionVersion + 1
         : existingConfig.distributionVersion;
 
-    // If distribution version incremented, reset all key holders with pubkeys to awaitingNewKey
-    // (preserve invited key holders without pubkeys)
-    final finalKeyHolders = newDistributionVersion > existingConfig.distributionVersion
-        ? mergedKeyHolders.map((holder) {
+    // If distribution version incremented, reset all stewards with pubkeys to awaitingNewKey
+    // (preserve invited stewards without pubkeys)
+    final finalStewards = newDistributionVersion > existingConfig.distributionVersion
+        ? mergedStewards.map((steward) {
             // Reset to awaitingNewKey if they have a pubkey and were holding a key
             // Keep as awaitingKey if they were already awaiting (never received a key)
-            if (holder.pubkey != null && holder.status != KeyHolderStatus.invited) {
-              final newStatus = holder.status == KeyHolderStatus.holdingKey
-                  ? KeyHolderStatus.awaitingNewKey
-                  : KeyHolderStatus.awaitingKey;
-              return copyKeyHolder(
-                holder,
+            if (steward.pubkey != null && steward.status != StewardStatus.invited) {
+              final newStatus = steward.status == StewardStatus.holdingKey
+                  ? StewardStatus.awaitingNewKey
+                  : StewardStatus.awaitingKey;
+              return copySteward(
+                steward,
                 status: newStatus,
                 acknowledgedAt: null,
                 acknowledgmentEventId: null,
@@ -403,16 +403,16 @@ class BackupService {
                 giftWrapEventId: null,
               );
             }
-            return holder;
+            return steward;
           }).toList()
-        : mergedKeyHolders;
+        : mergedStewards;
 
     // Create merged config
     final mergedConfig = copyBackupConfig(
       existingConfig,
       threshold: newThreshold,
       totalKeys: newTotalKeys,
-      keyHolders: finalKeyHolders,
+      stewards: finalStewards,
       relays: newRelays,
       instructions: newInstructions,
       lastUpdated: DateTime.now(),
@@ -421,7 +421,7 @@ class BackupService {
     );
 
     // Save merged config
-    await _repository.updateBackupConfig(lockboxId, mergedConfig);
+    await _repository.updateBackupConfig(vaultId, mergedConfig);
 
     // Sync relays to RelayScanService
     try {
@@ -433,18 +433,18 @@ class BackupService {
     }
 
     Log.info(
-      'Merged backup configuration for lockbox $lockboxId (version: $newDistributionVersion)',
+      'Merged backup configuration for vault $vaultId (version: $newDistributionVersion)',
     );
     return mergedConfig;
   }
 
-  /// Handle lockbox content change by incrementing distributionVersion
+  /// Handle vault content change by incrementing distributionVersion
   ///
   /// When vault contents change, we need to increment the distribution version
-  /// and reset all key holders with pubkeys to awaitingKey status.
+  /// and reset all stewards with pubkeys to awaitingKey status.
   /// This ensures that new shards will be distributed on the next distribution.
-  Future<void> handleContentChange(String lockboxId) async {
-    final config = await _repository.getBackupConfig(lockboxId);
+  Future<void> handleContentChange(String vaultId) async {
+    final config = await _repository.getBackupConfig(vaultId);
     if (config == null) {
       // No backup config exists, nothing to do
       return;
@@ -453,16 +453,16 @@ class BackupService {
     // Increment distribution version
     final newDistributionVersion = config.distributionVersion + 1;
 
-    // Reset all key holders with pubkeys to awaitingNewKey (if they were holding) or awaitingKey
-    final updatedKeyHolders = config.keyHolders.map((holder) {
+    // Reset all stewards with pubkeys to awaitingNewKey (if they were holding) or awaitingKey
+    final updatedStewards = config.stewards.map((steward) {
       // Reset to awaitingNewKey if they have a pubkey and were holding a key
       // Keep as awaitingKey if they were already awaiting (never received a key)
-      if (holder.pubkey != null && holder.status != KeyHolderStatus.invited) {
-        final newStatus = holder.status == KeyHolderStatus.holdingKey
-            ? KeyHolderStatus.awaitingNewKey
-            : KeyHolderStatus.awaitingKey;
-        return copyKeyHolder(
-          holder,
+      if (steward.pubkey != null && steward.status != StewardStatus.invited) {
+        final newStatus = steward.status == StewardStatus.holdingKey
+            ? StewardStatus.awaitingNewKey
+            : StewardStatus.awaitingKey;
+        return copySteward(
+          steward,
           status: newStatus,
           acknowledgedAt: null,
           acknowledgmentEventId: null,
@@ -471,50 +471,50 @@ class BackupService {
           giftWrapEventId: null,
         );
       }
-      return holder;
+      return steward;
     }).toList();
 
-    // Update config with new version and reset key holders
+    // Update config with new version and reset stewards
     final updatedConfig = copyBackupConfig(
       config,
-      keyHolders: updatedKeyHolders,
+      stewards: updatedStewards,
       distributionVersion: newDistributionVersion,
       lastUpdated: DateTime.now(),
       lastContentChange: DateTime.now(),
     );
 
-    await _repository.updateBackupConfig(lockboxId, updatedConfig);
+    await _repository.updateBackupConfig(vaultId, updatedConfig);
     Log.info(
-      'Incremented distributionVersion to $newDistributionVersion for lockbox $lockboxId due to content change',
+      'Incremented distributionVersion to $newDistributionVersion for vault $vaultId due to content change',
     );
   }
 
-  /// Helper to merge key holder lists
-  List<KeyHolder> _mergeKeyHolders(
-    List<KeyHolder> existing,
-    List<KeyHolder> updated,
+  /// Helper to merge steward lists
+  List<Steward> _mergeStewards(
+    List<Steward> existing,
+    List<Steward> updated,
   ) {
-    final merged = <KeyHolder>[];
+    final merged = <Steward>[];
 
-    // Add all updated key holders, preserving acknowledgments from existing
-    for (final updatedHolder in updated) {
-      // Find matching holder in existing list by id
-      final existingHolder = existing.where((h) => h.id == updatedHolder.id).firstOrNull;
+    // Add all updated stewards, preserving acknowledgments from existing
+    for (final updatedSteward in updated) {
+      // Find matching steward in existing list by id
+      final existingSteward = existing.where((h) => h.id == updatedSteward.id).firstOrNull;
 
-      if (existingHolder != null) {
+      if (existingSteward != null) {
         // Preserve important fields from existing (status, acknowledgments, etc)
         merged.add(
-          copyKeyHolder(
-            updatedHolder,
-            status: existingHolder.status,
-            acknowledgedAt: existingHolder.acknowledgedAt,
-            acknowledgmentEventId: existingHolder.acknowledgmentEventId,
-            acknowledgedDistributionVersion: existingHolder.acknowledgedDistributionVersion,
+          copySteward(
+            updatedSteward,
+            status: existingSteward.status,
+            acknowledgedAt: existingSteward.acknowledgedAt,
+            acknowledgmentEventId: existingSteward.acknowledgmentEventId,
+            acknowledgedDistributionVersion: existingSteward.acknowledgedDistributionVersion,
           ),
         );
       } else {
-        // New key holder
-        merged.add(updatedHolder);
+        // New steward
+        merged.add(updatedSteward);
       }
     }
 
@@ -531,30 +531,30 @@ class BackupService {
 
   /// Create or update backup configuration without distributing shares
   ///
-  /// This allows saving the backup configuration before all key holders
+  /// This allows saving the backup configuration before all stewards
   /// have accepted their invitations. Shares can be distributed later
   /// using createAndDistributeBackup or a separate distribution method.
   Future<BackupConfig> saveBackupConfig({
-    required String lockboxId,
+    required String vaultId,
     required int threshold,
     required int totalKeys,
-    required List<KeyHolder> keyHolders,
+    required List<Steward> stewards,
     required List<String> relays,
     String? instructions,
   }) async {
     // Delete existing config if present (allows overwrite)
-    final existingConfig = await _repository.getBackupConfig(lockboxId);
+    final existingConfig = await _repository.getBackupConfig(vaultId);
     if (existingConfig != null) {
-      await deleteBackupConfig(lockboxId);
+      await deleteBackupConfig(vaultId);
       Log.info('Deleted existing backup configuration for overwrite');
     }
 
     // Create backup configuration
     final config = await createBackupConfiguration(
-      lockboxId: lockboxId,
+      vaultId: vaultId,
       threshold: threshold,
       totalKeys: totalKeys,
-      keyHolders: keyHolders,
+      stewards: stewards,
       relays: relays,
       instructions: instructions,
     );
@@ -569,43 +569,43 @@ class BackupService {
       // Don't fail backup config save if relay sync fails
     }
 
-    Log.info('Created backup configuration for lockbox $lockboxId');
+    Log.info('Created backup configuration for vault $vaultId');
     return config;
   }
 
   /// High-level method to create and distribute a backup
   ///
   /// This orchestrates the entire backup creation flow:
-  /// 1. Loads lockbox and backup configuration
+  /// 1. Loads vault and backup configuration
   /// 2. Generates Shamir shares
-  /// 3. Distributes shares to key holders via Nostr
+  /// 3. Distributes shares to stewards via Nostr
   ///
   /// Throws exception if any step fails
   Future<BackupConfig> createAndDistributeBackup({
-    required String lockboxId,
+    required String vaultId,
   }) async {
     try {
-      // Step 1: Load lockbox content
-      final lockbox = await _repository.getLockbox(lockboxId);
-      if (lockbox == null) {
-        throw Exception('Lockbox not found: $lockboxId');
+      // Step 1: Load vault content
+      final vault = await _repository.getVault(vaultId);
+      if (vault == null) {
+        throw Exception('Vault not found: $vaultId');
       }
-      final content = lockbox.content;
+      final content = vault.content;
       if (content == null) {
         throw Exception(
-          'Cannot backup encrypted lockbox - content is not available',
+          'Cannot backup encrypted vault - content is not available',
         );
       }
-      Log.info('Loaded lockbox content for backup: $lockboxId');
+      Log.info('Loaded vault content for backup: $vaultId');
 
       // Step 2: Load backup configuration
-      final config = await _repository.getBackupConfig(lockboxId);
+      final config = await _repository.getBackupConfig(vaultId);
       if (config == null) {
         throw Exception(
-          'Backup configuration not found for lockbox: $lockboxId',
+          'Backup configuration not found for vault: $vaultId',
         );
       }
-      if (config.keyHolders.isEmpty) {
+      if (config.stewards.isEmpty) {
         throw Exception('No stewards configured in backup configuration');
       }
       Log.info('Loaded backup configuration');
@@ -619,9 +619,9 @@ class BackupService {
       }
       Log.info('Retrieved creator key pair');
 
-      // Step 4: Validate all key holders are ready for distribution
+      // Step 4: Validate all stewards are ready for distribution
       if (!config.canDistribute) {
-        final names = config.keyHolders
+        final names = config.stewards
             .where((kh) => kh.pubkey == null)
             .map((kh) => kh.name ?? kh.id)
             .join(', ');
@@ -632,9 +632,9 @@ class BackupService {
       }
 
       // Step 5: Generate Shamir shares
-      // Note: peers list excludes the creator - recipients need to know OTHER key holders
+      // Note: peers list excludes the creator - recipients need to know OTHER stewards
       // Build peers list with name and pubkey maps
-      final peers = config.keyHolders
+      final peers = config.stewards
           .where((kh) => kh.pubkey != null && kh.pubkey != creatorPubkey)
           .map((kh) => {'name': kh.name ?? 'Unknown', 'pubkey': kh.pubkey!})
           .toList();
@@ -643,10 +643,10 @@ class BackupService {
         threshold: config.threshold,
         totalShards: config.totalKeys,
         creatorPubkey: creatorPubkey,
-        lockboxId: lockbox.id,
-        lockboxName: lockbox.name,
+        vaultId: vault.id,
+        vaultName: vault.name,
         peers: peers,
-        ownerName: lockbox.ownerName,
+        ownerName: vault.ownerName,
         instructions: config.instructions,
       );
       Log.info('Generated ${shards.length} Shamir shares');
@@ -667,7 +667,7 @@ class BackupService {
         lastUpdated: now,
         status: BackupStatus.active,
       );
-      await _repository.updateBackupConfig(lockboxId, updatedConfig);
+      await _repository.updateBackupConfig(vaultId, updatedConfig);
       Log.info('Updated backup config with redistribution timestamp');
 
       return updatedConfig;
