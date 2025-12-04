@@ -26,13 +26,9 @@ class VaultListScreen extends ConsumerWidget {
             onPressed: () {
               Navigator.push(
                 context,
-<<<<<<< HEAD
-                MaterialPageRoute(builder: (context) => const RelayManagementScreen()),
-=======
                 MaterialPageRoute(
                   builder: (context) => const SettingsScreen(),
                 ),
->>>>>>> origin/main
               );
             },
             tooltip: 'Settings',
