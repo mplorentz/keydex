@@ -2,24 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/vault_provider.dart';
 import '../widgets/row_button.dart';
-import '../widgets/debug_info_sheet.dart';
-import 'relay_management_screen.dart';
 import 'recovery_notification_overlay.dart';
 import 'vault_explainer_screen.dart';
+import 'settings_screen.dart';
 import '../widgets/vault_card.dart';
 
 /// Main list screen showing all vaults
 class VaultListScreen extends ConsumerWidget {
   const VaultListScreen({super.key});
-
-  void _showDebugInfo(BuildContext context, WidgetRef ref) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => const DebugInfoSheet(),
-    );
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -32,19 +22,20 @@ class VaultListScreen extends ConsumerWidget {
         centerTitle: false,
         actions: [
           IconButton(
-            icon: const Icon(Icons.wifi),
+            icon: const Icon(Icons.settings),
             onPressed: () {
               Navigator.push(
                 context,
+<<<<<<< HEAD
                 MaterialPageRoute(builder: (context) => const RelayManagementScreen()),
+=======
+                MaterialPageRoute(
+                  builder: (context) => const SettingsScreen(),
+                ),
+>>>>>>> origin/main
               );
             },
-            tooltip: 'Scan for Keys',
-          ),
-          IconButton(
-            icon: const Icon(Icons.bug_report),
-            onPressed: () => _showDebugInfo(context, ref),
-            tooltip: 'Debug Info',
+            tooltip: 'Settings',
           ),
         ],
       ),
