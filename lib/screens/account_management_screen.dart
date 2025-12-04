@@ -58,10 +58,10 @@ class _AccountManagementScreenState extends ConsumerState<AccountManagementScree
       ),
     );
 
-    if (confirmed != true || !context.mounted) return;
+    if (confirmed != true || !mounted) return;
 
     Clipboard.setData(ClipboardData(text: _nsec!));
-    if (context.mounted) {
+    if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Private key copied to clipboard'),
@@ -94,7 +94,7 @@ class _AccountManagementScreenState extends ConsumerState<AccountManagementScree
       ),
     );
 
-    if (confirmed != true || !context.mounted) return;
+    if (confirmed != true || !mounted) return;
 
     try {
       final logoutService = ref.read(logoutServiceProvider);
@@ -106,7 +106,7 @@ class _AccountManagementScreenState extends ConsumerState<AccountManagementScree
       ref.invalidate(isLoggedInProvider);
       ref.invalidate(vaultListProvider);
 
-      if (!context.mounted) return;
+      if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -117,7 +117,7 @@ class _AccountManagementScreenState extends ConsumerState<AccountManagementScree
       );
     } catch (e) {
       Log.error('Error logging out', e);
-      if (!context.mounted) return;
+      if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
