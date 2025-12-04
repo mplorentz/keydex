@@ -131,7 +131,7 @@ class MyService {
 
 **RecoveryService** (`lib/services/recovery_service.dart`): Handles recovery workflow: sending requests to stewards, collecting shard responses, and reassembling secrets.
 
-**InvitationService** (`lib/services/invitation_service.dart`): Manages invitation links and acceptance flow for adding stewards to vaultes.
+**InvitationService** (`lib/services/invitation_service.dart`): Manages invitation links and acceptance flow for adding stewards to vaults.
 
 **RelayScanService** (`lib/services/relay_scan_service.dart`): Background service that continuously scans Nostr relays for incoming events (gift-wrapped messages, shard confirmations, recovery responses).
 
@@ -168,7 +168,7 @@ class MyService {
 **Key Widgets:**
 - `RowButton` - Single primary action (orange, full-width, bottom)
 - `RowButtonStack` - Multiple actions with gradient (orange at bottom)
-- `VaultCard` - List item for vaultes
+- `VaultCard` - List item for vaults
 - `KeyHolderList` - Display stewards with status
 
 **Always reference `DESIGN_GUIDE.md` before making UI changes.** It contains the complete color palette, typography system, and component patterns.

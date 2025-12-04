@@ -42,7 +42,7 @@ Allow vault owners to invite others to become stewards by sending invitation lin
 **Project Type**: mobile (single Flutter app codebase)  
 **Performance Goals**: <500ms invitation link generation, <2s deep link processing, 60fps UI  
 **Constraints**: Must work offline for invitation link generation, requires network for RSVP events, cross-platform deep linking consistency  
-**Scale/Scope**: Typical user has 3-10 vaultes, each with 3-10 stewards, invitation links valid until redeemed or denied
+**Scale/Scope**: Typical user has 3-10 vaults, each with 3-10 stewards, invitation links valid until redeemed or denied
 
 ## Constitution Check
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*

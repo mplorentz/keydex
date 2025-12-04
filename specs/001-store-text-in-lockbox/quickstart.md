@@ -22,7 +22,7 @@ This guide demonstrates the complete user workflow for the encrypted text vault 
    - No network communication required
 
 ### 2. Create Your First Vault
-1. **Navigate to Vaultes**: Tap "Vaultes" in main menu
+1. **Navigate to Vaults**: Tap "Vaults" in main menu
 2. **Create New**: Tap "+" button to create new vault
 3. **Enter Name**: Type "My First Vault" (or any name)
 4. **Enter Content**: Type your sensitive text (max 4000 characters)
@@ -36,14 +36,14 @@ This guide demonstrates the complete user workflow for the encrypted text vault 
 4. **Edit**: Tap "Edit" to modify the content
 5. **Save Changes**: Tap "Save" to encrypt and store updated content
 
-### 4. Manage Multiple Vaultes
-1. **Create More**: Repeat steps 2-3 to create additional vaultes
-2. **View List**: See all vaultes with names and creation dates
-3. **Search**: Use search bar to find specific vaultes
+### 4. Manage Multiple Vaults
+1. **Create More**: Repeat steps 2-3 to create additional vaults
+2. **View List**: See all vaults with names and creation dates
+3. **Search**: Use search bar to find specific vaults
 4. **Delete**: Swipe left on any vault to delete it permanently
 
 ### 5. Error Scenarios
-1. **Empty Content**: App allows empty vaultes (for sharing with peers)
+1. **Empty Content**: App allows empty vaults (for sharing with peers)
 2. **Large Content**: App shows error if content exceeds 4000 characters
 3. **Encryption Error**: App shows user-friendly error with support code
 4. **Authentication Failed**: App prompts to try again or use password
@@ -54,7 +54,7 @@ This guide demonstrates the complete user workflow for the encrypted text vault 
 1. Create vault with text: "This is a secret message"
 2. Verify content is encrypted in storage (not plaintext)
 3. Decrypt and verify original text is recovered
-4. Confirm different vaultes use different encrypted values
+4. Confirm different vaults use different encrypted values
 
 ### Authentication Test
 1. Create vault with sensitive content
@@ -70,7 +70,7 @@ This guide demonstrates the complete user workflow for the encrypted text vault 
 4. Verify consistent behavior across platforms
 
 ## Success Criteria
-- [ ] User can create, view, edit, and delete vaultes
+- [ ] User can create, view, edit, and delete vaults
 - [ ] All text content is encrypted before storage
 - [ ] Authentication is required for sensitive operations
 - [ ] App works consistently across all 5 platforms

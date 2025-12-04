@@ -15,7 +15,7 @@
 
 - [x] T001 Create `lib/vault_app.dart` - Complete working app in single file
   - Basic Flutter MaterialApp with navigation
-  - Hard-coded list of 3-4 fake vaultes 
+  - Hard-coded list of 3-4 fake vaults 
   - Simple screens: list, create, edit, view
   - No encryption, no auth, no persistence yet
   - Focus: Get the UI flow working end-to-end
@@ -23,7 +23,7 @@
 - [x] T002 Test the prototype manually
   - Run `flutter run` and verify all screens work
   - Can navigate between screens
-  - Can create/edit/delete vaultes (in memory only)
+  - Can create/edit/delete vaults (in memory only)
   - UI looks reasonable on phone
 
 ## Phase 2: Add Real Data 💾
@@ -56,7 +56,7 @@
 
 - [ ] T007 Extract storage logic to `lib/services/storage_service.dart`
   - Simple class that wraps SharedPreferences
-  - Methods: saveVault, getVaultes, deleteVault
+  - Methods: saveVault, getVaults, deleteVault
   - No interfaces yet - just a concrete class
 
 ## Phase 4: Add Security 🔒

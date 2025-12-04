@@ -60,7 +60,7 @@ As a steward, I want to recover a vault that I have a key share for, so that I c
 ### Acceptance Scenarios
 1. **Given** I am a steward for a vault, **When** I initiate recovery from the vault detail screen, **Then** the system should send encrypted recovery requests to all other stewards and display their response status
 2. **Given** I receive a recovery request notification, **When** I tap on the request, **Then** I should see options to approve or deny the recovery request
-3. **Given** I have been given a key share for a vault, **When** I view the vault list, **Then** I should see both vaultes I own and vaultes I have keys for, clearly distinguished
+3. **Given** I have been given a key share for a vault, **When** I view the vault list, **Then** I should see both vaults I own and vaults I have keys for, clearly distinguished
 4. **Given** I am scanning for keys on configured relays, **When** a new encrypted share is found for me, **Then** a new vault record should be created locally and displayed in my vault list
 5. **Given** enough stewards have approved a recovery request, **When** their shares are collected, **Then** the vault contents should be reassembled and saved locally, marking the vault as recovered
 
@@ -74,12 +74,12 @@ As a steward, I want to recover a vault that I have a key share for, so that I c
 
 ### Functional Requirements
 - **FR-001**: System MUST allow any steward to initiate recovery of a vault they have a key share for
-- **FR-002**: System MUST display vaultes that the user owns differently from vaultes they only have keys for
+- **FR-002**: System MUST display vaults that the user owns differently from vaults they only have keys for
 - **FR-003**: System MUST provide a "Scan for Keys" button on the vault list screen that navigates to relay management
 - **FR-004**: System MUST allow users to configure a list of Nostr relays to scan for encrypted key shares
 - **FR-005**: System MUST automatically scan configured relays for encrypted shares addressed to the current user
 - **FR-006**: System MUST create local Vault records when encrypted shares are found and addressed to the current user
-- **FR-007**: System MUST provide a "Initiate Recovery" button on vault detail screens for vaultes without local content
+- **FR-007**: System MUST provide a "Initiate Recovery" button on vault detail screens for vaults without local content
 - **FR-008**: System MUST send encrypted Nostr events to all stewards when recovery is initiated
 - **FR-009**: System MUST display steward status (Unlocked, Waiting, Denied) during recovery mode
 - **FR-010**: System MUST continuously scan relays for recovery request DMs
@@ -87,7 +87,7 @@ As a steward, I want to recover a vault that I have a key share for, so that I c
 - **FR-012**: System MUST allow stewards to approve or deny recovery requests from the notification overlay
 - **FR-013**: System MUST reassemble vault contents when sufficient key shares are collected
 - **FR-014**: System MUST save recovered vault contents to local storage
-- **FR-015**: System MUST mark vaultes as recovered when contents are successfully reassembled
+- **FR-015**: System MUST mark vaults as recovered when contents are successfully reassembled
 
 ### Key Entities *(include if feature involves data)*
 - **Recovery Request**: Represents a request to recover a vault, containing the vault ID, initiator's public key, timestamp, and current status

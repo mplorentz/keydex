@@ -1,4 +1,4 @@
-# Tasks: Distributed Backup of Vaultes
+# Tasks: Distributed Backup of Vaults
 
 **Input**: Design documents from `/specs/002-distributed-backup-of/`
 **Prerequisites**: plan.md, research.md, data-model.md

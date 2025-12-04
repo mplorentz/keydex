@@ -8,7 +8,7 @@ import 'recovery_notification_overlay.dart';
 import 'vault_explainer_screen.dart';
 import '../widgets/vault_card.dart';
 
-/// Main list screen showing all vaultes
+/// Main list screen showing all vaults
 class VaultListScreen extends ConsumerWidget {
   const VaultListScreen({super.key});
 
@@ -24,7 +24,7 @@ class VaultListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Watch the vault stream provider
-    final vaultesAsync = ref.watch(vaultListProvider);
+    final vaultsAsync = ref.watch(vaultListProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -36,9 +36,7 @@ class VaultListScreen extends ConsumerWidget {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => const RelayManagementScreen(),
-                ),
+                MaterialPageRoute(builder: (context) => const RelayManagementScreen()),
               );
             },
             tooltip: 'Scan for Keys',
@@ -56,7 +54,7 @@ class VaultListScreen extends ConsumerWidget {
             child: Stack(
               children: [
                 // Use AsyncValue.when() to handle loading/error/data states
-                vaultesAsync.when(
+                vaultsAsync.when(
                   loading: () => Center(
                     child: CircularProgressIndicator(
                       color: Theme.of(context).colorScheme.secondary,
@@ -83,9 +81,7 @@ class VaultListScreen extends ConsumerWidget {
                           ElevatedButton(
                             onPressed: () => ref.refresh(vaultListProvider),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Theme.of(
-                                context,
-                              ).colorScheme.secondary,
+                              backgroundColor: Theme.of(context).colorScheme.secondary,
                               foregroundColor: Colors.white,
                             ),
                             child: const Text('Retry'),
@@ -94,8 +90,8 @@ class VaultListScreen extends ConsumerWidget {
                       ),
                     );
                   },
-                  data: (vaultes) {
-                    if (vaultes.isEmpty) {
+                  data: (vaults) {
+                    if (vaults.isEmpty) {
                       final theme = Theme.of(context);
                       final textTheme = theme.textTheme;
                       return Center(
@@ -111,9 +107,7 @@ class VaultListScreen extends ConsumerWidget {
                             Text('No vaults yet', style: textTheme.titleLarge),
                             const SizedBox(height: 8),
                             Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 32,
-                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 32),
                               child: Text(
                                 'Tap + to create a vault or if you received an invitation link open it now to join their vault.',
                                 style: textTheme.bodySmall,
@@ -126,18 +120,12 @@ class VaultListScreen extends ConsumerWidget {
                     }
 
                     return ListView.separated(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      itemCount: vaultes.length,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      itemCount: vaults.length,
                       separatorBuilder: (context, index) => const Divider(height: 1),
                       itemBuilder: (context, index) {
-                        final vault = vaultes[index];
-                        return VaultCard(
-                          key: ValueKey(vault.id),
-                          vault: vault,
-                        );
+                        final vault = vaults[index];
+                        return VaultCard(key: ValueKey(vault.id), vault: vault);
                       },
                     );
                   },
@@ -157,9 +145,7 @@ class VaultListScreen extends ConsumerWidget {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => const VaultExplainerScreen(),
-                ),
+                MaterialPageRoute(builder: (context) => const VaultExplainerScreen()),
               );
             },
             icon: Icons.add,
