@@ -31,7 +31,7 @@
 - Phase 3-4: Implementation execution (manual or via tools)
 
 ## Summary
-Implement vault recovery functionality allowing stewards to initiate recovery of vaultes they have shares for, with relay scanning, recovery request management, and content reassembly using Nostr protocol and Shamir's Secret Sharing.
+Implement vault recovery functionality allowing stewards to initiate recovery of vaults they have shares for, with relay scanning, recovery request management, and content reassembly using Nostr protocol and Shamir's Secret Sharing.
 
 ## Technical Context
 **Language/Version**: Dart 3.0+ with Flutter 3.16+  
@@ -42,7 +42,7 @@ Implement vault recovery functionality allowing stewards to initiate recovery of
 **Project Type**: mobile (Flutter app)  
 **Performance Goals**: <2s recovery initiation, <5s relay scanning, 60fps UI  
 **Constraints**: Offline-capable, secure key storage, cross-platform consistency  
-**Scale/Scope**: 10-100 vaultes per user, 3-10 stewards per vault, 5-20 relays
+**Scale/Scope**: 10-100 vaults per user, 3-10 stewards per vault, 5-20 relays
 
 ## Constitution Check
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*

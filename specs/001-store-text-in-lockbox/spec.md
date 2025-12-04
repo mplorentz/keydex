@@ -60,7 +60,7 @@ As a user, I want to securely store sensitive text information in an encrypted v
 ### Acceptance Scenarios
 1. **Given** a user wants to store sensitive text, **When** they create a new vault and enter their text, **Then** the text is encrypted and stored securely
 2. **Given** a user has created a vault with encrypted text, **When** they access the vault, **Then** they can view the decrypted text content
-3. **Given** a user has multiple vaultes, **When** they view their vault list, **Then** they can see all their vaultes by name and select the one they want to access
+3. **Given** a user has multiple vaults, **When** they view their vault list, **Then** they can see all their vaults by name and select the one they want to access
 4. **Given** a user wants to update their stored text, **When** they edit the vault content, **Then** the new text is encrypted and replaces the previous content
 5. **Given** a user no longer needs a vault, **When** they delete it, **Then** the encrypted data is permanently removed
 
@@ -73,14 +73,14 @@ As a user, I want to securely store sensitive text information in an encrypted v
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
-- **FR-001**: System MUST allow users to create new encrypted vaultes for storing text content
+- **FR-001**: System MUST allow users to create new encrypted vaults for storing text content
 - **FR-002**: System MUST encrypt all text content before storage using NIP-44.
-- **FR-003**: System MUST allow users to name their vaultes for easy identification
+- **FR-003**: System MUST allow users to name their vaults for easy identification
 - **FR-004**: System MUST provide a secure method for users to access and decrypt their stored text
-- **FR-005**: System MUST allow users to edit and update the text content in existing vaultes
-- **FR-006**: System MUST allow users to delete vaultes and permanently remove encrypted data
-- **FR-007**: System MUST display a list of all user's vaultes with their names
-- **FR-008**: System MUST require biometric authentication or password to access vaultes
+- **FR-005**: System MUST allow users to edit and update the text content in existing vaults
+- **FR-006**: System MUST allow users to delete vaults and permanently remove encrypted data
+- **FR-007**: System MUST display a list of all user's vaults with their names
+- **FR-008**: System MUST require biometric authentication or password to access vaults
 - **FR-009**: System MUST handle encryption/decryption errors gracefully and inform the user
 - **FR-010**: System MUST prevent unauthorized access to encrypted vault content
 

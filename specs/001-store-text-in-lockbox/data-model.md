@@ -63,12 +63,12 @@
 
 - **VaultMetadata** 1:1 **VaultContent** (metadata and content are separate records)
 - **VaultMetadata** 1:1 **EncryptionKey** (uses NDK KeyPair for encryption/decryption)
-- **User** 1:N **VaultMetadata** (user can have multiple vaultes)
+- **User** 1:N **VaultMetadata** (user can have multiple vaults)
 
 ## Storage Strategy
 
 **Local Storage** (shared_preferences):
-- `vaultes`: JSON array of VaultMetadata objects
+- `vaults`: JSON array of VaultMetadata objects
 - `vault_contents`: JSON object mapping vault IDs to encrypted content strings
 - `encryption_key`: Single NDK KeyPair object
 - `user_preferences`: App settings and preferences

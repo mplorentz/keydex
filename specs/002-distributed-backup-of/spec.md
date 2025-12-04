@@ -1,9 +1,9 @@
-# Feature Specification: Distributed Backup of Vaultes
+# Feature Specification: Distributed Backup of Vaults
 
 **Feature Branch**: `002-distributed-backup-of`  
 **Created**: 2024-12-19  
 **Status**: Draft  
-**Input**: User description: "distributed backup of vaultes"
+**Input**: User description: "distributed backup of vaults"
 
 ## Execution Flow (main)
 ```
@@ -55,7 +55,7 @@ When creating this spec from a user prompt:
 ## User Scenarios & Testing *(mandatory)*
 
 ### Primary User Story
-As a Horcrux user, I want my vaultes to be backed up to the devices of my chosen friends and family so that I can recover my encrypted secrets even if my primary device is lost, stolen, or damaged, ensuring my sensitive data remains accessible and secure through trusted stewards. Each peer will hold one key to the vault, and the vault will require some number of keys to open. I may generate and share more keys than necessary in case some are not available at the time of recovery.
+As a Horcrux user, I want my vaults to be backed up to the devices of my chosen friends and family so that I can recover my encrypted secrets even if my primary device is lost, stolen, or damaged, ensuring my sensitive data remains accessible and secure through trusted stewards. Each peer will hold one key to the vault, and the vault will require some number of keys to open. I may generate and share more keys than necessary in case some are not available at the time of recovery.
 
 ### Acceptance Scenarios
 1. **Given** a user has created a vault with sensitive data, **When** they configure backup settings during vault creation, **Then** they can specify how many stewards are needed and add friends/family by their Nostr public keys
