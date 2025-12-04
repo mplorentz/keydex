@@ -128,6 +128,39 @@ final currentKeyProvider = FutureProvider<String?>((ref) async {
 
 **CRITICAL**: AI assistants MUST verify code quality after EVERY change before responding to the user.
 
+**⚠️ REMEMBER**: Every UI change requires:
+1. Check for golden tests → Update goldens if they exist
+2. Run `dart format .` 
+3. Run ReadLints and `flutter analyze`
+4. Commit UI changes + golden images together
+
+### ⚠️ COMMIT REQUIREMENTS (ESPECIALLY FOR PRs) ⚠️
+
+**BEFORE EVERY COMMIT** (especially when working on an open PR):
+
+1. **Format Code**: `dart format .` - MUST run before every commit
+2. **Check Linter**: Use ReadLints tool on modified files - MUST be clean
+3. **Run Analyzer**: `flutter analyze` - MUST show "No issues found!"
+4. **UI Changes**: If you modified ANY UI file (`lib/screens/*.dart`, `lib/widgets/*.dart`):
+   - **MUST update goldens**: `flutter test test/screens/<screen>_golden_test.dart --update-goldens` (if golden tests exist)
+   - **MUST format**: `dart format .`
+   - **MUST commit golden PNG files** with the UI changes
+5. **Build Check**: Code must compile without errors
+
+**NEVER commit**:
+- ❌ Unformatted code
+- ❌ Code with linter errors
+- ❌ Code with analyzer errors/warnings
+- ❌ UI changes without updating golden images (if golden tests exist)
+- ❌ Code that doesn't compile
+
+**For Open PRs**: Every commit MUST be production-ready:
+- Zero linter errors
+- Zero analyzer errors/warnings
+- All tests passing
+- Golden images updated (if UI changed)
+- Code formatted
+
 ### Verification Checklist (Execute After Every Change)
 
 After making ANY code changes, you MUST run the following verification steps IN ORDER:
@@ -157,15 +190,25 @@ After making ANY code changes, you MUST run the following verification steps IN 
    - Fix failing tests before proceeding
    - Update test expectations if behavior intentionally changed
 
-4. **Update Golden Tests** (for UI changes) ⚠️ MANDATORY
+4. **Format Code** ⚠️ MANDATORY FOR EVERY COMMIT
+   ```bash
+   dart format .
+   ```
+   - **MANDATORY**: Run `dart format .` before EVERY commit
+   - **MANDATORY**: Especially for UI changes
+   - **DO NOT skip** - unformatted code will fail CI
+
+5. **Update Golden Tests** (for UI changes) ⚠️ MANDATORY
    ```bash
    # REQUIRED if you created/modified any *_golden_test.dart files
    # REQUIRED if you modified UI screens or widgets that have golden tests
    flutter test <path_to_golden_test_file> --update-goldens
    ```
-   - **MANDATORY**: If you create or modify golden test files, you MUST run `--update-goldens`
-   - **MANDATORY**: Commit updated golden PNG files with your test code
+   - **MANDATORY**: If you modify ANY UI file (`lib/screens/*.dart`, `lib/widgets/*.dart`), check if golden tests exist
+   - **MANDATORY**: If golden tests exist, you MUST run `--update-goldens` before committing
+   - **MANDATORY**: Commit updated golden PNG files WITH the UI changes (same commit)
    - **MANDATORY**: Verify tests pass after updating: `flutter test`
+   - **REMINDER**: Every UI change = check for golden tests = update goldens = commit together
    - Note: Golden tests require macOS - inform user if you can't run them
    - **DO NOT skip this step** - it will cause CI failures
 
@@ -178,11 +221,25 @@ After making ANY code changes, you MUST run the following verification steps IN 
 - ❌ Mark a task complete with known linter/analyzer errors
 
 **ALWAYS**:
+- ✅ Run `dart format .` before EVERY commit (especially UI changes)
 - ✅ Run ReadLints on modified files after every change
+- ✅ Check for golden tests when modifying UI files
+- ✅ Update goldens BEFORE committing UI changes
+- ✅ Run analyzer before committing (especially for PRs)
 - ✅ Show verification results in your response
 - ✅ Fix all issues before claiming completion
 - ✅ Re-verify after fixes to ensure they worked
 - ✅ Inform user if verification fails and you need guidance
+
+**UI CHANGE WORKFLOW** (follow this EVERY time):
+1. Modify UI file (`lib/screens/*.dart` or `lib/widgets/*.dart`)
+2. Check if golden test exists: `test/screens/<screen>_golden_test.dart` or `test/widgets/<widget>_golden_test.dart`
+3. If golden test exists → Run `flutter test <test_file> --update-goldens`
+4. Run `dart format .`
+5. Run ReadLints on modified files
+6. Run `flutter analyze`
+7. Commit UI changes + golden images together
+8. Verify: `flutter test` passes
 
 ### Example Verification Workflow
 
@@ -193,14 +250,38 @@ StrReplace(...)
 // 2. IMMEDIATELY verify
 ReadLints(paths: ["lib/screens/my_screen.dart"])
 
-// 3. If issues found, fix them
+// 3. If UI file changed, check for golden tests
+// If test/screens/my_screen_golden_test.dart exists:
+//   Run: flutter test test/screens/my_screen_golden_test.dart --update-goldens
+//   Commit golden PNG files with UI changes
+
+// 4. Format code
+// Run: dart format .
+
+// 5. Run analyzer
+// Run: flutter analyze
+
+// 6. If issues found, fix them
 StrReplace(...) // fix the issues
 
-// 4. Re-verify
+// 7. Re-verify
 ReadLints(paths: ["lib/screens/my_screen.dart"])
 
-// 5. Only NOW respond to user with "✅ Verified clean"
+// 8. Only NOW commit and respond to user with "✅ Verified clean"
 ```
+
+### ⚠️ UI CHANGE REMINDER ⚠️
+
+**EVERY TIME you modify a UI file** (`lib/screens/*.dart` or `lib/widgets/*.dart`):
+
+1. **Check for golden tests**: Look for `test/screens/<screen>_golden_test.dart` or `test/widgets/<widget>_golden_test.dart`
+2. **If golden test exists**: 
+   - Run `flutter test <test_file> --update-goldens` BEFORE committing
+   - Commit the updated PNG files WITH your UI changes (same commit)
+3. **Always format**: Run `dart format .` before committing
+4. **Always check**: Run ReadLints and `flutter analyze` before committing
+
+**Remember**: UI change → Check for goldens → Update goldens → Format → Commit together
 
 ### When Verification Fails
 
@@ -411,16 +492,28 @@ All commands must complete successfully before opening a PR.
 **CRITICAL**: AI assistants MUST complete ALL steps below before opening or pushing a PR.
 
 **MANDATORY PRE-PR CHECKLIST** (must complete ALL items):
-1. ✅ **Format code**: `dart format .`
+1. ✅ **Format code**: `dart format .` (MUST run before every commit)
 2. ✅ **Run analyzer**: `flutter analyze` (must show "No issues found!")
-3. ✅ **Check for golden test files**: If you created or modified any `*_golden_test.dart` files, you MUST:
+3. ✅ **Check for UI changes**: If you modified ANY `lib/screens/*.dart` or `lib/widgets/*.dart`:
+   - Check if corresponding golden test exists
+   - If golden test exists → Run `flutter test <test_file> --update-goldens`
+   - Commit golden PNG files WITH the UI changes (same commit)
+4. ✅ **Check for golden test files**: If you created or modified any `*_golden_test.dart` files, you MUST:
    - Run `flutter test <test_file_path> --update-goldens` to generate golden images
    - Verify golden images were created in `test/**/goldens/` directory
    - Commit the golden PNG files with your test code
    - Re-run tests to verify they pass: `flutter test <test_file_path>`
-4. ✅ **Run all tests**: `flutter test` (must pass with 0 failures)
-5. ✅ **Verify no linter errors**: Use ReadLints tool on modified files
-6. ✅ **Do NOT open/push PRs** until ALL above steps are complete
+5. ✅ **Run all tests**: `flutter test` (must pass with 0 failures)
+6. ✅ **Verify no linter errors**: Use ReadLints tool on modified files
+7. ✅ **Do NOT open/push PRs** until ALL above steps are complete
+
+**FOR EVERY COMMIT ON AN OPEN PR**:
+- ✅ Format code: `dart format .`
+- ✅ Check linter: ReadLints on modified files
+- ✅ Run analyzer: `flutter analyze` (must be clean)
+- ✅ If UI changed: Update goldens and commit together
+- ✅ Verify build: Code must compile
+- ✅ All tests pass: `flutter test`
 
 **Golden Test Rule (CRITICAL - DO NOT SKIP)**:
 - If you create a new `*_golden_test.dart` file → YOU MUST update goldens BEFORE committing
