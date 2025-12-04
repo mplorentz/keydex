@@ -39,9 +39,8 @@ class VaultDetailButtonStack extends ConsumerWidget {
           error: (_, __) => const SizedBox.shrink(),
           data: (currentPubkey) {
             final isOwned = currentPubkey != null && vault.isOwned(currentPubkey);
-            final isSteward = currentPubkey != null &&
-                !vault.isOwned(currentPubkey) &&
-                vault.shards.isNotEmpty;
+            final isSteward =
+                currentPubkey != null && !vault.isOwned(currentPubkey) && vault.shards.isNotEmpty;
 
             // Watch vault for Generate and Distribute Keys button
             final vaultAsync = ref.watch(vaultProvider(vaultId));

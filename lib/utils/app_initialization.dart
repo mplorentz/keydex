@@ -49,7 +49,7 @@ Future<void> initializeAppServices(
 /// - [ref] - WidgetRef to access providers
 Future<void> initializeAppAndRefreshKeys(WidgetRef ref) async {
   await initializeAppServices(ref);
-  
+
   // Invalidate providers to trigger rebuild
   ref.invalidate(currentPublicKeyProvider);
   ref.invalidate(currentPublicKeyBech32Provider);

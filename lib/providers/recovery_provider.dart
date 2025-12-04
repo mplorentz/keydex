@@ -40,14 +40,12 @@ final recoveryStatusProvider = Provider.family<AsyncValue<RecoveryStatus>, Strin
       }
 
       // Check if we can recover (has sufficient shards)
-      final canRecover =
-          manageableRequest != null &&
+      final canRecover = manageableRequest != null &&
           manageableRequest.approvedCount >= manageableRequest.threshold;
 
       // Check if current user is the initiator
       final currentPubkey = currentPubkeyAsync.value;
-      final isInitiator =
-          manageableRequest != null &&
+      final isInitiator = manageableRequest != null &&
           currentPubkey != null &&
           manageableRequest.initiatorPubkey == currentPubkey;
 
@@ -91,9 +89,7 @@ final recoveryRequestByIdProvider = Provider.family<AsyncValue<RecoveryRequest?>
   // We need to find which vault contains this recovery request
   // Since we don't know the vault ID upfront, we get it from the service once
   // then watch that vault's stream
-  return ref
-      .watch(_recoveryRequestVaultIdProvider(recoveryRequestId))
-      .when(
+  return ref.watch(_recoveryRequestVaultIdProvider(recoveryRequestId)).when(
         data: (vaultId) {
           if (vaultId == null) {
             return const AsyncValue.data(null);
@@ -140,40 +136,40 @@ final _recoveryRequestVaultIdProvider = FutureProvider.family<String?, String>((
 /// This watches the recovery request and computes the status automatically
 final recoveryStatusByIdProvider =
     Provider.family<AsyncValue<recovery_status.RecoveryStatus?>, String>((ref, recoveryRequestId) {
-      final requestAsync = ref.watch(recoveryRequestByIdProvider(recoveryRequestId));
+  final requestAsync = ref.watch(recoveryRequestByIdProvider(recoveryRequestId));
 
-      return requestAsync.when(
-        data: (request) {
-          if (request == null) return const AsyncValue.data(null);
+  return requestAsync.when(
+    data: (request) {
+      if (request == null) return const AsyncValue.data(null);
 
-          // Compute recovery status from the request
-          final collectedShardIds = request.stewardResponses.values
-              .where((r) => r.shardData != null)
-              .map((r) => r.pubkey)
-              .toList();
+      // Compute recovery status from the request
+      final collectedShardIds = request.stewardResponses.values
+          .where((r) => r.shardData != null)
+          .map((r) => r.pubkey)
+          .toList();
 
-          final threshold = request.threshold;
-          final totalStewards = request.totalStewards;
-          final respondedCount = request.respondedCount;
-          final approvedCount = request.approvedCount;
-          final deniedCount = request.deniedCount;
-          final canRecover = approvedCount >= threshold;
+      final threshold = request.threshold;
+      final totalStewards = request.totalStewards;
+      final respondedCount = request.respondedCount;
+      final approvedCount = request.approvedCount;
+      final deniedCount = request.deniedCount;
+      final canRecover = approvedCount >= threshold;
 
-          return AsyncValue.data(
-            recovery_status.RecoveryStatus(
-              recoveryRequestId: recoveryRequestId,
-              totalStewards: totalStewards,
-              respondedCount: respondedCount,
-              approvedCount: approvedCount,
-              deniedCount: deniedCount,
-              collectedShardIds: collectedShardIds,
-              threshold: threshold,
-              canRecover: canRecover,
-              lastUpdated: DateTime.now(),
-            ),
-          );
-        },
-        loading: () => const AsyncValue.loading(),
-        error: (error, stack) => AsyncValue.error(error, stack),
+      return AsyncValue.data(
+        recovery_status.RecoveryStatus(
+          recoveryRequestId: recoveryRequestId,
+          totalStewards: totalStewards,
+          respondedCount: respondedCount,
+          approvedCount: approvedCount,
+          deniedCount: deniedCount,
+          collectedShardIds: collectedShardIds,
+          threshold: threshold,
+          canRecover: canRecover,
+          lastUpdated: DateTime.now(),
+        ),
       );
-    });
+    },
+    loading: () => const AsyncValue.loading(),
+    error: (error, stack) => AsyncValue.error(error, stack),
+  );
+});

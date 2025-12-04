@@ -122,11 +122,11 @@ bool isValidName(String name) {
 /// Expected format: nsec1 followed by bech32-encoded data
 bool isValidNsec(String nsec) {
   if (nsec.isEmpty || !nsec.startsWith('nsec1')) return false;
-  
+
   // Basic validation: nsec1 + at least 58 characters (typical bech32 encoded key)
   // Full bech32 validation would require more complex logic
   if (nsec.length < 63) return false;
-  
+
   // Bech32 characters: a-z, 0-9 (excludes 1, b, i, o)
   final bech32Regex = RegExp(r'^nsec1[ac-hj-np-z02-9]+$');
   return bech32Regex.hasMatch(nsec);
@@ -137,14 +137,14 @@ bool isValidNsec(String nsec) {
 /// Expected format: bunker://<pubkey>?relay=<relay_url>
 bool isValidBunkerUrl(String url) {
   if (url.isEmpty || !url.startsWith('bunker://')) return false;
-  
+
   try {
     final uri = Uri.parse(url);
     if (uri.scheme != 'bunker') return false;
-    
+
     // Should have a host (pubkey) and a relay query parameter
     if (uri.host.isEmpty) return false;
-    
+
     return true;
   } catch (e) {
     return false;

@@ -270,9 +270,8 @@ BackupConfig backupConfigFromJson(Map<String, dynamic> json) {
     specVersion: json['specVersion'] as String,
     threshold: json['threshold'] as int,
     totalKeys: json['totalKeys'] as int,
-    stewards: (json['stewards'] as List)
-        .map((h) => stewardFromJson(h as Map<String, dynamic>))
-        .toList(),
+    stewards:
+        (json['stewards'] as List).map((h) => stewardFromJson(h as Map<String, dynamic>)).toList(),
     relays: (json['relays'] as List).cast<String>(),
     instructions: json['instructions'] as String?,
     createdAt: DateTime.parse(json['createdAt'] as String),
