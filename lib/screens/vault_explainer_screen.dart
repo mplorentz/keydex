@@ -89,8 +89,8 @@ class VaultExplainerScreen extends StatelessWidget {
           ),
           RowButton(
             onPressed: () async {
-              // Navigate to vault creation
-              final result = await Navigator.push(
+              // Navigate to vault creation (regular push, not modal)
+              final result = await Navigator.push<String>(
                 context,
                 MaterialPageRoute(
                   builder: (context) => VaultCreateScreen(
@@ -98,13 +98,12 @@ class VaultExplainerScreen extends StatelessWidget {
                     initialName: initialName,
                     isOnboarding: isOnboarding,
                   ),
-                  fullscreenDialog: !isOnboarding, // Only modal in normal mode
                 ),
               );
 
-              // If in normal mode and vault was created, pop with the vaultId
+              // If vault was created, pop with the vaultId
               // so VaultListScreen can navigate to VaultDetailScreen
-              if (!isOnboarding && result != null && context.mounted) {
+              if (result != null && context.mounted) {
                 Navigator.pop(context, result);
               }
             },

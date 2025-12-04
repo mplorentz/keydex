@@ -1165,10 +1165,12 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
         );
 
         if (shouldDiscard == true && mounted) {
-          Navigator.of(context).pop();
+          // Pop with vaultId so the vault detail screen is shown
+          Navigator.of(context).pop(widget.vaultId);
         }
       } else {
-        Navigator.of(context).pop();
+        // Pop with vaultId so the vault detail screen is shown
+        Navigator.of(context).pop(widget.vaultId);
       }
     }
   }

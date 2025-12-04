@@ -96,6 +96,7 @@ class _VaultCreateScreenState extends ConsumerState<VaultCreateScreen> with Vaul
   Future<void> _navigateToBackupConfig(String vaultId) async {
     if (!mounted) return;
 
+    // Regular push (not modal) for BackupConfigScreen
     final result = await Navigator.push<String>(
       context,
       MaterialPageRoute(
@@ -103,7 +104,6 @@ class _VaultCreateScreenState extends ConsumerState<VaultCreateScreen> with Vaul
           vaultId: vaultId,
           isOnboarding: widget.isOnboarding,
         ),
-        fullscreenDialog: !widget.isOnboarding,
       ),
     );
 
