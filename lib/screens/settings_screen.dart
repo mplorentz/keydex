@@ -21,10 +21,7 @@ class SettingsScreen extends ConsumerWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-        centerTitle: false,
-      ),
+      appBar: AppBar(title: const Text('Settings'), centerTitle: false),
       body: ListView(
         children: [
           ListTile(
@@ -34,10 +31,7 @@ class SettingsScreen extends ConsumerWidget {
                 color: theme.colorScheme.surfaceContainer,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(
-                Icons.wifi,
-                color: theme.colorScheme.onSurface,
-              ),
+              child: Icon(Icons.wifi, color: theme.colorScheme.onSurface),
             ),
             title: const Text('Relay Management'),
             subtitle: const Text('Configure and manage Nostr relays'),
@@ -45,9 +39,7 @@ class SettingsScreen extends ConsumerWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => const RelayManagementScreen(),
-                ),
+                MaterialPageRoute(builder: (context) => const RelayManagementScreen()),
               );
             },
           ),
@@ -59,10 +51,7 @@ class SettingsScreen extends ConsumerWidget {
                 color: theme.colorScheme.surfaceContainer,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(
-                Icons.bug_report,
-                color: theme.colorScheme.onSurface,
-              ),
+              child: Icon(Icons.bug_report, color: theme.colorScheme.onSurface),
             ),
             title: const Text('Debug Info'),
             subtitle: const Text('View keys and app information'),
@@ -74,6 +63,3 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 }
-
-
-
