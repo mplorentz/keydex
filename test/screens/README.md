@@ -27,11 +27,11 @@ flutter test test/screens --plain-name="empty state"
 
 The `vault_list_screen_golden_test.dart` includes tests for:
 
-1. **Empty State** - No vaultes to display
-2. **Error State** - Failed to load vaultes
+1. **Empty State** - No vaults to display
+2. **Error State** - Failed to load vaults
 3. **Single Owned Vault** - User owns the vault (has content)
 4. **Single Steward** - User holds a shard for someone else's vault
-5. **Multiple Vaultes** - List with multiple vaultes in different states
+5. **Multiple Vaults** - List with multiple vaults in different states
 6. **Multiple Device Sizes** - Same content on phone, iPhone 11, and tablet
 
 ## Golden Files Location

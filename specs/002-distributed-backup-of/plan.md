@@ -1,4 +1,4 @@
-# Implementation Plan: Distributed Backup of Vaultes
+# Implementation Plan: Distributed Backup of Vaults
 
 **Branch**: `002-distributed-backup-of` | **Date**: 2025-01-27 | **Spec**: [spec.md](./spec.md)
 **Input**: Feature specification from `/specs/002-distributed-backup-of/spec.md`
@@ -30,7 +30,7 @@
 - Phase 3-4: Implementation execution (manual or via tools)
 
 ## Summary
-Implement distributed backup functionality for Horcrux vaultes using Shamir's Secret Sharing and Nostr protocol. Users can configure backup settings during vault creation, specifying threshold and total stewards, then distribute encrypted keys to trusted contacts via Nostr gift wrap events.
+Implement distributed backup functionality for Horcrux vaults using Shamir's Secret Sharing and Nostr protocol. Users can configure backup settings during vault creation, specifying threshold and total stewards, then distribute encrypted keys to trusted contacts via Nostr gift wrap events.
 
 ## Technical Context
 **Language/Version**: Dart 3.0+ / Flutter 3.16+  

@@ -6,9 +6,9 @@ abstract class VaultService {
   /// Returns the created vault ID on success
   Future<String> createVault({required String name, required String content});
 
-  /// Retrieves all user vaultes (metadata only)
+  /// Retrieves all user vaults (metadata only)
   /// Returns list of vault metadata without decrypted content
-  Future<List<VaultMetadata>> getAllVaultes();
+  Future<List<VaultMetadata>> getAllVaults();
 
   /// Retrieves and decrypts a specific vault
   /// Requires authentication before decryption
@@ -16,16 +16,10 @@ abstract class VaultService {
 
   /// Updates an existing vault's content
   /// Re-encrypts the new content
-  Future<void> updateVault({
-    required String vaultId,
-    required String content,
-  });
+  Future<void> updateVault({required String vaultId, required String content});
 
   /// Updates an existing vault's name
-  Future<void> updateVaultName({
-    required String vaultId,
-    required String name,
-  });
+  Future<void> updateVaultName({required String vaultId, required String name});
 
   /// Permanently deletes a vault
   Future<void> deleteVault(String vaultId);
@@ -35,20 +29,10 @@ abstract class VaultService {
 }
 
 /// Vault metadata record - immutable data container
-typedef VaultMetadata = ({
-  String id,
-  String name,
-  DateTime createdAt,
-  int size,
-});
+typedef VaultMetadata = ({String id, String name, DateTime createdAt, int size});
 
 /// Vault content record - immutable data container
-typedef VaultContent = ({
-  String id,
-  String name,
-  String content,
-  DateTime createdAt,
-});
+typedef VaultContent = ({String id, String name, String content, DateTime createdAt});
 
 class VaultException implements Exception {
   final String message;

@@ -1,4 +1,4 @@
-# Data Model: Distributed Backup of Vaultes
+# Data Model: Distributed Backup of Vaults
 
 ## Core Entities
 

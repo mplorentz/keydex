@@ -21,12 +21,7 @@ final Provider<RecoveryService> recoveryServiceProvider = Provider<RecoveryServi
   // Use ref.read() to break circular dependency with NdkService
   final NdkService ndkService = ref.read(ndkServiceProvider);
   final vaultShareService = ref.read(vaultShareServiceProvider);
-  final service = RecoveryService(
-    repository,
-    backupService,
-    ndkService,
-    vaultShareService,
-  );
+  final service = RecoveryService(repository, backupService, ndkService, vaultShareService);
 
   // Clean up streams when disposed
   ref.onDispose(() {
@@ -57,12 +52,7 @@ class RecoveryService {
   final _recoveryRequestController = StreamController<RecoveryRequest>.broadcast();
   Stream<RecoveryRequest> get recoveryRequestStream => _recoveryRequestController.stream;
 
-  RecoveryService(
-    this.repository,
-    this.backupService,
-    this._ndkService,
-    this._vaultShareService,
-  ) {
+  RecoveryService(this.repository, this.backupService, this._ndkService, this._vaultShareService) {
     _loadViewedNotificationIds();
     _setupNdkStreamListeners();
   }
@@ -75,10 +65,7 @@ class RecoveryService {
         try {
           await addIncomingRecoveryRequest(recoveryRequest);
         } catch (e) {
-          Log.error(
-            'Error processing incoming recovery request from stream',
-            e,
-          );
+          Log.error('Error processing incoming recovery request from stream', e);
         }
       },
       onError: (error) {
@@ -145,9 +132,7 @@ class RecoveryService {
     try {
       final List<dynamic> jsonList = json.decode(jsonData);
       _viewedNotificationIds = Set<String>.from(jsonList);
-      Log.info(
-        'Loaded ${_viewedNotificationIds!.length} viewed notification IDs from storage',
-      );
+      Log.info('Loaded ${_viewedNotificationIds!.length} viewed notification IDs from storage');
     } catch (e) {
       Log.error('Error loading viewed notification IDs', e);
       _viewedNotificationIds = {};
@@ -214,9 +199,7 @@ class RecoveryService {
     await initialize();
 
     // Check if user already has an active recovery request for this vault
-    final existingRequests = await repository.getRecoveryRequestsForVault(
-      vaultId,
-    );
+    final existingRequests = await repository.getRecoveryRequestsForVault(vaultId);
     final hasActiveRequest = existingRequests.any(
       (r) => r.initiatorPubkey == initiatorPubkey && r.status.isActive,
     );
@@ -232,17 +215,12 @@ class RecoveryService {
     final requestId = '${generateSecureID()}_$vaultId';
     final expiresAt = expirationDuration != null
         ? DateTime.now().add(expirationDuration)
-        : DateTime.now().add(
-            const Duration(hours: 24),
-          ); // Default 24 hour expiration
+        : DateTime.now().add(const Duration(hours: 24)); // Default 24 hour expiration
 
     // Initialize steward responses
     final stewardResponses = <String, RecoveryResponse>{};
     for (final pubkey in stewardPubkeys) {
-      stewardResponses[pubkey] = RecoveryResponse(
-        pubkey: pubkey,
-        approved: false,
-      );
+      stewardResponses[pubkey] = RecoveryResponse(pubkey: pubkey, approved: false);
     }
 
     final recoveryRequest = RecoveryRequest(
@@ -278,9 +256,7 @@ class RecoveryService {
     await initialize();
 
     // Check if request already exists in vault (source of truth)
-    final existingRequests = await repository.getRecoveryRequestsForVault(
-      request.vaultId,
-    );
+    final existingRequests = await repository.getRecoveryRequestsForVault(request.vaultId);
     final existingRequest = existingRequests.where((r) => r.id == request.id).firstOrNull;
 
     if (existingRequest != null) {
@@ -312,7 +288,7 @@ class RecoveryService {
       // Get requests for a specific vault
       requests = await repository.getRecoveryRequestsForVault(vaultId);
     } else {
-      // Get all requests across all vaultes
+      // Get all requests across all vaults
       requests = await repository.getAllRecoveryRequests();
     }
 
@@ -403,9 +379,7 @@ class RecoveryService {
     }
 
     // Update the response
-    final updatedResponses = Map<String, RecoveryResponse>.from(
-      request.stewardResponses,
-    );
+    final updatedResponses = Map<String, RecoveryResponse>.from(request.stewardResponses);
     updatedResponses[responderPubkey] = RecoveryResponse(
       pubkey: responderPubkey,
       approved: approved,
@@ -429,10 +403,7 @@ class RecoveryService {
     }
 
     // Update the request
-    final updatedRequest = request.copyWith(
-      status: newStatus,
-      stewardResponses: updatedResponses,
-    );
+    final updatedRequest = request.copyWith(status: newStatus, stewardResponses: updatedResponses);
 
     // Update in vault (single source of truth)
     try {
@@ -478,9 +449,7 @@ class RecoveryService {
     if (approved) {
       final shards = await repository.getShardsForVault(request.vaultId);
       if (shards.isEmpty) {
-        throw ArgumentError(
-          'No shard data found for vault ${request.vaultId}',
-        );
+        throw ArgumentError('No shard data found for vault ${request.vaultId}');
       }
       // Select the shard with the highest distributionVersion (most recent)
       // If versions are equal or null, use the most recent createdAt timestamp
@@ -518,9 +487,7 @@ class RecoveryService {
           approved,
           relays: shardData.relayUrls!,
         );
-        Log.info(
-          'Sent recovery response via Nostr for request $recoveryRequestId',
-        );
+        Log.info('Sent recovery response via Nostr for request $recoveryRequestId');
       } catch (e) {
         Log.error('Failed to send recovery response via Nostr', e);
         // Continue anyway - the response is still recorded locally
@@ -550,26 +517,19 @@ class RecoveryService {
       updatedRequest,
     );
 
-    Log.info(
-      'Updated recovery request $recoveryRequestId status to ${status.displayName}',
-    );
+    Log.info('Updated recovery request $recoveryRequestId status to ${status.displayName}');
   }
 
   /// Cancel a recovery request
   Future<void> cancelRecoveryRequest(String recoveryRequestId) async {
-    await _updateRecoveryRequestStatus(
-      recoveryRequestId,
-      RecoveryRequestStatus.cancelled,
-    );
+    await _updateRecoveryRequestStatus(recoveryRequestId, RecoveryRequestStatus.cancelled);
 
     // Delete all recovery shards for this recovery request
     // Note: User's own shard is stored separately in _cachedShardData (keyed by vaultId)
     // and won't be affected by removeRecoveryShards() which only deletes recovery shards
     // (keyed by recoveryRequestId)
     await _vaultShareService.removeRecoveryShards(recoveryRequestId);
-    Log.info(
-      'Deleted recovery shards for cancelled recovery request $recoveryRequestId',
-    );
+    Log.info('Deleted recovery shards for cancelled recovery request $recoveryRequestId');
   }
 
   /// Exit recovery mode after successful recovery
@@ -585,10 +545,7 @@ class RecoveryService {
     }
 
     // Update recovery request status to archived
-    await _updateRecoveryRequestStatus(
-      recoveryRequestId,
-      RecoveryRequestStatus.archived,
-    );
+    await _updateRecoveryRequestStatus(recoveryRequestId, RecoveryRequestStatus.archived);
 
     // Delete recovered content from vault (set to null)
     final vault = await repository.getVault(request.vaultId);
@@ -639,9 +596,7 @@ class RecoveryService {
     // Get the recovery status to check if recovery is possible
     final status = await getRecoveryStatus(recoveryRequestId);
     if (status == null || !status.canRecover) {
-      throw Exception(
-        'Recovery is not yet possible - insufficient shares collected',
-      );
+      throw Exception('Recovery is not yet possible - insufficient shares collected');
     }
 
     // Collect shards from approved responses
@@ -655,9 +610,7 @@ class RecoveryService {
     }
 
     if (shards.length < request.threshold) {
-      throw Exception(
-        'Insufficient shards: need ${request.threshold}, have ${shards.length}',
-      );
+      throw Exception('Insufficient shards: need ${request.threshold}, have ${shards.length}');
     }
 
     // Reconstruct the vault content from the shards
@@ -670,9 +623,7 @@ class RecoveryService {
     }
 
     // Update the recovery request status to completed
-    final updatedRequest = request.copyWith(
-      status: RecoveryRequestStatus.completed,
-    );
+    final updatedRequest = request.copyWith(status: RecoveryRequestStatus.completed);
 
     // Update in vault (single source of truth)
     try {
@@ -686,16 +637,12 @@ class RecoveryService {
       rethrow;
     }
 
-    Log.info(
-      'Successfully recovered vault ${request.vaultId} from $recoveryRequestId',
-    );
+    Log.info('Successfully recovered vault ${request.vaultId} from $recoveryRequestId');
     return content;
   }
 
   /// Get steward responses for a recovery request
-  Future<List<RecoveryResponse>> getKeyHolderResponses(
-    String recoveryRequestId,
-  ) async {
+  Future<List<RecoveryResponse>> getKeyHolderResponses(String recoveryRequestId) async {
     await initialize();
 
     final request = await getRecoveryRequest(recoveryRequestId);
@@ -734,9 +681,7 @@ class RecoveryService {
       rethrow;
     }
 
-    Log.info(
-      'Updated recovery request $recoveryRequestId status to ${status.displayName}',
-    );
+    Log.info('Updated recovery request $recoveryRequestId status to ${status.displayName}');
   }
 
   /// Send recovery request to stewards via Nostr gift wraps
@@ -789,9 +734,7 @@ class RecoveryService {
         nostrEventId: eventIds.isNotEmpty ? eventIds.first : null,
       );
 
-      Log.info(
-        'Successfully sent recovery request ${request.id} to ${eventIds.length} stewards',
-      );
+      Log.info('Successfully sent recovery request ${request.id} to ${eventIds.length} stewards');
       return eventIds;
     } catch (e) {
       Log.error('Failed to send recovery request via Nostr', e);
@@ -830,9 +773,7 @@ class RecoveryService {
 
       final responseJson = json.encode(responseData);
 
-      Log.debug(
-        'Sending recovery response to ${request.initiatorPubkey.substring(0, 8)}...',
-      );
+      Log.debug('Sending recovery response to ${request.initiatorPubkey.substring(0, 8)}...');
 
       // Publish using NdkService
       final eventId = await _ndkService.publishEncryptedEvent(
