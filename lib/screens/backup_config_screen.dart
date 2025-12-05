@@ -14,6 +14,7 @@ import '../providers/vault_provider.dart';
 import '../utils/backup_distribution_helper.dart';
 import '../widgets/row_button_stack.dart';
 import '../widgets/recovery_rules_widget.dart';
+import 'vault_list_screen.dart';
 
 /// Recovery plan screen for setting up distributed backup
 ///
@@ -25,8 +26,13 @@ import '../widgets/recovery_rules_widget.dart';
 /// Note: Requires a valid vaultId to load the vault content for backup
 class BackupConfigScreen extends ConsumerStatefulWidget {
   final String vaultId;
+  final bool isOnboarding;
 
-  const BackupConfigScreen({super.key, required this.vaultId});
+  const BackupConfigScreen({
+    super.key,
+    required this.vaultId,
+    this.isOnboarding = false,
+  });
 
   @override
   ConsumerState<BackupConfigScreen> createState() => _BackupConfigScreenState();
@@ -394,11 +400,19 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                   icon: Icons.close,
                   text: 'Cancel',
                 ),
-                RowButtonConfig(
-                  onPressed: _canCreateBackup() && !_isCreating ? _saveBackup : () {},
-                  icon: _isCreating ? Icons.hourglass_empty : Icons.save,
-                  text: _isCreating ? 'Saving...' : 'Save',
-                ),
+                // Show Skip if no stewards, Save otherwise
+                if (_stewards.isEmpty)
+                  RowButtonConfig(
+                    onPressed: _handleSkip,
+                    icon: Icons.skip_next,
+                    text: 'Skip',
+                  )
+                else
+                  RowButtonConfig(
+                    onPressed: !_isCreating ? _saveBackup : null,
+                    icon: _isCreating ? Icons.hourglass_empty : Icons.save,
+                    text: _isCreating ? 'Saving...' : 'Save',
+                  ),
               ],
             ),
           ],
@@ -1083,33 +1097,89 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
   }
 
   Future<void> _handleCancel() async {
-    if (_hasUnsavedChanges) {
-      final shouldDiscard = await showDialog<bool>(
+    // In onboarding mode, show different dialog
+    if (widget.isOnboarding) {
+      final shouldCancel = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Discard Changes?'),
+          title: const Text('Cancel Vault Creation?'),
           content: const Text(
-            'You have unsaved changes. Are you sure you want to discard them?',
+            'This will delete the vault you just created. Are you sure?',
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel'),
+              child: const Text('Go Back'),
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Discard'),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.red,
+              ),
+              child: const Text('Delete Vault'),
             ),
           ],
         ),
       );
 
-      if (shouldDiscard == true && mounted) {
-        Navigator.of(context).pop();
+      if (shouldCancel == true && mounted) {
+        // Delete the vault
+        try {
+          final repository = ref.read(vaultRepositoryProvider);
+          await repository.deleteVault(widget.vaultId);
+        } catch (e) {
+          debugPrint('Error deleting vault during onboarding cancel: $e');
+        }
+
+        // Navigate to vault list screen
+        if (mounted) {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(
+              builder: (context) => const VaultListScreen(),
+            ),
+            (route) => false,
+          );
+        }
       }
     } else {
-      Navigator.of(context).pop();
+      // Normal mode: handle unsaved changes
+      if (_hasUnsavedChanges) {
+        final shouldDiscard = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Discard Changes?'),
+            content: const Text(
+              'You have unsaved changes. Are you sure you want to discard them?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Discard'),
+              ),
+            ],
+          ),
+        );
+
+        if (shouldDiscard == true && mounted) {
+          // Pop with vaultId so the vault detail screen is shown
+          Navigator.of(context).pop(widget.vaultId);
+        }
+      } else {
+        // Pop with vaultId so the vault detail screen is shown
+        Navigator.of(context).pop(widget.vaultId);
+      }
     }
+  }
+
+  /// Skip saving backup config (when no stewards are configured)
+  /// Just navigates without saving any backup configuration
+  void _handleSkip() {
+    if (!mounted) return;
+    Navigator.pop(context, widget.vaultId);
   }
 
   Future<void> _saveBackup() async {
@@ -1232,8 +1302,7 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
           _hasUnsavedChanges = false;
         });
 
-        // Navigate to vault detail screen
-        Navigator.pop(context, true);
+        bool shouldShowSuccessSnack = true;
 
         if (!shouldAutoDistribute) {
           // Check if we added new invited stewards to an existing plan with distributed keys
@@ -1256,7 +1325,8 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
 
             final addedInvitedCount = newInvitedNames.difference(existingInvitedNames).length;
 
-            if (addedInvitedCount > 0 && mounted) {
+            if (addedInvitedCount > 0) {
+              shouldShowSuccessSnack = false;
               // Show alert explaining that keys need to be redistributed
               await showDialog(
                 context: context,
@@ -1275,22 +1345,25 @@ class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
                   ],
                 ),
               );
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Backup configuration saved successfully!'),
-                  backgroundColor: Colors.green,
-                ),
-              );
             }
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Backup configuration saved successfully!'),
-                backgroundColor: Colors.green,
-              ),
-            );
           }
+        }
+
+        if (shouldShowSuccessSnack && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Backup configuration saved successfully!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+
+        if (mounted) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              Navigator.pop(context, widget.vaultId);
+            }
+          });
         }
       }
     } catch (e) {

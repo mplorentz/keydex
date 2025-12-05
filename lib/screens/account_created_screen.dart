@@ -57,6 +57,7 @@ class _AccountCreatedScreenState extends ConsumerState<AccountCreatedScreen> {
             builder: (context) => VaultExplainerScreen(
               initialContent: widget.nsec,
               initialName: 'Nostr Key Backup',
+              isOnboarding: true,
             ),
           ),
           (route) => false, // Clear all previous routes

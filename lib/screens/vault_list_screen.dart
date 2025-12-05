@@ -4,6 +4,7 @@ import '../providers/vault_provider.dart';
 import '../widgets/row_button.dart';
 import 'recovery_notification_overlay.dart';
 import 'vault_explainer_screen.dart';
+import 'vault_detail_screen.dart';
 import 'settings_screen.dart';
 import '../widgets/vault_card.dart';
 
@@ -129,11 +130,25 @@ class VaultListScreen extends ConsumerWidget {
           ),
           // Create vault button at bottom
           RowButton(
-            onPressed: () {
-              Navigator.push(
+            onPressed: () async {
+              // Show vault creation flow as a modal
+              final vaultId = await Navigator.push<String>(
                 context,
-                MaterialPageRoute(builder: (context) => const VaultExplainerScreen()),
+                MaterialPageRoute(
+                  builder: (context) => const VaultExplainerScreen(),
+                  fullscreenDialog: true,
+                ),
               );
+
+              // If vault was created, navigate to its detail screen
+              if (vaultId != null && context.mounted) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => VaultDetailScreen(vaultId: vaultId),
+                  ),
+                );
+              }
             },
             icon: Icons.add,
             text: 'Create Vault',
