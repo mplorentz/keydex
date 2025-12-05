@@ -3,11 +3,11 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_toolkit/golden_toolkit.dart';
-import 'package:keydex/models/invitation_link.dart';
-import 'package:keydex/models/invitation_status.dart';
-import 'package:keydex/providers/invitation_provider.dart';
-import 'package:keydex/providers/key_provider.dart';
-import 'package:keydex/screens/invitation_acceptance_screen.dart';
+import 'package:horcrux/models/invitation_link.dart';
+import 'package:horcrux/models/invitation_status.dart';
+import 'package:horcrux/providers/invitation_provider.dart';
+import 'package:horcrux/providers/key_provider.dart';
+import 'package:horcrux/screens/invitation_acceptance_screen.dart';
 import '../helpers/golden_test_helpers.dart';
 
 void main() {
@@ -29,8 +29,8 @@ void main() {
   }) {
     return (
       inviteCode: inviteCode,
-      lockboxId: 'lockbox-123',
-      lockboxName: 'My Shared Lockbox',
+      vaultId: 'vault-123',
+      vaultName: 'My Shared Vault',
       ownerPubkey: ownerPubkey,
       relayUrls: relayUrls ?? ['wss://relay.example.com'],
       inviteeName: inviteeName,

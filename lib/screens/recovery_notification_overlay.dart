@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/recovery_request.dart';
-import '../models/lockbox.dart';
-import '../models/key_holder.dart';
+import '../models/vault.dart';
+import '../models/steward.dart';
 import '../services/recovery_service.dart';
 import '../services/logger.dart';
-import '../providers/lockbox_provider.dart';
+import '../providers/vault_provider.dart';
 import 'recovery_request_detail_screen.dart';
 
 /// Overlay widget for displaying recovery request notifications
@@ -163,9 +163,9 @@ class _RecoveryNotificationOverlayState extends ConsumerState<RecoveryNotificati
   }
 
   Widget _buildNotificationItem(RecoveryRequest request) {
-    final lockboxAsync = ref.watch(lockboxProvider(request.lockboxId));
+    final vaultAsync = ref.watch(vaultProvider(request.vaultId));
 
-    return lockboxAsync.when(
+    return vaultAsync.when(
       loading: () => const Card(
         margin: EdgeInsets.only(bottom: 8),
         child: ListTile(
@@ -180,10 +180,10 @@ class _RecoveryNotificationOverlayState extends ConsumerState<RecoveryNotificati
           title: Text('Error loading vault'),
         ),
       ),
-      data: (lockbox) {
-        final vaultName = lockbox?.name ?? 'Unknown Vault';
+      data: (vault) {
+        final vaultName = vault?.name ?? 'Unknown Vault';
         final initiatorName = _getInitiatorName(
-          lockbox,
+          vault,
           request.initiatorPubkey,
         );
 
@@ -252,20 +252,20 @@ class _RecoveryNotificationOverlayState extends ConsumerState<RecoveryNotificati
     );
   }
 
-  String? _getInitiatorName(Lockbox? lockbox, String initiatorPubkey) {
-    if (lockbox == null) return null;
+  String? _getInitiatorName(Vault? vault, String initiatorPubkey) {
+    if (vault == null) return null;
 
-    // First check lockbox ownerName
-    if (lockbox.ownerPubkey == initiatorPubkey) {
-      return lockbox.ownerName;
+    // First check vault ownerName
+    if (vault.ownerPubkey == initiatorPubkey) {
+      return vault.ownerName;
     }
 
     // If not found and we have shards, check shard data
-    if (lockbox.shards.isNotEmpty) {
-      final firstShard = lockbox.shards.first;
+    if (vault.shards.isNotEmpty) {
+      final firstShard = vault.shards.first;
       // Check if initiator is the owner
       if (firstShard.creatorPubkey == initiatorPubkey) {
-        return firstShard.ownerName ?? lockbox.ownerName;
+        return firstShard.ownerName ?? vault.ownerName;
       } else if (firstShard.peers != null) {
         // Check if initiator is in peers
         for (final peer in firstShard.peers!) {
@@ -277,9 +277,9 @@ class _RecoveryNotificationOverlayState extends ConsumerState<RecoveryNotificati
     }
 
     // Also check backupConfig
-    if (lockbox.backupConfig != null) {
+    if (vault.backupConfig != null) {
       try {
-        final keyHolder = lockbox.backupConfig!.keyHolders.firstWhere(
+        final keyHolder = vault.backupConfig!.stewards.firstWhere(
           (kh) => kh.pubkey == initiatorPubkey,
         );
         return keyHolder.displayName;

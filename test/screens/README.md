@@ -1,6 +1,6 @@
-# Golden Tests for Lockbox List Screen
+# Golden Tests for Vault List Screen
 
-This directory contains golden (screenshot) tests for the Keydex app using [Golden Toolkit](https://pub.dev/packages/golden_toolkit).
+This directory contains golden (screenshot) tests for the Horcrux app using [Golden Toolkit](https://pub.dev/packages/golden_toolkit).
 
 ## What Are Golden Tests?
 
@@ -25,13 +25,13 @@ flutter test test/screens --plain-name="empty state"
 
 ## Test Coverage
 
-The `lockbox_list_screen_golden_test.dart` includes tests for:
+The `vault_list_screen_golden_test.dart` includes tests for:
 
-1. **Empty State** - No lockboxes to display
-2. **Error State** - Failed to load lockboxes
-3. **Single Owned Lockbox** - User owns the lockbox (has content)
-4. **Single Key Holder** - User holds a shard for someone else's lockbox
-5. **Multiple Lockboxes** - List with multiple lockboxes in different states
+1. **Empty State** - No vaults to display
+2. **Error State** - Failed to load vaults
+3. **Single Owned Vault** - User owns the vault (has content)
+4. **Single Steward** - User holds a shard for someone else's vault
+5. **Multiple Vaults** - List with multiple vaults in different states
 6. **Multiple Device Sizes** - Same content on phone, iPhone 11, and tablet
 
 ## Golden Files Location
@@ -53,7 +53,7 @@ Golden images are stored in: `test/screens/goldens/`
 
 3. **Update goldens (if changes are intentional)**:
    ```bash
-   flutter test test/screens/lockbox_list_screen_golden_test.dart --update-goldens
+   flutter test test/screens/vault_list_screen_golden_test.dart --update-goldens
    ```
 
 4. **Commit the updated golden files** with your code changes
@@ -117,7 +117,7 @@ You may see warnings about RenderFlex overflow during tests. These are usually h
   - Loads app fonts
   - Configures golden toolkit
 
-- `test/screens/lockbox_list_screen_golden_test.dart` - Test file
+- `test/screens/vault_list_screen_golden_test.dart` - Test file
   - Defines test theme (without Google Fonts)
   - Creates mock data
   - Tests different UI states
@@ -142,5 +142,5 @@ You may see warnings about RenderFlex overflow during tests. These are usually h
 
 - [Golden Toolkit Documentation](https://pub.dev/packages/golden_toolkit)
 - [Flutter Golden Tests Guide](https://docs.flutter.dev/cookbook/testing/widget/golden-image)
-- [Keydex Contributing Guide](../../CONTRIBUTING.md)
+- [Horcrux Contributing Guide](../../CONTRIBUTING.md)
 

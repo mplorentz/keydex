@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:keydex/models/nostr_kinds.dart';
+import 'package:horcrux/models/nostr_kinds.dart';
 
 void main() {
   group('NostrKind', () {
@@ -25,7 +25,7 @@ void main() {
       expect(NostrKind.fromValue(4), isNull);
     });
 
-    test('isCustom correctly identifies Keydex custom kinds', () {
+    test('isCustom correctly identifies Horcrux custom kinds', () {
       expect(NostrKind.seal.isCustom, isFalse);
       expect(NostrKind.giftWrap.isCustom, isFalse);
       expect(NostrKind.shardData.isCustom, isTrue);

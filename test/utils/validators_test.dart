@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:keydex/utils/validators.dart';
+import 'package:horcrux/utils/validators.dart';
 
 void main() {
   group('isValidHexPubkey', () {
@@ -325,26 +325,26 @@ void main() {
     });
   });
 
-  group('isValidLockboxId', () {
-    test('validates non-empty lockbox ID', () {
-      expect(isValidLockboxId('lockbox-123'), isTrue);
-      expect(isValidLockboxId('uuid-format-id'), isTrue);
-      expect(isValidLockboxId('a'), isTrue);
+  group('isValidVaultId', () {
+    test('validates non-empty vault ID', () {
+      expect(isValidVaultId('vault-123'), isTrue);
+      expect(isValidVaultId('uuid-format-id'), isTrue);
+      expect(isValidVaultId('a'), isTrue);
     });
 
-    test('validates lockbox ID with whitespace (trimmed)', () {
-      expect(isValidLockboxId('  lockbox-123  '), isTrue);
-      expect(isValidLockboxId(' lockbox '), isTrue);
+    test('validates vault ID with whitespace (trimmed)', () {
+      expect(isValidVaultId('  vault-123  '), isTrue);
+      expect(isValidVaultId(' vault '), isTrue);
     });
 
     test('rejects empty string', () {
-      expect(isValidLockboxId(''), isFalse);
+      expect(isValidVaultId(''), isFalse);
     });
 
-    test('rejects lockbox ID with only whitespace', () {
-      expect(isValidLockboxId('   '), isFalse);
-      expect(isValidLockboxId('\t'), isFalse);
-      expect(isValidLockboxId('\n'), isFalse);
+    test('rejects vault ID with only whitespace', () {
+      expect(isValidVaultId('   '), isFalse);
+      expect(isValidVaultId('\t'), isFalse);
+      expect(isValidVaultId('\n'), isFalse);
     });
   });
 

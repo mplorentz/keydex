@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/recovery_provider.dart';
-import '../providers/lockbox_provider.dart';
+import '../providers/vault_provider.dart';
 import '../services/recovery_service.dart';
 
 /// Widget for displaying recovery progress and status
@@ -16,7 +16,7 @@ class RecoveryProgressWidget extends ConsumerWidget {
       recoveryRequestByIdProvider(recoveryRequestId),
     );
 
-    // We need both request and lockbox to calculate proper progress
+    // We need both request and vault to calculate proper progress
     return requestAsync.when(
       loading: () => const Card(
         child: Padding(
@@ -40,21 +40,21 @@ class RecoveryProgressWidget extends ConsumerWidget {
           );
         }
 
-        // Only watch lockbox provider when we have a valid lockboxId
-        final lockboxId = request.lockboxId;
-        if (lockboxId.isEmpty) {
+        // Only watch vault provider when we have a valid vaultId
+        final vaultId = request.vaultId;
+        if (vaultId.isEmpty) {
           return const Card(
             child: Padding(
               padding: EdgeInsets.all(16),
-              child: Text('Recovery request has no lockbox ID'),
+              child: Text('Recovery request has no vault ID'),
             ),
           );
         }
 
-        final lockboxAsync = ref.watch(lockboxProvider(lockboxId));
+        final vaultAsync = ref.watch(vaultProvider(vaultId));
 
-        // Now get the lockbox to calculate proper totals
-        return lockboxAsync.when(
+        // Now get the vault to calculate proper totals
+        return vaultAsync.when(
           loading: () => const Card(
             child: Padding(
               padding: EdgeInsets.all(16),
@@ -64,10 +64,10 @@ class RecoveryProgressWidget extends ConsumerWidget {
           error: (error, stack) => Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: Text('Error loading lockbox: $error'),
+              child: Text('Error loading vault: $error'),
             ),
           ),
-          data: (lockbox) {
+          data: (vault) {
             final approvedCount = request.approvedCount;
             final threshold = request.threshold;
             final canRecover = approvedCount >= threshold;
@@ -185,15 +185,15 @@ class RecoveryProgressWidget extends ConsumerWidget {
   }
 
   Future<void> _performRecovery(BuildContext context, WidgetRef ref) async {
-    // Get the recovery request to find the lockbox
+    // Get the recovery request to find the vault
     final recoveryService = ref.read(recoveryServiceProvider);
     final request = await recoveryService.getRecoveryRequest(recoveryRequestId);
     if (request == null) return;
 
-    // Get the lockbox to access owner name
-    final lockboxAsync = ref.read(lockboxProvider(request.lockboxId));
-    final lockbox = lockboxAsync.valueOrNull;
-    final ownerName = lockbox?.ownerName ?? 'the owner';
+    // Get the vault to access owner name
+    final vaultAsync = ref.read(vaultProvider(request.vaultId));
+    final vault = vaultAsync.valueOrNull;
+    final ownerName = vault?.ownerName ?? 'the owner';
 
     if (!context.mounted) return;
 

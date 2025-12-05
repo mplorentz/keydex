@@ -1,4 +1,4 @@
-# Tasks: Distributed Backup of Lockboxes
+# Tasks: Distributed Backup of Vaults
 
 **Input**: Design documents from `/specs/002-distributed-backup-of/`
 **Prerequisites**: plan.md, research.md, data-model.md
@@ -37,19 +37,19 @@
 ## Phase 3.2: UI Stubs & Manual Verification (Outside-In Approach)
 **Start with user-facing components for rapid feedback**
 - [x] T002 [P] Stub BackupConfigScreen with placeholder content in lib/screens/backup_config_screen.dart
-- [x] T003 [P] Stub KeyHolderList widget with placeholder content in lib/widgets/key_holder_list.dart
+- [x] T003 [P] Stub KeyHolderList widget with placeholder content in lib/widgets/steward_list.dart
 - [x] T004 [P] Stub BackupSummary widget with placeholder content in lib/widgets/backup_summary.dart
 - [x] T005 [P] Stub RecoveryScreen with placeholder content in lib/screens/recovery_screen.dart
-- [x] T006 [P] Integrate backup config into existing lockbox creation flow in lib/screens/
+- [x] T006 [P] Integrate backup config into existing vault creation flow in lib/screens/
 - [x] T007 Manual verification: Navigate through stubbed backup UI flow
 
 ## Phase 3.3: Core Implementation - Data Models (Behind UI Components)
 - [x] T008 [P] Create BackupConfig model in lib/models/backup_config.dart
-- [x] T009 [P] Create KeyHolder model in lib/models/key_holder.dart
+- [x] T009 [P] Create KeyHolder model in lib/models/steward.dart
 - [x] T010 [P] Create ShardEvent model in lib/models/shard_event.dart
 - [x] T011 [P] Create ShardData model in lib/models/shard_data.dart
 - [x] T012 [P] Create BackupStatus enum in lib/models/backup_status.dart
-- [x] T013 [P] Create KeyHolderStatus enum in lib/models/key_holder_status.dart
+- [x] T013 [P] Create KeyHolderStatus enum in lib/models/steward_status.dart
 - [x] T014 [P] Create EventStatus enum in lib/models/event_status.dart
 
 ## Phase 3.4: Core Implementation - Services
@@ -61,10 +61,10 @@
 
 ## Phase 3.5: Core Implementation - UI Components
 - [x] T020 Implement BackupConfigScreen functionality in lib/screens/backup_config_screen.dart
-- [x] T021 Implement KeyHolderList widget functionality in lib/widgets/key_holder_list.dart
+- [x] T021 Implement KeyHolderList widget functionality in lib/widgets/steward_list.dart
 - [x] T022 Implement BackupSummary widget functionality in lib/widgets/backup_summary.dart
 - [x] T023 Implement RecoveryScreen functionality in lib/screens/recovery_screen.dart
-- [x] T024 Integrate backup configuration into lockbox creation workflow
+- [x] T024 Integrate backup configuration into vault creation workflow
 
 ## Phase 3.6: Refactoring Pass 1 (Post-Implementation)
 **Clean up implementation before adding complexity**
@@ -78,7 +78,7 @@
 - [ ] T030 Add error messages and user feedback for backup failures
 - [ ] T031 Handle Nostr relay failures and network timeouts
 - [ ] T032 Add loading states and progress indicators for backup operations
-- [ ] T033 Handle key holder acknowledgment timeouts
+- [ ] T033 Handle steward acknowledgment timeouts
 - [ ] T034 Handle specification version migration scenarios
 
 ## Phase 3.8: Refactoring Pass 2 (Post-Edge Cases)
@@ -91,7 +91,7 @@
 
 ## Phase 3.9: Unit Tests (After Implementation)
 - [ ] T040 [P] Unit tests for BackupConfig model in test/models/backup_config_test.dart
-- [ ] T041 [P] Unit tests for KeyHolder model in test/models/key_holder_test.dart
+- [ ] T041 [P] Unit tests for KeyHolder model in test/models/steward_test.dart
 - [ ] T042 [P] Unit tests for ShardEvent model in test/models/shard_event_test.dart
 - [ ] T043 [P] Unit tests for BackupService in test/services/backup_service_test.dart
 - [ ] T044 [P] Unit tests for Shamir's Secret Sharing algorithm in test/services/shamir_test.dart
@@ -107,7 +107,7 @@
 - [ ] T052 [P] Security test Shamir's Secret Sharing in test/security/shamir_security_test.dart
 - [ ] T053 [P] Integration test cross-platform backup functionality in test/integration/cross_platform_test.dart
 - [ ] T054 [P] Widget test backup configuration screen in test/widget/backup_config_screen_test.dart
-- [ ] T055 [P] Widget test key holder list widget in test/widget/key_holder_list_test.dart
+- [ ] T055 [P] Widget test steward list widget in test/widget/steward_list_test.dart
 - [ ] T056 [P] Widget test backup summary widget in test/widget/backup_summary_test.dart
 
 ## Dependencies
@@ -127,18 +127,18 @@
 ```
 # Launch T002-T006 together (UI stubs):
 Task: "Stub BackupConfigScreen with placeholder content in lib/screens/backup_config_screen.dart"
-Task: "Stub KeyHolderList widget with placeholder content in lib/widgets/key_holder_list.dart"
+Task: "Stub KeyHolderList widget with placeholder content in lib/widgets/steward_list.dart"
 Task: "Stub BackupSummary widget with placeholder content in lib/widgets/backup_summary.dart"
 Task: "Stub RecoveryScreen with placeholder content in lib/screens/recovery_screen.dart"
-Task: "Integrate backup config into existing lockbox creation flow in lib/screens/"
+Task: "Integrate backup config into existing vault creation flow in lib/screens/"
 
 # Launch T008-T014 together (data models):
 Task: "Create BackupConfig model in lib/models/backup_config.dart"
-Task: "Create KeyHolder model in lib/models/key_holder.dart"
+Task: "Create KeyHolder model in lib/models/steward.dart"
 Task: "Create ShardEvent model in lib/models/shard_event.dart"
 Task: "Create ShardData model in lib/models/shard_data.dart"
 Task: "Create BackupStatus enum in lib/models/backup_status.dart"
-Task: "Create KeyHolderStatus enum in lib/models/key_holder_status.dart"
+Task: "Create KeyHolderStatus enum in lib/models/steward_status.dart"
 Task: "Create EventStatus enum in lib/models/event_status.dart"
 
 # Launch T015-T019 together (services):
@@ -150,7 +150,7 @@ Task: "Extend existing KeyService for backup key management in lib/services/key_
 
 # Launch T040-T048 together (unit tests):
 Task: "Unit tests for BackupConfig model in test/models/backup_config_test.dart"
-Task: "Unit tests for KeyHolder model in test/models/key_holder_test.dart"
+Task: "Unit tests for KeyHolder model in test/models/steward_test.dart"
 Task: "Unit tests for ShardEvent model in test/models/shard_event_test.dart"
 Task: "Unit tests for BackupService in test/services/backup_service_test.dart"
 Task: "Unit tests for Shamir's Secret Sharing algorithm in test/services/shamir_test.dart"
@@ -166,7 +166,7 @@ Task: "Integration test configuration update scenarios in test/integration/confi
 Task: "Security test Shamir's Secret Sharing in test/security/shamir_security_test.dart"
 Task: "Integration test cross-platform backup functionality in test/integration/cross_platform_test.dart"
 Task: "Widget test backup configuration screen in test/widget/backup_config_screen_test.dart"
-Task: "Widget test key holder list widget in test/widget/key_holder_list_test.dart"
+Task: "Widget test steward list widget in test/widget/steward_list_test.dart"
 Task: "Widget test backup summary widget in test/widget/backup_summary_test.dart"
 ```
 

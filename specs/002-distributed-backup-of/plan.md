@@ -1,4 +1,4 @@
-# Implementation Plan: Distributed Backup of Lockboxes
+# Implementation Plan: Distributed Backup of Vaults
 
 **Branch**: `002-distributed-backup-of` | **Date**: 2025-01-27 | **Spec**: [spec.md](./spec.md)
 **Input**: Feature specification from `/specs/002-distributed-backup-of/spec.md`
@@ -30,7 +30,7 @@
 - Phase 3-4: Implementation execution (manual or via tools)
 
 ## Summary
-Implement distributed backup functionality for Keydex lockboxes using Shamir's Secret Sharing and Nostr protocol. Users can configure backup settings during lockbox creation, specifying threshold and total key holders, then distribute encrypted keys to trusted contacts via Nostr gift wrap events.
+Implement distributed backup functionality for Horcrux vaults using Shamir's Secret Sharing and Nostr protocol. Users can configure backup settings during vault creation, specifying threshold and total stewards, then distribute encrypted keys to trusted contacts via Nostr gift wrap events.
 
 ## Technical Context
 **Language/Version**: Dart 3.0+ / Flutter 3.16+  
@@ -41,7 +41,7 @@ Implement distributed backup functionality for Keydex lockboxes using Shamir's S
 **Project Type**: mobile (Flutter app)  
 **Performance Goals**: <2s backup configuration, <5s key distribution, <10s recovery process  
 **Constraints**: Offline-capable, secure key storage, Nostr protocol compliance  
-**Scale/Scope**: Individual users with 3-10 key holders per lockbox
+**Scale/Scope**: Individual users with 3-10 stewards per vault
 
 ## Constitution Check
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
@@ -92,19 +92,19 @@ specs/002-distributed-backup-of/
 # Option 1: Single project (DEFAULT)
 lib/
 ├── models/
-│   ├── lockbox.dart
+│   ├── vault.dart
 │   ├── backup_config.dart
-│   ├── key_holder.dart
+│   ├── steward.dart
 │   └── gift_wrap_event.dart
 ├── services/
-│   ├── lockbox_service.dart
+│   ├── vault_service.dart
 │   ├── backup_service.dart
 │   └── nostr_service.dart
 ├── screens/
 │   ├── backup_config_screen.dart
 │   └── recovery_screen.dart
 └── widgets/
-    ├── key_holder_list.dart
+    ├── steward_list.dart
     └── backup_summary.dart
 
 test/
@@ -141,7 +141,7 @@ test/
 *Prerequisites: research.md complete*
 
 1. **Extract entities from feature spec** → `data-model.md`:
-   - BackupConfig entity (threshold, total_keys, key_holders)
+   - BackupConfig entity (threshold, total_keys, stewards)
    - KeyHolder entity (npub, status, last_updated)
    - GiftWrapEvent entity (encrypted_key, recipient_npub, timestamp)
    - Validation rules from requirements
@@ -195,7 +195,7 @@ test/
    - BackupConfigScreen stub for manual verification
    - KeyHolderList widget for managing contacts
    - BackupSummary widget for status display
-   - Integration with existing lockbox creation flow
+   - Integration with existing vault creation flow
 
 4. **Unit Tests** (Parallel execution):
    - Data model constraint tests

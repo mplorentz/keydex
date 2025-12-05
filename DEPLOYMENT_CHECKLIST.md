@@ -1,6 +1,6 @@
 # App Store & Google Play Store Deployment Checklist
 
-This checklist covers everything needed to distribute Keydex via Apple App Store and Google Play Store, including beta testing through TestFlight and Google Play Internal Testing.
+This checklist covers everything needed to distribute Horcrux via Apple App Store and Google Play Store, including beta testing through TestFlight and Google Play Internal Testing.
 
 ## 📋 Prerequisites
 
@@ -30,10 +30,10 @@ This checklist covers everything needed to distribute Keydex via Apple App Store
 - [x] Create app record in App Store Connect
   - Go to: https://appstoreconnect.apple.com/
   - Click "My Apps" → "+" → "New App"
-  - Bundle ID: `com.singleoriginsoftware.keydex`
-  - App Name: "Keydex"
+  - Bundle ID: `com.singleoriginsoftware.horcrux`
+  - App Name: "Horcrux"
   - Primary Language: English (or your preference)
-  - SKU: `keydex-001` (or your preferred SKU)
+  - SKU: `horcrux-001` (or your preferred SKU)
 
 - [ ] Complete App Information
   - [ ] App Name
@@ -60,12 +60,12 @@ This checklist covers everything needed to distribute Keydex via Apple App Store
   - Or via Apple Developer Portal: Certificates, Identifiers & Profiles
 
 - [ ] Create App ID (if not already created)
-  - Bundle ID: `com.singleoriginsoftware.keydex`
+  - Bundle ID: `com.singleoriginsoftware.horcrux`
   - Enable required capabilities (e.g., Keychain Sharing if using FlutterSecureStorage)
 
 - [ ] Create Provisioning Profile
   - Type: App Store Distribution
-  - App ID: `com.singleoriginsoftware.keydex`
+  - App ID: `com.singleoriginsoftware.horcrux`
   - Certificate: Your distribution certificate
 
 - [ ] Configure Xcode project
@@ -76,8 +76,8 @@ This checklist covers everything needed to distribute Keydex via Apple App Store
   - Or manually configure provisioning profile
 
 ### 3. iOS Build Configuration
-- [x] Verify bundle identifier: `com.singleoriginsoftware.keydex` ✅ (Already configured)
-- [x] Verify app display name: "Keydex" ✅ (Already configured)
+- [x] Verify bundle identifier: `com.singleoriginsoftware.horcrux` ✅ (Already configured)
+- [x] Verify app display name: "Horcrux" ✅ (Already configured)
 - [x] Verify version number in `pubspec.yaml`: `1.0.0+1`
 - [x] Ensure app icons are configured (1024x1024 required)
 - [x] Configure launch screen (already configured)
@@ -133,7 +133,7 @@ This checklist covers everything needed to distribute Keydex via Apple App Store
 - [ ] Create app in Google Play Console
   - Go to: https://play.google.com/console/
   - Click "Create app"
-  - App name: "Keydex"
+  - App name: "Horcrux"
   - Default language: English (or your preference)
   - App or game: App
   - Free or paid: Select appropriate option
@@ -153,11 +153,11 @@ This checklist covers everything needed to distribute Keydex via Apple App Store
 ### 2. Android App Signing
 - [ ] Generate upload keystore
   ```bash
-  keytool -genkey -v -keystore ~/keydex-upload-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias keydex
+  keytool -genkey -v -keystore ~/horcrux-upload-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias horcrux
   ```
   - Store password: Choose a strong password
   - Key password: Choose a strong password
-  - Key alias: `keydex` (or your preference)
+  - Key alias: `horcrux` (or your preference)
   - **IMPORTANT**: Save passwords securely! You'll need them for every release.
 
 - [ ] Configure signing in project
@@ -166,8 +166,8 @@ This checklist covers everything needed to distribute Keydex via Apple App Store
     ```
     storePassword=your_keystore_password
     keyPassword=your_key_password
-    keyAlias=keydex
-    storeFile=/path/to/keydex-upload-key.jks
+    keyAlias=horcrux
+    storeFile=/path/to/horcrux-upload-key.jks
     ```
   - [ ] Add `android/key.properties` to `.gitignore` (if not already)
   - ✅ Signing configuration already added to `build.gradle`
@@ -178,8 +178,8 @@ This checklist covers everything needed to distribute Keydex via Apple App Store
   - Google will provide an upload certificate for future uploads
 
 ### 3. Android Build Configuration
-- [ ] Verify application ID: `com.singleoriginsoftware.keydex` ✅ (Just updated)
-- [ ] Verify app label: "Keydex" (in AndroidManifest.xml)
+- [ ] Verify application ID: `com.singleoriginsoftware.horcrux` ✅ (Just updated)
+- [ ] Verify app label: "Horcrux" (in AndroidManifest.xml)
 - [ ] Verify version code and version name in `pubspec.yaml`: `1.0.0+1`
 - [ ] Ensure app icons are configured (multiple sizes)
 - [ ] Verify minSdkVersion is appropriate (check `flutter.minSdkVersion`)
@@ -386,6 +386,6 @@ flutter build apk --release
 ---
 
 **Last Updated**: 2024
-**App Bundle ID**: `com.singleoriginsoftware.keydex`
+**App Bundle ID**: `com.singleoriginsoftware.horcrux`
 **Current Version**: `1.0.0+1`
 

@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../widgets/row_button_stack.dart';
 import '../screens/vault_explainer_screen.dart';
-import '../screens/lockbox_list_screen.dart';
+import '../screens/vault_list_screen.dart';
 import '../services/logger.dart';
 
 /// Screen shown after account creation, allowing user to back up their key
@@ -57,6 +57,7 @@ class _AccountCreatedScreenState extends ConsumerState<AccountCreatedScreen> {
             builder: (context) => VaultExplainerScreen(
               initialContent: widget.nsec,
               initialName: 'Nostr Key Backup',
+              isOnboarding: true,
             ),
           ),
           (route) => false, // Clear all previous routes
@@ -84,7 +85,7 @@ class _AccountCreatedScreenState extends ConsumerState<AccountCreatedScreen> {
   Future<void> _skipBackup() async {
     if (mounted) {
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const LockboxListScreen()),
+        MaterialPageRoute(builder: (context) => const VaultListScreen()),
         (route) => false,
       );
     }

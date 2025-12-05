@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'providers/key_provider.dart';
 import 'services/logger.dart';
-import 'screens/lockbox_list_screen.dart';
+import 'screens/vault_list_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'utils/app_initialization.dart';
 import 'widgets/theme.dart';
@@ -13,25 +13,27 @@ final navigatorKey = GlobalKey<NavigatorState>();
 void main() {
   runApp(
     // Wrap the entire app with ProviderScope to enable Riverpod
-    const ProviderScope(child: KeydexApp()),
+    const ProviderScope(child: HorcruxApp()),
   );
 }
 
-class KeydexApp extends ConsumerStatefulWidget {
-  const KeydexApp({super.key});
+class HorcruxApp extends ConsumerStatefulWidget {
+  const HorcruxApp({super.key});
 
   @override
-  ConsumerState<KeydexApp> createState() => _KeydexAppState();
+  ConsumerState<HorcruxApp> createState() => _HorcruxAppState();
 }
 
-class _KeydexAppState extends ConsumerState<KeydexApp> {
+class _HorcruxAppState extends ConsumerState<HorcruxApp> {
   bool _isInitializing = true;
   String? _initError;
+  ProviderSubscription<AsyncValue<bool>>? _loginStateSubscription;
 
   @override
   void initState() {
     super.initState();
     _initializeApp();
+    _setupLoginStateListener();
   }
 
   Future<void> _initializeApp() async {
@@ -62,6 +64,31 @@ class _KeydexAppState extends ConsumerState<KeydexApp> {
     }
   }
 
+  void _setupLoginStateListener() {
+    // This feels like a smell, I think the MaterialApp in build() should be reacting to the change
+    // in isLoggedInProvider on its own but it isn't and I don't have time to fix it atm.
+    _loginStateSubscription = ref.listenManual<AsyncValue<bool>>(
+      isLoggedInProvider,
+      (previous, next) {
+        final wasLoggedIn = previous?.valueOrNull ?? false;
+        final isLoggedIn = next.valueOrNull ?? wasLoggedIn;
+
+        if (wasLoggedIn && !isLoggedIn) {
+          navigatorKey.currentState?.pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const OnboardingScreen()),
+            (route) => false,
+          );
+        }
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _loginStateSubscription?.close();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     // Watch login state to determine which screen to show
@@ -70,8 +97,8 @@ class _KeydexAppState extends ConsumerState<KeydexApp> {
     return MaterialApp(
       navigatorKey: navigatorKey,
       title: 'Horcrux',
-      theme: keydex3Light,
-      darkTheme: keydex3Dark,
+      theme: horcrux3Light,
+      darkTheme: horcrux3Dark,
       themeMode: ThemeMode.system,
       debugShowCheckedModeBanner: false,
       home: _isInitializing
@@ -80,9 +107,9 @@ class _KeydexAppState extends ConsumerState<KeydexApp> {
               ? _ErrorScreen(error: _initError!)
               : isLoggedInAsync.when(
                   data: (isLoggedIn) =>
-                      isLoggedIn ? const LockboxListScreen() : const OnboardingScreen(),
+                      isLoggedIn ? const VaultListScreen() : const OnboardingScreen(),
                   loading: () => const _InitializingScreen(),
-                  error: (_, __) => const LockboxListScreen(), // Fallback to main screen on error
+                  error: (_, __) => const VaultListScreen(), // Fallback to main screen on error
                 ),
     );
   }

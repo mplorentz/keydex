@@ -3,7 +3,7 @@ import 'event_status.dart';
 /// Represents a Nostr gift wrap event (kind 1059) containing an encrypted shard
 ///
 /// This model contains information about a shard event that was published
-/// to Nostr relays for a specific key holder.
+/// to Nostr relays for a specific steward.
 typedef ShardEvent = ({
   String eventId,
   String recipientPubkey, // Hex format

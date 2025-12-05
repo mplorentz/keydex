@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/row_button_stack.dart';
 import '../screens/vault_explainer_screen.dart';
-import '../screens/lockbox_list_screen.dart';
+import '../screens/vault_list_screen.dart';
 
 /// Screen shown after importing an existing Nostr key
 class ImportSuccessScreen extends StatelessWidget {
@@ -101,7 +101,7 @@ class ImportSuccessScreen extends StatelessWidget {
                   onPressed: () {
                     Navigator.of(context).pushAndRemoveUntil(
                       MaterialPageRoute(
-                        builder: (context) => const LockboxListScreen(),
+                        builder: (context) => const VaultListScreen(),
                       ),
                       (route) => false,
                     );

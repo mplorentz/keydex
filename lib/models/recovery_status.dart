@@ -1,7 +1,7 @@
 /// Represents the current state of a recovery process
 class RecoveryStatus {
   final String recoveryRequestId;
-  final int totalKeyHolders;
+  final int totalStewards;
   final int respondedCount;
   final int approvedCount;
   final int deniedCount;
@@ -12,7 +12,7 @@ class RecoveryStatus {
 
   const RecoveryStatus({
     required this.recoveryRequestId,
-    required this.totalKeyHolders,
+    required this.totalStewards,
     required this.respondedCount,
     required this.approvedCount,
     required this.deniedCount,
@@ -24,17 +24,17 @@ class RecoveryStatus {
 
   /// Validate the recovery status
   bool get isValid {
-    // TotalKeyHolders must be positive
-    if (totalKeyHolders <= 0) return false;
+    // TotalStewards must be positive
+    if (totalStewards <= 0) return false;
 
-    // RespondedCount must be <= totalKeyHolders
-    if (respondedCount > totalKeyHolders) return false;
+    // RespondedCount must be <= totalStewards
+    if (respondedCount > totalStewards) return false;
 
     // ApprovedCount + deniedCount must be <= respondedCount
     if (approvedCount + deniedCount > respondedCount) return false;
 
-    // Threshold must be positive and <= totalKeyHolders
-    if (threshold <= 0 || threshold > totalKeyHolders) return false;
+    // Threshold must be positive and <= totalStewards
+    if (threshold <= 0 || threshold > totalStewards) return false;
 
     // CanRecover must be true when approvedCount >= threshold
     if (approvedCount >= threshold && !canRecover) return false;
@@ -47,8 +47,8 @@ class RecoveryStatus {
 
   /// Get the completion percentage
   double get completionPercentage {
-    if (totalKeyHolders == 0) return 0.0;
-    return (respondedCount / totalKeyHolders) * 100.0;
+    if (totalStewards == 0) return 0.0;
+    return (respondedCount / totalStewards) * 100.0;
   }
 
   /// Get the recovery progress (based on threshold)
@@ -65,20 +65,20 @@ class RecoveryStatus {
 
   /// Check if recovery has failed
   bool get hasFailed {
-    final maxPossibleApprovals = totalKeyHolders - deniedCount;
+    final maxPossibleApprovals = totalStewards - deniedCount;
     return maxPossibleApprovals < threshold;
   }
 
   /// Get the number of pending responses
   int get pendingCount {
-    return totalKeyHolders - respondedCount;
+    return totalStewards - respondedCount;
   }
 
   /// Convert to JSON
   Map<String, dynamic> toJson() {
     return {
       'recoveryRequestId': recoveryRequestId,
-      'totalKeyHolders': totalKeyHolders,
+      'totalStewards': totalStewards,
       'respondedCount': respondedCount,
       'approvedCount': approvedCount,
       'deniedCount': deniedCount,
@@ -93,7 +93,7 @@ class RecoveryStatus {
   factory RecoveryStatus.fromJson(Map<String, dynamic> json) {
     return RecoveryStatus(
       recoveryRequestId: json['recoveryRequestId'] as String,
-      totalKeyHolders: json['totalKeyHolders'] as int,
+      totalStewards: json['totalStewards'] as int,
       respondedCount: json['respondedCount'] as int,
       approvedCount: json['approvedCount'] as int,
       deniedCount: json['deniedCount'] as int,
@@ -107,7 +107,7 @@ class RecoveryStatus {
 
   RecoveryStatus copyWith({
     String? recoveryRequestId,
-    int? totalKeyHolders,
+    int? totalStewards,
     int? respondedCount,
     int? approvedCount,
     int? deniedCount,
@@ -118,7 +118,7 @@ class RecoveryStatus {
   }) {
     return RecoveryStatus(
       recoveryRequestId: recoveryRequestId ?? this.recoveryRequestId,
-      totalKeyHolders: totalKeyHolders ?? this.totalKeyHolders,
+      totalStewards: totalStewards ?? this.totalStewards,
       respondedCount: respondedCount ?? this.respondedCount,
       approvedCount: approvedCount ?? this.approvedCount,
       deniedCount: deniedCount ?? this.deniedCount,

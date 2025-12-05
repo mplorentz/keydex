@@ -1,8 +1,8 @@
 
-# Implementation Plan: Lockbox Recovery
+# Implementation Plan: Vault Recovery
 
-**Branch**: `003-lockbox-recovery` | **Date**: 2024-12-19 | **Spec**: `/specs/003-lockbox-recovery/spec.md`
-**Input**: Feature specification from `/specs/003-lockbox-recovery/spec.md`
+**Branch**: `003-vault-recovery` | **Date**: 2024-12-19 | **Spec**: `/specs/003-vault-recovery/spec.md`
+**Input**: Feature specification from `/specs/003-vault-recovery/spec.md`
 
 ## Execution Flow (/plan command scope)
 ```
@@ -31,7 +31,7 @@
 - Phase 3-4: Implementation execution (manual or via tools)
 
 ## Summary
-Implement lockbox recovery functionality allowing key holders to initiate recovery of lockboxes they have shares for, with relay scanning, recovery request management, and content reassembly using Nostr protocol and Shamir's Secret Sharing.
+Implement vault recovery functionality allowing stewards to initiate recovery of vaults they have shares for, with relay scanning, recovery request management, and content reassembly using Nostr protocol and Shamir's Secret Sharing.
 
 ## Technical Context
 **Language/Version**: Dart 3.0+ with Flutter 3.16+  
@@ -42,7 +42,7 @@ Implement lockbox recovery functionality allowing key holders to initiate recove
 **Project Type**: mobile (Flutter app)  
 **Performance Goals**: <2s recovery initiation, <5s relay scanning, 60fps UI  
 **Constraints**: Offline-capable, secure key storage, cross-platform consistency  
-**Scale/Scope**: 10-100 lockboxes per user, 3-10 key holders per lockbox, 5-20 relays
+**Scale/Scope**: 10-100 vaults per user, 3-10 stewards per vault, 5-20 relays
 
 ## Constitution Check
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
@@ -204,7 +204,7 @@ ios/ or android/
 **Specific Task Categories**:
 1. **UI Stubs** (5-6 tasks): Recovery screens, notification overlay, relay management
 2. **Data Models** (3-4 tasks): RecoveryRequest, RecoveryResponse, RelayConfiguration, RecoveryStatus [P]
-3. **Service Interfaces** (3-4 tasks): RecoveryService, RelayScanService, LockboxShareService [P]
+3. **Service Interfaces** (3-4 tasks): RecoveryService, RelayScanService, VaultShareService [P]
 4. **Integration Tests** (5-6 tasks): Complete user workflows from quickstart
 5. **Implementation** (8-10 tasks): Service implementations, UI logic, Nostr integration
 6. **Edge Cases** (3-4 tasks): Error handling, timeout scenarios, offline behavior

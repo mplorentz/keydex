@@ -1,5 +1,5 @@
 
-# Implementation Plan: Invitation Links for Key Holders
+# Implementation Plan: Invitation Links for Stewards
 
 **Branch**: `004-invitation-links` | **Date**: 2025-01-27 | **Spec**: [spec.md](./spec.md)
 **Input**: Feature specification from `/specs/004-invitation-links/spec.md`
@@ -31,7 +31,7 @@
 - Phase 3-4: Implementation execution (manual or via tools)
 
 ## Summary
-Allow lockbox owners to invite others to become key holders by sending invitation links. Links use Universal Links (iOS) and appropriate deep link mechanisms on other platforms via keydex.app domain. Invitees can be existing or new Keydex users. The system handles invitation acceptance via encrypted RSVP events, tracks invitation status, and supports key distribution after acceptance. Technical approach: Add deep linking support to Flutter app, create invitation link generation service, implement invitation code tracking, add new Nostr event kinds for RSVP and confirmation, and integrate with existing backup configuration flow.
+Allow vault owners to invite others to become stewards by sending invitation links. Links use Universal Links (iOS) and appropriate deep link mechanisms on other platforms via horcrux.app domain. Invitees can be existing or new Horcrux users. The system handles invitation acceptance via encrypted RSVP events, tracks invitation status, and supports key distribution after acceptance. Technical approach: Add deep linking support to Flutter app, create invitation link generation service, implement invitation code tracking, add new Nostr event kinds for RSVP and confirmation, and integrate with existing backup configuration flow.
 
 ## Technical Context
 **Language/Version**: Dart 3.5.3, Flutter 3.35.0  
@@ -42,7 +42,7 @@ Allow lockbox owners to invite others to become key holders by sending invitatio
 **Project Type**: mobile (single Flutter app codebase)  
 **Performance Goals**: <500ms invitation link generation, <2s deep link processing, 60fps UI  
 **Constraints**: Must work offline for invitation link generation, requires network for RSVP events, cross-platform deep linking consistency  
-**Scale/Scope**: Typical user has 3-10 lockboxes, each with 3-10 key holders, invitation links valid until redeemed or denied
+**Scale/Scope**: Typical user has 3-10 vaults, each with 3-10 stewards, invitation links valid until redeemed or denied
 
 ## Constitution Check
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
@@ -79,7 +79,7 @@ Allow lockbox owners to invite others to become key holders by sending invitatio
 - [x] Provider composition uses ref.watch() for reactive dependencies
 - [x] Cache invalidation uses ref.invalidate() or ref.refresh() when data changes
 - [x] Auto-dispose providers preferred for temporary or screen-scoped data
-- [x] Provider families used for parameterized providers (e.g., invitation by lockboxId)
+- [x] Provider families used for parameterized providers (e.g., invitation by vaultId)
 
 ### Non-Technical User Focus
 - [x] UI designed for non-technical users (simple invitation flow, clear status indicators)
@@ -212,7 +212,7 @@ ios/ or android/
 - Dependency order: 
   1. Data models (InvitationLink, InvitationCode, event types)
   2. Service interfaces (InvitationService, DeepLinkService, InvitationSendingService)
-  3. UI stubs (backup config screen updates, invitation acceptance screen, key holder status updates)
+  3. UI stubs (backup config screen updates, invitation acceptance screen, steward status updates)
   4. Service implementations (make tests pass)
   5. UI implementations (connect to services)
   6. Deep linking integration (app_links setup, link handling)

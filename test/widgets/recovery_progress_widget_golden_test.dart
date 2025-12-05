@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_toolkit/golden_toolkit.dart';
-import 'package:keydex/models/recovery_request.dart';
-import 'package:keydex/models/lockbox.dart';
-import 'package:keydex/models/backup_config.dart';
-import 'package:keydex/models/key_holder.dart';
-import 'package:keydex/providers/recovery_provider.dart';
-import 'package:keydex/providers/lockbox_provider.dart';
-import 'package:keydex/widgets/recovery_progress_widget.dart';
+import 'package:horcrux/models/recovery_request.dart';
+import 'package:horcrux/models/vault.dart';
+import 'package:horcrux/models/backup_config.dart';
+import 'package:horcrux/models/steward.dart';
+import 'package:horcrux/providers/recovery_provider.dart';
+import 'package:horcrux/providers/vault_provider.dart';
+import 'package:horcrux/widgets/recovery_progress_widget.dart';
 import '../helpers/golden_test_helpers.dart';
 
 void main() {
@@ -17,22 +17,22 @@ void main() {
   final testPubkey2 = 'b' * 64;
   final testPubkey3 = 'c' * 64;
 
-  // Helper to create lockbox
-  Lockbox createTestLockbox({
+  // Helper to create vault
+  Vault createTestVault({
     required String id,
-    required List<String> keyHolderPubkeys,
+    required List<String> stewardPubkeys,
   }) {
-    return Lockbox(
+    return Vault(
       id: id,
-      name: 'Test Lockbox',
+      name: 'Test Vault',
       content: 'test content',
       createdAt: DateTime.now().subtract(const Duration(days: 1)),
       ownerPubkey: testPubkey1,
       backupConfig: createBackupConfig(
-        lockboxId: id,
+        vaultId: id,
         threshold: 2,
-        totalKeys: keyHolderPubkeys.length,
-        keyHolders: keyHolderPubkeys.map((pubkey) => createKeyHolder(pubkey: pubkey)).toList(),
+        totalKeys: stewardPubkeys.length,
+        stewards: stewardPubkeys.map((pubkey) => createSteward(pubkey: pubkey)).toList(),
         relays: ['wss://relay.example.com'],
       ),
     );
@@ -93,12 +93,12 @@ void main() {
     testGoldens('low progress without button', (tester) async {
       final request = RecoveryRequest(
         id: 'test-request',
-        lockboxId: 'test-lockbox',
+        vaultId: 'test-vault',
         initiatorPubkey: testPubkey1,
         requestedAt: DateTime.now().subtract(const Duration(hours: 1)),
         status: RecoveryRequestStatus.inProgress,
         threshold: 2,
-        keyHolderResponses: {
+        stewardResponses: {
           testPubkey2: RecoveryResponse(
             pubkey: testPubkey2,
             approved: true,
@@ -107,9 +107,9 @@ void main() {
         },
       );
 
-      final lockbox = createTestLockbox(
-        id: 'test-lockbox',
-        keyHolderPubkeys: [testPubkey2, testPubkey3, testPubkey1],
+      final vault = createTestVault(
+        id: 'test-vault',
+        stewardPubkeys: [testPubkey2, testPubkey3, testPubkey1],
       );
 
       final container = ProviderContainer(
@@ -117,9 +117,9 @@ void main() {
           recoveryRequestByIdProvider(
             'test-request',
           ).overrideWith((ref) => AsyncValue.data(request)),
-          lockboxProvider(
-            'test-lockbox',
-          ).overrideWith((ref) => Stream.value(lockbox)),
+          vaultProvider(
+            'test-vault',
+          ).overrideWith((ref) => Stream.value(vault)),
         ],
       );
 
@@ -142,12 +142,12 @@ void main() {
     testGoldens('threshold met with button', (tester) async {
       final request = RecoveryRequest(
         id: 'test-request',
-        lockboxId: 'test-lockbox',
+        vaultId: 'test-vault',
         initiatorPubkey: testPubkey1,
         requestedAt: DateTime.now().subtract(const Duration(hours: 1)),
         status: RecoveryRequestStatus.inProgress,
         threshold: 2,
-        keyHolderResponses: {
+        stewardResponses: {
           testPubkey2: RecoveryResponse(
             pubkey: testPubkey2,
             approved: true,
@@ -161,9 +161,9 @@ void main() {
         },
       );
 
-      final lockbox = createTestLockbox(
-        id: 'test-lockbox',
-        keyHolderPubkeys: [testPubkey2, testPubkey3, testPubkey1],
+      final vault = createTestVault(
+        id: 'test-vault',
+        stewardPubkeys: [testPubkey2, testPubkey3, testPubkey1],
       );
 
       final container = ProviderContainer(
@@ -171,9 +171,9 @@ void main() {
           recoveryRequestByIdProvider(
             'test-request',
           ).overrideWith((ref) => AsyncValue.data(request)),
-          lockboxProvider(
-            'test-lockbox',
-          ).overrideWith((ref) => Stream.value(lockbox)),
+          vaultProvider(
+            'test-vault',
+          ).overrideWith((ref) => Stream.value(vault)),
         ],
       );
 
@@ -196,12 +196,12 @@ void main() {
     testGoldens('completed state', (tester) async {
       final request = RecoveryRequest(
         id: 'test-request',
-        lockboxId: 'test-lockbox',
+        vaultId: 'test-vault',
         initiatorPubkey: testPubkey1,
         requestedAt: DateTime.now().subtract(const Duration(hours: 1)),
         status: RecoveryRequestStatus.inProgress,
         threshold: 2,
-        keyHolderResponses: {
+        stewardResponses: {
           testPubkey2: RecoveryResponse(
             pubkey: testPubkey2,
             approved: true,
@@ -215,9 +215,9 @@ void main() {
         },
       );
 
-      final lockbox = createTestLockbox(
-        id: 'test-lockbox',
-        keyHolderPubkeys: [testPubkey2, testPubkey3, testPubkey1],
+      final vault = createTestVault(
+        id: 'test-vault',
+        stewardPubkeys: [testPubkey2, testPubkey3, testPubkey1],
       );
 
       final container = ProviderContainer(
@@ -225,9 +225,9 @@ void main() {
           recoveryRequestByIdProvider(
             'test-request',
           ).overrideWith((ref) => AsyncValue.data(request)),
-          lockboxProvider(
-            'test-lockbox',
-          ).overrideWith((ref) => Stream.value(lockbox)),
+          vaultProvider(
+            'test-vault',
+          ).overrideWith((ref) => Stream.value(vault)),
         ],
       );
 
