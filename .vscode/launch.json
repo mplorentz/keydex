@@ -37,6 +37,20 @@
             "toolArgs": [
                 "--web-port=8081"
             ]
+        },
+        {
+            "name": "Flutter: Run iOS Simulator",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "deviceId": "914C15BB-2EFB-4D83-B9BA-F01B98897A32"
+        },
+        {
+            "name": "Flutter: Run Android",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "flutterMode": "debug"
         }
     ],
     "compounds": [
