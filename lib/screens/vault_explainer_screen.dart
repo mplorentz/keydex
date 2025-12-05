@@ -1,10 +1,19 @@
 import 'package:flutter/material.dart';
 import '../widgets/row_button.dart';
-import 'lockbox_create_screen.dart';
+import 'vault_create_screen.dart';
 
 /// Screen explaining vault terminology and setup process
 class VaultExplainerScreen extends StatelessWidget {
-  const VaultExplainerScreen({super.key});
+  final String? initialContent;
+  final String? initialName;
+  final bool isOnboarding;
+
+  const VaultExplainerScreen({
+    super.key,
+    this.initialContent,
+    this.initialName,
+    this.isOnboarding = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -12,10 +21,7 @@ class VaultExplainerScreen extends StatelessWidget {
     final textTheme = theme.textTheme;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Create Vault'),
-        centerTitle: false,
-      ),
+      appBar: AppBar(title: const Text('Create Vault'), centerTitle: false),
       body: Column(
         children: [
           Expanded(
@@ -26,15 +32,12 @@ class VaultExplainerScreen extends StatelessWidget {
                 children: [
                   // Main explanation paragraph
                   Text(
-                    'A Vault is an encrypted bundle of your sensitive data that Keydex can back up to your friends and family. Each vault requires multiple keys to open. Keydex helps you create these keys and distribute them to other people.',
+                    'A Vault is an encrypted bundle of your sensitive data that Horcrux can back up to your friends and family. Each vault requires multiple keys to open. Horcrux helps you create these keys and distribute them to other people.',
                     style: textTheme.bodyLarge,
                   ),
                   const SizedBox(height: 24),
                   // Setup steps section
-                  Text(
-                    'Setting one up involves:',
-                    style: textTheme.bodyLarge,
-                  ),
+                  Text('Setting one up involves:', style: textTheme.bodyLarge),
                   const SizedBox(height: 16),
                   // Step 1
                   _buildStep(
@@ -50,7 +53,7 @@ class VaultExplainerScreen extends StatelessWidget {
                     number: '2',
                     title: 'Invite stewards',
                     description:
-                        'stewards are the other people who will hold keys to your vault. They\'ll need to download Keydex as well to hold the keys. We\'ll give you a link that makes this easy for them.',
+                        'stewards are the other people who will hold keys to your vault. They\'ll need to download Horcrux as well to hold the keys. We\'ll give you a link that makes this easy for them.',
                   ),
                   const SizedBox(height: 16),
                   // Step 3
@@ -85,13 +88,24 @@ class VaultExplainerScreen extends StatelessWidget {
             ),
           ),
           RowButton(
-            onPressed: () {
-              Navigator.push(
+            onPressed: () async {
+              // Navigate to vault creation (regular push, not modal)
+              final result = await Navigator.push<String>(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const LockboxCreateScreen(),
+                  builder: (context) => VaultCreateScreen(
+                    initialContent: initialContent,
+                    initialName: initialName,
+                    isOnboarding: isOnboarding,
+                  ),
                 ),
               );
+
+              // If vault was created, pop with the vaultId
+              // so VaultListScreen can navigate to VaultDetailScreen
+              if (result != null && context.mounted) {
+                Navigator.pop(context, result);
+              }
             },
             icon: Icons.arrow_forward,
             text: 'Get Started',
@@ -127,7 +141,7 @@ class VaultExplainerScreen extends StatelessWidget {
               number,
               style: textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: theme.scaffoldBackgroundColor,
+                color: theme.colorScheme.onSurface,
               ),
             ),
           ),
@@ -138,15 +152,9 @@ class VaultExplainerScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                title,
-                style: textTheme.titleLarge,
-              ),
+              Text(title, style: textTheme.titleLarge),
               const SizedBox(height: 4),
-              Text(
-                description,
-                style: textTheme.bodyMedium,
-              ),
+              Text(description, style: textTheme.bodyMedium),
             ],
           ),
         ),

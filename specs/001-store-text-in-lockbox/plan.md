@@ -1,8 +1,8 @@
 
-# Implementation Plan: Encrypted Text Lockbox
+# Implementation Plan: Encrypted Text Vault
 
-**Branch**: `001-store-text-in-lockbox` | **Date**: 2024-12-19 | **Spec**: [spec.md](./spec.md)
-**Input**: Feature specification from `/specs/001-store-text-in-lockbox/spec.md`
+**Branch**: `001-store-text-in-vault` | **Date**: 2024-12-19 | **Spec**: [spec.md](./spec.md)
+**Input**: Feature specification from `/specs/001-store-text-in-vault/spec.md`
 
 ## Execution Flow (/plan command scope)
 ```
@@ -31,7 +31,7 @@
 - Phase 3-4: Implementation execution (manual or via tools)
 
 ## Summary
-Users need to securely store sensitive text information in encrypted lockboxes using NIP-44 encryption with Nostr keys. The system provides a simple interface for creating, accessing, editing, and deleting encrypted text content with biometric/password authentication. Content is limited to 4k characters with single-user access model.
+Users need to securely store sensitive text information in encrypted vaults using NIP-44 encryption with Nostr keys. The system provides a simple interface for creating, accessing, editing, and deleting encrypted text content with biometric/password authentication. Content is limited to 4k characters with single-user access model.
 
 ## Technical Context
 **Language/Version**: Dart 3.0+ with Flutter 3.16+  
@@ -41,8 +41,8 @@ Users need to securely store sensitive text information in encrypted lockboxes u
 **Target Platform**: Cross-platform (iOS, Android, macOS, Windows, Linux)  
 **Project Type**: mobile - Flutter app  
 **Performance Goals**: <200ms for encryption/decryption operations, <100ms UI response  
-**Constraints**: 4k character limit per lockbox, offline-capable, single-user access  
-**Scale/Scope**: Personal use app, 1-100 lockboxes per user, 5 platforms
+**Constraints**: 4k character limit per vault, offline-capable, single-user access  
+**Scale/Scope**: Personal use app, 1-100 vaults per user, 5 platforms
 
 ## Constitution Check
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
@@ -64,7 +64,7 @@ Users need to securely store sensitive text information in encrypted lockboxes u
 - [ ] Relay selection and failover mechanisms designed (not applicable for this feature)
 
 ### Non-Technical User Focus
-- [x] UI designed for non-technical users (simple lockbox interface)
+- [x] UI designed for non-technical users (simple vault interface)
 - [x] Complex concepts abstracted behind simple language (encryption hidden from user)
 - [x] Error messages written in plain English
 

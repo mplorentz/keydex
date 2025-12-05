@@ -7,11 +7,11 @@ import '../utils/validators.dart';
 /// Relay URLs must be valid WebSocket URLs (wss:// or ws://).
 typedef InvitationLink = ({
   String inviteCode, // Base64URL encoded 32-byte random string
-  String lockboxId, // ID of the lockbox being shared
-  String lockboxName, // Name of the lockbox being shared (null when not available)
-  String ownerPubkey, // Hex format (64 chars) - lockbox owner's public key
+  String vaultId, // ID of the vault being shared
+  String vaultName, // Name of the vault being shared (null when not available)
+  String ownerPubkey, // Hex format (64 chars) - vault owner's public key
   List<String> relayUrls, // Up to 3 relay URLs for communication
-  String? inviteeName, // Name entered by lockbox owner (null when received via deep link)
+  String? inviteeName, // Name entered by vault owner (null when received via deep link)
   DateTime createdAt, // When invitation was generated
   InvitationStatus status, // Current status of invitation
   String? redeemedBy, // Hex pubkey of redeemer (null if not redeemed)
@@ -21,16 +21,16 @@ typedef InvitationLink = ({
 /// Creates a new invitation link with the given parameters
 InvitationLink createInvitationLink({
   required String inviteCode,
-  required String lockboxId,
+  required String vaultId,
   required String ownerPubkey,
   required List<String> relayUrls,
-  String? lockboxName,
+  String? vaultName,
   String? inviteeName,
 }) {
   return (
     inviteCode: inviteCode,
-    lockboxId: lockboxId,
-    lockboxName: lockboxName ?? 'Shared Lockbox',
+    vaultId: vaultId,
+    vaultName: vaultName ?? 'Shared Vault',
     ownerPubkey: ownerPubkey,
     relayUrls: relayUrls,
     inviteeName: inviteeName,
@@ -51,8 +51,8 @@ extension InvitationLinkExtension on InvitationLink {
   }) {
     return (
       inviteCode: inviteCode,
-      lockboxId: lockboxId,
-      lockboxName: lockboxName,
+      vaultId: vaultId,
+      vaultName: vaultName,
       ownerPubkey: ownerPubkey,
       relayUrls: relayUrls,
       inviteeName: inviteeName,
@@ -65,14 +65,14 @@ extension InvitationLinkExtension on InvitationLink {
 
   /// Generates an invitation URL from this InvitationLink
   ///
-  /// Format: keydex://keydex.app/invite/{inviteCode}?lockbox={lockboxId}&name={lockboxName}&owner={ownerPubkey}&relays={relayUrls}
+  /// Format: horcrux://horcrux.app/invite/{inviteCode}?vault={vaultId}&name={vaultName}&owner={ownerPubkey}&relays={relayUrls}
   /// Relay URLs are comma-separated and URL-encoded.
   String toUrl() {
-    final baseUrl = 'keydex://keydex.app/invite/$inviteCode';
+    final baseUrl = 'horcrux://horcrux.app/invite/$inviteCode';
     final params = <String>[];
 
-    params.add('lockbox=${Uri.encodeComponent(lockboxId)}');
-    params.add('name=${Uri.encodeComponent(lockboxName)}');
+    params.add('vault=${Uri.encodeComponent(vaultId)}');
+    params.add('name=${Uri.encodeComponent(vaultName)}');
     params.add('owner=${Uri.encodeComponent(ownerPubkey)}');
 
     if (relayUrls.isNotEmpty) {
@@ -88,8 +88,8 @@ extension InvitationLinkExtension on InvitationLink {
 Map<String, dynamic> invitationLinkToJson(InvitationLink link) {
   return {
     'inviteCode': link.inviteCode,
-    'lockboxId': link.lockboxId,
-    'lockboxName': link.lockboxName,
+    'vaultId': link.vaultId,
+    'vaultName': link.vaultName,
     'ownerPubkey': link.ownerPubkey,
     'relayUrls': link.relayUrls,
     'inviteeName': link.inviteeName,
@@ -104,8 +104,8 @@ Map<String, dynamic> invitationLinkToJson(InvitationLink link) {
 InvitationLink invitationLinkFromJson(Map<String, dynamic> json) {
   return (
     inviteCode: json['inviteCode'] as String,
-    lockboxId: json['lockboxId'] as String,
-    lockboxName: json['lockboxName'] as String? ?? 'Shared Lockbox',
+    vaultId: json['vaultId'] as String,
+    vaultName: json['vaultName'] as String? ?? 'Shared Vault',
     ownerPubkey: json['ownerPubkey'] as String,
     relayUrls: List<String>.from(json['relayUrls'] as List),
     inviteeName: json['inviteeName'] as String?,
@@ -136,7 +136,9 @@ bool areValidRelayUrls(List<String> relayUrls) {
 /// Throws ArgumentError with descriptive message if validation fails
 void validateInvitationLink(InvitationLink link) {
   if (!isValidInviteCode(link.inviteCode)) {
-    throw ArgumentError('Invalid invite code format: must be Base64URL encoded');
+    throw ArgumentError(
+      'Invalid invite code format: must be Base64URL encoded',
+    );
   }
 
   if (!isValidHexPubkey(link.ownerPubkey)) {
@@ -144,7 +146,9 @@ void validateInvitationLink(InvitationLink link) {
   }
 
   if (!areValidRelayUrls(link.relayUrls)) {
-    throw ArgumentError('Invalid relay URLs: must be 1-3 valid WebSocket URLs (wss:// or ws://)');
+    throw ArgumentError(
+      'Invalid relay URLs: must be 1-3 valid WebSocket URLs (wss:// or ws://)',
+    );
   }
 
   // inviteeName can be null (for received invitations), but if provided, must not be empty
@@ -153,6 +157,8 @@ void validateInvitationLink(InvitationLink link) {
   }
 
   if (link.redeemedBy != null && !isValidHexPubkey(link.redeemedBy!)) {
-    throw ArgumentError('Invalid redeemed-by pubkey: must be 64 hex characters');
+    throw ArgumentError(
+      'Invalid redeemed-by pubkey: must be 64 hex characters',
+    );
   }
 }

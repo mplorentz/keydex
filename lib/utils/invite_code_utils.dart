@@ -8,7 +8,7 @@ import 'dart:typed_data';
 ///
 /// Returns a Base64URL-encoded string from 32 random bytes (~43 characters).
 /// Uses a cryptographically secure random number generator.
-/// Can be used for invitation codes, lockbox IDs, recovery request IDs, and other secure identifiers.
+/// Can be used for invitation codes, vault IDs, recovery request IDs, and other secure identifiers.
 String generateSecureID() {
   final random = Random.secure();
   final bytes = Uint8List(32); // 32 bytes = 256 bits

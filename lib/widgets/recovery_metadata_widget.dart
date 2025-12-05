@@ -7,14 +7,13 @@ import '../providers/recovery_provider.dart';
 class RecoveryMetadataWidget extends ConsumerWidget {
   final String recoveryRequestId;
 
-  const RecoveryMetadataWidget({
-    super.key,
-    required this.recoveryRequestId,
-  });
+  const RecoveryMetadataWidget({super.key, required this.recoveryRequestId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final requestAsync = ref.watch(recoveryRequestByIdProvider(recoveryRequestId));
+    final requestAsync = ref.watch(
+      recoveryRequestByIdProvider(recoveryRequestId),
+    );
 
     return requestAsync.when(
       loading: () => const Card(
@@ -64,8 +63,11 @@ class RecoveryMetadataWidget extends ConsumerWidget {
                 ),
                 const SizedBox(height: 16),
                 _buildInfoRow('Request ID', request.id),
-                _buildInfoRow('Vault ID', request.lockboxId),
-                _buildInfoRow('Requested', _formatDateTime(request.requestedAt)),
+                _buildInfoRow('Vault ID', request.vaultId),
+                _buildInfoRow(
+                  'Requested',
+                  _formatDateTime(request.requestedAt),
+                ),
                 if (request.expiresAt != null)
                   _buildInfoRow(
                     'Expires',

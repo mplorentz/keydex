@@ -1,6 +1,6 @@
-# Research: Lockbox Recovery
+# Research: Vault Recovery
 
-**Feature**: 003-lockbox-recovery  
+**Feature**: 003-vault-recovery  
 **Date**: 2024-12-19  
 **Status**: Complete
 
@@ -14,7 +14,7 @@
 
 **Rationale**: 
 - Kind 4 is the standard for encrypted DMs in Nostr
-- Provides end-to-end encryption between key holders
+- Provides end-to-end encryption between stewards
 - Widely supported by existing Nostr clients and relays
 - Allows for custom JSON payloads within encrypted content
 
@@ -61,7 +61,7 @@
 
 ### 4. UI/UX Patterns for Recovery Status
 
-**Task**: Research UI patterns for displaying recovery progress and key holder status
+**Task**: Research UI patterns for displaying recovery progress and steward status
 
 **Decision**: Use status indicators with clear visual hierarchy and actionable feedback
 
@@ -78,7 +78,7 @@
 
 ### 5. Cross-Platform Secure Storage
 
-**Task**: Research secure storage patterns for recovered lockbox contents
+**Task**: Research secure storage patterns for recovered vault contents
 
 **Decision**: Use FlutterSecureStorage with platform-specific keychain/keystore integration
 

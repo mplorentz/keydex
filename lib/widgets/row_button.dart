@@ -31,14 +31,29 @@ class RowButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDisabled = onPressed == null;
+    final isDark = theme.brightness == Brightness.dark;
 
-    // Muted colors for disabled state
-    final effectiveBackgroundColor = isDisabled
-        ? const Color(0xFF3a3f36) // Darker muted color
-        : (backgroundColor ?? theme.primaryColor);
-    final effectiveForegroundColor = isDisabled
-        ? const Color(0xFF7a7f76) // Muted gray
-        : (foregroundColor ?? const Color.fromARGB(255, 253, 255, 240));
+    // Get theme colors for buttons - use outlined style with subtle fill
+    final borderColor = theme.colorScheme.primary;
+    final textColor = theme.colorScheme.onSurface; // Use onSurface for better contrast
+    // Very subtle background fill
+    final subtleFill =
+        isDark ? borderColor.withValues(alpha: 0.1) : borderColor.withValues(alpha: 0.05);
+
+    // Disabled colors: use gray that works in both light and dark
+    final disabledBorder = isDark ? const Color(0xFF404040) : const Color(0xFFC0C0C0);
+    final disabledText = isDark ? const Color(0xFF808080) : const Color(0xFF808080);
+    final disabledFill =
+        isDark ? disabledBorder.withValues(alpha: 0.1) : disabledBorder.withValues(alpha: 0.05);
+
+    // Effective colors
+    final effectiveBorderColor = isDisabled ? disabledBorder : (backgroundColor ?? borderColor);
+    final effectiveForegroundColor = isDisabled ? disabledText : (foregroundColor ?? textColor);
+    final effectiveFill = isDisabled ? disabledFill : subtleFill;
+
+    // Subtle shadow for enabled buttons
+    final shadowColor =
+        isDark ? borderColor.withValues(alpha: 0.1) : borderColor.withValues(alpha: 0.1);
 
     // Add bottom safe area padding on iOS devices with home indicator
     // Note: Platform.isIOS is not available on web, so check kIsWeb first
@@ -46,9 +61,7 @@ class RowButton extends StatelessWidget {
 
     // Calculate effective padding with safe area
     final effectivePadding = padding != null
-        ? padding!.copyWith(
-            bottom: padding!.bottom + bottomSafeArea,
-          )
+        ? padding!.copyWith(bottom: padding!.bottom + bottomSafeArea)
         : EdgeInsets.only(
             top: 20,
             bottom: 20 + bottomSafeArea,
@@ -64,16 +77,22 @@ class RowButton extends StatelessWidget {
           width: double.infinity,
           padding: effectivePadding,
           decoration: BoxDecoration(
-            color: effectiveBackgroundColor,
+            color: effectiveFill, // Subtle background fill
+            border: Border.all(color: effectiveBorderColor, width: 0.5),
+            boxShadow: isDisabled
+                ? null
+                : [
+                    BoxShadow(
+                      color: shadowColor,
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Icon(
-                icon,
-                color: effectiveForegroundColor,
-                size: iconSize,
-              ),
+              Icon(icon, color: effectiveForegroundColor, size: iconSize),
               const SizedBox(width: 12),
               Text(
                 text,

@@ -1,6 +1,6 @@
-# Tasks: Lockbox Recovery
+# Tasks: Vault Recovery
 
-**Feature**: 003-lockbox-recovery  
+**Feature**: 003-vault-recovery  
 **Date**: 2024-12-19  
 **Status**: In Progress
 
@@ -11,8 +11,8 @@
 - **UI-First** = Create stubs for manual verification, then implement functionality
 
 ## Phase 0: Setup (Prerequisites)
-- [X] 0.1 - Verify existing models (Lockbox, ShardData) are compatible with recovery feature
-- [X] 0.2 - Review existing services (BackupService, LockboxService) for reusable patterns
+- [X] 0.1 - Verify existing models (Vault, ShardData) are compatible with recovery feature
+- [X] 0.2 - Review existing services (BackupService, VaultService) for reusable patterns
 
 ## Phase 1: Data Models [P]
 - [X] 1.1 - Create RecoveryRequestStatus enum (pending, sent, in_progress, completed, failed, cancelled)
@@ -21,14 +21,14 @@
 - [X] 1.4 - Create RecoveryResponse model with validation rules
 - [X] 1.5 - Create RelayConfiguration model with validation rules
 - [X] 1.6 - Create RecoveryStatus model with validation rules
-- [X] 1.7 - Extend ShardData model with recovery metadata (id, lockboxId, recipientPubkey, isReceived, receivedAt, nostrEventId)
+- [X] 1.7 - Extend ShardData model with recovery metadata (id, vaultId, recipientPubkey, isReceived, receivedAt, nostrEventId)
 
 ## Phase 2: UI Stubs (Outside-In Development)
 - [X] 2.1 - Create relay_management_screen.dart stub with relay list and add relay UI
 - [X] 2.2 - Create recovery_notification_overlay.dart stub with notification display
-- [X] 2.3 - Update lockbox_detail_screen.dart with "Initiate Recovery" button stub
-- [X] 2.4 - Update lockbox_list_screen.dart with "Scan for Keys" button and key holder badge display
-- [X] 2.5 - Create recovery_status_screen.dart stub with key holder status display
+- [X] 2.3 - Update vault_detail_screen.dart with "Initiate Recovery" button stub
+- [X] 2.4 - Update vault_list_screen.dart with "Scan for Keys" button and steward badge display
+- [X] 2.5 - Create recovery_status_screen.dart stub with steward status display
 - [X] 2.6 - Create recovery_request_detail_screen.dart stub with approve/deny actions
 
 ## Phase 3: Service Implementations
@@ -39,7 +39,7 @@
 - [X] 3.1.3 - Implement RecoveryService.getRecoveryStatus() - get request status
 - [X] 3.1.4 - Implement RecoveryService.respondToRecoveryRequest() - approve/deny
 - [X] 3.1.5 - Implement RecoveryService.cancelRecoveryRequest() - cancel request
-- [X] 3.1.6 - Implement RecoveryService.canRecoverLockbox() - check recovery availability
+- [X] 3.1.6 - Implement RecoveryService.canRecoverVault() - check recovery availability
 - [X] 3.1.7 - Implement RecoveryService.getKeyHolderResponses() - fetch responses
 
 ### Phase 3.2: Relay Scan Service
@@ -52,13 +52,13 @@
 - [X] 3.2.7 - Implement RelayScanService.isScanningActive() - check scan status
 - [X] 3.2.8 - Implement RelayScanService.getScanningStatus() - get scan statistics
 
-### Phase 3.3: Lockbox Share Service
-- [X] 3.3.1 - Implement LockboxShareService.getLockboxShares() - fetch shares for lockbox
-- [X] 3.3.2 - Implement LockboxShareService.getLockboxShare() - fetch specific share
-- [X] 3.3.3 - Implement LockboxShareService.markShareAsReceived() - mark share received
-- [X] 3.3.4 - Implement LockboxShareService.reassembleLockboxContent() - reconstruct content
-- [X] 3.3.5 - Implement LockboxShareService.hasSufficientShares() - check threshold
-- [X] 3.3.6 - Implement LockboxShareService.getCollectedShardData() - get collected shards
+### Phase 3.3: Vault Share Service
+- [X] 3.3.1 - Implement VaultShareService.getVaultShares() - fetch shares for vault
+- [X] 3.3.2 - Implement VaultShareService.getVaultShare() - fetch specific share
+- [X] 3.3.3 - Implement VaultShareService.markShareAsReceived() - mark share received
+- [X] 3.3.4 - Implement VaultShareService.reassembleVaultContent() - reconstruct content
+- [X] 3.3.5 - Implement VaultShareService.hasSufficientShares() - check threshold
+- [X] 3.3.6 - Implement VaultShareService.getCollectedShardData() - get collected shards
 
 ### Phase 3.4: Recovery Notification Service
 - [X] 3.4.1 - Implement RecoveryNotificationService.getPendingNotifications() - fetch pending
@@ -71,8 +71,8 @@
 ## Phase 4: UI Integration (Wire up stubs)
 - [X] 4.1 - Connect relay_management_screen to RelayScanService
 - [X] 4.2 - Connect recovery_notification_overlay to RecoveryNotificationService
-- [X] 4.3 - Connect lockbox_detail_screen "Initiate Recovery" to RecoveryService
-- [X] 4.4 - Connect lockbox_list_screen "Scan for Keys" to relay management
+- [X] 4.3 - Connect vault_detail_screen "Initiate Recovery" to RecoveryService
+- [X] 4.4 - Connect vault_list_screen "Scan for Keys" to relay management
 - [X] 4.5 - Connect recovery_status_screen to RecoveryService status updates
 - [X] 4.6 - Connect recovery_request_detail_screen to RecoveryService respond actions
 
@@ -82,10 +82,10 @@
 - [ ] 5.3 - Test recovery denial scenario (quickstart scenario 3)
 - [ ] 5.4 - Test timeout handling scenario (quickstart scenario 4)
 - [ ] 5.5 - Test relay configuration and scanning
-- [ ] 5.6 - Test key holder status tracking
+- [ ] 5.6 - Test steward status tracking
 
 ## Phase 6: Edge Cases and Polish
-- [ ] 6.1 - Handle unresponsive key holders gracefully
+- [ ] 6.1 - Handle unresponsive stewards gracefully
 - [ ] 6.2 - Handle duplicate recovery requests display
 - [ ] 6.3 - Handle recovery initiator going offline
 - [ ] 6.4 - Add error handling for invalid shard data

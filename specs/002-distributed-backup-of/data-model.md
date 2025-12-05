@@ -1,22 +1,22 @@
-# Data Model: Distributed Backup of Lockboxes
+# Data Model: Distributed Backup of Vaults
 
 ## Core Entities
 
 ### BackupConfig
-Represents the backup configuration for a lockbox.
+Represents the backup configuration for a vault.
 
 **Fields**:
-- `lockboxId: String` - Unique identifier for the lockbox
+- `vaultId: String` - Unique identifier for the vault
 - `specVersion: String` - Specification version for backup protocol (e.g., "1.0.0") for compatibility tracking
-- `threshold: int` - Number of keys required to reconstruct the lockbox (minimum 2, maximum 10)
+- `threshold: int` - Number of keys required to reconstruct the vault (minimum 2, maximum 10)
 - `totalKeys: int` - Total number of keys created (must be >= threshold)
 - `keyHolders: List<KeyHolder>` - List of trusted contacts who hold keys
 - `relays: List<String>` - List of Nostr relay URLs used for communication
 - `createdAt: DateTime` - When backup was configured
 - `lastUpdated: DateTime` - When backup was last modified
-- `lastContentChange: DateTime?` - When lockbox contents were last modified
+- `lastContentChange: DateTime?` - When vault contents were last modified
 - `lastRedistribution: DateTime?` - When shares were last redistributed
-- `contentHash: String?` - Hash of current lockbox contents for change detection
+- `contentHash: String?` - Hash of current vault contents for change detection
 - `status: BackupStatus` - Current status of the backup
 
 **Validation Rules**:
@@ -24,7 +24,7 @@ Represents the backup configuration for a lockbox.
 - `threshold` must be >= 2 and <= `totalKeys`
 - `totalKeys` must be >= `threshold` and <= 10
 - `keyHolders.length` must equal `totalKeys`
-- All key holders must have valid Nostr public keys
+- All stewards must have valid Nostr public keys
 - `relays` must contain at least one valid Nostr relay URL
 - All relay URLs must be valid and accessible
 - `contentHash` must be valid SHA-256 hash if present
@@ -42,11 +42,11 @@ Represents a trusted contact who holds a backup key.
 **Fields**:
 - `npub: String` - Nostr public key in bech32 format (npub1...)
 - `name: String?` - Optional display name for the contact
-- `status: KeyHolderStatus` - Current status of this key holder
-- `lastSeen: DateTime?` - When this key holder was last active
+- `status: KeyHolderStatus` - Current status of this steward
+- `lastSeen: DateTime?` - When this steward was last active
 - `keyShare: String?` - Encrypted Shamir share (Base64Url encoded, stored locally for recovery)
 - `giftWrapEventId: String?` - Nostr event ID of the gift wrap event
-- `acknowledgedAt: DateTime?` - When this key holder last acknowledged receipt
+- `acknowledgedAt: DateTime?` - When this steward last acknowledged receipt
 - `acknowledgmentEventId: String?` - Nostr event ID of the acknowledgment
 
 **Validation Rules**:
@@ -56,12 +56,12 @@ Represents a trusted contact who holds a backup key.
 
 **State Transitions**:
 - `PENDING` → `ACTIVE` (when gift wrap event published successfully)
-- `ACTIVE` → `ACKNOWLEDGED` (when key holder acknowledges receipt)
+- `ACTIVE` → `ACKNOWLEDGED` (when steward acknowledges receipt)
 - `ACKNOWLEDGED` → `ACTIVE` (when new gift wrap event sent)
-- `ACTIVE` → `INACTIVE` (when key holder becomes unresponsive)
-- `ACKNOWLEDGED` → `INACTIVE` (when key holder becomes unresponsive)
-- `ACTIVE` → `REVOKED` (when key holder is removed from backup)
-- `ACKNOWLEDGED` → `REVOKED` (when key holder is removed from backup)
+- `ACTIVE` → `INACTIVE` (when steward becomes unresponsive)
+- `ACKNOWLEDGED` → `INACTIVE` (when steward becomes unresponsive)
+- `ACTIVE` → `REVOKED` (when steward is removed from backup)
+- `ACKNOWLEDGED` → `REVOKED` (when steward is removed from backup)
 
 ### ShardEvent
 Represents a Nostr gift wrap event (kind 1059) containing an encrypted shard.
@@ -96,7 +96,7 @@ Represents the decrypted shard data contained within a ShardEvent.
 - `shardIndex: int` - Index of this shard in the Shamir scheme
 - `totalShards: int` - Total number of shards created
 - `primeMod: String` - Base64-encoded prime modulus for Shamir reconstruction
-- `creatorPubkey: String` - Public key of the lockbox creator (for verification)
+- `creatorPubkey: String` - Public key of the vault creator (for verification)
 - `createdAt: int` - Unix timestamp when shard was created
 
 **Validation Rules**:
@@ -113,7 +113,7 @@ Represents the decrypted shard data contained within a ShardEvent.
 
 ### KeyHolderStatus (Enum)
 - `PENDING` - Key holder added but gift wrap event not yet published
-- `ACTIVE` - Gift wrap event published and key holder is responsive
+- `ACTIVE` - Gift wrap event published and steward is responsive
 - `ACKNOWLEDGED` - Key holder has acknowledged receipt of their key share
 - `INACTIVE` - Key holder is unresponsive or offline
 - `REVOKED` - Key holder removed from backup configuration
@@ -127,9 +127,9 @@ Represents the decrypted shard data contained within a ShardEvent.
 ## Relationships
 
 ### BackupConfig → KeyHolder (1:N)
-- One backup configuration has many key holders
-- Each key holder belongs to exactly one backup configuration
-- Cascade delete: removing backup config removes all key holders
+- One backup configuration has many stewards
+- Each steward belongs to exactly one backup configuration
+- Cascade delete: removing backup config removes all stewards
 
 ### BackupConfig → ShardEvent (1:N)
 - One backup configuration generates many shard events
@@ -137,8 +137,8 @@ Represents the decrypted shard data contained within a ShardEvent.
 - Cascade delete: removing backup config removes all shard events
 
 ### KeyHolder → ShardEvent (1:1)
-- Each key holder has exactly one shard event
-- Each shard event is for exactly one key holder
+- Each steward has exactly one shard event
+- Each shard event is for exactly one steward
 - Relationship maintained through `recipientNpub` field
 
 ### ShardEvent → ShardData (1:1)
@@ -151,30 +151,30 @@ Represents the decrypted shard data contained within a ShardEvent.
 1. User creates `BackupConfig` with threshold, totalKeys, and relay URLs
 2. System sets `specVersion` to current specification version (e.g., "1.0.0")
 3. User adds `KeyHolder` entities with Nostr public keys
-4. System validates configuration, key holders, and relay connectivity
-5. System generates Shamir shares for the lockbox
-6. System creates `GiftWrapEvent` entities for each key holder
+4. System validates configuration, stewards, and relay connectivity
+5. System generates Shamir shares for the vault
+6. System creates `GiftWrapEvent` entities for each steward
 7. System publishes gift wrap events to specified Nostr relays
-8. System waits for acknowledgment events from key holders
+8. System waits for acknowledgment events from stewards
 9. System updates statuses based on publishing and acknowledgment results
 10. System sets `contentHash` and `lastRedistribution` timestamps
 
 ### Recovery Flow
 1. User initiates recovery process
-2. System retrieves `BackupConfig` for the lockbox
+2. System retrieves `BackupConfig` for the vault
 3. System checks `specVersion` field for compatibility
 4. System collects `GiftWrapEvent` entities from Nostr relays
 5. System decrypts Shamir shares using recipient's private key
-6. System reconstructs original lockbox data using Shamir's algorithm
+6. System reconstructs original vault data using Shamir's algorithm
 7. System validates reconstructed data integrity
 
 ### Configuration Update Flow
-1. User modifies `BackupConfig` (threshold, key holders, relays)
+1. User modifies `BackupConfig` (threshold, stewards, relays)
 2. System invalidates existing `GiftWrapEvent` entities
 3. System generates new Shamir shares
 4. System creates new `GiftWrapEvent` entities
 5. System publishes new gift wrap events to updated relay list
-6. System waits for acknowledgment events from key holders
+6. System waits for acknowledgment events from stewards
 7. System updates all statuses based on results
 8. System updates `lastRedistribution` timestamp
 
@@ -188,8 +188,8 @@ Represents the decrypted shard data contained within a ShardEvent.
 7. System updates all related entities with new specification version
 
 ### Content Change Detection Flow
-1. User modifies lockbox contents
-2. System calculates new `contentHash` of lockbox data
+1. User modifies vault contents
+2. System calculates new `contentHash` of vault data
 3. System compares new hash with stored `contentHash`
 4. If different: System sets `lastContentChange` and changes status to `PENDING`
 5. System triggers redistribution process (same as Configuration Update Flow)
@@ -205,9 +205,9 @@ Represents the decrypted shard data contained within a ShardEvent.
 ### Key Management
 - Shamir shares generated using cryptographically secure random numbers
 - Each share encrypted with recipient's public key
-- Original lockbox data never stored in distributed form
+- Original vault data never stored in distributed form
 
 ### Access Control
-- Only lockbox owner can modify backup configuration
+- Only vault owner can modify backup configuration
 - Key holders can only access their own encrypted shares
 - No central authority controls backup or recovery process

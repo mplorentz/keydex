@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../utils/app_initialization.dart';
 import '../widgets/row_button.dart';
+import 'account_choice_screen.dart';
 
 /// Onboarding screen shown when user is not logged in
 class OnboardingScreen extends ConsumerWidget {
@@ -11,6 +11,7 @@ class OnboardingScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       body: SafeArea(
+        bottom: false, // Exclude bottom safe area, let RowButton handle it
         child: Column(
           children: [
             const SizedBox(height: 64),
@@ -29,7 +30,7 @@ class OnboardingScreen extends ConsumerWidget {
                         children: [
                           Center(
                             child: Text(
-                              'Keydex',
+                              'Horcrux',
                               style: Theme.of(context).textTheme.displaySmall?.copyWith(
                                     fontSize: 90,
                                     fontWeight: FontWeight.w700,
@@ -43,11 +44,13 @@ class OnboardingScreen extends ConsumerWidget {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Body text explaining Keydex - left aligned
+                              // Body text explaining Horcrux - left aligned
                               Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16.0,
+                                ),
                                 child: Text(
-                                  'Keydex is a tool for backing up sensitive data like digital wills, passwords, and cryptographic keys. Rather than backing the data up to the cloud, Keydex sends the sensitive data in pieces to your friends and family\'s devices. Recovery is accomplished by getting consent from these friends and family to reassemble your data.',
+                                  'Horcrux is a tool for backing up sensitive data like digital wills, passwords, and cryptographic keys. Rather than backing the data up to the cloud, Horcrux sends the sensitive data in pieces to your friends and family\'s devices. Recovery is accomplished by getting consent from these friends and family to reassemble your data.',
                                   style: Theme.of(context).textTheme.bodyMedium,
                                 ),
                               ),
@@ -86,9 +89,11 @@ class OnboardingScreen extends ConsumerWidget {
             ),
             // Get Started button at bottom
             RowButton(
-              onPressed: () async {
-                // Initialize key and services, then invalidate providers to show main screen
-                await initializeAppServices(ref, initializeKeyIfNeeded: true);
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AccountChoiceScreen()),
+                );
               },
               icon: Icons.arrow_forward,
               text: 'Get Started',

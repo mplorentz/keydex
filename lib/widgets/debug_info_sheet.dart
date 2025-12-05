@@ -3,14 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:cross_file/cross_file.dart';
 import '../providers/key_provider.dart';
-import '../providers/lockbox_provider.dart';
-import '../services/lockbox_share_service.dart';
+import '../providers/vault_provider.dart';
+import '../services/vault_share_service.dart';
 import '../services/recovery_service.dart';
 import '../services/relay_scan_service.dart';
 import '../services/logger.dart';
-import '../screens/keydex_gallery_screen.dart';
+import '../screens/horcrux_gallery_screen.dart';
 
 /// Debug information sheet widget
 class DebugInfoSheet extends ConsumerWidget {
@@ -29,7 +28,7 @@ class DebugInfoSheet extends ConsumerWidget {
 
       // Export logs as zip
       final zipPath = await Log.exportLogsAsZip();
-      
+
       if (!context.mounted) return;
 
       if (zipPath == null) {
@@ -47,9 +46,9 @@ class DebugInfoSheet extends ConsumerWidget {
       if (await zipFile.exists()) {
         await Share.shareXFiles(
           [XFile(zipPath)],
-          text: 'Keydex Logs Export',
+          text: 'Horcrux Logs Export',
         );
-        
+
         if (!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -86,7 +85,7 @@ class DebugInfoSheet extends ConsumerWidget {
         title: const Text('Clear All Data?'),
         content: const Text(
           'This will permanently delete:\n'
-          '• All lockboxes\n'
+          '• All vaults\n'
           '• All vault keys\n'
           '• All recovery requests\n'
           '• All relay configurations\n'
@@ -118,8 +117,8 @@ class DebugInfoSheet extends ConsumerWidget {
       );
 
       // Clear all services using providers
-      await ref.read(lockboxRepositoryProvider).clearAll();
-      await ref.read(lockboxShareServiceProvider).clearAll();
+      await ref.read(vaultRepositoryProvider).clearAll();
+      await ref.read(vaultShareServiceProvider).clearAll();
       await ref.read(recoveryServiceProvider).clearAll();
       await ref.read(relayScanServiceProvider).clearAll();
       await ref.read(loginServiceProvider).clearStoredKeys();
@@ -142,7 +141,7 @@ class DebugInfoSheet extends ConsumerWidget {
       );
 
       // Refresh providers to pick up the cleared state
-      ref.invalidate(lockboxListProvider);
+      ref.invalidate(vaultListProvider);
       ref.invalidate(currentPublicKeyProvider);
       ref.invalidate(currentPublicKeyBech32Provider);
       ref.invalidate(isLoggedInProvider);
@@ -180,17 +179,11 @@ class DebugInfoSheet extends ConsumerWidget {
         children: [
           Row(
             children: [
-              Icon(
-                Icons.bug_report,
-                size: 24,
-                color: theme.colorScheme.primary,
-              ),
+              Icon(Icons.bug_report, size: 24, color: theme.colorScheme.primary),
               const SizedBox(width: 12),
               Text(
                 'Debug Information',
-                style: textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
               const Spacer(),
               IconButton(
@@ -216,14 +209,8 @@ class DebugInfoSheet extends ConsumerWidget {
               children: [
                 // Bech32 key
                 publicKeyBech32Async.when(
-                  loading: () => Text(
-                    'Loading...',
-                    style: textTheme.bodySmall,
-                  ),
-                  error: (err, _) => Text(
-                    'Error: $err',
-                    style: textTheme.bodySmall,
-                  ),
+                  loading: () => Text('Loading...', style: textTheme.bodySmall),
+                  error: (err, _) => Text('Error: $err', style: textTheme.bodySmall),
                   data: (npub) => _KeyDisplay(
                     label: 'Npub (bech32):',
                     value: npub ?? 'Not available',
@@ -233,14 +220,8 @@ class DebugInfoSheet extends ConsumerWidget {
                 const SizedBox(height: 12),
                 // Hex key
                 publicKeyAsync.when(
-                  loading: () => Text(
-                    'Loading...',
-                    style: textTheme.bodySmall,
-                  ),
-                  error: (err, _) => Text(
-                    'Error: $err',
-                    style: textTheme.bodySmall,
-                  ),
+                  loading: () => Text('Loading...', style: textTheme.bodySmall),
+                  error: (err, _) => Text('Error: $err', style: textTheme.bodySmall),
                   data: (pubkey) => _KeyDisplay(
                     label: 'Public Key (hex):',
                     value: pubkey ?? 'Not available',
@@ -259,14 +240,10 @@ class DebugInfoSheet extends ConsumerWidget {
                 Navigator.pop(context); // Close the debug sheet first
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => const KeydexGallery(),
-                  ),
+                  MaterialPageRoute(builder: (context) => const HorcruxGallery()),
                 );
               },
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
+              style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
               icon: const Icon(Icons.palette),
               label: const Text('View Design Gallery'),
             ),
@@ -311,11 +288,7 @@ class _KeyDisplay extends StatelessWidget {
   final String value;
   final String tooltipLabel;
 
-  const _KeyDisplay({
-    required this.label,
-    required this.value,
-    required this.tooltipLabel,
-  });
+  const _KeyDisplay({required this.label, required this.value, required this.tooltipLabel});
 
   @override
   Widget build(BuildContext context) {
@@ -327,19 +300,11 @@ class _KeyDisplay extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                label,
-                style: textTheme.labelSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              Text(label, style: textTheme.labelSmall?.copyWith(fontWeight: FontWeight.bold)),
               const SizedBox(height: 2),
               Text(
                 value,
-                style: textTheme.bodySmall?.copyWith(
-                  fontFamily: 'monospace',
-                  fontSize: 10,
-                ),
+                style: textTheme.bodySmall?.copyWith(fontFamily: 'monospace', fontSize: 10),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -347,11 +312,7 @@ class _KeyDisplay extends StatelessWidget {
           ),
         ),
         IconButton(
-          icon: Icon(
-            Icons.copy,
-            size: 16,
-            color: Theme.of(context).colorScheme.primary,
-          ),
+          icon: Icon(Icons.copy, size: 16, color: Theme.of(context).colorScheme.primary),
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(),
           onPressed: value != 'Not available' && value != 'Loading...'

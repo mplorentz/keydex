@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
 
-/// Screen for initiating recovery of a lockbox
+/// Screen for initiating recovery of a vault
 ///
-/// This screen allows key holders to initiate recovery of a lockbox
+/// This screen allows stewards to initiate recovery of a vault
 /// they have a key share for.
 class RecoveryRequestScreen extends StatefulWidget {
-  final String lockboxId;
+  final String vaultId;
 
-  const RecoveryRequestScreen({
-    super.key,
-    required this.lockboxId,
-  });
+  const RecoveryRequestScreen({super.key, required this.vaultId});
 
   @override
   State<RecoveryRequestScreen> createState() => _RecoveryRequestScreenState();
@@ -32,7 +29,7 @@ class _RecoveryRequestScreenState extends State<RecoveryRequestScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Lockbox information card
+            // Vault information card
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -70,10 +67,7 @@ class _RecoveryRequestScreenState extends State<RecoveryRequestScreen> {
             // Stewards section
             const Text(
               'Stewards',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
 
@@ -86,7 +80,9 @@ class _RecoveryRequestScreenState extends State<RecoveryRequestScreen> {
                     margin: const EdgeInsets.only(bottom: 8),
                     child: ListTile(
                       leading: CircleAvatar(
-                        backgroundColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                        backgroundColor: Theme.of(
+                          context,
+                        ).primaryColor.withValues(alpha: 0.1),
                         child: Icon(
                           Icons.person,
                           color: Theme.of(context).primaryColor,
@@ -139,7 +135,9 @@ class _RecoveryRequestScreenState extends State<RecoveryRequestScreen> {
                             width: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
                             ),
                           )
                         : const Text('Initiate Recovery'),

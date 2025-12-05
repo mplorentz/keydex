@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:keydex/models/shard_data.dart';
+import 'package:horcrux/models/shard_data.dart';
 
 void main() {
   group('ShardData JSON Serialization', () {
@@ -23,21 +23,21 @@ void main() {
       // Extended fixture with recovery metadata
       validJsonWithRecoveryMetadata = {
         ...validJsonFixture,
-        'lockboxId': 'lockbox-abc-456',
-        'lockboxName': 'Shared Lockbox Test',
+        'vaultId': 'vault-abc-456',
+        'vaultName': 'Shared Vault Test',
         'peers': [
           {
             'name': 'Alice',
-            'pubkey': 'a11ac73f57e93ef42ef8bce513de552bcda3b6169c8f9ab96c6143f0c9b73437'
+            'pubkey': 'a11ac73f57e93ef42ef8bce513de552bcda3b6169c8f9ab96c6143f0c9b73437',
           },
           {
             'name': 'Bob',
-            'pubkey': 'b22bd84f68f94fa53fa9cdf624ef663ccdeb4c7260d9f0ab97d7254f1d9c8454'
+            'pubkey': 'b22bd84f68f94fa53fa9cdf624ef663ccdeb4c7260d9f0ab97d7254f1d9c8454',
           },
           {
             'name': 'Charlie',
-            'pubkey': 'c33ce95f79fa5ab64fa0def735fa774ddfc5d8371e0a1bc08e8263a2e0d9546'
-          }
+            'pubkey': 'c33ce95f79fa5ab64fa0def735fa774ddfc5d8371e0a1bc08e8263a2e0d9546',
+          },
         ],
         'ownerName': 'Owner',
         'recipientPubkey': 'b22bd84f68f94fa53fa9cdf624ef663ccdeb4c7260d9f0ab97d7254f1d9c8454',
@@ -57,8 +57,8 @@ void main() {
       expect(shardData.primeMod, validJsonFixture['primeMod']);
       expect(shardData.creatorPubkey, validJsonFixture['creatorPubkey']);
       expect(shardData.createdAt, validJsonFixture['createdAt']);
-      expect(shardData.lockboxId, isNull);
-      expect(shardData.lockboxName, isNull);
+      expect(shardData.vaultId, isNull);
+      expect(shardData.vaultName, isNull);
       expect(shardData.peers, isNull);
       expect(shardData.recipientPubkey, isNull);
       expect(shardData.isReceived, isNull);
@@ -66,29 +66,58 @@ void main() {
       expect(shardData.nostrEventId, isNull);
     });
 
-    test('shardDataFromJson creates valid ShardData with recovery metadata', () {
-      final shardData = shardDataFromJson(validJsonWithRecoveryMetadata);
+    test(
+      'shardDataFromJson creates valid ShardData with recovery metadata',
+      () {
+        final shardData = shardDataFromJson(validJsonWithRecoveryMetadata);
 
-      expect(shardData.shard, validJsonWithRecoveryMetadata['shard']);
-      expect(shardData.threshold, validJsonWithRecoveryMetadata['threshold']);
-      expect(shardData.shardIndex, validJsonWithRecoveryMetadata['shardIndex']);
-      expect(shardData.totalShards, validJsonWithRecoveryMetadata['totalShards']);
-      expect(shardData.primeMod, validJsonWithRecoveryMetadata['primeMod']);
-      expect(shardData.creatorPubkey, validJsonWithRecoveryMetadata['creatorPubkey']);
-      expect(shardData.createdAt, validJsonWithRecoveryMetadata['createdAt']);
-      expect(shardData.lockboxId, validJsonWithRecoveryMetadata['lockboxId']);
-      expect(shardData.lockboxName, validJsonWithRecoveryMetadata['lockboxName']);
-      expect(shardData.peers, isNotNull);
-      expect(shardData.peers!.length, 3);
-      expect(shardData.peers![0]['name'], 'Alice');
-      expect(shardData.peers![0]['pubkey'],
-          'a11ac73f57e93ef42ef8bce513de552bcda3b6169c8f9ab96c6143f0c9b73437');
-      expect(shardData.ownerName, 'Owner');
-      expect(shardData.recipientPubkey, validJsonWithRecoveryMetadata['recipientPubkey']);
-      expect(shardData.isReceived, validJsonWithRecoveryMetadata['isReceived']);
-      expect(shardData.receivedAt, DateTime.parse(validJsonWithRecoveryMetadata['receivedAt']));
-      expect(shardData.nostrEventId, validJsonWithRecoveryMetadata['nostrEventId']);
-    });
+        expect(shardData.shard, validJsonWithRecoveryMetadata['shard']);
+        expect(shardData.threshold, validJsonWithRecoveryMetadata['threshold']);
+        expect(
+          shardData.shardIndex,
+          validJsonWithRecoveryMetadata['shardIndex'],
+        );
+        expect(
+          shardData.totalShards,
+          validJsonWithRecoveryMetadata['totalShards'],
+        );
+        expect(shardData.primeMod, validJsonWithRecoveryMetadata['primeMod']);
+        expect(
+          shardData.creatorPubkey,
+          validJsonWithRecoveryMetadata['creatorPubkey'],
+        );
+        expect(shardData.createdAt, validJsonWithRecoveryMetadata['createdAt']);
+        expect(shardData.vaultId, validJsonWithRecoveryMetadata['vaultId']);
+        expect(
+          shardData.vaultName,
+          validJsonWithRecoveryMetadata['vaultName'],
+        );
+        expect(shardData.peers, isNotNull);
+        expect(shardData.peers!.length, 3);
+        expect(shardData.peers![0]['name'], 'Alice');
+        expect(
+          shardData.peers![0]['pubkey'],
+          'a11ac73f57e93ef42ef8bce513de552bcda3b6169c8f9ab96c6143f0c9b73437',
+        );
+        expect(shardData.ownerName, 'Owner');
+        expect(
+          shardData.recipientPubkey,
+          validJsonWithRecoveryMetadata['recipientPubkey'],
+        );
+        expect(
+          shardData.isReceived,
+          validJsonWithRecoveryMetadata['isReceived'],
+        );
+        expect(
+          shardData.receivedAt,
+          DateTime.parse(validJsonWithRecoveryMetadata['receivedAt']),
+        );
+        expect(
+          shardData.nostrEventId,
+          validJsonWithRecoveryMetadata['nostrEventId'],
+        );
+      },
+    );
 
     test('shardDataToJson encodes minimal ShardData correctly', () {
       final shardData = shardDataFromJson(validJsonFixture);
@@ -101,8 +130,8 @@ void main() {
       expect(json['primeMod'], validJsonFixture['primeMod']);
       expect(json['creatorPubkey'], validJsonFixture['creatorPubkey']);
       expect(json['createdAt'], validJsonFixture['createdAt']);
-      expect(json.containsKey('lockboxId'), isFalse);
-      expect(json.containsKey('lockboxName'), isFalse);
+      expect(json.containsKey('vaultId'), isFalse);
+      expect(json.containsKey('vaultName'), isFalse);
       expect(json.containsKey('peers'), isFalse);
       expect(json.containsKey('recipientPubkey'), isFalse);
       expect(json.containsKey('isReceived'), isFalse);
@@ -110,30 +139,50 @@ void main() {
       expect(json.containsKey('nostrEventId'), isFalse);
     });
 
-    test('shardDataToJson encodes ShardData with recovery metadata correctly', () {
-      final shardData = shardDataFromJson(validJsonWithRecoveryMetadata);
-      final json = shardDataToJson(shardData);
+    test(
+      'shardDataToJson encodes ShardData with recovery metadata correctly',
+      () {
+        final shardData = shardDataFromJson(validJsonWithRecoveryMetadata);
+        final json = shardDataToJson(shardData);
 
-      expect(json['shard'], validJsonWithRecoveryMetadata['shard']);
-      expect(json['threshold'], validJsonWithRecoveryMetadata['threshold']);
-      expect(json['shardIndex'], validJsonWithRecoveryMetadata['shardIndex']);
-      expect(json['totalShards'], validJsonWithRecoveryMetadata['totalShards']);
-      expect(json['primeMod'], validJsonWithRecoveryMetadata['primeMod']);
-      expect(json['creatorPubkey'], validJsonWithRecoveryMetadata['creatorPubkey']);
-      expect(json['createdAt'], validJsonWithRecoveryMetadata['createdAt']);
-      expect(json['lockboxId'], validJsonWithRecoveryMetadata['lockboxId']);
-      expect(json['lockboxName'], validJsonWithRecoveryMetadata['lockboxName']);
-      expect(json['peers'], isNotNull);
-      expect(json['peers'], isA<List>());
-      expect(json['ownerName'], 'Owner');
-      expect(json['recipientPubkey'], validJsonWithRecoveryMetadata['recipientPubkey']);
-      expect(json['isReceived'], validJsonWithRecoveryMetadata['isReceived']);
-      expect(json['receivedAt'], validJsonWithRecoveryMetadata['receivedAt']);
-      expect(json['nostrEventId'], validJsonWithRecoveryMetadata['nostrEventId']);
-    });
+        expect(json['shard'], validJsonWithRecoveryMetadata['shard']);
+        expect(json['threshold'], validJsonWithRecoveryMetadata['threshold']);
+        expect(json['shardIndex'], validJsonWithRecoveryMetadata['shardIndex']);
+        expect(
+          json['totalShards'],
+          validJsonWithRecoveryMetadata['totalShards'],
+        );
+        expect(json['primeMod'], validJsonWithRecoveryMetadata['primeMod']);
+        expect(
+          json['creatorPubkey'],
+          validJsonWithRecoveryMetadata['creatorPubkey'],
+        );
+        expect(json['createdAt'], validJsonWithRecoveryMetadata['createdAt']);
+        expect(json['vaultId'], validJsonWithRecoveryMetadata['vaultId']);
+        expect(
+          json['vaultName'],
+          validJsonWithRecoveryMetadata['vaultName'],
+        );
+        expect(json['peers'], isNotNull);
+        expect(json['peers'], isA<List>());
+        expect(json['ownerName'], 'Owner');
+        expect(
+          json['recipientPubkey'],
+          validJsonWithRecoveryMetadata['recipientPubkey'],
+        );
+        expect(json['isReceived'], validJsonWithRecoveryMetadata['isReceived']);
+        expect(json['receivedAt'], validJsonWithRecoveryMetadata['receivedAt']);
+        expect(
+          json['nostrEventId'],
+          validJsonWithRecoveryMetadata['nostrEventId'],
+        );
+      },
+    );
 
     test('round-trip encoding and decoding preserves data', () {
-      final originalShardData = shardDataFromJson(validJsonWithRecoveryMetadata);
+      final originalShardData = shardDataFromJson(
+        validJsonWithRecoveryMetadata,
+      );
       final json = shardDataToJson(originalShardData);
       final decodedShardData = shardDataFromJson(json);
 
@@ -144,12 +193,15 @@ void main() {
       expect(decodedShardData.primeMod, originalShardData.primeMod);
       expect(decodedShardData.creatorPubkey, originalShardData.creatorPubkey);
       expect(decodedShardData.createdAt, originalShardData.createdAt);
-      expect(decodedShardData.lockboxId, originalShardData.lockboxId);
-      expect(decodedShardData.lockboxName, originalShardData.lockboxName);
+      expect(decodedShardData.vaultId, originalShardData.vaultId);
+      expect(decodedShardData.vaultName, originalShardData.vaultName);
       expect(decodedShardData.peers, isNotNull);
       expect(decodedShardData.peers!.length, originalShardData.peers!.length);
       expect(decodedShardData.ownerName, originalShardData.ownerName);
-      expect(decodedShardData.recipientPubkey, originalShardData.recipientPubkey);
+      expect(
+        decodedShardData.recipientPubkey,
+        originalShardData.recipientPubkey,
+      );
       expect(decodedShardData.isReceived, originalShardData.isReceived);
       expect(decodedShardData.receivedAt, originalShardData.receivedAt);
       expect(decodedShardData.nostrEventId, originalShardData.nostrEventId);
@@ -162,8 +214,8 @@ void main() {
       final shardData = shardDataFromJson(jsonWithoutReceivedAt);
 
       expect(shardData.receivedAt, isNull);
-      expect(shardData.lockboxId, isNotNull);
-      expect(shardData.lockboxName, isNotNull);
+      expect(shardData.vaultId, isNotNull);
+      expect(shardData.vaultName, isNotNull);
     });
 
     test('shardDataFromJson throws on missing required fields', () {
@@ -180,8 +232,8 @@ void main() {
       final minimalShardData = shardDataFromJson(validJsonFixture);
       final json = shardDataToJson(minimalShardData);
 
-      expect(json.containsKey('lockboxId'), isFalse);
-      expect(json.containsKey('lockboxName'), isFalse);
+      expect(json.containsKey('vaultId'), isFalse);
+      expect(json.containsKey('vaultName'), isFalse);
       expect(json.containsKey('recipientPubkey'), isFalse);
       expect(json.containsKey('isReceived'), isFalse);
       expect(json.containsKey('receivedAt'), isFalse);
@@ -413,8 +465,8 @@ void main() {
         primeMod: 'xyz',
         creatorPubkey: 'a11ac73f57e93ef42ef8bce513de552bcda3b6169c8f9ab96c6143f0c9b73437',
         createdAt: pastTimestamp,
-        lockboxId: null,
-        lockboxName: null,
+        vaultId: null,
+        vaultName: null,
         peers: null,
         ownerName: null,
         instructions: null,
@@ -440,8 +492,8 @@ void main() {
         primeMod: 'xyz',
         creatorPubkey: 'a11ac73f57e93ef42ef8bce513de552bcda3b6169c8f9ab96c6143f0c9b73437',
         createdAt: pastTimestamp,
-        lockboxId: null,
-        lockboxName: null,
+        vaultId: null,
+        vaultName: null,
         peers: null,
         ownerName: null,
         instructions: null,
@@ -467,8 +519,8 @@ void main() {
         primeMod: 'xyz',
         creatorPubkey: 'a11ac73f57e93ef42ef8bce513de552bcda3b6169c8f9ab96c6143f0c9b73437',
         createdAt: recentTimestamp,
-        lockboxId: null,
-        lockboxName: null,
+        vaultId: null,
+        vaultName: null,
         peers: null,
         ownerName: null,
         instructions: null,
@@ -494,8 +546,8 @@ void main() {
         primeMod: 'xyz',
         creatorPubkey: 'a11ac73f57e93ef42ef8bce513de552bcda3b6169c8f9ab96c6143f0c9b73437',
         createdAt: oldTimestamp,
-        lockboxId: null,
-        lockboxName: null,
+        vaultId: null,
+        vaultName: null,
         peers: null,
         ownerName: null,
         instructions: null,

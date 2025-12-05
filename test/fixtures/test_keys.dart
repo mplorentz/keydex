@@ -33,13 +33,13 @@ class TestNpubKeys {
 /// Test data for creating BackupConfig objects
 class TestBackupConfigs {
   /// A simple 2-of-2 backup configuration for testing
-  static const String simple2of2LockboxId = 'test-lockbox-2of2';
+  static const String simple2of2VaultId = 'test-vault-2of2';
   static const int simple2of2Threshold = 2;
   static const int simple2of2TotalKeys = 2;
   static const List<String> simple2of2Relays = ['ws://localhost:10547'];
 
   /// A 3-of-4 backup configuration for testing
-  static const String complex3of4LockboxId = 'test-lockbox-3of4';
+  static const String complex3of4VaultId = 'test-vault-3of4';
   static const int complex3of4Threshold = 3;
   static const int complex3of4TotalKeys = 4;
   static const List<String> complex3of4Relays = [
@@ -61,24 +61,23 @@ class TestShardData {
     required int threshold,
   }) {
     return List.generate(
-        totalShards,
-        (index) => {
-              'shard': 'test-shard-data-$index',
-              'threshold': threshold,
-              'shardIndex': index,
-              'totalShards': totalShards,
-              'primeMod': testPrimeMod,
-              'creatorPubkey': testCreatorPubkey,
-            });
+      totalShards,
+      (index) => {
+        'shard': 'test-shard-data-$index',
+        'threshold': threshold,
+        'shardIndex': index,
+        'totalShards': totalShards,
+        'primeMod': testPrimeMod,
+        'creatorPubkey': testCreatorPubkey,
+      },
+    );
   }
 }
 
 /// Test data for creating KeyHolder objects
 class TestKeyHolders {
-  /// Creates a list of test key holders using the test keys
-  static List<Map<String, dynamic>> createTestKeyHolders({
-    required int count,
-  }) {
+  /// Creates a list of test stewards using the test keys
+  static List<Map<String, dynamic>> createTestKeyHolders({required int count}) {
     final keys = [
       {'pubkey': TestHexPubkeys.alice, 'name': 'Alice'},
       {'pubkey': TestHexPubkeys.bob, 'name': 'Bob'},

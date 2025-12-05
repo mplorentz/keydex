@@ -5,10 +5,10 @@ import '../services/logger.dart';
 import '../models/nostr_kinds.dart';
 
 /// Provider for InvitationSendingService
-final invitationSendingServiceProvider = Provider<InvitationSendingService>((ref) {
-  return InvitationSendingService(
-    ref.read(ndkServiceProvider),
-  );
+final invitationSendingServiceProvider = Provider<InvitationSendingService>((
+  ref,
+) {
+  return InvitationSendingService(ref.read(ndkServiceProvider));
 });
 
 /// Stateless utility service for creating and publishing outgoing invitation-related Nostr events
@@ -49,7 +49,9 @@ class InvitationSendingService {
 
       final rsvpJson = json.encode(rsvpData);
 
-      Log.info('Sending RSVP event for invite code: ${inviteCode.substring(0, 8)}...');
+      Log.info(
+        'Sending RSVP event for invite code: ${inviteCode.substring(0, 8)}...',
+      );
 
       // Publish using NdkService
       return await ndkService.publishEncryptedEvent(
@@ -102,7 +104,9 @@ class InvitationSendingService {
 
       final denialJson = json.encode(denialData);
 
-      Log.info('Sending denial event for invite code: ${inviteCode.substring(0, 8)}...');
+      Log.info(
+        'Sending denial event for invite code: ${inviteCode.substring(0, 8)}...',
+      );
 
       // Publish using NdkService
       return await ndkService.publishEncryptedEvent(
@@ -126,11 +130,11 @@ class InvitationSendingService {
   /// Creates confirmation event payload.
   /// Encrypts using NIP-44.
   /// Creates Nostr event (kind 1342).
-  /// Signs with key holder's private key.
+  /// Signs with steward's private key.
   /// Publishes to relays.
   /// Returns event ID, or null if publishing fails.
   Future<String?> sendShardConfirmationEvent({
-    required String lockboxId,
+    required String vaultId,
     required int shardIndex,
     required String ownerPubkey, // Hex format
     required List<String> relayUrls,
@@ -146,21 +150,22 @@ class InvitationSendingService {
       // Create shard confirmation event payload
       final confirmationData = {
         'type': 'shard_confirmation',
-        'lockbox_id': lockboxId,
+        'vault_id': vaultId,
         'shard_index': shardIndex,
-        'key_holder_pubkey': currentPubkey,
+        'steward_pubkey': currentPubkey,
         'confirmed_at': DateTime.now().toIso8601String(),
       };
 
       final confirmationJson = json.encode(confirmationData);
 
       Log.info(
-          'Sending shard confirmation event for lockbox: ${lockboxId.substring(0, 8)}..., shard: $shardIndex');
+        'Sending shard confirmation event for vault: ${vaultId.substring(0, 8)}..., shard: $shardIndex',
+      );
 
       // Publish using NdkService
       final tags = [
-        ['d', 'shard_confirmation_${lockboxId}_$shardIndex'],
-        ['lockbox_id', lockboxId],
+        ['d', 'shard_confirmation_${vaultId}_$shardIndex'],
+        ['vault_id', vaultId],
         ['shard_index', shardIndex.toString()],
       ];
 
@@ -187,11 +192,11 @@ class InvitationSendingService {
   /// Creates error event payload.
   /// Encrypts using NIP-44.
   /// Creates Nostr event (kind 1343).
-  /// Signs with key holder's private key.
+  /// Signs with steward's private key.
   /// Publishes to relays.
   /// Returns event ID, or null if publishing fails.
   Future<String?> sendShardErrorEvent({
-    required String lockboxId,
+    required String vaultId,
     required int shardIndex,
     required String ownerPubkey, // Hex format
     required List<String> relayUrls,
@@ -207,9 +212,9 @@ class InvitationSendingService {
       // Create shard error event payload
       final errorData = {
         'type': 'shard_error',
-        'lockbox_id': lockboxId,
+        'vault_id': vaultId,
         'shard_index': shardIndex,
-        'key_holder_pubkey': currentPubkey,
+        'steward_pubkey': currentPubkey,
         'error': error,
         'reported_at': DateTime.now().toIso8601String(),
       };
@@ -217,7 +222,8 @@ class InvitationSendingService {
       final errorJson = json.encode(errorData);
 
       Log.warning(
-          'Sending shard error event for lockbox: ${lockboxId.substring(0, 8)}..., shard: $shardIndex');
+        'Sending shard error event for vault: ${vaultId.substring(0, 8)}..., shard: $shardIndex',
+      );
 
       // Publish using NdkService
       return await ndkService.publishEncryptedEvent(
@@ -226,8 +232,8 @@ class InvitationSendingService {
         recipientPubkey: ownerPubkey,
         relays: relayUrls,
         tags: [
-          ['d', 'shard_error_${lockboxId}_$shardIndex'],
-          ['lockbox_id', lockboxId],
+          ['d', 'shard_error_${vaultId}_$shardIndex'],
+          ['vault_id', vaultId],
           ['shard_index', shardIndex.toString()],
         ],
       );
@@ -242,7 +248,7 @@ class InvitationSendingService {
   /// Creates invalid event payload.
   /// Encrypts using NIP-44.
   /// Creates Nostr event (kind 1344).
-  /// Signs with lockbox owner's private key.
+  /// Signs with vault owner's private key.
   /// Publishes to relays.
   /// Returns event ID, or null if publishing fails.
   Future<String?> sendInvitationInvalidEvent({
@@ -270,7 +276,8 @@ class InvitationSendingService {
       final invalidJson = json.encode(invalidData);
 
       Log.warning(
-          'Sending invitation invalid event for invite code: ${inviteCode.substring(0, 8)}...');
+        'Sending invitation invalid event for invite code: ${inviteCode.substring(0, 8)}...',
+      );
 
       // Publish using NdkService
       return await ndkService.publishEncryptedEvent(
@@ -289,31 +296,31 @@ class InvitationSendingService {
     }
   }
 
-  /// Creates and publishes key holder removed event
+  /// Creates and publishes steward removed event
   ///
   /// Creates removal event payload.
   /// Encrypts using NIP-44.
   /// Creates Nostr event (kind 1345).
-  /// Signs with lockbox owner's private key.
+  /// Signs with vault owner's private key.
   /// Publishes to relays.
   /// Returns event ID, or null if publishing fails.
   Future<String?> sendKeyHolderRemovalEvent({
-    required String lockboxId,
-    required String removedKeyHolderPubkey, // Hex format
+    required String vaultId,
+    required String removedStewardPubkey, // Hex format
     required List<String> relayUrls,
   }) async {
     try {
       final currentPubkey = await ndkService.getCurrentPubkey();
       if (currentPubkey == null) {
-        Log.error('No key pair available for sending key holder removal event');
+        Log.error('No key pair available for sending steward removal event');
         return null;
       }
 
-      // Create key holder removal event payload
+      // Create steward removal event payload
       final removalData = {
-        'type': 'key_holder_removed',
-        'lockbox_id': lockboxId,
-        'removed_pubkey': removedKeyHolderPubkey,
+        'type': 'steward_removed',
+        'vault_id': vaultId,
+        'removed_pubkey': removedStewardPubkey,
         'owner_pubkey': currentPubkey,
         'removed_at': DateTime.now().toIso8601String(),
       };
@@ -321,22 +328,23 @@ class InvitationSendingService {
       final removalJson = json.encode(removalData);
 
       Log.warning(
-          'Sending key holder removal event for lockbox: ${lockboxId.substring(0, 8)}..., removed: ${removedKeyHolderPubkey.substring(0, 8)}...');
+        'Sending steward removal event for vault: ${vaultId.substring(0, 8)}..., removed: ${removedStewardPubkey.substring(0, 8)}...',
+      );
 
       // Publish using NdkService
       return await ndkService.publishEncryptedEvent(
         content: removalJson,
         kind: NostrKind.keyHolderRemoved.value,
-        recipientPubkey: removedKeyHolderPubkey,
+        recipientPubkey: removedStewardPubkey,
         relays: relayUrls,
         tags: [
-          ['d', 'key_holder_removed_${lockboxId}_$removedKeyHolderPubkey'],
-          ['lockbox_id', lockboxId],
-          ['removed_pubkey', removedKeyHolderPubkey],
+          ['d', 'steward_removed_${vaultId}_$removedStewardPubkey'],
+          ['vault_id', vaultId],
+          ['removed_pubkey', removedStewardPubkey],
         ],
       );
     } catch (e) {
-      Log.error('Error sending key holder removal event', e);
+      Log.error('Error sending steward removal event', e);
       return null;
     }
   }

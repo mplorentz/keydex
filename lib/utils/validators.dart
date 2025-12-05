@@ -1,4 +1,4 @@
-/// Common validation utilities for Keydex
+/// Common validation utilities for Horcrux
 ///
 /// Provides reusable validation functions for hex strings, Base64 encoding,
 /// relay URLs, and other common data formats used throughout the application.
@@ -104,15 +104,49 @@ bool isValidBase64Url(String base64Url) {
   return base64UrlRegex.hasMatch(base64Url);
 }
 
-/// Validates that a lockbox ID is in the correct format
+/// Validates that a vault ID is in the correct format
 ///
-/// Lockbox IDs are UUIDs (can be validated more strictly if needed)
+/// Vault IDs are UUIDs (can be validated more strictly if needed)
 /// For now, we just check it's not empty
-bool isValidLockboxId(String lockboxId) {
-  return lockboxId.trim().isNotEmpty;
+bool isValidVaultId(String vaultId) {
+  return vaultId.trim().isNotEmpty;
 }
 
 /// Validates that a name string is valid (not empty after trimming)
 bool isValidName(String name) {
   return name.trim().isNotEmpty;
+}
+
+/// Validates that a string is a valid nsec (Nostr private key in bech32 format)
+///
+/// Expected format: nsec1 followed by bech32-encoded data
+bool isValidNsec(String nsec) {
+  if (nsec.isEmpty || !nsec.startsWith('nsec1')) return false;
+
+  // Basic validation: nsec1 + at least 58 characters (typical bech32 encoded key)
+  // Full bech32 validation would require more complex logic
+  if (nsec.length < 63) return false;
+
+  // Bech32 characters: a-z, 0-9 (excludes 1, b, i, o)
+  final bech32Regex = RegExp(r'^nsec1[ac-hj-np-z02-9]+$');
+  return bech32Regex.hasMatch(nsec);
+}
+
+/// Validates that a string is a valid bunker URL
+///
+/// Expected format: bunker://<pubkey>?relay=<relay_url>
+bool isValidBunkerUrl(String url) {
+  if (url.isEmpty || !url.startsWith('bunker://')) return false;
+
+  try {
+    final uri = Uri.parse(url);
+    if (uri.scheme != 'bunker') return false;
+
+    // Should have a host (pubkey) and a relay query parameter
+    if (uri.host.isEmpty) return false;
+
+    return true;
+  } catch (e) {
+    return false;
+  }
 }

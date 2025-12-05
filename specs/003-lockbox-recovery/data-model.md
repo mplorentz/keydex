@@ -1,17 +1,17 @@
-# Data Model: Lockbox Recovery
+# Data Model: Vault Recovery
 
-**Feature**: 003-lockbox-recovery  
+**Feature**: 003-vault-recovery  
 **Date**: 2024-12-19  
 **Status**: Complete
 
 ## Entities
 
 ### RecoveryRequest
-Represents a request to recover a lockbox, containing the lockbox ID, initiator's public key, timestamp, and current status.
+Represents a request to recover a vault, containing the vault ID, initiator's public key, timestamp, and current status.
 
 **Fields**:
 - `id`: String (unique identifier)
-- `lockboxId`: String (reference to Lockbox)
+- `vaultId`: String (reference to Vault)
 - `initiatorPubkey`: String (hex format, 64 characters)
 - `requestedAt`: DateTime (when request was created)
 - `status`: RecoveryRequestStatus (current state)
@@ -21,7 +21,7 @@ Represents a request to recover a lockbox, containing the lockbox ID, initiator'
 
 **Validation Rules**:
 - `id` must be non-empty
-- `lockboxId` must reference existing Lockbox
+- `vaultId` must reference existing Vault
 - `initiatorPubkey` must be valid hex format (64 characters)
 - `requestedAt` must be in the past
 - `expiresAt` must be in the future if set
@@ -34,7 +34,7 @@ Represents a request to recover a lockbox, containing the lockbox ID, initiator'
 - `*` → `cancelled` (user-initiated cancellation)
 
 ### RecoveryResponse
-Represents a key holder's response to a recovery request.
+Represents a steward's response to a recovery request.
 
 **Fields**:
 - `pubkey`: String (hex format, 64 characters)
@@ -67,11 +67,11 @@ Represents a list of Nostr relays that the app monitors for incoming key shares 
 - `scanInterval` must be positive
 
 ### RecoveryStatus
-Represents the current state of a recovery process, including which key holders have responded and their decision.
+Represents the current state of a recovery process, including which stewards have responded and their decision.
 
 **Fields**:
 - `recoveryRequestId`: String (reference to RecoveryRequest)
-- `totalKeyHolders`: int (total number of key holders)
+- `totalKeyHolders`: int (total number of stewards)
 - `respondedCount`: int (number of responses received)
 - `approvedCount`: int (number of approvals)
 - `deniedCount`: int (number of denials)
@@ -88,7 +88,7 @@ Represents the current state of a recovery process, including which key holders 
 - `canRecover` must be true when `approvedCount` >= `threshold`
 
 ### ShardData (Extended)
-Represents a Shamir share with optional metadata for lockbox recovery.
+Represents a Shamir share with optional metadata for vault recovery.
 
 **Core Fields** (from existing ShardData):
 - `shard`: String (the actual Shamir share)
@@ -101,7 +101,7 @@ Represents a Shamir share with optional metadata for lockbox recovery.
 
 **Recovery Metadata** (optional fields):
 - `id`: String? (unique identifier for recovery tracking)
-- `lockboxId`: String? (reference to Lockbox)
+- `vaultId`: String? (reference to Vault)
 - `recipientPubkey`: String? (hex format, 64 characters)
 - `isReceived`: bool? (whether share has been received)
 - `receivedAt`: DateTime? (when share was received)
@@ -110,7 +110,7 @@ Represents a Shamir share with optional metadata for lockbox recovery.
 **Validation Rules**:
 - Core ShardData validation rules apply
 - `id` must be non-empty if provided
-- `lockboxId` must reference existing Lockbox if provided
+- `vaultId` must reference existing Vault if provided
 - `recipientPubkey` must be valid hex format (64 characters) if provided
 - `receivedAt` must be in the past if `isReceived` is true
 
@@ -118,7 +118,7 @@ Represents a Shamir share with optional metadata for lockbox recovery.
 
 ### RecoveryRequestStatus
 - `pending`: Request created but not yet sent
-- `sent`: Request sent to key holders via Nostr
+- `sent`: Request sent to stewards via Nostr
 - `in_progress`: Responses being collected
 - `completed`: Recovery successful, content reassembled
 - `failed`: Recovery failed (insufficient shares or timeout)
@@ -134,14 +134,14 @@ Represents a Shamir share with optional metadata for lockbox recovery.
 
 - `RecoveryRequest` 1:1 `RecoveryStatus`
 - `RecoveryRequest` 1:N `RecoveryResponse`
-- `RecoveryRequest` N:1 `Lockbox`
-- `ShardData` N:1 `Lockbox` (when lockboxId is provided)
+- `RecoveryRequest` N:1 `Vault`
+- `ShardData` N:1 `Vault` (when vaultId is provided)
 - `RelayConfiguration` N:1 `User` (implicit)
 
 ## Data Flow
 
-1. **Recovery Initiation**: User creates `RecoveryRequest` for a `Lockbox`
-2. **Request Distribution**: `RecoveryRequest` sent to key holders via Nostr
+1. **Recovery Initiation**: User creates `RecoveryRequest` for a `Vault`
+2. **Request Distribution**: `RecoveryRequest` sent to stewards via Nostr
 3. **Response Collection**: Key holders respond with `RecoveryResponse`
 4. **Status Tracking**: `RecoveryStatus` updated as responses arrive
 5. **Content Recovery**: When threshold met, `ShardData` contents reassembled

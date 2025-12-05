@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:keydex/models/nostr_kinds.dart';
+import 'package:horcrux/models/nostr_kinds.dart';
 
 void main() {
   group('NostrKind', () {
@@ -25,7 +25,7 @@ void main() {
       expect(NostrKind.fromValue(4), isNull);
     });
 
-    test('isCustom correctly identifies Keydex custom kinds', () {
+    test('isCustom correctly identifies Horcrux custom kinds', () {
       expect(NostrKind.seal.isCustom, isFalse);
       expect(NostrKind.giftWrap.isCustom, isFalse);
       expect(NostrKind.shardData.isCustom, isTrue);
@@ -45,8 +45,14 @@ void main() {
       expect(NostrKind.seal.toString(), 'NostrKind.seal(13)');
       expect(NostrKind.giftWrap.toString(), 'NostrKind.giftWrap(1059)');
       expect(NostrKind.shardData.toString(), 'NostrKind.shardData(1337)');
-      expect(NostrKind.recoveryRequest.toString(), 'NostrKind.recoveryRequest(1338)');
-      expect(NostrKind.recoveryResponse.toString(), 'NostrKind.recoveryResponse(1339)');
+      expect(
+        NostrKind.recoveryRequest.toString(),
+        'NostrKind.recoveryRequest(1338)',
+      );
+      expect(
+        NostrKind.recoveryResponse.toString(),
+        'NostrKind.recoveryResponse(1339)',
+      );
     });
 
     test('toInt extension method works correctly', () {
@@ -60,7 +66,11 @@ void main() {
     test('all enum values are unique', () {
       final values = NostrKind.values.map((k) => k.value).toList();
       final uniqueValues = values.toSet();
-      expect(values.length, uniqueValues.length, reason: 'All NostrKind values should be unique');
+      expect(
+        values.length,
+        uniqueValues.length,
+        reason: 'All NostrKind values should be unique',
+      );
     });
   });
 }

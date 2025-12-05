@@ -1,0 +1,552 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../models/vault.dart';
+import '../models/backup_config.dart';
+import '../providers/vault_provider.dart';
+import '../providers/key_provider.dart';
+import '../providers/recovery_provider.dart';
+import '../widgets/row_button_stack.dart';
+import '../widgets/instructions_dialog.dart';
+import '../services/backup_service.dart';
+import '../services/recovery_service.dart';
+import '../services/vault_share_service.dart';
+import '../services/relay_scan_service.dart';
+import '../services/logger.dart';
+import '../screens/backup_config_screen.dart';
+import '../screens/edit_vault_screen.dart';
+import '../screens/recovery_status_screen.dart';
+
+/// Button stack widget for vault detail screen
+class VaultDetailButtonStack extends ConsumerWidget {
+  final String vaultId;
+
+  const VaultDetailButtonStack({super.key, required this.vaultId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Check if user is steward or owner
+    final vaultAsync = ref.watch(vaultProvider(vaultId));
+    final currentPubkeyAsync = ref.watch(currentPublicKeyProvider);
+
+    return vaultAsync.when(
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (vault) {
+        if (vault == null) return const SizedBox.shrink();
+
+        return currentPubkeyAsync.when(
+          loading: () => const SizedBox.shrink(),
+          error: (_, __) => const SizedBox.shrink(),
+          data: (currentPubkey) {
+            final isOwned = currentPubkey != null && vault.isOwned(currentPubkey);
+            final isSteward =
+                currentPubkey != null && !vault.isOwned(currentPubkey) && vault.shards.isNotEmpty;
+
+            // Watch vault for Generate and Distribute Keys button
+            final vaultAsync = ref.watch(vaultProvider(vaultId));
+            // Watch recovery status for recovery buttons
+            final recoveryStatusAsync = ref.watch(
+              recoveryStatusProvider(vaultId),
+            );
+
+            return vaultAsync.when(
+              loading: () => const SizedBox.shrink(),
+              error: (_, __) => const SizedBox.shrink(),
+              data: (currentVault) {
+                return recoveryStatusAsync.when(
+                  loading: () => const SizedBox.shrink(),
+                  error: (_, __) => const SizedBox.shrink(),
+                  data: (recoveryStatus) {
+                    final buttons = <RowButtonConfig>[];
+
+                    // View Instructions Button (only show for stewards)
+                    if (isSteward) {
+                      final instructions = _getInstructions(vault);
+                      if (instructions != null && instructions.isNotEmpty) {
+                        buttons.add(
+                          RowButtonConfig(
+                            onPressed: () {
+                              InstructionsDialog.show(context, instructions);
+                            },
+                            icon: Icons.info_outline,
+                            text: 'View Instructions',
+                          ),
+                        );
+                      }
+                    }
+
+                    // Edit Vault Button (only show if user owns the vault)
+                    if (isOwned) {
+                      buttons.add(
+                        RowButtonConfig(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => EditVaultScreen(vaultId: vaultId),
+                              ),
+                            );
+                          },
+                          icon: Icons.edit,
+                          text: 'Update Vault Contents',
+                        ),
+                      );
+
+                      // Recovery Plan Section
+                      buttons.add(
+                        RowButtonConfig(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => BackupConfigScreen(vaultId: vaultId),
+                              ),
+                            );
+                          },
+                          icon: Icons.settings,
+                          text: 'Recovery Plan',
+                        ),
+                      );
+
+                      // Distribute Keys Button - shown when distribution is needed
+                      if (currentVault != null) {
+                        final backupConfig = currentVault.backupConfig;
+                        if (backupConfig != null && backupConfig.stewards.isNotEmpty) {
+                          final needsDistribution =
+                              backupConfig.needsRedistribution || backupConfig.hasVersionMismatch;
+
+                          if (!backupConfig.canDistribute) {
+                            // Show "Waiting for stewards" button (disabled)
+                            final pendingCount = backupConfig.pendingInvitationsCount;
+                            buttons.add(
+                              RowButtonConfig(
+                                onPressed: null, // Disabled
+                                icon: Icons.hourglass_empty,
+                                text:
+                                    'Waiting for $pendingCount Steward${pendingCount > 1 ? 's' : ''}',
+                              ),
+                            );
+                          } else if (needsDistribution) {
+                            // Show "Distribute Keys" button (enabled)
+                            buttons.add(
+                              RowButtonConfig(
+                                onPressed: () => _distributeKeys(
+                                  context,
+                                  ref,
+                                  currentVault,
+                                ),
+                                icon: Icons.send,
+                                text: 'Distribute Keys',
+                              ),
+                            );
+                          }
+                        }
+                      }
+
+                      // Practice Recovery Button (only for owners)
+                      buttons.add(
+                        RowButtonConfig(
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: const Text('Practice Recovery'),
+                                content: const Text('todo'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: const Text('OK'),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                          icon: Icons.school,
+                          text: 'Practice Recovery',
+                        ),
+                      );
+                    }
+
+                    // Recovery buttons - only show for stewards (not owners, since owners already have contents)
+                    if (!isOwned) {
+                      // Show "Manage Recovery" if user initiated active recovery
+                      if (recoveryStatus.hasActiveRecovery && recoveryStatus.isInitiator) {
+                        buttons.add(
+                          RowButtonConfig(
+                            onPressed: () async {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => RecoveryStatusScreen(
+                                    recoveryRequestId: recoveryStatus.activeRecoveryRequest!.id,
+                                  ),
+                                ),
+                              );
+                            },
+                            icon: Icons.visibility,
+                            text: 'Manage Recovery',
+                          ),
+                        );
+                      } else {
+                        // Show "Initiate Recovery" if no active recovery or user didn't initiate it
+                        buttons.add(
+                          RowButtonConfig(
+                            onPressed: () => _initiateRecovery(context, ref, vaultId),
+                            icon: Icons.restore,
+                            text: 'Initiate Recovery',
+                          ),
+                        );
+                      }
+                    }
+
+                    if (buttons.isEmpty) {
+                      return const SizedBox.shrink();
+                    }
+
+                    return RowButtonStack(buttons: buttons);
+                  },
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  String? _getInstructions(Vault vault) {
+    if (vault.shards.isNotEmpty) {
+      return vault.shards.first.instructions;
+    }
+    return null;
+  }
+
+  Future<void> _distributeKeys(
+    BuildContext context,
+    WidgetRef ref,
+    Vault vault,
+  ) async {
+    if (vault.backupConfig == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Recovery plan not found'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    final config = vault.backupConfig!;
+    if (config.stewards.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No stewards in recovery plan'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    if (vault.content == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Cannot backup: vault content is not available'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Determine if this is initial distribution or redistribution
+    final isRedistribution = config.lastRedistribution != null;
+    final title = isRedistribution ? 'Redistribute Keys?' : 'Distribute Keys?';
+    final action = isRedistribution ? 'Redistribute' : 'Distribute';
+
+    // Build warning message for redistribution
+    String contentMessage = 'This will generate ${config.totalKeys} key shares '
+        'and distribute them to ${config.stewards.length} steward${config.stewards.length > 1 ? 's' : ''}.\n\n'
+        'Threshold: ${config.threshold} (minimum keys needed for recovery)';
+
+    if (isRedistribution) {
+      contentMessage += '\n\n⚠️ This will invalidate previously distributed keys. '
+          'All stewards will receive new keys.';
+    }
+
+    // Show confirmation dialog
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Text(contentMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(action),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    if (!context.mounted) return;
+    // Show loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const AlertDialog(
+        content: Row(
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(width: 16),
+            Expanded(child: Text('Distributing keys...')),
+          ],
+        ),
+      ),
+    );
+
+    try {
+      final backupService = ref.read(backupServiceProvider);
+      await backupService.createAndDistributeBackup(vaultId: vault.id);
+
+      if (context.mounted) {
+        Navigator.pop(context); // Close loading dialog
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Keys distributed successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        // Refresh vault data
+        ref.invalidate(vaultProvider(vault.id));
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.pop(context); // Close loading dialog
+
+        // Show detailed error with option to retry later
+        await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Distribution Failed'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Failed to distribute keys. Your backup configuration has been saved, but keys were not sent to stewards.',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 12),
+                Text('Error: $e'),
+                const SizedBox(height: 12),
+                const Text(
+                  'You can retry distribution later from this screen. The "Distribute Keys" button will remain available.',
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _initiateRecovery(
+    BuildContext context,
+    WidgetRef ref,
+    String vaultId,
+  ) async {
+    // Show full-screen loading dialog
+    if (!context.mounted) return;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => PopScope(
+        canPop: false,
+        child: Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: EdgeInsets.zero,
+          child: Container(
+            width: double.infinity,
+            height: double.infinity,
+            color: Colors.black.withValues(alpha: 0.8),
+            child: const Center(
+              child: Card(
+                child: Padding(
+                  padding: EdgeInsets.all(32),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(height: 24),
+                      Text(
+                        'Sending recovery requests...',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    try {
+      final loginService = ref.read(loginServiceProvider);
+      final currentPubkey = await loginService.getCurrentPublicKey();
+
+      if (currentPubkey == null) {
+        if (context.mounted) {
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Error: Could not load current user')),
+          );
+        }
+        return;
+      }
+
+      // Get shard data to extract peers and creator information
+      final shareService = ref.read(vaultShareServiceProvider);
+      final shards = await shareService.getVaultShares(vaultId);
+
+      if (shards.isEmpty) {
+        if (context.mounted) {
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Cannot recover: you don\'t have a key to this vault.',
+              ),
+            ),
+          );
+        }
+        return;
+      }
+
+      // Select the shard with the highest distributionVersion (most recent)
+      // If versions are equal or null, use the most recent createdAt timestamp
+      final selectedShard = shards.reduce((a, b) {
+        final aVersion = a.distributionVersion ?? 0;
+        final bVersion = b.distributionVersion ?? 0;
+        if (aVersion != bVersion) {
+          return aVersion > bVersion ? a : b;
+        }
+        // If versions are equal, use createdAt timestamp
+        return a.createdAt > b.createdAt ? a : b;
+      });
+      Log.debug(
+        'Selected shard with distributionVersion ${selectedShard.distributionVersion} for recovery',
+      );
+
+      // Use peers list for recovery
+      final stewardPubkeys = <String>[];
+      if (selectedShard.peers != null) {
+        for (final peer in selectedShard.peers!) {
+          final pubkey = peer['pubkey'];
+          if (pubkey != null) {
+            stewardPubkeys.add(pubkey);
+          }
+        }
+      }
+
+      if (stewardPubkeys.isEmpty) {
+        if (context.mounted) {
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No stewards available for recovery')),
+          );
+        }
+        return;
+      }
+
+      Log.info(
+        'Initiating recovery with ${stewardPubkeys.length} stewards: ${stewardPubkeys.map((k) => k.substring(0, 8)).join(", ")}...',
+      );
+
+      final recoveryService = ref.read(recoveryServiceProvider);
+      final recoveryRequest = await recoveryService.initiateRecovery(
+        vaultId,
+        initiatorPubkey: currentPubkey,
+        stewardPubkeys: stewardPubkeys,
+        threshold: selectedShard.threshold,
+      );
+
+      // Get relays and send recovery request via Nostr
+      try {
+        final relays =
+            await ref.read(relayScanServiceProvider).getRelayConfigurations(enabledOnly: true);
+        final relayUrls = relays.map((r) => r.url).toList();
+
+        if (relayUrls.isEmpty) {
+          Log.warning(
+            'No relays configured, recovery request not sent via Nostr',
+          );
+        } else {
+          await recoveryService.sendRecoveryRequestViaNostr(
+            recoveryRequest,
+            relays: relayUrls,
+          );
+        }
+      } catch (e) {
+        Log.error('Failed to send recovery request via Nostr', e);
+      }
+
+      // Auto-approve if the initiator is also a steward
+      if (stewardPubkeys.contains(currentPubkey)) {
+        try {
+          Log.info(
+            'Initiator is a steward, auto-approving recovery request',
+          );
+          await recoveryService.respondToRecoveryRequestWithShard(
+            recoveryRequest.id,
+            currentPubkey,
+            true,
+          );
+          Log.info('Auto-approved recovery request');
+        } catch (e) {
+          Log.error('Failed to auto-approve recovery request', e);
+        }
+      }
+
+      if (context.mounted) {
+        Navigator.pop(context);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Recovery request initiated and sent')),
+        );
+
+        ref.invalidate(recoveryStatusProvider(vaultId));
+
+        if (context.mounted) {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => RecoveryStatusScreen(recoveryRequestId: recoveryRequest.id),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      Log.error('Error initiating recovery', e);
+      if (context.mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
+    }
+  }
+}

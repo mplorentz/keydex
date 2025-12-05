@@ -26,8 +26,65 @@ class LoginService {
     await _storage.write(key: _nostrPrivateKeyKey, value: keyPair.privateKey);
 
     _cachedKeyPair = keyPair;
-    Log.info('Generated new Nostr key pair with public key: ${keyPair.publicKeyBech32}');
+    Log.info(
+      'Generated new Nostr key pair with public key: ${keyPair.publicKeyBech32}',
+    );
     return keyPair;
+  }
+
+  /// Import a Nostr private key from nsec (bech32) format
+  Future<KeyPair> importNsecKey(String nsec) async {
+    Log.info('Importing Nostr key from nsec format');
+
+    try {
+      // Decode the nsec to get hex private key
+      final decoded = Helpers.decodeBech32(nsec);
+      final privateKey = decoded[0]; // First element is the hex key
+
+      // Derive public key from private key
+      final publicKey = Bip340.getPublicKey(privateKey);
+
+      // Create full KeyPair with derived public key
+      final publicKeyBech32 = Helpers.encodeBech32(publicKey, 'npub');
+
+      final keyPair = KeyPair(privateKey, publicKey, nsec, publicKeyBech32);
+
+      // Store the private key
+      await _storage.write(key: _nostrPrivateKeyKey, value: privateKey);
+      _cachedKeyPair = keyPair;
+
+      Log.info('Successfully imported Nostr key with public key: $publicKeyBech32');
+      return keyPair;
+    } catch (e) {
+      Log.error('Error importing nsec key', e);
+      throw Exception('Failed to import nsec key: Invalid format');
+    }
+  }
+
+  /// Import a Nostr private key from hex format
+  Future<KeyPair> importHexPrivateKey(String hexPrivateKey) async {
+    Log.info('Importing Nostr key from hex format');
+
+    try {
+      // Derive public key from private key
+      final publicKey = Bip340.getPublicKey(hexPrivateKey);
+
+      // Convert to bech32 format
+      final privateKeyBech32 = Helpers.encodeBech32(hexPrivateKey, 'nsec');
+      final publicKeyBech32 = Helpers.encodeBech32(publicKey, 'npub');
+
+      final keyPair = KeyPair(hexPrivateKey, publicKey, privateKeyBech32, publicKeyBech32);
+
+      // Store the private key
+      await _storage.write(key: _nostrPrivateKeyKey, value: hexPrivateKey);
+      _cachedKeyPair = keyPair;
+
+      Log.info('Successfully imported Nostr key with public key: $publicKeyBech32');
+      return keyPair;
+    } catch (e) {
+      Log.error('Error importing hex private key', e);
+      throw Exception('Failed to import hex private key: Invalid format');
+    }
   }
 
   /// Get the stored Nostr key pair, deriving public key from private key
@@ -48,8 +105,15 @@ class LoginService {
         final privateKeyBech32 = Helpers.encodeBech32(privateKey, 'nsec');
         final publicKeyBech32 = Helpers.encodeBech32(publicKey, 'npub');
 
-        _cachedKeyPair = KeyPair(privateKey, publicKey, privateKeyBech32, publicKeyBech32);
-        Log.info('Successfully loaded Nostr key pair from secure storage: $publicKey');
+        _cachedKeyPair = KeyPair(
+          privateKey,
+          publicKey,
+          privateKeyBech32,
+          publicKeyBech32,
+        );
+        Log.info(
+          'Successfully loaded Nostr key pair from secure storage: $publicKey',
+        );
         return _cachedKeyPair;
       } else {
         Log.error('No private key found in secure storage');
@@ -175,4 +239,3 @@ class LoginService {
     );
   }
 }
-

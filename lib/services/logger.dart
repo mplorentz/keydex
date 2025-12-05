@@ -9,10 +9,7 @@ class InlineTimePrinter extends LogPrinter {
   final bool colors;
   final bool printEmojis;
 
-  InlineTimePrinter({
-    this.colors = true,
-    this.printEmojis = true,
-  });
+  InlineTimePrinter({this.colors = true, this.printEmojis = true});
 
   @override
   List<String> log(LogEvent event) {
@@ -209,123 +206,18 @@ class FileLogOutput extends LogOutput {
   }
 }
 
-/// Centralized logging service for the Keydex application.
+/// Centralized logging service for the Horcrux application.
 ///
 /// This service provides a consistent logging interface throughout the app
 /// with configurable log levels and formatting.
 /// Logs are written to both console and a file.
 class Log {
-  static Logger? _logger;
-  static IOSink? _fileSink;
-  static File? _logFile;
-  static bool _initialized = false;
-
-  /// Initialize the logger with file output
-  static Future<void> _initialize() async {
-    if (_initialized) return;
-
-    try {
-      // Get application documents directory
-      final directory = await getApplicationDocumentsDirectory();
-      final logDir = Directory(path.join(directory.path, 'logs'));
-      if (!await logDir.exists()) {
-        await logDir.create(recursive: true);
-      }
-
-      // Create log file with current date
-      final now = DateTime.now();
-      final logFileName = 'keydex_${now.year}-${now.month.toString().padLeft(2, '0')}-'
-          '${now.day.toString().padLeft(2, '0')}.log';
-      _logFile = File(path.join(logDir.path, logFileName));
-      _fileSink = _logFile!.openWrite(mode: FileMode.append);
-
-      // Create multi-output logger: console + file
-      _logger = Logger(
-        output: MultiOutput([
-          ConsoleOutput(),
-          FileLogOutput(
-            _fileSink!,
-            FileOutputPrinter(_fileSink, printEmojis: true),
-          ),
-        ]),
-        printer: InlineTimePrinter(
-          colors: true,
-          printEmojis: true,
-        ),
-      );
-
-      _initialized = true;
-      _logger!.i('Logger initialized - logs will be written to: ${_logFile!.path}');
-    } catch (e) {
-      // If file logging fails, fall back to console only
-      _logger = Logger(
-        printer: InlineTimePrinter(
-          colors: true,
-          printEmojis: true,
-        ),
-      );
-      _logger!.w('Failed to initialize file logging: $e');
-      _initialized = true;
-    }
-  }
-
-  /// Get the current log file path
-  static Future<String?> getLogFilePath() async {
-    if (!_initialized) await _initialize();
-    return _logFile?.path;
-  }
-
-  /// Get all log files in the logs directory
-  static Future<List<File>> getAllLogFiles() async {
-    try {
-      final directory = await getApplicationDocumentsDirectory();
-      final logDir = Directory(path.join(directory.path, 'logs'));
-      if (!await logDir.exists()) {
-        return [];
-      }
-
-      final files = logDir
-          .listSync()
-          .whereType<File>()
-          .where((file) => path.basename(file.path).startsWith('keydex_') && 
-                          path.basename(file.path).endsWith('.log'))
-          .toList();
-      
-      // Sort by modification time, newest first
-      files.sort((a, b) => b.lastModifiedSync().compareTo(a.lastModifiedSync()));
-      return files;
-    } catch (e) {
-      return [];
-    }
-  }
-
-  /// Get the logs directory path
-  static Future<String> getLogsDirectoryPath() async {
-    final directory = await getApplicationDocumentsDirectory();
-    return path.join(directory.path, 'logs');
-  }
-
-  static Logger get _loggerInstance {
-    if (!_initialized) {
-      // Synchronous fallback - initialize async in background
-      _initialize().catchError((e) {
-        // Ignore errors during async init
-      });
-      // Return console-only logger until async init completes
-      return Logger(
-        printer: InlineTimePrinter(
-          colors: true,
-          printEmojis: true,
-        ),
-      );
-    }
-    return _logger ?? Logger(
-      printer: InlineTimePrinter(
-        colors: true,
-        printEmojis: true,
-      ),
-    );
-  }
+  static final Logger _logger = Logger(
+    printer: InlineTimePrinter(
+      colors: true,
+      printEmojis: true,
+    ),
+  );
 
   /// Log trace messages (most detailed level)
   static void trace(String message, [dynamic error, StackTrace? stackTrace]) {

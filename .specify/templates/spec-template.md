@@ -100,7 +100,7 @@ When creating this spec from a user prompt:
 - [ ] Scope is clearly bounded
 - [ ] Dependencies and assumptions identified
 
-### Keydex-Specific Requirements
+### Horcrux-Specific Requirements
 - [ ] Security requirements clearly defined for sensitive data handling
 - [ ] Cross-platform functionality specified for all 5 platforms
 - [ ] Nostr protocol integration requirements documented

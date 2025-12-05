@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_toolkit/golden_toolkit.dart';
-import 'package:keydex/providers/key_provider.dart';
-import 'package:keydex/screens/onboarding_screen.dart';
-import 'package:keydex/services/login_service.dart';
+import 'package:horcrux/providers/key_provider.dart';
+import 'package:horcrux/screens/onboarding_screen.dart';
+import 'package:horcrux/services/login_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../helpers/golden_test_helpers.dart';
 import '../helpers/secure_storage_mock.dart';
@@ -37,9 +37,7 @@ void main() {
       // Only override loginServiceProvider - other providers won't be accessed
       // during build, only when "Get Started" button is pressed
       final container = ProviderContainer(
-        overrides: [
-          loginServiceProvider.overrideWithValue(loginService),
-        ],
+        overrides: [loginServiceProvider.overrideWithValue(loginService)],
       );
 
       await pumpGoldenWidget(
@@ -61,21 +59,14 @@ void main() {
       loginService.resetCacheForTest();
 
       final container = ProviderContainer(
-        overrides: [
-          loginServiceProvider.overrideWithValue(loginService),
-        ],
+        overrides: [loginServiceProvider.overrideWithValue(loginService)],
       );
 
       final builder = DeviceBuilder()
-        ..overrideDevicesForAllScenarios(devices: [
-          Device.phone,
-          Device.iphone11,
-          Device.tabletPortrait,
-        ])
-        ..addScenario(
-          widget: const OnboardingScreen(),
-          name: 'onboarding',
-        );
+        ..overrideDevicesForAllScenarios(
+          devices: [Device.phone, Device.iphone11, Device.tabletPortrait],
+        )
+        ..addScenario(widget: const OnboardingScreen(), name: 'onboarding');
 
       await tester.pumpDeviceBuilder(
         builder,
