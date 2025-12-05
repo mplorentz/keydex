@@ -84,7 +84,7 @@ class RelayScanService {
       if (kDebugMode && (_cachedRelays == null || _cachedRelays!.isEmpty)) {
         const localhostRelay = RelayConfiguration(
           id: 'localhost-debug',
-          url: 'wss://dev.horcrux.app',
+          url: 'wss://dev.horcruxbackup.com',
           name: 'Localhost (Debug)',
           isEnabled: true,
           isTrusted: false,
