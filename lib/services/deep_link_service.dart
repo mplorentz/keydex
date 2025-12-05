@@ -249,7 +249,7 @@ class DeepLinkService {
 
       // Extract vault name from query params (optional)
       final vaultName = uri.queryParameters['name'];
-      // Decode if present, otherwise use null (will fallback to "Shared Vault" in createInvitationLink)
+      // Decode if present, otherwise use null (will fallback to defaultVaultName in createInvitationLink)
 
       // Extract relay URLs from query params (comma-separated)
       final relayUrlsParam = uri.queryParameters['relays'];

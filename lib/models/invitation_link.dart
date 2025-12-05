@@ -1,6 +1,9 @@
 import 'invitation_status.dart';
 import '../utils/validators.dart';
 
+/// Default vault name used when no specific vault name is provided
+const String defaultVaultName = 'Shared Vault';
+
 /// Represents a generated invitation link that can be shared with an invitee
 ///
 /// Public keys are stored in hex format (64 characters) internally.
@@ -30,7 +33,7 @@ InvitationLink createInvitationLink({
   return (
     inviteCode: inviteCode,
     vaultId: vaultId,
-    vaultName: vaultName ?? 'Shared Vault',
+    vaultName: vaultName ?? defaultVaultName,
     ownerPubkey: ownerPubkey,
     relayUrls: relayUrls,
     inviteeName: inviteeName,
@@ -105,7 +108,7 @@ InvitationLink invitationLinkFromJson(Map<String, dynamic> json) {
   return (
     inviteCode: json['inviteCode'] as String,
     vaultId: json['vaultId'] as String,
-    vaultName: json['vaultName'] as String? ?? 'Shared Vault',
+    vaultName: json['vaultName'] as String? ?? defaultVaultName,
     ownerPubkey: json['ownerPubkey'] as String,
     relayUrls: List<String>.from(json['relayUrls'] as List),
     inviteeName: json['inviteeName'] as String?,
