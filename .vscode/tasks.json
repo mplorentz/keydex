@@ -121,6 +121,29 @@
                 "panel": "shared"
             },
             "detail": "Stop the web server running on port 8084"
+        },
+        {
+            "label": "Flutter: Update All Golden Tests",
+            "type": "shell",
+            "command": "flutter",
+            "args": [
+                "test",
+                "--update-goldens"
+            ],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [],
+            "detail": "Update all golden test images in the project"
         }
     ]
 }
