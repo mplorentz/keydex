@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ndk/ndk.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../models/invitation_link.dart';
 import '../models/shard_data.dart';
 import '../models/vault.dart';
 import '../models/nostr_kinds.dart';
@@ -314,7 +315,7 @@ class VaultShareService {
       }
 
       // Create a new vault entry for the shared key
-      final vaultName = shardData.vaultName ?? 'Shared Vault';
+      final vaultName = shardData.vaultName ?? defaultVaultName;
 
       final vault = Vault(
         id: vaultId,

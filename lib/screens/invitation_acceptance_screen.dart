@@ -162,7 +162,7 @@ class _InvitationAcceptanceScreenState extends ConsumerState<InvitationAcceptanc
 
                 // Explainer text
                 Text(
-                  'Accepting this invitation will grant you access to a shared lockbox. You\'ll be able to view and manage the contents.',
+                  'Accepting this invitation will grant you a single key to a shared vault. You\'ll then be able to recover the vault in coordination with the other stewards.',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                       ),
@@ -204,17 +204,17 @@ class _InvitationAcceptanceScreenState extends ConsumerState<InvitationAcceptanc
                   const SizedBox(height: 24),
                 ],
 
-                // Lockbox name (if available)
-                if (invitation.lockboxName != 'Shared Lockbox') ...[
+                // Vault name (if available)
+                if (invitation.vaultName != defaultVaultName) ...[
                   Text(
-                    'Lockbox',
+                    'Vault',
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
                           color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                         ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    invitation.lockboxName,
+                    invitation.vaultName,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           fontWeight: FontWeight.w500,
                         ),
