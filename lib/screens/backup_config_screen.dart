@@ -41,7 +41,7 @@ class BackupConfigScreen extends ConsumerStatefulWidget {
 class _BackupConfigScreenState extends ConsumerState<BackupConfigScreen> {
   int _threshold = VaultBackupConstraints.defaultThreshold;
   final List<Steward> _stewards = [];
-  final List<String> _relays = ['wss://dev.horcrux.app'];
+  final List<String> _relays = ['wss://dev.horcruxbackup.com'];
   bool _isCreating = false;
   bool _isLoading = true;
   bool _hasUnsavedChanges = false;

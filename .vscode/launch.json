@@ -12,18 +12,42 @@
             ]
         },
         {
-            "name": "Golden",
+            "name": "Flutter: Run macOS",
             "request": "launch",
             "type": "dart",
-            "codeLens": {
-                "for": [
-                    "run-test",
-                    "run-test-file"
-                ]
-            },
-            "args": [
-                "--update-goldens"
+            "program": "lib/main.dart",
+            "deviceId": "macos"
+        },
+        {
+            "name": "Flutter: Run Chrome 1",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "deviceId": "chrome",
+            "toolArgs": [
+                "--web-port=8080"
             ]
+        },
+        {
+            "name": "Flutter: Run Chrome 2",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "deviceId": "chrome",
+            "toolArgs": [
+                "--web-port=8081"
+            ]
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Flutter: Run macOS + 2 Chrome",
+            "configurations": [
+                "Flutter: Run macOS",
+                "Flutter: Run Chrome 1",
+                "Flutter: Run Chrome 2"
+            ],
+            "stopAll": true
         }
     ]
 }
